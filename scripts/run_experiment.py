@@ -73,6 +73,21 @@ CSV_HEADERS = [
 ]
 
 
+def _print_signal_summary(signals: dict):
+    """Print a summary of collected signals for dry-run verification."""
+    for key, value in signals.items():
+        if isinstance(value, dict):
+            non_empty = sum(1 for v in value.values() if v)
+            total = len(value)
+            logger.info("  %s: %d/%d fields populated", key, non_empty, total)
+        elif isinstance(value, list):
+            logger.info("  %s: %d items", key, len(value))
+        elif isinstance(value, str):
+            logger.info("  %s: %d chars", key, len(value))
+        else:
+            logger.info("  %s: %s", key, type(value).__name__)
+
+
 def ensure_dirs():
     """Ensure output directories exist."""
     RESULTS_DIR.mkdir(exist_ok=True)
@@ -154,12 +169,13 @@ def run_single_trial(
 
     # ── Step 4: RAG retrieval (for System B) ──
     rag_context = ""
-    try:
-        docs = retriever.query_by_fault(fault_id)
-        rag_context = retriever.format_context(docs)
-        logger.info("RAG retrieved %d docs for %s", len(docs), fault_id)
-    except Exception as e:
-        logger.warning("RAG retrieval failed: %s", e)
+    if not dry_run and retriever is not None:
+        try:
+            docs = retriever.query_by_fault(fault_id)
+            rag_context = retriever.format_context(docs)
+            logger.info("RAG retrieved %d docs for %s", len(docs), fault_id)
+        except Exception as e:
+            logger.warning("RAG retrieval failed: %s", e)
 
     # ── Step 5: Build context for A and B ──
     ctx_a = builder.build(
@@ -169,6 +185,14 @@ def run_single_trial(
         all_signals, fault_id=fault_id, trial=trial, system="B",
         rag_context=rag_context,
     )
+
+    if dry_run:
+        # Dry run: just print collected signal summary and return
+        logger.info("[DRY RUN] Signal collection complete.")
+        logger.info("[DRY RUN] System A context length: %d chars", len(ctx_a.to_context()))
+        logger.info("[DRY RUN] System B context length: %d chars", len(ctx_b.to_context()))
+        _print_signal_summary(all_signals)
+        return
 
     # ── Step 6: Run RCA System A ──
     logger.info("Running RCA System A (observability only)...")
@@ -237,8 +261,8 @@ def main():
     parser = argparse.ArgumentParser(description="Run RCA experiment trials")
     parser.add_argument("--fault", type=str, help="Specific fault type (e.g. F1)")
     parser.add_argument("--trial", type=int, help="Specific trial number (1-5)")
-    parser.add_argument("--model", type=str, default="claude-sonnet-4-6")
-    parser.add_argument("--provider", type=str, default="anthropic")
+    parser.add_argument("--model", type=str, default="gpt-4o-mini")
+    parser.add_argument("--provider", type=str, default="openai")
     parser.add_argument("--dry-run", action="store_true", help="Skip injection, test collection only")
     parser.add_argument("--cooldown", type=int, default=1800, help="Cooldown between fault types (seconds, default 1800=30min)")
     args = parser.parse_args()
@@ -252,8 +276,12 @@ def main():
     recovery = Recovery()
     collector = SignalCollector()
     builder = ContextBuilder()
-    engine = RCAEngine(model=args.model, provider=args.provider)
-    retriever = KnowledgeRetriever()
+    if args.dry_run:
+        engine = None
+        retriever = None
+    else:
+        engine = RCAEngine(model=args.model, provider=args.provider)
+        retriever = KnowledgeRetriever()
 
     # Determine which trials to run
     faults = [args.fault] if args.fault else ALL_FAULTS

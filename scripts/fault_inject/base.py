@@ -13,7 +13,7 @@ from .config import KUBECONFIG, KUBECTL, NAMESPACE, GIT_REPO_PATH
 logger = logging.getLogger(__name__)
 
 
-def kubectl(*args: str, namespace: str = NAMESPACE, timeout: int = 30) -> str:
+def kubectl(*args: str, namespace: str = NAMESPACE, timeout: int = 60) -> str:
     """Run kubectl command."""
     cmd = [KUBECTL]
     if namespace:
@@ -74,6 +74,18 @@ def kubectl_patch(
         "-p", json.dumps(patch),
         namespace=namespace,
     )
+
+
+def get_container_image(deployment: str, container: str = "", namespace: str = NAMESPACE) -> str:
+    """Get current container image from a deployment (needed for strategic merge patch)."""
+    deploy = kubectl_get_json("deployment", deployment, namespace=namespace)
+    if not deploy:
+        return ""
+    containers = deploy.get("spec", {}).get("template", {}).get("spec", {}).get("containers", [])
+    for c in containers:
+        if not container or c.get("name") == container or len(containers) == 1:
+            return c.get("image", "")
+    return ""
 
 
 def kubectl_get_json(resource: str, name: str = "", namespace: str = NAMESPACE) -> dict:

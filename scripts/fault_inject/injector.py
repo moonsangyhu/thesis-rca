@@ -12,7 +12,7 @@ from typing import Optional
 
 from .base import (
     kubectl, kubectl_apply, kubectl_delete, kubectl_patch,
-    kubectl_get_json, ssh_node, git_commit_and_push,
+    kubectl_get_json, get_container_image, ssh_node, git_commit_and_push,
 )
 from .config import NAMESPACE, INJECTION_WAIT
 
@@ -80,7 +80,6 @@ class FaultInjector:
 
     def _inject_f1_oomkilled(self, target: str, trial: int, gt: dict) -> dict:
         """Set very low memory limit to trigger OOMKilled."""
-        # Memory limits by trial (from ground truth)
         memory_limits = {
             1: "32Mi",    # cartservice
             2: "24Mi",    # recommendationservice
@@ -103,23 +102,11 @@ class FaultInjector:
                         c.get("resources", {}).get("limits", {}).get("memory")
                     )
 
-        # Patch memory limit
-        patch = {
-            "spec": {
-                "template": {
-                    "spec": {
-                        "containers": [{
-                            "name": target,
-                            "resources": {
-                                "limits": {"memory": limit},
-                                "requests": {"memory": limit},
-                            },
-                        }],
-                    },
-                },
-            },
-        }
-        result = kubectl_patch("deployment", target, patch)
+        # Use kubectl set resources (avoids strategic merge patch validation issues)
+        result = kubectl(
+            "set", "resources", "deployment", target,
+            f"--limits=memory={limit}", f"--requests=memory={limit}",
+        )
         logger.info("F1 injected: %s memory limit → %s", target, limit)
 
         return {
@@ -143,12 +130,14 @@ class FaultInjector:
         }
         cmd = crash_commands.get(trial, ["/bin/sh", "-c", "exit 1"])
 
+        image = get_container_image(target)
         patch = {
             "spec": {
                 "template": {
                     "spec": {
                         "containers": [{
                             "name": target,
+                            "image": image,
                             "command": cmd,
                         }],
                     },
@@ -400,22 +389,10 @@ class FaultInjector:
         }
         limit = cpu_limits.get(trial, "10m")
 
-        patch = {
-            "spec": {
-                "template": {
-                    "spec": {
-                        "containers": [{
-                            "name": target,
-                            "resources": {
-                                "limits": {"cpu": limit},
-                                "requests": {"cpu": limit},
-                            },
-                        }],
-                    },
-                },
-            },
-        }
-        result = kubectl_patch("deployment", target, patch)
+        result = kubectl(
+            "set", "resources", "deployment", target,
+            f"--limits=cpu={limit}", f"--requests=cpu={limit}",
+        )
         logger.info("F7 injected: %s CPU limit → %s", target, limit)
 
         return {"action": "patch_cpu_limit", "cpu_limit": limit, "kubectl_output": result}
@@ -453,12 +430,14 @@ class FaultInjector:
 
         elif trial == 4:
             # Add always-failing readiness probe
+            image = get_container_image(target, "server")
             patch = {
                 "spec": {
                     "template": {
                         "spec": {
                             "containers": [{
                                 "name": "server",
+                                "image": image,
                                 "readinessProbe": {
                                     "httpGet": {"path": "/nonexistent", "port": 9999},
                                     "initialDelaySeconds": 1,
@@ -485,6 +464,8 @@ class FaultInjector:
 
     def _inject_f9_secret_configmap(self, target: str, trial: int, gt: dict) -> dict:
         """Mess with Secrets/ConfigMaps."""
+        image = get_container_image(target)
+
         if trial == 1:
             # Set env var pointing to non-existent secret
             patch = {
@@ -493,6 +474,7 @@ class FaultInjector:
                         "spec": {
                             "containers": [{
                                 "name": target,
+                                "image": image,
                                 "env": [{
                                     "name": "REDIS_ADDR",
                                     "valueFrom": {
@@ -518,6 +500,7 @@ class FaultInjector:
                         "spec": {
                             "containers": [{
                                 "name": target,
+                                "image": image,
                                 "env": [{
                                     "name": "PRODUCT_CATALOG_SERVICE_ADDR",
                                     "value": "productcatalogservice:9999",
@@ -545,6 +528,7 @@ class FaultInjector:
                             }],
                             "containers": [{
                                 "name": target,
+                                "image": image,
                                 "volumeMounts": [{
                                     "name": "config-vol",
                                     "mountPath": "/etc/payment-config",
@@ -565,6 +549,7 @@ class FaultInjector:
                         "spec": {
                             "containers": [{
                                 "name": target,
+                                "image": image,
                                 "env": [{
                                     "name": "CHECKOUT_WRONG_KEY",
                                     "valueFrom": {
@@ -599,6 +584,7 @@ class FaultInjector:
                         "spec": {
                             "containers": [{
                                 "name": target,
+                                "image": image,
                                 "env": [{
                                     "name": "DISABLE_TRACING",
                                     "value": "corrupt_value_\x00\x01",

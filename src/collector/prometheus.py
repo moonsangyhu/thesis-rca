@@ -176,8 +176,8 @@ class PrometheusCollector:
         """Memory usage vs limits."""
         data = self._query(
             f'container_memory_working_set_bytes{{namespace="{ns}",container!=""}}'
-            f' / on(namespace,pod,container) '
-            f'kube_pod_container_resource_limits{{namespace="{ns}",resource="memory"}} > 0.8'
+            f' / on(namespace,pod,container) group_left()'
+            f' kube_pod_container_resource_limits{{namespace="{ns}",resource="memory"}} > 0.8'
         )
         return [
             {

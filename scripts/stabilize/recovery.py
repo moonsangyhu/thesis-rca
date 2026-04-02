@@ -83,21 +83,21 @@ class Recovery:
         # Remove resource limits by patching with empty/null
         # Simplest: rollout undo or re-apply original
         kubectl("rollout", "undo", f"deployment/{target}")
-        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s")
+        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
         return {"action": "rollout_undo", "target": target}
 
     def _recover_f2(self, trial: int, ctx: dict) -> dict:
         """Remove command override → rollout undo."""
         target = ctx.get("target_service", "")
         kubectl("rollout", "undo", f"deployment/{target}")
-        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s")
+        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
         return {"action": "rollout_undo", "target": target}
 
     def _recover_f3(self, trial: int, ctx: dict) -> dict:
         """Restore correct image → rollout undo."""
         target = ctx.get("target_service", "")
         kubectl("rollout", "undo", f"deployment/{target}")
-        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s")
+        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
         return {"action": "rollout_undo", "target": target}
 
     def _recover_f4(self, trial: int, ctx: dict) -> dict:
@@ -169,7 +169,7 @@ class Recovery:
         """Remove CPU limit patch."""
         target = ctx.get("target_service", "")
         kubectl("rollout", "undo", f"deployment/{target}")
-        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s")
+        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
         return {"action": "rollout_undo", "target": target}
 
     def _recover_f8(self, trial: int, ctx: dict) -> dict:
@@ -180,11 +180,11 @@ class Recovery:
         elif trial == 3:
             # Rollout undo to restore labels
             kubectl("rollout", "undo", "deployment/paymentservice")
-            kubectl("rollout", "status", "deployment/paymentservice", "--timeout=120s")
+            kubectl("rollout", "status", "deployment/paymentservice", "--timeout=120s", timeout=150)
         elif trial == 4:
             target = ctx.get("target_service", "shippingservice")
             kubectl("rollout", "undo", f"deployment/{target}")
-            kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s")
+            kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
         return {"action": "restore_service", "trial": trial}
 
     def _recover_f9(self, trial: int, ctx: dict) -> dict:
@@ -193,7 +193,7 @@ class Recovery:
         kubectl("rollout", "undo", f"deployment/{target}")
         # Clean up any dummy secrets
         kubectl_delete("secret", "checkout-secret-bad")
-        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s")
+        kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
         return {"action": "rollout_undo_and_cleanup", "target": target}
 
     def _recover_f10(self, trial: int, ctx: dict) -> dict:
