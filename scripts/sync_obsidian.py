@@ -184,6 +184,20 @@ def build_note_v2(rows, gt):
     a_faith_avg = f"{sum(a_faith_vals)/len(a_faith_vals):.2f}" if a_faith_vals else "-"
     b_faith_avg = f"{sum(b_faith_vals)/len(b_faith_vals):.2f}" if b_faith_vals else "-"
 
+    # Evaluator averages
+    a_eval_vals = [float(t["rows"]["A"].get("eval_overall_score", 0) or 0)
+                   for t in trials.values() if "A" in t["rows"]]
+    b_eval_vals = [float(t["rows"]["B"].get("eval_overall_score", 0) or 0)
+                   for t in trials.values() if "B" in t["rows"]]
+    a_eval_avg = f"{sum(a_eval_vals)/len(a_eval_vals):.1f}" if a_eval_vals else "-"
+    b_eval_avg = f"{sum(b_eval_vals)/len(b_eval_vals):.1f}" if b_eval_vals else "-"
+
+    # Retry counts
+    a_retried = sum(1 for t in trials.values()
+                    if int(t["rows"].get("A", {}).get("retry_count", 0) or 0) > 0)
+    b_retried = sum(1 for t in trials.values()
+                    if int(t["rows"].get("B", {}).get("retry_count", 0) or 0) > 0)
+
     total_prompt = sum(int(r.get("prompt_tokens", 0) or 0) for r in rows)
     total_completion = sum(int(r.get("completion_tokens", 0) or 0) for r in rows)
     cost = (total_prompt * 0.15 + total_completion * 0.6) / 1_000_000
@@ -267,6 +281,37 @@ def build_note_v2(rows, gt):
         if ctx_b:
             ctx_block += f"\n<details><summary>System B LLM 입력 ({len(ctx_b):,} chars)</summary>\n\n```\n{ctx_b}\n```\n\n</details>\n"
 
+        # Evaluator scores
+        def _eval_block(row_data):
+            es = row_data.get("eval_overall_score", "")
+            if not es or es == "0" or es == "0.0":
+                return ""
+            eg = row_data.get("eval_evidence_grounding", "-")
+            dl = row_data.get("eval_diagnostic_logic", "-")
+            dc = row_data.get("eval_differential_completeness", "-")
+            cc = row_data.get("eval_confidence_calibration", "-")
+            rc = row_data.get("retry_count", "0")
+            crit = row_data.get("eval_critique", "-") or "-"
+            return (
+                f"| Evidence Grounding | {eg}/10 |\n"
+                f"| Diagnostic Logic | {dl}/10 |\n"
+                f"| Differential Completeness | {dc}/10 |\n"
+                f"| Confidence Calibration | {cc}/10 |\n"
+                f"| **Overall** | **{es}/10** |\n"
+                f"| Retry 횟수 | {rc} |\n"
+                f"| Critique | {crit[:150]} |"
+            )
+
+        eval_a = _eval_block(ra)
+        eval_b = _eval_block(rb)
+        eval_section = ""
+        if eval_a or eval_b:
+            eval_section = "\n**Evaluator 평가:**\n"
+            if eval_a:
+                eval_section += f"\nSystem A:\n| 항목 | 점수 |\n|------|------|\n{eval_a}\n"
+            if eval_b:
+                eval_section += f"\nSystem B:\n| 항목 | 점수 |\n|------|------|\n{eval_b}\n"
+
         section = f"""### {fid} Trial {trial} — {fault_name} ({target}) {a_mark}/{b_mark}
 > **시간**: {ts}
 > **주입**: {injection}
@@ -281,7 +326,7 @@ def build_note_v2(rows, gt):
 | **조치 방안 (KO)** | {a_remed_ko} | {b_remed_ko} |
 | **근거 충실도** | {a_faith} | {b_faith} |
 | **기권 사유** | {a_abstain} | {b_abstain} |
-
+{eval_section}
 **Evidence Chain (System A):**
 {ev_a}
 
@@ -319,6 +364,8 @@ def build_note_v2(rows, gt):
 | 정확도 | {a_pct} | {b_pct} |
 | 기권 | {a_abstained}/{total_trials} | {b_abstained}/{total_trials} |
 | 근거 충실도 (avg) | {a_faith_avg} | {b_faith_avg} |
+| Evaluator 점수 (avg) | {a_eval_avg} | {b_eval_avg} |
+| Retry 발생 | {a_retried}/{total_trials} | {b_retried}/{total_trials} |
 
 | 항목 | 값 |
 |------|-----|

@@ -84,6 +84,9 @@ CSV_HEADERS_V2 = [
     "reasoning",
     "evidence_chain", "alternative_hypotheses",
     "abstained", "abstention_reason", "faithfulness_score",
+    "eval_evidence_grounding", "eval_diagnostic_logic",
+    "eval_differential_completeness", "eval_confidence_calibration",
+    "eval_overall_score", "eval_critique", "retry_count",
     "model", "latency_ms", "prompt_tokens", "completion_tokens",
     "error",
 ]
