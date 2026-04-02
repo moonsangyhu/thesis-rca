@@ -1,34 +1,34 @@
-# scripts/ — Experiment Automation
+# scripts/ — 실험 자동화
 
-## Purpose
+## 목적
 
-Automation scripts for the fault injection experiment lifecycle: injecting faults into the Online Boutique application, stabilizing the cluster between trials, and evaluating RCA pipeline output against ground truth labels.
+장애 주입 실험의 전체 생명주기를 자동화하는 스크립트이다: Online Boutique 애플리케이션에 장애를 주입하고, 시행 간 클러스터를 안정화하며, RCA 파이프라인 출력을 Ground Truth 레이블과 비교 평가한다.
 
-These scripts ensure **reproducible experiments** — each fault injection follows the same procedure, timing, and data collection protocol across all 50 trials.
+이 스크립트들은 **재현 가능한 실험**을 보장한다 — 50건의 모든 시행에서 동일한 절차, 타이밍, 데이터 수집 프로토콜을 따른다.
 
-## Structure
+## 구조
 
-| Directory | Description |
-|-----------|-------------|
-| `fault_inject/` | Fault injection scripts for F1–F10. Each script applies a specific fault (e.g., set memory limit to 32Mi for F1-OOMKilled), waits for symptoms to manifest, and triggers data collection. |
-| `stabilize/` | Post-injection recovery scripts. Restore cluster to clean state between trials: revert manifest changes, wait for pod health, verify monitoring baseline. 30-minute stabilization window per the experiment protocol. |
-| `evaluate/` | Scoring and evaluation scripts. Compare System A/B RCA outputs against `results/ground_truth.csv`, compute accuracy/precision/recall/F1, and run Wilcoxon signed-rank test for statistical significance. |
+| 디렉토리 | 설명 |
+|----------|------|
+| `fault_inject/` | F1~F10 장애 주입 스크립트. 특정 장애를 적용하고(예: F1-OOMKilled의 경우 메모리 limit을 32Mi로 설정), 증상이 나타날 때까지 대기 후 데이터 수집을 트리거한다. |
+| `stabilize/` | 주입 후 복구 스크립트. 시행 간 클러스터를 깨끗한 상태로 복원한다: 매니페스트 변경 되돌리기, Pod 헬스 대기, 모니터링 베이스라인 확인. 실험 프로토콜에 따라 시행당 30분 안정화 대기. |
+| `evaluate/` | 채점 및 평가 스크립트. System A/B RCA 출력을 `results/ground_truth.csv`와 비교하여 정확도/정밀도/재현율/F1을 산출하고, Wilcoxon signed-rank test로 통계적 유의성을 검정한다. |
 
-## Status
+## 상태
 
-All scripts are **planned** — to be implemented alongside the Online Boutique deployment and fault injection experiment phases.
+모든 스크립트는 **예정** — Online Boutique 배포 및 장애 주입 실험 단계에서 구현할 예정이다.
 
-## Experiment Protocol
+## 실험 프로토콜
 
 ```
-For each fault F_i (i = 1..10):
-  For each trial t (t = 1..5):
-    1. Verify cluster stable          (stabilize/)
-    2. Inject fault F_i trial t       (fault_inject/)
-    3. Wait for symptoms (~2-5 min)
-    4. Collect signals                 (src/collector/)
-    5. Run System A RCA               (src/llm/)
-    6. Run System B RCA               (src/rag/ + src/llm/)
-    7. Record results                  (results/)
-    8. Restore and stabilize           (stabilize/, 30 min wait)
+각 장애 F_i (i = 1..10)에 대해:
+  각 시행 t (t = 1..5)에 대해:
+    1. 클러스터 안정 상태 확인     (stabilize/)
+    2. 장애 F_i 시행 t 주입       (fault_inject/)
+    3. 증상 발현 대기 (~2-5분)
+    4. 신호 수집                   (src/collector/)
+    5. System A RCA 실행           (src/llm/)
+    6. System B RCA 실행           (src/rag/ + src/llm/)
+    7. 결과 기록                   (results/)
+    8. 복구 및 안정화              (stabilize/, 30분 대기)
 ```
