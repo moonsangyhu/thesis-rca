@@ -58,6 +58,7 @@ logger = logging.getLogger("experiment")
 # Result CSV path
 RESULTS_DIR = PROJECT_ROOT / "results"
 RESULTS_CSV = RESULTS_DIR / "experiment_results.csv"
+RESULTS_CSV_V2 = RESULTS_DIR / "experiment_results_v2.csv"
 RAW_DIR = RESULTS_DIR / "raw"
 
 # All fault types and trials
@@ -68,6 +69,21 @@ CSV_HEADERS = [
     "timestamp", "fault_id", "trial", "system",
     "identified_fault_type", "correct", "root_cause",
     "confidence", "affected_components", "remediation",
+    "model", "latency_ms", "prompt_tokens", "completion_tokens",
+    "error",
+]
+
+CSV_HEADERS_V2 = [
+    "timestamp", "fault_id", "trial", "system",
+    "identified_fault_type", "correct",
+    "root_cause", "root_cause_ko",
+    "confidence", "confidence_2nd",
+    "affected_components",
+    "remediation", "remediation_ko",
+    "detail", "detail_ko",
+    "reasoning",
+    "evidence_chain", "alternative_hypotheses",
+    "abstained", "abstention_reason", "faithfulness_score",
     "model", "latency_ms", "prompt_tokens", "completion_tokens",
     "error",
 ]
@@ -94,24 +110,34 @@ def ensure_dirs():
     RAW_DIR.mkdir(exist_ok=True)
 
 
-def init_csv():
+def init_csv(version="v1"):
     """Initialize results CSV if not exists."""
-    if not RESULTS_CSV.exists():
-        with open(RESULTS_CSV, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=CSV_HEADERS)
+    csv_path = RESULTS_CSV_V2 if version == "v2" else RESULTS_CSV
+    headers = CSV_HEADERS_V2 if version == "v2" else CSV_HEADERS
+    if not csv_path.exists():
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
             writer.writeheader()
 
 
-def append_result(result: dict):
+def append_result(result: dict, version="v1"):
     """Append a single result row to CSV."""
-    with open(RESULTS_CSV, "a", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=CSV_HEADERS)
-        row = {k: result.get(k, "") for k in CSV_HEADERS}
-        # Convert lists to strings
-        if isinstance(row.get("affected_components"), list):
-            row["affected_components"] = "|".join(row["affected_components"])
-        if isinstance(row.get("remediation"), list):
-            row["remediation"] = "|".join(row["remediation"])
+    csv_path = RESULTS_CSV_V2 if version == "v2" else RESULTS_CSV
+    headers = CSV_HEADERS_V2 if version == "v2" else CSV_HEADERS
+    with open(csv_path, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=headers)
+        row = {k: result.get(k, "") for k in headers}
+        # Convert lists to pipe-delimited strings
+        for key in ["affected_components", "remediation", "remediation_ko"]:
+            if isinstance(row.get(key), list):
+                row[key] = "|".join(str(x) for x in row[key])
+        # Convert dicts/lists to JSON strings
+        for key in ["evidence_chain", "alternative_hypotheses"]:
+            if isinstance(row.get(key), (list, dict)):
+                row[key] = json.dumps(row[key], ensure_ascii=False)
+        # Truncate reasoning for CSV (full version in raw JSON)
+        if isinstance(row.get("reasoning"), str) and len(row["reasoning"]) > 200:
+            row["reasoning"] = row["reasoning"][:200] + "..."
         writer.writerow(row)
 
 
@@ -134,6 +160,7 @@ def run_single_trial(
     engine: RCAEngine,
     retriever: KnowledgeRetriever,
     dry_run: bool = False,
+    version: str = "v1",
 ):
     """Run a single trial: inject → collect → RCA(A/B) → record → recover."""
     logger.info("=" * 60)
@@ -220,8 +247,11 @@ def run_single_trial(
     for result, system in [(result_a, "A"), (result_b, "B")]:
         row = result.to_dict()
         row["timestamp"] = timestamp
-        row["correct"] = 1 if result.identified_fault_type == fault_id else 0
-        append_result(row)
+        if result.abstained:
+            row["correct"] = -1  # abstained
+        else:
+            row["correct"] = 1 if result.identified_fault_type == fault_id else 0
+        append_result(row, version=version)
 
     # Save raw data
     save_raw(fault_id, trial, "A", {
@@ -264,11 +294,13 @@ def main():
     parser.add_argument("--model", type=str, default="gpt-4o-mini")
     parser.add_argument("--provider", type=str, default="openai")
     parser.add_argument("--dry-run", action="store_true", help="Skip injection, test collection only")
-    parser.add_argument("--cooldown", type=int, default=1800, help="Cooldown between fault types (seconds, default 1800=30min)")
+    parser.add_argument("--cooldown", type=int, default=900, help="Cooldown between fault types (seconds, default 900=15min)")
+    parser.add_argument("--version", type=str, default="v2", choices=["v1", "v2"],
+                        help="Experiment version (v1=original, v2=harness+CoT+bilingual)")
     args = parser.parse_args()
 
     ensure_dirs()
-    init_csv()
+    init_csv(version=args.version)
 
     # Initialize components
     logger.info("Initializing experiment components...")
@@ -280,7 +312,10 @@ def main():
         engine = None
         retriever = None
     else:
-        engine = RCAEngine(model=args.model, provider=args.provider)
+        engine = RCAEngine(
+            model=args.model, provider=args.provider,
+            prompt_version=args.version,
+        )
         retriever = KnowledgeRetriever()
 
     # Determine which trials to run
@@ -291,7 +326,7 @@ def main():
     completed = 0
 
     logger.info("Experiment plan: %d trials (%s × %s)", total, faults, trials)
-    logger.info("Model: %s (%s)", args.model, args.provider)
+    logger.info("Model: %s (%s), version: %s", args.model, args.provider, args.version)
     logger.info("Dry run: %s", args.dry_run)
 
     for fault_id in faults:
@@ -301,6 +336,7 @@ def main():
                     fault_id, trial,
                     injector, recovery, collector, builder, engine, retriever,
                     dry_run=args.dry_run,
+                    version=args.version,
                 )
                 completed += 1
                 logger.info("Progress: %d/%d trials complete", completed, total)
