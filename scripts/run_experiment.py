@@ -83,7 +83,7 @@ CSV_HEADERS_V2 = [
     "detail", "detail_ko",
     "reasoning",
     "evidence_chain", "alternative_hypotheses",
-    "abstained", "abstention_reason", "faithfulness_score",
+    "faithfulness_score",
     "eval_evidence_grounding", "eval_diagnostic_logic",
     "eval_differential_completeness", "eval_confidence_calibration",
     "eval_overall_score", "eval_critique", "retry_count",
@@ -250,10 +250,7 @@ def run_single_trial(
     for result, system in [(result_a, "A"), (result_b, "B")]:
         row = result.to_dict()
         row["timestamp"] = timestamp
-        if result.abstained:
-            row["correct"] = -1  # abstained
-        else:
-            row["correct"] = 1 if result.identified_fault_type == fault_id else 0
+        row["correct"] = 1 if result.identified_fault_type == fault_id else 0
         append_result(row, version=version)
 
     # Save raw data

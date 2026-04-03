@@ -35,9 +35,7 @@ class RCAOutput:
     alternative_hypotheses: list[dict] = field(default_factory=list)
     confidence_2nd: float = 0.0
 
-    # v2: harness — evidence verification + abstention
-    abstained: bool = False
-    abstention_reason: str = ""
+    # v2: harness — evidence verification
     faithfulness_score: float = 0.0
 
     # v2: harness — evaluator
@@ -75,8 +73,6 @@ class RCAOutput:
             "evidence_chain": self.evidence_chain,
             "alternative_hypotheses": self.alternative_hypotheses,
             "confidence_2nd": self.confidence_2nd,
-            "abstained": self.abstained,
-            "abstention_reason": self.abstention_reason,
             "faithfulness_score": self.faithfulness_score,
             "eval_evidence_grounding": self.eval_evidence_grounding,
             "eval_diagnostic_logic": self.eval_diagnostic_logic,
@@ -376,9 +372,6 @@ class RCAEngine:
             eval_result = self._evaluate(context, output)
             output = self._apply_eval(output, eval_result)
 
-        # Step 5: Abstention check (evaluator score included)
-        output = self._check_abstention(output)
-
         return output
 
     # ── Generator ────────────────────────────────────────────
@@ -551,41 +544,6 @@ class RCAEngine:
             sum(1 for e in verified if e["verified"]), len(verified), faithfulness,
         )
         return verified, round(faithfulness, 2)
-
-    # ── Harness: Abstention (control) ────────────────────────
-
-    def _check_abstention(self, output: RCAOutput) -> RCAOutput:
-        """Multi-layer abstention: LLM self-assessment + system verification + evaluator."""
-        reasons = []
-
-        # Layer 1: LLM self-reported confidence
-        if output.confidence < 0.7:
-            reasons.append(f"low_confidence({output.confidence:.2f})")
-
-        # Layer 2: narrow gap between 1st and 2nd hypothesis
-        if output.confidence_2nd > 0:
-            gap = output.confidence - output.confidence_2nd
-            if gap < 0.1:
-                reasons.append(f"narrow_gap({gap:.2f})")
-
-        # Layer 3: evidence faithfulness (system verification)
-        if output.faithfulness_score < 0.5:
-            reasons.append(f"low_faithfulness({output.faithfulness_score:.2f})")
-
-        # Layer 4: insufficient evidence count
-        if len(output.evidence_chain) < 2:
-            reasons.append(f"insufficient_evidence({len(output.evidence_chain)})")
-
-        # Layer 5: evaluator overall score (independent evaluator)
-        if output.eval_overall_score > 0 and output.eval_overall_score < 6.0:
-            reasons.append(f"low_eval_score({output.eval_overall_score:.1f})")
-
-        if reasons:
-            output.abstained = True
-            output.abstention_reason = "; ".join(reasons)
-            logger.info("Abstained: %s", output.abstention_reason)
-
-        return output
 
     # ── LLM Call ─────────────────────────────────────────────
 

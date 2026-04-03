@@ -56,12 +56,8 @@ def _parse_json_field(val):
 
 
 def _correct_label(val):
-    """Return O/X/ABSTAIN for correct field."""
-    if val == "1":
-        return "O"
-    elif val == "-1":
-        return "ABSTAIN"
-    return "X"
+    """Return O/X for correct field."""
+    return "O" if val == "1" else "X"
 
 
 def build_note_v1(rows, gt):
@@ -169,10 +165,6 @@ def build_note_v2(rows, gt):
                     if t["rows"].get("A", {}).get("correct") == "1")
     b_correct = sum(1 for t in trials.values()
                     if t["rows"].get("B", {}).get("correct") == "1")
-    a_abstained = sum(1 for t in trials.values()
-                      if t["rows"].get("A", {}).get("correct") == "-1")
-    b_abstained = sum(1 for t in trials.values()
-                      if t["rows"].get("B", {}).get("correct") == "-1")
     a_pct = f"{a_correct}/{total_trials} ({100*a_correct/total_trials:.0f}%)" if total_trials else "-"
     b_pct = f"{b_correct}/{total_trials} ({100*b_correct/total_trials:.0f}%)" if total_trials else "-"
 
@@ -230,9 +222,6 @@ def build_note_v2(rows, gt):
         b_remed_ko = (rb.get("remediation_ko", "-") or "-").replace("|", " / ")
         a_faith = ra.get("faithfulness_score", "-")
         b_faith = rb.get("faithfulness_score", "-")
-        a_abstain = ra.get("abstention_reason", "") or "-"
-        b_abstain = rb.get("abstention_reason", "") or "-"
-
         # Evidence chain (System B primarily)
         def _format_evidence(row_data):
             ev_list = _parse_json_field(row_data.get("evidence_chain", ""))
@@ -325,7 +314,6 @@ def build_note_v2(rows, gt):
 | **조치 방안** | {a_remed} | {b_remed} |
 | **조치 방안 (KO)** | {a_remed_ko} | {b_remed_ko} |
 | **근거 충실도** | {a_faith} | {b_faith} |
-| **기권 사유** | {a_abstain} | {b_abstain} |
 {eval_section}
 **Evidence Chain (System A):**
 {ev_a}
@@ -362,7 +350,6 @@ def build_note_v2(rows, gt):
 | 항목 | System A | System B |
 |------|----------|----------|
 | 정확도 | {a_pct} | {b_pct} |
-| 기권 | {a_abstained}/{total_trials} | {b_abstained}/{total_trials} |
 | 근거 충실도 (avg) | {a_faith_avg} | {b_faith_avg} |
 | Evaluator 점수 (avg) | {a_eval_avg} | {b_eval_avg} |
 | Retry 발생 | {a_retried}/{total_trials} | {b_retried}/{total_trials} |
