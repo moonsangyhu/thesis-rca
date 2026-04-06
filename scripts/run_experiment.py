@@ -2,6 +2,8 @@
 """
 Main experiment runner for GitOps-Aware K8s RCA thesis.
 
+DEPRECATED: Use experiments/v1/run.py, experiments/v2/run.py, experiments/v3/run.py instead.
+
 Protocol per trial:
   1. Inject fault (F1~F10)
   2. Wait for symptoms to manifest (2-5 min)

@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+"""
+v1 실험 실행: 장애 힌트(F1-F10) + 단순 프롬프트.
+
+Usage:
+    python -m experiments.v1.run
+    python -m experiments.v1.run --fault F1 --trial 3
+    python -m experiments.v1.run --dry-run
+"""
+import argparse
+import logging
+import sys
+import time
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.collector import SignalCollector
+from src.processor import ContextBuilder
+from src.rag.retriever import KnowledgeRetriever
+from scripts.fault_inject import FaultInjector, INJECTION_WAIT
+from scripts.stabilize import Recovery
+
+from experiments.shared.csv_io import init_csv, get_completed_trials, load_ground_truth
+from experiments.shared.infra import preflight_check, health_check
+from experiments.shared.runner import TrialRunner, ALL_FAULTS, ALL_TRIALS
+from .engine import RCAEngineV1
+from .config import RESULTS_CSV, RAW_DIR, GROUND_TRUTH_CSV, CSV_HEADERS, RESULTS_DIR
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(RESULTS_DIR / "experiment_v1.log"),
+    ],
+)
+logger = logging.getLogger("experiment.v1")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="v1 RCA experiment: fault hints + simple prompt")
+    parser.add_argument("--fault", type=str, help="Specific fault type (e.g. F1)")
+    parser.add_argument("--trial", type=int, help="Specific trial number (1-5)")
+    parser.add_argument("--model", type=str, default="gpt-4o-mini")
+    parser.add_argument("--provider", type=str, default="openai")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--cooldown", type=int, default=900)
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--no-preflight", action="store_true")
+    args = parser.parse_args()
+
+    RESULTS_DIR.mkdir(exist_ok=True)
+    RAW_DIR.mkdir(exist_ok=True)
+    init_csv(RESULTS_CSV, CSV_HEADERS)
+
+    if not args.no_preflight and not args.dry_run:
+        if not preflight_check():
+            logger.error("Aborting due to preflight failure.")
+            sys.exit(1)
+
+    completed_trials = set()
+    if args.resume:
+        completed_trials = get_completed_trials(RESULTS_CSV)
+        if completed_trials:
+            logger.info("Resume: %d trials already completed", len(completed_trials))
+
+    ground_truth = {}
+    if GROUND_TRUTH_CSV.exists():
+        ground_truth = load_ground_truth(GROUND_TRUTH_CSV)
+        logger.info("Loaded ground truth: %d entries", len(ground_truth))
+
+    # Initialize
+    injector = FaultInjector()
+    recovery = Recovery()
+    collector = SignalCollector()
+    builder = ContextBuilder()
+
+    if args.dry_run:
+        engine = None
+        retriever = None
+    else:
+        engine = RCAEngineV1(model=args.model, provider=args.provider)
+        retriever = KnowledgeRetriever()
+
+    runner = TrialRunner(
+        engine=engine,
+        csv_path=RESULTS_CSV,
+        csv_headers=CSV_HEADERS,
+        raw_dir=RAW_DIR,
+        injector=injector,
+        recovery=recovery,
+        collector=collector,
+        builder=builder,
+        retriever=retriever,
+    )
+
+    faults = [args.fault] if args.fault else ALL_FAULTS
+    trials = [args.trial] if args.trial else ALL_TRIALS
+    total = len(faults) * len(trials)
+    completed = 0
+
+    logger.info("v1 experiment: %d trials (%s × %s)", total, faults, trials)
+    logger.info("Model: %s (%s)", args.model, args.provider)
+
+    for fault_id in faults:
+        for trial in trials:
+            if (fault_id, trial) in completed_trials:
+                logger.info("Skipping %s t%d (already completed)", fault_id, trial)
+                completed += 1
+                continue
+
+            if not args.dry_run:
+                if not health_check(fault_id, trial):
+                    logger.error("Health check failed for %s t%d — retrying in 10s...", fault_id, trial)
+                    time.sleep(10)
+                    if not health_check(fault_id, trial):
+                        logger.error("Health check failed again — SKIPPING %s t%d", fault_id, trial)
+                        completed += 1
+                        continue
+
+            try:
+                runner.run_trial(fault_id, trial, dry_run=args.dry_run, ground_truth=ground_truth)
+                completed += 1
+                logger.info("Progress: %d/%d", completed, total)
+            except Exception as e:
+                logger.error("Trial %s t%d FAILED: %s", fault_id, trial, e)
+                completed += 1
+
+            if trial < max(trials) and not args.dry_run:
+                logger.info("Short cooldown (60s)...")
+                time.sleep(60)
+
+        if fault_id != faults[-1] and not args.dry_run:
+            logger.info("Cooldown (%ds) between fault types...", args.cooldown)
+            time.sleep(args.cooldown)
+
+    logger.info("=" * 60)
+    logger.info("v1 experiment complete! %d/%d trials", completed, total)
+    logger.info("Results: %s", RESULTS_CSV)
+
+
+if __name__ == "__main__":
+    main()

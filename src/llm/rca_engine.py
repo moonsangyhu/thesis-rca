@@ -1,4 +1,8 @@
-"""LLM-based RCA inference engine for System A/B comparison."""
+"""LLM-based RCA inference engine for System A/B comparison.
+
+DEPRECATED: Use experiments/v1/, experiments/v2/, experiments/v3/ instead.
+This file is kept for backward compatibility only.
+"""
 import json
 import logging
 import os
