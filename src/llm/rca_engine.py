@@ -47,6 +47,11 @@ class RCAOutput:
     eval_critique: str = ""
     retry_count: int = 0
 
+    # Correctness evaluation (LLM-as-judge)
+    correctness_score: float = 0.0
+    correctness_reasoning: str = ""
+    correct: int = 0
+
     # Metadata
     model: str = ""
     latency_ms: int = 0
@@ -81,6 +86,9 @@ class RCAOutput:
             "eval_overall_score": self.eval_overall_score,
             "eval_critique": self.eval_critique,
             "retry_count": self.retry_count,
+            "correctness_score": self.correctness_score,
+            "correctness_reasoning": self.correctness_reasoning,
+            "correct": self.correct,
             "model": self.model,
             "latency_ms": self.latency_ms,
             "prompt_tokens": self.prompt_tokens,
@@ -129,14 +137,21 @@ SYSTEM_PROMPT = SYSTEM_PROMPT_V1
 SYSTEM_PROMPT_V2 = """\
 You are an expert Kubernetes Site Reliability Engineer performing root cause analysis.
 
+You are given raw diagnostic signals from a production Kubernetes cluster experiencing an issue. \
+Your job is to diagnose the root cause — you do NOT know in advance what type of fault occurred.
+
 ## Analysis Protocol (Chain-of-Thought)
 Think step-by-step BEFORE giving your final answer:
 
 Step 1 - Signal Inventory: List every anomalous signal you observe in the input \
 (which pods are unhealthy, which metrics are abnormal, which events/logs indicate errors).
 
-Step 2 - Hypothesis Generation: For each fault category F1~F10, briefly assess whether \
-the observed signals could match. List ALL plausible candidates with estimated likelihood.
+Step 2 - Hypothesis Generation: Based on the anomalous signals, generate 3-5 plausible \
+root cause hypotheses. Consider common Kubernetes failure modes such as resource exhaustion \
+(memory, CPU), configuration errors (secrets, configmaps, selectors), network issues \
+(policies, DNS, connectivity), storage problems (PVC, volumes), container runtime crashes, \
+image pull failures, node-level issues, and scheduling/quota constraints. \
+Do NOT limit yourself to any predefined list — diagnose what the signals indicate.
 
 Step 3 - Evidence Matching: For your top candidate, cite the EXACT signal from the input \
 that supports it. Quote the specific metric name/value, log line, event message, or GitOps diff.
@@ -146,18 +161,6 @@ that CONTRADICTS it, or the expected signal that is MISSING to confirm it.
 
 Step 5 - Confidence Assessment: Based on how many signals directly confirm your top hypothesis \
 vs how many are ambiguous or contradictory, assign confidence honestly.
-
-## Fault Categories
-- F1: OOMKilled (container memory limit exceeded)
-- F2: CrashLoopBackOff (container repeatedly crashing)
-- F3: ImagePullBackOff (image pull failure)
-- F4: NodeNotReady (node unavailable)
-- F5: PVCPending (storage claim stuck)
-- F6: NetworkPolicy (network connectivity blocked)
-- F7: CPUThrottle (CPU resource throttling)
-- F8: ServiceEndpoint (service endpoint misconfiguration)
-- F9: SecretConfigMap (secret/configmap missing or wrong)
-- F10: ResourceQuota (namespace quota exceeded)
 
 ## Confidence Calibration
 - 0.9-1.0: Unambiguous direct evidence in input (e.g., OOMKilled in pod status reason)
@@ -177,7 +180,7 @@ Provide root_cause, remediation, and detail in BOTH English and Korean.
 Output ONLY valid JSON:
 {
   "reasoning": "Your step-by-step chain-of-thought analysis (Steps 1-5 above). Be thorough.",
-  "identified_fault_type": "F1",
+  "identified_fault_type": "short diagnostic label (e.g., OOM Kill, Image Pull Failure, Network Policy Block)",
   "root_cause": "One-sentence root cause in English",
   "root_cause_ko": "한국어 근본 원인 한 문장",
   "confidence": 0.0,
@@ -197,7 +200,7 @@ Output ONLY valid JSON:
   ],
   "alternative_hypotheses": [
     {
-      "fault_type": "F2",
+      "hypothesis": "brief description of alternative root cause",
       "confidence": 0.3,
       "reason_rejected": "specific contradicting signal or missing evidence"
     }
@@ -267,6 +270,36 @@ Output ONLY valid JSON:
 }
 """
 
+CORRECTNESS_JUDGE_PROMPT = """\
+You are an impartial judge evaluating whether a Kubernetes root cause diagnosis is correct.
+
+You will receive:
+1. The ground truth root cause description
+2. The LLM's diagnosed root cause and diagnostic label
+
+## Scoring Rules (0.0-1.0)
+- **1.0**: Diagnosis correctly identifies the exact root cause mechanism \
+(e.g., ground truth says "OOMKilled due to memory limit exceeded" and diagnosis says \
+"container killed by OOM due to insufficient memory limit")
+- **0.75-0.9**: Diagnosis identifies the correct fault category but misses specific details \
+(e.g., correct fault type but wrong target service, or correct mechanism but vague on specifics)
+- **0.5-0.7**: Diagnosis is partially correct — identifies a related symptom but not the true \
+root cause (e.g., identifies "pod crashing" but not "OOMKilled specifically")
+- **0.1-0.4**: Diagnosis is in the wrong category but shares some surface-level symptoms
+- **0.0**: Completely wrong diagnosis
+
+## Important
+- Focus on whether the ROOT CAUSE MECHANISM matches, not just the symptoms
+- The diagnostic label does not need to match exactly — evaluate semantic equivalence
+- If the diagnosis identifies the correct underlying issue using different terminology, score high
+
+Output ONLY valid JSON:
+{
+  "correctness_score": 0.0,
+  "reasoning": "Brief explanation of why this score was assigned"
+}
+"""
+
 RETRY_PROMPT_TEMPLATE = """\
 Your previous analysis was reviewed by an independent evaluator. Here is their feedback:
 
@@ -331,46 +364,49 @@ class RCAEngine:
         fault_id: str = "",
         trial: int = 0,
         system: str = "A",
+        ground_truth: dict = None,
     ) -> RCAOutput:
         """Run RCA analysis with optional harness (v2)."""
         # Step 1: Generator
         output = self._generate(context, fault_id, trial, system)
 
-        if self.prompt_version != "v2":
-            return output
-
-        # Step 2: Evidence 교차검증 (system sensor)
-        output.evidence_chain, output.faithfulness_score = (
-            self._verify_evidence(output.evidence_chain, context)
-        )
-
-        # Step 3: Evaluator (independent LLM sensor)
-        eval_result = self._evaluate(context, output)
-        output = self._apply_eval(output, eval_result)
-
-        # Step 4: Retry loop (iterative feedback)
-        max_retries = 2
-        while eval_result.get("should_retry") and output.retry_count < max_retries:
-            logger.info(
-                "Retry %d: eval_score=%.1f, critique=%s",
-                output.retry_count + 1,
-                eval_result.get("overall_score", 0),
-                str(eval_result.get("critique", ""))[:100],
-            )
-            # Re-generate with evaluator critique as feedback
-            output = self._generate_with_feedback(
-                context, fault_id, trial, system, eval_result,
-            )
-            output.retry_count += 1
-
-            # Re-verify evidence
+        if self.prompt_version == "v2":
+            # Step 2: Evidence 교차검증 (system sensor)
             output.evidence_chain, output.faithfulness_score = (
                 self._verify_evidence(output.evidence_chain, context)
             )
 
-            # Re-evaluate
+            # Step 3: Evaluator (independent LLM sensor)
             eval_result = self._evaluate(context, output)
             output = self._apply_eval(output, eval_result)
+
+            # Step 4: Retry loop (iterative feedback)
+            max_retries = 2
+            while eval_result.get("should_retry") and output.retry_count < max_retries:
+                logger.info(
+                    "Retry %d: eval_score=%.1f, critique=%s",
+                    output.retry_count + 1,
+                    eval_result.get("overall_score", 0),
+                    str(eval_result.get("critique", ""))[:100],
+                )
+                output = self._generate_with_feedback(
+                    context, fault_id, trial, system, eval_result,
+                )
+                output.retry_count += 1
+
+                output.evidence_chain, output.faithfulness_score = (
+                    self._verify_evidence(output.evidence_chain, context)
+                )
+
+                eval_result = self._evaluate(context, output)
+                output = self._apply_eval(output, eval_result)
+
+        # Final step: Correctness evaluation (LLM-as-judge)
+        if ground_truth:
+            judge_result = self._judge_correctness(output, ground_truth)
+            output.correctness_score = float(judge_result.get("correctness_score", 0.0))
+            output.correctness_reasoning = judge_result.get("reasoning", "")
+            output.correct = 1 if output.correctness_score >= 0.5 else 0
 
         return output
 
@@ -511,6 +547,36 @@ class RCAEngine:
             output.eval_overall_score, eval_result.get("should_retry"),
         )
         return output
+
+    # ── Correctness Judge (LLM-as-judge) ──────────────────────
+
+    def _judge_correctness(
+        self, output: RCAOutput, ground_truth: dict,
+    ) -> dict:
+        """LLM-as-judge: evaluate correctness against ground truth."""
+        judge_input = (
+            f"## Ground Truth\n"
+            f"- Root Cause: {ground_truth.get('expected_root_cause', '')}\n"
+            f"- Fault Name: {ground_truth.get('fault_name', '')}\n"
+            f"- Injection Method: {ground_truth.get('injection_method', '')}\n"
+            f"- Expected Symptoms: {ground_truth.get('primary_symptoms', '')}\n"
+            f"- Expected Recovery: {ground_truth.get('expected_recovery_action', '')}\n\n"
+            f"## LLM Diagnosis\n"
+            f"- Diagnostic Label: {output.identified_fault_type}\n"
+            f"- Root Cause: {output.root_cause}\n"
+            f"- Detail: {output.detail}\n"
+            f"- Remediation: {output.remediation}\n"
+        )
+        try:
+            raw, tokens = self._call_llm(
+                judge_input, system_prompt=CORRECTNESS_JUDGE_PROMPT, max_tokens=512,
+            )
+            output.prompt_tokens += tokens.get("input", 0)
+            output.completion_tokens += tokens.get("output", 0)
+            return self._parse_json(raw)
+        except Exception as e:
+            logger.error("Correctness judge failed: %s", e)
+            return {"correctness_score": 0.0, "reasoning": str(e)}
 
     # ── Harness: Evidence Verification (system sensor) ───────
 

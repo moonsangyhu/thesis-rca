@@ -77,6 +77,7 @@ CSV_HEADERS = [
 CSV_HEADERS_V2 = [
     "timestamp", "fault_id", "trial", "system",
     "identified_fault_type", "correct",
+    "correctness_score", "correctness_reasoning",
     "root_cause", "root_cause_ko",
     "confidence", "confidence_2nd",
     "affected_components",
@@ -93,7 +94,18 @@ CSV_HEADERS_V2 = [
 ]
 
 
+GROUND_TRUTH_CSV = RESULTS_DIR / "ground_truth.csv"
 KUBECONFIG = os.environ.get("KUBECONFIG", os.path.expanduser("~/.kube/config-k8s-lab"))
+
+
+def load_ground_truth(csv_path: str) -> dict:
+    """Load ground truth CSV into dict keyed by (fault_id, trial)."""
+    gt = {}
+    with open(csv_path) as f:
+        for row in csv.DictReader(f):
+            key = (row["fault_id"], int(row["trial"]))
+            gt[key] = row
+    return gt
 
 
 def _check_port(port: int) -> bool:
@@ -305,6 +317,7 @@ def run_single_trial(
     retriever: KnowledgeRetriever,
     dry_run: bool = False,
     version: str = "v1",
+    ground_truth: dict = None,
 ):
     """Run a single trial: inject → collect → RCA(A/B) → record → recover."""
     logger.info("=" * 60)
@@ -366,9 +379,11 @@ def run_single_trial(
         return
 
     # ── Step 6: Run RCA System A ──
+    gt_row = ground_truth.get((fault_id, trial), {}) if ground_truth else {}
     logger.info("Running RCA System A (observability only)...")
     result_a = engine.analyze(
         ctx_a.to_context(), fault_id=fault_id, trial=trial, system="A",
+        ground_truth=gt_row,
     )
     logger.info(
         "System A: predicted=%s, confidence=%.2f",
@@ -379,6 +394,7 @@ def run_single_trial(
     logger.info("Running RCA System B (+ GitOps + RAG)...")
     result_b = engine.analyze(
         ctx_b.to_context(), fault_id=fault_id, trial=trial, system="B",
+        ground_truth=gt_row,
     )
     logger.info(
         "System B: predicted=%s, confidence=%.2f",
@@ -388,10 +404,9 @@ def run_single_trial(
     # ── Step 8: Record results ──
     timestamp = datetime.now().isoformat()
 
-    for result, system in [(result_a, "A"), (result_b, "B")]:
+    for result in [result_a, result_b]:
         row = result.to_dict()
         row["timestamp"] = timestamp
-        row["correct"] = 1 if result.identified_fault_type == fault_id else 0
         append_result(row, version=version)
 
     # Save raw data
@@ -419,12 +434,12 @@ def run_single_trial(
             logger.error("Recovery failed: %s — manual intervention may be needed", e)
 
     logger.info(
-        "Trial complete: %s t%d | A: %s (%.2f) %s | B: %s (%.2f) %s",
+        "Trial complete: %s t%d | A: %s (score=%.2f) %s | B: %s (score=%.2f) %s",
         fault_id, trial,
-        result_a.identified_fault_type, result_a.confidence,
-        "✓" if result_a.identified_fault_type == fault_id else "✗",
-        result_b.identified_fault_type, result_b.confidence,
-        "✓" if result_b.identified_fault_type == fault_id else "✗",
+        result_a.identified_fault_type, result_a.correctness_score,
+        "correct" if result_a.correct else "wrong",
+        result_b.identified_fault_type, result_b.correctness_score,
+        "correct" if result_b.correct else "wrong",
     )
 
 
@@ -459,6 +474,14 @@ def main():
         completed_trials = get_completed_trials(version=args.version)
         if completed_trials:
             logger.info("Resume mode: %d trials already completed, will skip them", len(completed_trials))
+
+    # Load ground truth for LLM-as-judge correctness evaluation
+    ground_truth = {}
+    if GROUND_TRUTH_CSV.exists():
+        ground_truth = load_ground_truth(str(GROUND_TRUTH_CSV))
+        logger.info("Loaded ground truth: %d entries", len(ground_truth))
+    else:
+        logger.warning("Ground truth CSV not found: %s", GROUND_TRUTH_CSV)
 
     # Initialize components
     logger.info("Initializing experiment components...")
@@ -511,6 +534,7 @@ def main():
                     injector, recovery, collector, builder, engine, retriever,
                     dry_run=args.dry_run,
                     version=args.version,
+                    ground_truth=ground_truth,
                 )
                 completed += 1
                 logger.info("Progress: %d/%d trials complete", completed, total)

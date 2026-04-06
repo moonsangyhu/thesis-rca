@@ -37,6 +37,11 @@ def load_results(csv_path: str) -> pd.DataFrame:
     """Load experiment results."""
     df = pd.read_csv(csv_path)
     df["correct"] = df["correct"].astype(int)
+    if "correctness_score" in df.columns:
+        df["correctness_score"] = df["correctness_score"].astype(float)
+    else:
+        # Backward compat: V1 results without LLM-as-judge scores
+        df["correctness_score"] = df["correct"].astype(float)
     return df
 
 
@@ -56,6 +61,7 @@ def compute_accuracy(df: pd.DataFrame) -> dict:
             "total": total,
             "correct": correct,
             "accuracy": accuracy,
+            "mean_correctness_score": sys_df["correctness_score"].mean(),
             "avg_confidence": avg_confidence,
             "avg_latency_ms": avg_latency,
         }
@@ -78,6 +84,7 @@ def compute_per_fault_accuracy(df: pd.DataFrame) -> pd.DataFrame:
                 "total": total,
                 "correct": correct,
                 "accuracy": correct / total if total > 0 else 0,
+                "mean_correctness_score": sys_df["correctness_score"].mean(),
                 "avg_confidence": sys_df["confidence"].mean(),
             })
     return pd.DataFrame(rows)
@@ -101,24 +108,41 @@ def wilcoxon_test(df: pd.DataFrame) -> dict:
                 "trial": trial,
                 "correct_a": a_row["correct"].values[0],
                 "correct_b": b_row["correct"].values[0],
+                "score_a": a_row["correctness_score"].values[0],
+                "score_b": b_row["correctness_score"].values[0],
                 "confidence_a": a_row["confidence"].values[0],
                 "confidence_b": b_row["confidence"].values[0],
             })
 
     pairs_df = pd.DataFrame(pairs)
     diff_correct = pairs_df["correct_b"] - pairs_df["correct_a"]
+    diff_score = pairs_df["score_b"] - pairs_df["score_a"]
     diff_confidence = pairs_df["confidence_b"] - pairs_df["confidence_a"]
 
     result = {"n_pairs": len(pairs)}
 
-    # Accuracy improvement
+    # Binary accuracy improvement
     result["accuracy_diff_mean"] = diff_correct.mean()
     result["accuracy_diff_std"] = diff_correct.std()
     result["pairs_b_better"] = (diff_correct > 0).sum()
     result["pairs_equal"] = (diff_correct == 0).sum()
     result["pairs_a_better"] = (diff_correct < 0).sum()
 
-    # Wilcoxon test on correctness (binary, so use sign test if many ties)
+    # Primary: Wilcoxon on continuous correctness_score (higher statistical power)
+    non_zero_score = diff_score[diff_score != 0]
+    if len(non_zero_score) >= 6:
+        stat_s, p_s = stats.wilcoxon(non_zero_score, alternative="greater")
+        result["score_wilcoxon_stat"] = stat_s
+        result["score_wilcoxon_p_value"] = p_s
+    else:
+        result["score_wilcoxon_stat"] = None
+        result["score_wilcoxon_p_value"] = None
+        result["score_note"] = f"Too few non-tied pairs ({len(non_zero_score)}) for Wilcoxon test"
+
+    result["score_diff_mean"] = diff_score.mean()
+    result["score_diff_std"] = diff_score.std()
+
+    # Secondary: Wilcoxon on binary correctness (backward compat)
     non_zero = diff_correct[diff_correct != 0]
     if len(non_zero) >= 6:
         stat, p_value = stats.wilcoxon(non_zero, alternative="greater")
@@ -129,7 +153,7 @@ def wilcoxon_test(df: pd.DataFrame) -> dict:
         result["wilcoxon_p_value"] = None
         result["note"] = f"Too few non-tied pairs ({len(non_zero)}) for Wilcoxon test"
 
-    # Confidence comparison (continuous, better for Wilcoxon)
+    # Confidence comparison
     non_zero_conf = diff_confidence[diff_confidence != 0]
     if len(non_zero_conf) >= 6:
         stat_c, p_c = stats.wilcoxon(
@@ -161,13 +185,14 @@ def print_report(df: pd.DataFrame):
         s = acc[system]
         logger.info(
             "  System %s: %d/%d correct (%.1f%%) | "
-            "avg confidence: %.3f | avg latency: %.0fms",
+            "mean score: %.3f | avg confidence: %.3f | avg latency: %.0fms",
             system, s["correct"], s["total"], s["accuracy"] * 100,
-            s["avg_confidence"], s["avg_latency_ms"],
+            s["mean_correctness_score"], s["avg_confidence"], s["avg_latency_ms"],
         )
 
     improvement = acc["B"]["accuracy"] - acc["A"]["accuracy"]
-    logger.info("  Improvement (B-A): %.1f%%p", improvement * 100)
+    score_improvement = acc["B"]["mean_correctness_score"] - acc["A"]["mean_correctness_score"]
+    logger.info("  Improvement (B-A): %.1f%%p accuracy, +%.3f score", improvement * 100, score_improvement)
 
     # Per-fault breakdown
     logger.info("\n## Per-Fault Accuracy")
@@ -195,6 +220,22 @@ def print_report(df: pd.DataFrame):
         wilcox["pairs_b_better"], wilcox["pairs_equal"], wilcox["pairs_a_better"],
     )
 
+    # Primary: continuous correctness_score
+    if wilcox["score_wilcoxon_p_value"] is not None:
+        sig = "***" if wilcox["score_wilcoxon_p_value"] < 0.001 else (
+            "**" if wilcox["score_wilcoxon_p_value"] < 0.01 else (
+                "*" if wilcox["score_wilcoxon_p_value"] < 0.05 else "n.s."
+            )
+        )
+        logger.info(
+            "  Correctness Score: W=%.1f, p=%.4f %s (mean diff=%.3f)",
+            wilcox["score_wilcoxon_stat"], wilcox["score_wilcoxon_p_value"],
+            sig, wilcox["score_diff_mean"],
+        )
+    else:
+        logger.info("  Correctness Score: %s", wilcox.get("score_note", "N/A"))
+
+    # Secondary: binary accuracy
     if wilcox["wilcoxon_p_value"] is not None:
         sig = "***" if wilcox["wilcoxon_p_value"] < 0.001 else (
             "**" if wilcox["wilcoxon_p_value"] < 0.01 else (
@@ -202,11 +243,11 @@ def print_report(df: pd.DataFrame):
             )
         )
         logger.info(
-            "  Accuracy: W=%.1f, p=%.4f %s",
+            "  Binary Accuracy: W=%.1f, p=%.4f %s",
             wilcox["wilcoxon_stat"], wilcox["wilcoxon_p_value"], sig,
         )
     else:
-        logger.info("  Accuracy: %s", wilcox.get("note", "N/A"))
+        logger.info("  Binary Accuracy: %s", wilcox.get("note", "N/A"))
 
     if wilcox["confidence_wilcoxon_p_value"] is not None:
         sig = "***" if wilcox["confidence_wilcoxon_p_value"] < 0.001 else (
