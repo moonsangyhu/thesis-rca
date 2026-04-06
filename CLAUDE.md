@@ -25,10 +25,12 @@ python -m scripts.evaluate.analyze                         # 통계 분석
 
 복잡한 작업은 반드시 sub-agent를 활용하여 분업한다. `.claude/agents/` 에 정의된 에이전트:
 
+- **`@hypothesis-reviewer`** — 가설 검토 (방법론 비평, 교란 변수 식별, 대안 가설 제안). opus 모델 사용. 읽기 전용.
 - **`@experiment`** — 실험 운영 (fault injection, signal collection, RCA, 통계 분석). sonnet 모델 사용.
+- **`@results-writer`** — 결과 분석·요약 (CSV/JSON → 분석 리포트, results/ 에 출력). sonnet 모델 사용.
 - **`@paper-writer`** — 논문 작성 (results/ 데이터 기반 학술 글쓰기). opus 모델 사용.
 
-협업 패턴: experiment → `results/` 에 CSV/JSON 저장 → paper-writer가 읽어서 논문 반영.
+협업 패턴: hypothesis-reviewer → 가설 검토 → experiment → results/ 저장 → results-writer → 분석 리포트 → paper-writer → 논문 반영.
 
 ## Key Config
 
