@@ -37,21 +37,40 @@ python -m scripts.evaluate.analyze                         # 통계 분석
 
 ## Sub-agents
 
-복잡한 작업은 반드시 sub-agent를 활용하여 분업한다. `.claude/agents/` 에 정의된 에이전트:
+복잡한 작업은 반드시 sub-agent를 활용하여 분업한다. 사용자는 **오케스트레이터**로서 에이전트들을 조율한다.
 
-- **`@hypothesis-reviewer`** — 가설 검토 (방법론 비평, 교란 변수 식별, 대안 가설 제안). opus 모델 사용. 읽기 전용.
-- **`@experiment-planner`** — 실험 계획 수립 (파라미터 결정, 선행 결과 분석, 계획서 작성). opus 모델 사용. 읽기 전용.
-- **`@experiment`** — 실험 운영 (fault injection, signal collection, RCA, 통계 분석). sonnet 모델 사용.
-- **`@results-writer`** — 결과 분석·요약 (CSV/JSON → 분석 리포트, results/ 에 출력). sonnet 모델 사용.
-- **`@paper-writer`** — 논문 작성 (results/ 데이터 기반 학술 글쓰기). opus 모델 사용.
+### 에이전트 목록 (`.claude/agents/`)
 
-협업 패턴: hypothesis-reviewer → experiment-planner → experiment → results-writer → paper-writer.
+- **`@hypothesis-reviewer`** — 가설 검토 (방법론 비평, 교란 변수 식별, 대안 가설 제안). opus.
+- **`@experiment-planner`** — 실험 계획 수립 (파라미터 결정, 선행 결과 분석, 계획서 작성). opus.
+- **`@experiment`** — 실험 운영 (fault injection, signal collection, RCA, 통계 분석). sonnet.
+- **`@experiment-modifier`** — 실험 시나리오 수정 (결과 분석, 교훈 도출, 코드 개선, 변경 이력 기록). sonnet.
+- **`@results-writer`** — 결과 분석·요약 (CSV/JSON → 분석 리포트). sonnet.
+- **`@paper-writer`** — 논문 작성 (results/ 데이터 기반 학술 글쓰기). opus.
+
+### 협업 패턴
+
+hypothesis-reviewer → experiment-planner → experiment → experiment-modifier → results-writer → paper-writer
+
+에이전트 간 **토론**: 각 에이전트는 다른 에이전트의 산출물에 대해 의견을 제시하고, 이견이 있으면 근거를 들어 토론한다. 최종 결정은 오케스트레이터(사용자)가 내린다.
+
+### 공통 규칙
+
+- 수정 작업 후 반드시 `/changelog` 스킬로 변경 이력 기록
+- 작업 완료 후 `/commit-push` 스킬로 커밋·푸시
+
+### 불문률 (모든 에이전트 공통)
+
+1. **실험 실행 중에는 커밋·푸시·브랜치 변경 등 실험을 중단시킬 수 있는 행위 절대 금지**
+2. 실험 중 코드 수정이 필요하면: 실험 중단 → 수정 → `/changelog` → `/commit-push` → 실험 재개
+3. `results/*.csv`, `results/raw/*.json` 원본 데이터 수정·삭제 절대 금지
 
 ## Skills
 
 - **`/lab-tunnel`** — 실험 환경 터널링 + preflight check (K8s API, Prometheus, Loki)
 - **`/lab-restore`** — 실험 후 환경 정상화 (fault 잔여물 제거, 디스크 정리, 모니터링 복원)
-- **`/commit-push`** — Git commit & push
+- **`/changelog`** — 변경 이력 기록. 모든 에이전트가 수정 작업 후 반드시 호출
+- **`/commit-push`** — Git commit & push (실험 중이 아닐 때만)
 
 실험 워크플로우: `/lab-tunnel` → 실험 수행 → `/lab-restore` → 다음 실험
 

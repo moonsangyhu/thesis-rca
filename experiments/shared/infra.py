@@ -123,8 +123,24 @@ def health_check(fault_id: str, trial: int) -> bool:
         if not _restart_port_forward("monitoring", "loki", 3100):
             issues.append("Loki")
 
+    # Check running pod count
+    r = subprocess.run(
+        ["kubectl", "get", "pods", "-n", "boutique", "--no-headers",
+         "--field-selector=status.phase=Running"],
+        env={**os.environ, "KUBECONFIG": KUBECONFIG},
+        capture_output=True, text=True, timeout=10,
+    )
+    if r.returncode == 0:
+        pod_count = len([line for line in r.stdout.strip().split("\n") if line.strip()])
+        if pod_count < 12:
+            logger.warning("[HEALTH] Only %d boutique pods running (need >= 12) before %s t%d",
+                           pod_count, fault_id, trial)
+            issues.append(f"pods={pod_count}/12")
+    else:
+        issues.append("pod-check-failed")
+
     if issues:
-        logger.error("[HEALTH] FAILED for %s t%d: %s unreachable", fault_id, trial, ", ".join(issues))
+        logger.error("[HEALTH] FAILED for %s t%d: %s", fault_id, trial, ", ".join(issues))
         return False
 
     logger.info("[HEALTH] OK before %s t%d", fault_id, trial)

@@ -13,6 +13,9 @@ import sys
 import time
 from pathlib import Path
 
+from dotenv import load_dotenv
+load_dotenv()
+
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -129,12 +132,38 @@ def main():
                 completed += 1
 
             if trial < max(trials) and not args.dry_run:
-                logger.info("Short cooldown (60s)...")
+                logger.info("Short cooldown (60s) + cluster stabilization check...")
                 time.sleep(60)
+                # Verify cluster is healthy before next trial
+                for attempt in range(3):
+                    if health_check(fault_id, trial):
+                        break
+                    logger.warning("Cluster not healthy after trial, waiting 30s (attempt %d/3)...", attempt + 1)
+                    time.sleep(30)
+                else:
+                    logger.error("Cluster still unhealthy after 3 attempts — proceeding anyway")
 
         if fault_id != faults[-1] and not args.dry_run:
+            # Fault 전환 시 완전 정상화 게이트
+            logger.info("Fault transition: cleaning up failed pods...")
+            import subprocess as _sp
+            _sp.run(
+                ["kubectl", "delete", "pods", "-n", "boutique",
+                 "--field-selector=status.phase=Failed"],
+                env={**__import__("os").environ,
+                     "KUBECONFIG": __import__("os").environ.get("KUBECONFIG", "~/.kube/config-k8s-lab")},
+                capture_output=True, timeout=30,
+            )
             logger.info("Cooldown (%ds) between fault types...", args.cooldown)
             time.sleep(args.cooldown)
+            # 정상화 확인 후 다음 fault 진행
+            for attempt in range(3):
+                if health_check(faults[faults.index(fault_id) + 1], 0):
+                    break
+                logger.warning("Cluster not ready for next fault type, waiting 60s (attempt %d/3)...", attempt + 1)
+                time.sleep(60)
+            else:
+                logger.error("Cluster still unhealthy after fault transition — proceeding anyway")
 
     logger.info("=" * 60)
     logger.info("v2 experiment complete! %d/%d trials", completed, total)

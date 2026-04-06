@@ -125,12 +125,25 @@ class TrialRunner:
             result_b.identified_fault_type, result_b.confidence,
         )
 
-        # ── Step 8: Record results ──
+        # ── Step 8: Record results + verify ──
         timestamp = datetime.now().isoformat()
         for result in [result_a, result_b]:
             row = result.to_dict()
             row["timestamp"] = timestamp
+            # Count rows before
+            before = self._count_csv_rows()
             append_result(row, self.csv_path, self.csv_headers)
+            after = self._count_csv_rows()
+            if after <= before:
+                logger.error(
+                    "CSV write verification FAILED for %s t%d %s (before=%d, after=%d)",
+                    fault_id, trial, result.system, before, after,
+                )
+            else:
+                logger.info(
+                    "CSV verified: %s t%d %s written (row %d)",
+                    fault_id, trial, result.system, after,
+                )
 
         # Save raw data
         save_raw(fault_id, trial, "A", {
@@ -156,12 +169,12 @@ class TrialRunner:
                 pass
         save_raw(fault_id, trial, "B", raw_b, self.raw_dir)
 
-        # ── Step 9: Recover ──
+        # ── Step 9: Recover + verify cluster health ──
         if not dry_run:
             logger.info("Recovering from fault...")
             try:
                 self.recovery.recover(fault_id, trial, injection_result)
-                logger.info("Recovery complete")
+                logger.info("Recovery complete — cluster stabilized")
             except Exception as e:
                 logger.error("Recovery failed: %s — manual intervention may be needed", e)
 
@@ -173,6 +186,13 @@ class TrialRunner:
             result_b.identified_fault_type, result_b.correctness_score,
             "correct" if result_b.correct else "wrong",
         )
+
+    def _count_csv_rows(self) -> int:
+        """Count data rows in CSV (excluding header)."""
+        if not self.csv_path.exists():
+            return 0
+        with open(self.csv_path) as f:
+            return sum(1 for line in f if line.strip()) - 1  # minus header
 
     @staticmethod
     def _print_signal_summary(signals: dict):

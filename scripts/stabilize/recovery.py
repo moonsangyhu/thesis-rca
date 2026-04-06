@@ -50,6 +50,8 @@ class Recovery:
             return self._full_reset()
 
         result = recoverer(trial, injection_result)
+        # Clean up failed/evicted pods before waiting
+        self._cleanup_failed_pods()
         # Wait for pods to stabilize
         self._wait_for_healthy()
         return result
@@ -60,20 +62,48 @@ class Recovery:
         result = kubectl("apply", "-f", ORIGINAL_MANIFEST, namespace=NAMESPACE)
         return {"action": "full_reset", "output": result}
 
-    def _wait_for_healthy(self, timeout: int = 300):
-        """Wait until all deployments in boutique are available."""
+    def _wait_for_healthy(self, timeout: int = 300, min_pods: int = 12):
+        """Wait until all deployments available AND running pod count >= min_pods."""
         logger.info("Waiting for boutique pods to stabilize...")
         start = time.time()
         while time.time() - start < timeout:
+            # Check deployments
             output = kubectl(
                 "get", "deployments", "-o",
                 "jsonpath={.items[*].status.conditions[?(@.type=='Available')].status}",
             )
-            if output and all(s == "True" for s in output.split()):
-                logger.info("All deployments healthy (%.0fs)", time.time() - start)
-                return
+            deploys_ok = output and all(s == "True" for s in output.split())
+
+            # Check running pod count
+            pod_output = kubectl(
+                "get", "pods", "--field-selector=status.phase=Running",
+                "--no-headers",
+            )
+            running_count = len([l for l in pod_output.strip().split("\n") if l.strip()]) if pod_output else 0
+
+            if deploys_ok and running_count >= min_pods:
+                logger.info(
+                    "All deployments healthy, %d pods running (%.0fs)",
+                    running_count, time.time() - start,
+                )
+                return True
+            logger.info(
+                "Stabilizing... deploys_ok=%s, running_pods=%d/%d (%.0fs)",
+                deploys_ok, running_count, min_pods, time.time() - start,
+            )
             time.sleep(10)
         logger.warning("Timeout waiting for healthy state after %ds", timeout)
+        return False
+
+    def _cleanup_failed_pods(self):
+        """Delete Failed/Evicted pods to prevent accumulation."""
+        for phase in ["Failed", "Succeeded"]:
+            try:
+                output = kubectl("delete", "pods", f"--field-selector=status.phase={phase}")
+                if output and "deleted" in output:
+                    logger.info("Cleaned up %s pods: %s", phase, output.strip())
+            except Exception as e:
+                logger.warning("Failed to cleanup %s pods: %s", phase, e)
 
     # ── Per-fault recovery ─────────────────────────────────────────
 
