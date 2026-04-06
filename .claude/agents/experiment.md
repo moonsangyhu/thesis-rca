@@ -48,7 +48,8 @@ python -m scripts.evaluate.analyze
 2. 이미 완료된 trial 재실행 방지 — CSV에서 완료 여부 확인 후 진행
 3. `results/` 디렉토리의 기존 데이터 절대 삭제 금지
 4. 실험 전 preflight check 수행: kubectl 연결, Prometheus/Loki 접근, boutique 파드 상태
-5. 실험 후 반드시 recovery 완료 확인
+5. **실험 후 반드시 `/lab-restore` 스킬을 실행하여 환경 정상화** — fault injection 잔여물 제거, 디스크 정리, 모니터링 정상화 완료 후 다음 trial 진행
+6. 실험 환경 인프라 정보는 `docs/lab-environment.md` 참조
 
 ## 출력
 

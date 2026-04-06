@@ -47,6 +47,18 @@ python -m scripts.evaluate.analyze                         # 통계 분석
 
 협업 패턴: hypothesis-reviewer → experiment-planner → experiment → results-writer → paper-writer.
 
+## Skills
+
+- **`/lab-tunnel`** — 실험 환경 터널링 + preflight check (K8s API, Prometheus, Loki)
+- **`/lab-restore`** — 실험 후 환경 정상화 (fault 잔여물 제거, 디스크 정리, 모니터링 복원)
+- **`/commit-push`** — Git commit & push
+
+실험 워크플로우: `/lab-tunnel` → 실험 수행 → `/lab-restore` → 다음 실험
+
+## Lab Environment
+
+실험 환경 상세 정보: `docs/lab-environment.md`
+
 ## Key Config
 
 - `KUBECONFIG` env var (default: `~/.kube/config-k8s-lab`), namespace: `boutique`
