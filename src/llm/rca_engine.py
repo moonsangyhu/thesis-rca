@@ -137,6 +137,37 @@ SYSTEM_PROMPT = SYSTEM_PROMPT_V1
 SYSTEM_PROMPT_V2 = """\
 You are an expert Kubernetes Site Reliability Engineer performing root cause analysis.
 
+Given diagnostic context from a Kubernetes cluster, identify:
+1. The most likely root cause of the observed issue
+2. Which fault category it belongs to (use a short diagnostic label based on your analysis, \
+e.g., "OOMKill", "CrashLoopBackOff", "ImagePullFailure", "NodeNotReady", etc.)
+3. Affected components
+4. Step-by-step remediation
+
+## Chain-of-Thought Analysis
+Before providing your final answer, think step-by-step:
+1. List the anomalous signals you observe in the input (unhealthy pods, abnormal metrics, error events/logs)
+2. Generate 2-3 plausible root cause hypotheses based on the signals
+3. Match evidence from the input to your top hypothesis
+4. Explain why alternatives are less likely
+
+Include your full reasoning in the "reasoning" field.
+
+Output ONLY valid JSON:
+{
+  "reasoning": "Your step-by-step chain-of-thought analysis",
+  "identified_fault_type": "short diagnostic label",
+  "root_cause": "one-sentence root cause",
+  "confidence": 0.0-1.0,
+  "affected_components": ["component1", "component2"],
+  "remediation": ["step 1", "step 2"],
+  "detail": "2-3 sentence technical explanation"
+}
+"""
+
+SYSTEM_PROMPT_V3 = """\
+You are an expert Kubernetes Site Reliability Engineer performing root cause analysis.
+
 You are given raw diagnostic signals from a production Kubernetes cluster experiencing an issue. \
 Your job is to diagnose the root cause — you do NOT know in advance what type of fault occurred.
 
@@ -370,7 +401,8 @@ class RCAEngine:
         # Step 1: Generator
         output = self._generate(context, fault_id, trial, system)
 
-        if self.prompt_version == "v2":
+        if self.prompt_version == "v3":
+            # v3 only: Harness (Evidence verification + Evaluator + Retry)
             # Step 2: Evidence 교차검증 (system sensor)
             output.evidence_chain, output.faithfulness_score = (
                 self._verify_evidence(output.evidence_chain, context)
@@ -437,8 +469,11 @@ class RCAEngine:
             output.remediation = parsed.get("remediation", [])
             output.detail = parsed.get("detail", "")
 
-            # v2 fields
+            # v2: CoT reasoning only
             if self.prompt_version == "v2":
+                output.reasoning = parsed.get("reasoning", "")
+            # v3: full extended fields (bilingual, evidence chain, etc.)
+            elif self.prompt_version == "v3":
                 output.reasoning = parsed.get("reasoning", "")
                 output.root_cause_ko = parsed.get("root_cause_ko", "")
                 output.remediation_ko = parsed.get("remediation_ko", [])
@@ -621,9 +656,14 @@ class RCAEngine:
     ) -> tuple[str, dict]:
         """Call LLM and return (response_text, token_counts)."""
         if system_prompt is None:
-            system_prompt = SYSTEM_PROMPT_V2 if self.prompt_version == "v2" else SYSTEM_PROMPT_V1
+            if self.prompt_version == "v3":
+                system_prompt = SYSTEM_PROMPT_V3
+            elif self.prompt_version == "v2":
+                system_prompt = SYSTEM_PROMPT_V2
+            else:
+                system_prompt = SYSTEM_PROMPT_V1
         if max_tokens is None:
-            max_tokens = 2048 if self.prompt_version == "v2" else 1024
+            max_tokens = 2048 if self.prompt_version in ("v2", "v3") else 1024
 
         if self.provider == "anthropic":
             import anthropic

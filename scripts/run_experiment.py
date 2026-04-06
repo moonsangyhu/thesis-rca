@@ -60,6 +60,7 @@ logger = logging.getLogger("experiment")
 RESULTS_DIR = PROJECT_ROOT / "results"
 RESULTS_CSV = RESULTS_DIR / "experiment_results.csv"
 RESULTS_CSV_V2 = RESULTS_DIR / "experiment_results_v2.csv"
+RESULTS_CSV_V3 = RESULTS_DIR / "experiment_results_v3.csv"
 RAW_DIR = RESULTS_DIR / "raw"
 
 # All fault types and trials
@@ -75,6 +76,17 @@ CSV_HEADERS = [
 ]
 
 CSV_HEADERS_V2 = [
+    "timestamp", "fault_id", "trial", "system",
+    "identified_fault_type", "correct",
+    "correctness_score", "correctness_reasoning",
+    "root_cause", "confidence",
+    "affected_components", "remediation",
+    "detail", "reasoning",
+    "model", "latency_ms", "prompt_tokens", "completion_tokens",
+    "error",
+]
+
+CSV_HEADERS_V3 = [
     "timestamp", "fault_id", "trial", "system",
     "identified_fault_type", "correct",
     "correctness_score", "correctness_reasoning",
@@ -233,9 +245,27 @@ def health_check(fault_id: str, trial: int) -> bool:
     return True
 
 
+def _csv_path_for(version: str) -> Path:
+    """Return the CSV path for a given experiment version."""
+    if version == "v3":
+        return RESULTS_CSV_V3
+    elif version == "v2":
+        return RESULTS_CSV_V2
+    return RESULTS_CSV
+
+
+def _csv_headers_for(version: str) -> list:
+    """Return the CSV headers for a given experiment version."""
+    if version == "v3":
+        return CSV_HEADERS_V3
+    elif version == "v2":
+        return CSV_HEADERS_V2
+    return CSV_HEADERS
+
+
 def get_completed_trials(version="v1") -> set:
     """Read CSV and return set of (fault_id, trial) already completed."""
-    csv_path = RESULTS_CSV_V2 if version == "v2" else RESULTS_CSV
+    csv_path = _csv_path_for(version)
     completed = set()
     if csv_path.exists():
         with open(csv_path) as f:
@@ -268,8 +298,8 @@ def ensure_dirs():
 
 def init_csv(version="v1"):
     """Initialize results CSV if not exists."""
-    csv_path = RESULTS_CSV_V2 if version == "v2" else RESULTS_CSV
-    headers = CSV_HEADERS_V2 if version == "v2" else CSV_HEADERS
+    csv_path = _csv_path_for(version)
+    headers = _csv_headers_for(version)
     if not csv_path.exists():
         with open(csv_path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=headers)
@@ -278,8 +308,8 @@ def init_csv(version="v1"):
 
 def append_result(result: dict, version="v1"):
     """Append a single result row to CSV."""
-    csv_path = RESULTS_CSV_V2 if version == "v2" else RESULTS_CSV
-    headers = CSV_HEADERS_V2 if version == "v2" else CSV_HEADERS
+    csv_path = _csv_path_for(version)
+    headers = _csv_headers_for(version)
     with open(csv_path, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=headers)
         row = {k: result.get(k, "") for k in headers}
@@ -451,8 +481,8 @@ def main():
     parser.add_argument("--provider", type=str, default="openai")
     parser.add_argument("--dry-run", action="store_true", help="Skip injection, test collection only")
     parser.add_argument("--cooldown", type=int, default=900, help="Cooldown between fault types (seconds, default 900=15min)")
-    parser.add_argument("--version", type=str, default="v2", choices=["v1", "v2"],
-                        help="Experiment version (v1=original, v2=harness+CoT+bilingual)")
+    parser.add_argument("--version", type=str, default="v2", choices=["v1", "v2", "v3"],
+                        help="v1=힌트+단순, v2=힌트제거+CoT, v3=v2+Harness(Evaluator+Retry)")
     parser.add_argument("--resume", action="store_true",
                         help="Skip already-completed trials (based on CSV)")
     parser.add_argument("--no-preflight", action="store_true",
@@ -557,7 +587,7 @@ def main():
 
     logger.info("=" * 60)
     logger.info("Experiment complete! %d/%d trials", completed, total)
-    logger.info("Results: %s", RESULTS_CSV)
+    logger.info("Results: %s", _csv_path_for(args.version))
     logger.info("Raw data: %s", RAW_DIR)
 
 
