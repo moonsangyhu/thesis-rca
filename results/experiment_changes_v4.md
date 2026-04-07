@@ -33,3 +33,27 @@
 - **수정 파일**:
   - `docs/plans/review_v4.md` — 신규 생성 (V4 실험 설계 리뷰)
 - **상태**: 수정됨
+
+### 3. V4 실험 코드 구현 — 2026-04-07
+
+- **수정 에이전트**: 오케스트레이터 (code-reviewer 역할)
+- **증상/문제**: V4 실험 모듈 신규 생성 필요
+- **수정 내용**:
+  1. `experiments/v4/__init__.py` — 빈 모듈
+  2. `experiments/v4/config.py` — V4 경로, RETRY_ENABLED_A=False, RETRY_ENABLED_B=True
+  3. `experiments/v4/context_builder.py` — **핵심**: Anomaly Summary 상단 배치, K8s Events 하단 이동(max 15, 중복 병합), 비정상 pod/node만 필터, Metric Anomalies severity 순 정렬, GitOps NOT READY만 포함
+  4. `experiments/v4/prompts.py` — Step 0 Fault Layer Classification 추가 (증상명 추상화), Step 1에 "Read ANOMALY SUMMARY first" 추가
+  5. `experiments/v4/engine.py` — Evidence Verification 제거(faithfulness=0.0 고정), System A retry 비활성화, Evaluator 유지
+  6. `experiments/v4/run.py` — V4 모듈 import, ContextBuilderV4 주입, gpt-4o-mini/openai 기본값
+- **리뷰어 권고 반영**:
+  - Fault Layer 프롬프트 증상 키워드 추상화 (ImagePullBackOff → "image issues" 등)
+  - Metric Anomalies를 pod 상태와 독립적으로 항상 포함 (F7 CPU throttle 누락 방지)
+- **검증**: `python -m experiments.v4.run --dry-run --fault F1 --trial 1 --no-preflight` 성공
+- **수정 파일**:
+  - `experiments/v4/__init__.py` — 신규
+  - `experiments/v4/config.py` — 신규
+  - `experiments/v4/context_builder.py` — 신규 (핵심)
+  - `experiments/v4/prompts.py` — 신규
+  - `experiments/v4/engine.py` — 신규
+  - `experiments/v4/run.py` — 신규
+- **상태**: 수정됨, dry-run 검증 완료
