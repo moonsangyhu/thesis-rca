@@ -66,7 +66,8 @@ Step 3: 피드백 반영 → @experiment 실험 수행
          - nohup으로 백그라운드 실행, /experiment-status로 모니터링
                                    ⬇
 Step 4: @results-writer  →  결과 리포트 작성 (results/analysis_v{N}.md)
-                              통계 요약, fault별 비교, key findings → commit-push
+                              통계 요약, fault별 비교, key findings
+                              실험 결과 데이터(CSV, 로그) + 분석 리포트 함께 commit-push
 ```
 
 **오케스트레이터(Claude Code)의 역할:**
