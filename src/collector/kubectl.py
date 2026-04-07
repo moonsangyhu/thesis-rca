@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import subprocess
+from datetime import datetime, timezone
 
 from .config import KUBECONFIG, KUBECTL, TARGET_NAMESPACE
 
@@ -98,8 +99,8 @@ class KubectlCollector:
             })
         return pods
 
-    def _collect_events(self) -> list[dict]:
-        """Get recent warning/error events."""
+    def _collect_events(self, since_minutes: int = 10) -> list[dict]:
+        """Get recent warning/error events within the time window."""
         output = _run([
             "get", "events", "-n", self.namespace,
             "--field-selector", "type!=Normal",
@@ -113,8 +114,20 @@ class KubectlCollector:
         except json.JSONDecodeError:
             return []
 
+        now = datetime.now(timezone.utc)
         events = []
         for item in data.get("items", []):
+            # Filter by time window to exclude stale events
+            ts_str = item.get("lastTimestamp", "")
+            if ts_str:
+                try:
+                    ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                    age_minutes = (now - ts).total_seconds() / 60
+                    if age_minutes > since_minutes:
+                        continue
+                except (ValueError, TypeError):
+                    pass  # keep events with unparseable timestamps
+
             events.append({
                 "type": item.get("type", ""),
                 "reason": item.get("reason", ""),
@@ -122,7 +135,7 @@ class KubectlCollector:
                 "object": item.get("involvedObject", {}).get("name", ""),
                 "kind": item.get("involvedObject", {}).get("kind", ""),
                 "count": item.get("count", 1),
-                "lastTimestamp": item.get("lastTimestamp", ""),
+                "lastTimestamp": ts_str,
             })
         return events[-30:]  # last 30 events
 
