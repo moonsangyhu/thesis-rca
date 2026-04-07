@@ -57,3 +57,20 @@
   - `experiments/v4/engine.py` — 신규
   - `experiments/v4/run.py` — 신규
 - **상태**: 수정됨, dry-run 검증 완료
+
+### 4. 4가지 피드백 반영 — 2026-04-08
+
+- **수정 에이전트**: 오케스트레이터
+- **증상/문제**: (1) raw 파일 버전 혼재, (2) 순차 1개 실험 비효율, (3) 논문 근거 없는 가설, (4) 실험 에이전트 무한 대기
+- **수정 내용**:
+  1. **산출물 버전 분리**: V4 config.py RAW_DIR → `raw_v4/`, CLAUDE.md에 버전별 경로 규칙 명시
+  2. **3가설 병렬 실험**: CLAUDE.md 파이프라인 재작성, experiment-planner에 3가설 워크플로우 추가, results-writer에 3결과 비교 + 최선 선택 추가
+  3. **AIOps 논문 기반**: experiment-planner에 Phase 0 "선행 연구 조사" 추가 (WebSearch, 최소 5편, 계획서에 참고문헌 필수)
+  4. **Fire-and-Forget**: experiment agent에 nohup 실행 후 PID 확인만 하고 즉시 종료 규칙 추가
+- **수정 파일**:
+  - `CLAUDE.md` — 파이프라인 재작성, 산출물 경로 규칙
+  - `.claude/agents/experiment-planner.md` — Phase 0 + 3가설 워크플로우
+  - `.claude/agents/experiment.md` — fire-and-forget + 버전별 raw + 병렬 실험
+  - `.claude/agents/results-writer.md` — 3결과 비교 + 최선 선택
+  - `experiments/v4/config.py` — RAW_DIR 버전 분리
+- **상태**: 수정됨

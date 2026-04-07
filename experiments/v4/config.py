@@ -4,7 +4,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 RESULTS_DIR = PROJECT_ROOT / "results"
 RESULTS_CSV = RESULTS_DIR / "experiment_results_v4.csv"
-RAW_DIR = RESULTS_DIR / "raw"
+RAW_DIR = RESULTS_DIR / "raw_v4"
 GROUND_TRUTH_CSV = RESULTS_DIR / "ground_truth.csv"
 
 MAX_TOKENS = 2048

@@ -83,12 +83,33 @@ python -m scripts.evaluate.analyze
 10. 이미 완료된 trial 재실행 방지 — CSV에서 완료 여부 확인 후 진행
 11. 새 설정 테스트 시 반드시 `--dry-run` 먼저 실행
 
-## 출력
+## 실험 실행 후 즉시 종료 (필수 — Fire and Forget)
 
-- `results/experiment_results.csv` — v1 결과
-- `results/experiment_results_v2.csv` — v2 결과
-- `results/raw/*.json` — trial별 원시 데이터
-- `results/experiment.log` — 실행 로그
+nohup으로 백그라운드 실행한 후 **절대 프로세스 완료를 기다리지 않는다**:
+
+1. nohup 실행 후 PID 파일 확인 (`results/experiment_v{N}.pid`)
+2. 프로세스 alive 확인 (`ps -p PID`)
+3. 첫 1-2 줄의 로그 출력 확인 (실험이 시작되었는지만)
+4. **즉시 오케스트레이터에게 보고하고 종료**
+5. 이후 모니터링은 `/experiment-status` 스킬로 수행
+
+`tail -f`로 로그를 계속 읽지 않는다. `sleep`으로 완료를 기다리지 않는다.
+
+## 병렬 실험 (3가설 순차 실행)
+
+클러스터가 1개이므로 동시 실행은 불가. **a → b → c 순서로 순차 실행**한다:
+1. 가설 a 실험 실행 (nohup) → PID 확인 → 완료 대기 (experiment-status)
+2. 가설 a 완료 후 /lab-restore → 가설 b 실험 실행
+3. 가설 b 완료 후 /lab-restore → 가설 c 실험 실행
+4. 가설 c 완료 후 /lab-restore → 오케스트레이터에게 전체 완료 보고
+
+## 출력 (버전별 완전 분리)
+
+- `results/experiment_results_v{N}.csv` — 실험 결과
+- `results/raw_v{N}/` — trial별 원시 데이터 (**버전별 독립 디렉토리**)
+- `results/experiment_v{N}.log` — 실행 로그
+- `results/experiment_v{N}_nohup.log` — nohup 로그
+- `results/experiment_v{N}.pid` — PID 파일
 
 ## 환경 변수
 

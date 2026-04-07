@@ -27,16 +27,24 @@ K8s RCA 실험 결과를 분석하고 구조화된 요약 리포트를 작성한
 
 ## 실험 파이프라인에서의 역할
 
-실험 파이프라인 Step 4에서 호출된다. 실험 완료 후 결과를 분석하여 리포트를 작성한다.
+실험 파이프라인 Step 5에서 호출된다. **3개 가설(a/b/c)의 결과를 비교 분석**하여 최선을 선택한다.
 
 ### 입력
-- `docs/plans/experiment_plan_v{N}.md` — 이번 실험의 계획서 (목적, 성공 기준 참조)
-- `results/experiment_results_v{N}.csv` — 실험 결과 데이터
+- `docs/plans/experiment_plan_v{N}a.md`, `v{N}b.md`, `v{N}c.md` — 3개 가설 계획서
+- `results/experiment_results_v{N}a.csv`, `v{N}b.csv`, `v{N}c.csv` — 3개 실험 결과
 
 ### 출력
-- `results/analysis_v{N}.md` — 분석 리포트
-  - 계획서의 성공 기준 달성 여부 판정
-  - **실험 결과 데이터(CSV, 로그)와 분석 리포트를 함께 commit-push** 수행
+- `results/analysis_v{N}.md` — **통합 비교 분석 리포트**
+  - 3개 가설의 System B 정확도 비교
+  - fault별 성능 비교 테이블
+  - **최선 가설 선택 및 근거**
+  - 선택된 가설을 다음 라운드 베이스라인으로 권고
+  - 실험 결과 데이터(CSV, 로그)와 분석 리포트를 함께 commit-push
+
+### 최선 선택 기준 (우선순위)
+1. System B 전체 정확도 (가장 높은 것)
+2. B-A 격차 (가장 큰 것)
+3. 퇴행 없음 (기존 성공 케이스 유지)
 
 ## 역할
 

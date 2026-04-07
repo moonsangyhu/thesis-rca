@@ -50,33 +50,37 @@ python -m scripts.evaluate.analyze                         # 통계 분석
 - **`@results-writer`** — 결과 분석·요약 (CSV/JSON → 분석 리포트). sonnet.
 - **`@paper-writer`** — 논문 작성 (results/ 데이터 기반 학술 글쓰기). opus.
 
-### 실험 파이프라인 (강제)
+### 실험 파이프라인 (강제) — 3가설 병렬 실행
 
-사용자가 "다음 실험 진행해", "실험 해줘" 등 실험 수행을 지시하면 **반드시 아래 5단계를 순서대로** 실행한다. 단계를 건너뛰거나 순서를 바꾸지 않는다.
+사용자가 "다음 실험 진행해", "실험 해줘" 등 실험 수행을 지시하면 **반드시 아래 5단계를 순서대로** 실행한다. 각 라운드에서 **3개 가설을 병렬로 실행**하여 최선을 선택한다.
 
 ```
-Step 1: @experiment-planner  →  실험 계획서 작성 (docs/plans/experiment_plan_v{N}.md)
-                                   이전 결과 깊이 분석 → 개선 가설 → 상세 계획서 → commit-push
+Step 1: @experiment-planner  →  3개 가설 제안
+         - 이전 결과 깊이 분석 + AIOps 논문 조사
+         - 3개 개선 가설(a/b/c) 각각에 대한 상세 계획서 작성
+         - 산출물: docs/plans/experiment_plan_v{N}a.md, v{N}b.md, v{N}c.md
+         - commit-push
                                    ⬇
-Step 2: @hypothesis-reviewer  →  실험 설계 리뷰 (docs/plans/review_v{N}.md)
-                                   방법론 비평, 교란 변수, 대안 가설 → commit-push
-                                   (코드 리뷰는 하지 않음 — Step 3에서 전담)
+Step 2: @hypothesis-reviewer  →  3개 가설 통합 리뷰
+         - 방법론 비평, 교란 변수, 대안 가설 → commit-push
+         - 산출물: docs/plans/review_v{N}.md
                                    ⬇
-Step 3: @code-reviewer  →  코드 검증·수정
-         - 이전 실험 교훈(experiment_changes_v*.md)의 미반영 개선사항 확인
-         - 코드 레벨 버그·안정성 문제 식별 및 수정
-         - 계획서·리뷰에서 결정된 실험 가설에 맞게 코드 수정
-         - --dry-run 검증 → /changelog → /commit-push
+Step 3: @code-reviewer  →  3개 실험 코드 구현
+         - experiments/v{N}a/, v{N}b/, v{N}c/ 각각 독립 모듈로 생성
+         - 각각 --dry-run 검증 → /changelog → /commit-push
                                    ⬇
-Step 4: @experiment  →  실험 수행
+Step 4: @experiment  →  3개 실험 병렬 실행
          - /lab-tunnel로 터널 연결 (오케스트레이터가 사전 수행)
-         - 실험은 계획서(docs/plans/experiment_plan_v{N}.md) 기반으로만 수행
-         - nohup으로 백그라운드 실행, /experiment-status로 모니터링
-         - 실험 완료 후 반드시 /lab-restore로 실험 환경 정상화
+         - nohup × 3으로 **순차 실행** (클러스터 1개이므로 동시 실행 불가, a→b→c 순서)
+         - 각 실험 시작 시 PID 확인 후 즉시 보고 (프로세스 완료 대기 금지)
+         - /experiment-status로 모니터링
+         - 모든 실험 완료 후 /lab-restore
                                    ⬇
-Step 5: @results-writer  →  결과 리포트 작성 (results/analysis_v{N}.md)
-                              통계 요약, fault별 비교, key findings
-                              실험 결과 데이터(CSV, 로그) + 분석 리포트 함께 commit-push
+Step 5: @results-writer  →  3개 결과 비교 분석 + 최선 선택
+         - 3개 가설의 System B 성능 비교
+         - 가장 성능이 좋은 가설을 **다음 라운드의 베이스라인**으로 선택
+         - 산출물: results/analysis_v{N}.md (통합 비교 + 선택 근거)
+         - commit-push
 ```
 
 **오케스트레이터(Claude Code)의 역할:**
@@ -86,11 +90,13 @@ Step 5: @results-writer  →  결과 리포트 작성 (results/analysis_v{N}.md)
 - **실험 전**: `/lab-tunnel`로 터널 연결 + preflight check
 - **실험 후**: `/lab-restore`로 실험 환경 정상화 확인 후 Step 5 진행
 
-**산출물 경로:**
-- 실험 계획서: `docs/plans/experiment_plan_v{N}.md`
+**산출물 경로 (버전별 완전 분리):**
+- 실험 계획서: `docs/plans/experiment_plan_v{N}a.md`, `v{N}b.md`, `v{N}c.md`
 - 가설 리뷰: `docs/plans/review_v{N}.md`
-- 실험 결과: `results/experiment_results_v{N}.csv`
-- 분석 리포트: `results/analysis_v{N}.md`
+- 실험 코드: `experiments/v{N}a/`, `v{N}b/`, `v{N}c/`
+- 실험 결과: `results/experiment_results_v{N}a.csv`, `v{N}b.csv`, `v{N}c.csv`
+- Raw 데이터: `results/raw_v{N}a/`, `raw_v{N}b/`, `raw_v{N}c/`
+- 분석 리포트: `results/analysis_v{N}.md` (통합 비교)
 
 ### 에이전트 간 토론
 
