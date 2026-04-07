@@ -1,0 +1,347 @@
+2026-04-07 00:03:46,274 [INFO] experiment.v2: Loaded ground truth: 50 entries
+2026-04-07 00:04:20,071 [INFO] experiment.v2: Loaded ground truth: 50 entries
+2026-04-07 07:53:24,206 [INFO] experiment.v2: Loaded ground truth: 50 entries
+2026-04-07 07:55:25,767 [INFO] experiment.v2: Loaded ground truth: 50 entries
+2026-04-07 07:55:25,976 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-04-07 07:55:26,030 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+2026-04-07 07:55:27,773 [INFO] sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-04-07 07:55:30,081 [INFO] src.rag.retriever: KnowledgeRetriever loaded: 1243 chunks in collection
+2026-04-07 07:55:30,082 [INFO] experiment.v2: v2 experiment: 50 trials (['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10'] × [1, 2, 3, 4, 5])
+2026-04-07 07:55:30,082 [INFO] experiment.v2: Model: gpt-4o-mini (openai)
+2026-04-07 07:55:30,111 [WARNING] experiments.shared.infra: [HEALTH] Prometheus down before F1 t1 — restarting...
+2026-04-07 07:55:34,217 [INFO] experiments.shared.infra: Port-forward kube-prometheus-stack-prometheus:9090 restarted successfully
+2026-04-07 07:55:34,237 [INFO] experiments.shared.infra: [HEALTH] OK before F1 t1
+2026-04-07 07:55:34,237 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 07:55:34,237 [INFO] experiments.shared.runner: Starting F1 trial 1
+2026-04-07 07:55:34,237 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 07:55:34,238 [INFO] scripts.fault_inject.injector: Injecting F1 trial 1: OOMKilled on cartservice
+2026-04-07 07:55:34,397 [INFO] scripts.fault_inject.injector: F1 injected: cartservice memory limit → 32Mi
+2026-04-07 07:55:34,397 [INFO] experiments.shared.runner: Injection result: patch_memory_limit
+2026-04-07 07:55:34,397 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-04-07 07:57:34,404 [INFO] experiments.shared.runner: Collecting signals...
+2026-04-07 07:57:34,406 [INFO] src.collector: Collecting signals (window=5m)...
+2026-04-07 07:57:38,859 [INFO] src.collector: Signal collection complete
+2026-04-07 07:57:43,304 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+2026-04-07 07:57:43,325 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F1
+2026-04-07 07:57:43,327 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-04-07 07:58:03,768 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 07:58:06,958 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 07:58:06,961 [INFO] experiments.shared.runner: System A: predicted=OOMKill, confidence=0.90
+2026-04-07 07:58:06,961 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-04-07 07:58:28,502 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 07:58:31,902 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 07:58:31,904 [INFO] experiments.shared.runner: System B: predicted=OOMKill, confidence=0.90
+2026-04-07 07:58:31,971 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F1_t1_A_20260407_075831.json
+2026-04-07 07:58:32,015 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F1_t1_B_20260407_075831.json
+2026-04-07 07:58:32,015 [INFO] experiments.shared.runner: Recovering from fault...
+2026-04-07 07:58:32,015 [INFO] scripts.stabilize.recovery: Recovering from F1 trial 1...
+2026-04-07 07:59:02,698 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-04-07 07:59:02,781 [INFO] scripts.stabilize.recovery: All deployments healthy (0s)
+2026-04-07 07:59:02,781 [INFO] experiments.shared.runner: Recovery complete
+2026-04-07 07:59:02,781 [INFO] experiments.shared.runner: Trial complete: F1 t1 | A: OOMKill (score=0.75) correct | B: OOMKill (score=0.75) correct
+2026-04-07 07:59:02,786 [INFO] experiment.v2: Progress: 1/50
+2026-04-07 07:59:02,786 [INFO] experiment.v2: Short cooldown (60s)...
+2026-04-07 08:00:02,839 [INFO] experiments.shared.infra: [HEALTH] OK before F1 t2
+2026-04-07 08:00:02,840 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:00:02,840 [INFO] experiments.shared.runner: Starting F1 trial 2
+2026-04-07 08:00:02,840 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:00:02,841 [INFO] scripts.fault_inject.injector: Injecting F1 trial 2: OOMKilled on recommendationservice
+2026-04-07 08:00:02,990 [INFO] scripts.fault_inject.injector: F1 injected: recommendationservice memory limit → 24Mi
+2026-04-07 08:00:02,990 [INFO] experiments.shared.runner: Injection result: patch_memory_limit
+2026-04-07 08:00:02,990 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-04-07 08:02:02,996 [INFO] experiments.shared.runner: Collecting signals...
+2026-04-07 08:02:02,998 [INFO] src.collector: Collecting signals (window=5m)...
+2026-04-07 08:02:03,017 [ERROR] src.collector.prometheus: Prometheus query error: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')) (query: kube_pod_status_phase{namespace="boutique",phase="Pending"} == 1)
+2026-04-07 08:02:03,021 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Running%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_status_phase{namespace="boutique",phase="Running"} == 1)
+2026-04-07 08:02:03,023 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Failed%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_status_phase{namespace="boutique",phase="Failed"} == 1)
+2026-04-07 08:02:03,025 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Unknown%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_status_phase{namespace="boutique",phase="Unknown"} == 1)
+2026-04-07 08:02:03,028 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22CrashLoopBackOff%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="CrashLoopBackOff"} == 1)
+2026-04-07 08:02:03,029 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22ImagePullBackOff%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="ImagePullBackOff"} == 1)
+2026-04-07 08:02:03,031 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22ErrImagePull%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="ErrImagePull"} == 1)
+2026-04-07 08:02:03,032 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22CreateContainerConfigError%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="CreateContainerConfigError"} == 1)
+2026-04-07 08:02:03,034 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22ContainerCreating%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="ContainerCreating"} == 1)
+2026-04-07 08:02:03,037 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_last_terminated_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22OOMKilled%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_last_terminated_reason{namespace="boutique",reason="OOMKilled"} == 1)
+2026-04-07 08:02:03,039 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_last_terminated_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22Error%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_last_terminated_reason{namespace="boutique",reason="Error"} == 1)
+2026-04-07 08:02:03,040 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_last_terminated_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22Completed%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_last_terminated_reason{namespace="boutique",reason="Completed"} == 1)
+2026-04-07 08:02:03,042 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_restarts_total%7Bnamespace%3D%22boutique%22%7D+%3E+0 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_restarts_total{namespace="boutique"} > 0)
+2026-04-07 08:02:03,043 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_last_terminated_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22OOMKilled%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_last_terminated_reason{namespace="boutique",reason="OOMKilled"} == 1)
+2026-04-07 08:02:03,045 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=rate%28container_cpu_cfs_throttled_periods_total%7Bnamespace%3D%22boutique%22%7D%5B5m%5D%29+%2F+rate%28container_cpu_cfs_periods_total%7Bnamespace%3D%22boutique%22%7D%5B5m%5D%29+%3E+0.1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: rate(container_cpu_cfs_throttled_periods_total{namespace="boutique"}[5m]) / rate(container_cpu_cfs_periods_total{namespace="boutique"}[5m]) > 0.1)
+2026-04-07 08:02:03,046 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=container_memory_working_set_bytes%7Bnamespace%3D%22boutique%22%2Ccontainer%21%3D%22%22%7D+%2F+on%28namespace%2Cpod%2Ccontainer%29+group_left%28%29+kube_pod_container_resource_limits%7Bnamespace%3D%22boutique%22%2Cresource%3D%22memory%22%7D+%3E+0.8 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: container_memory_working_set_bytes{namespace="boutique",container!=""} / on(namespace,pod,container) group_left() kube_pod_container_resource_limits{namespace="boutique",resource="memory"} > 0.8)
+2026-04-07 08:02:03,048 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_node_status_condition%7Bcondition%3D%22Ready%22%2Cstatus%3D%22true%22%7D+%3D%3D+0 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_node_status_condition{condition="Ready",status="true"} == 0)
+2026-04-07 08:02:03,049 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_node_status_condition%7Bcondition%3D%22MemoryPressure%22%2Cstatus%3D%22true%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1)
+2026-04-07 08:02:03,050 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_node_status_condition%7Bcondition%3D%22DiskPressure%22%2Cstatus%3D%22true%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_node_status_condition{condition="DiskPressure",status="true"} == 1)
+2026-04-07 08:02:03,052 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_node_status_condition%7Bcondition%3D%22NetworkUnavailable%22%2Cstatus%3D%22true%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_node_status_condition{condition="NetworkUnavailable",status="true"} == 1)
+2026-04-07 08:02:03,053 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_endpoint_address_available%7Bnamespace%3D%22boutique%22%7D+%3D%3D+0 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_endpoint_address_available{namespace="boutique"} == 0)
+2026-04-07 08:02:03,054 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_persistentvolumeclaim_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Pending%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_persistentvolumeclaim_status_phase{namespace="boutique",phase="Pending"} == 1)
+2026-04-07 08:02:03,055 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_persistentvolumeclaim_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Lost%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_persistentvolumeclaim_status_phase{namespace="boutique",phase="Lost"} == 1)
+2026-04-07 08:02:03,057 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_resourcequota%7Bnamespace%3D%22boutique%22%2Ctype%3D%22used%22%7D+%2F+on%28namespace%2Cresourcequota%2Cresource%29+kube_resourcequota%7Bnamespace%3D%22boutique%22%2Ctype%3D%22hard%22%7D+%3E+0.9 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_resourcequota{namespace="boutique",type="used"} / on(namespace,resourcequota,resource) kube_resourcequota{namespace="boutique",type="hard"} > 0.9)
+2026-04-07 08:02:03,058 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=rate%28cilium_drop_count_total%5B5m%5D%29+%3E+0 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: rate(cilium_drop_count_total[5m]) > 0)
+2026-04-07 08:02:06,911 [INFO] src.collector: Signal collection complete
+2026-04-07 08:02:06,913 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Pending%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_status_phase{namespace="boutique",phase="Pending"} == 1)
+2026-04-07 08:02:06,914 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Running%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_status_phase{namespace="boutique",phase="Running"} == 1)
+2026-04-07 08:02:06,915 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Failed%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_status_phase{namespace="boutique",phase="Failed"} == 1)
+2026-04-07 08:02:06,916 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Unknown%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_status_phase{namespace="boutique",phase="Unknown"} == 1)
+2026-04-07 08:02:06,917 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22CrashLoopBackOff%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="CrashLoopBackOff"} == 1)
+2026-04-07 08:02:06,918 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22ImagePullBackOff%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="ImagePullBackOff"} == 1)
+2026-04-07 08:02:06,919 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22ErrImagePull%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="ErrImagePull"} == 1)
+2026-04-07 08:02:06,920 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22CreateContainerConfigError%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="CreateContainerConfigError"} == 1)
+2026-04-07 08:02:06,920 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_waiting_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22ContainerCreating%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_waiting_reason{namespace="boutique",reason="ContainerCreating"} == 1)
+2026-04-07 08:02:06,921 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_last_terminated_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22OOMKilled%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_last_terminated_reason{namespace="boutique",reason="OOMKilled"} == 1)
+2026-04-07 08:02:06,922 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_last_terminated_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22Error%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_last_terminated_reason{namespace="boutique",reason="Error"} == 1)
+2026-04-07 08:02:06,923 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_last_terminated_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22Completed%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_last_terminated_reason{namespace="boutique",reason="Completed"} == 1)
+2026-04-07 08:02:06,924 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_restarts_total%7Bnamespace%3D%22boutique%22%7D+%3E+0 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_restarts_total{namespace="boutique"} > 0)
+2026-04-07 08:02:06,925 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_pod_container_status_last_terminated_reason%7Bnamespace%3D%22boutique%22%2Creason%3D%22OOMKilled%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_pod_container_status_last_terminated_reason{namespace="boutique",reason="OOMKilled"} == 1)
+2026-04-07 08:02:06,926 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=rate%28container_cpu_cfs_throttled_periods_total%7Bnamespace%3D%22boutique%22%7D%5B5m%5D%29+%2F+rate%28container_cpu_cfs_periods_total%7Bnamespace%3D%22boutique%22%7D%5B5m%5D%29+%3E+0.1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: rate(container_cpu_cfs_throttled_periods_total{namespace="boutique"}[5m]) / rate(container_cpu_cfs_periods_total{namespace="boutique"}[5m]) > 0.1)
+2026-04-07 08:02:06,927 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=container_memory_working_set_bytes%7Bnamespace%3D%22boutique%22%2Ccontainer%21%3D%22%22%7D+%2F+on%28namespace%2Cpod%2Ccontainer%29+group_left%28%29+kube_pod_container_resource_limits%7Bnamespace%3D%22boutique%22%2Cresource%3D%22memory%22%7D+%3E+0.8 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: container_memory_working_set_bytes{namespace="boutique",container!=""} / on(namespace,pod,container) group_left() kube_pod_container_resource_limits{namespace="boutique",resource="memory"} > 0.8)
+2026-04-07 08:02:06,927 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_node_status_condition%7Bcondition%3D%22Ready%22%2Cstatus%3D%22true%22%7D+%3D%3D+0 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_node_status_condition{condition="Ready",status="true"} == 0)
+2026-04-07 08:02:06,928 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_node_status_condition%7Bcondition%3D%22MemoryPressure%22%2Cstatus%3D%22true%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1)
+2026-04-07 08:02:06,929 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_node_status_condition%7Bcondition%3D%22DiskPressure%22%2Cstatus%3D%22true%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_node_status_condition{condition="DiskPressure",status="true"} == 1)
+2026-04-07 08:02:06,930 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_node_status_condition%7Bcondition%3D%22NetworkUnavailable%22%2Cstatus%3D%22true%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_node_status_condition{condition="NetworkUnavailable",status="true"} == 1)
+2026-04-07 08:02:06,931 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_endpoint_address_available%7Bnamespace%3D%22boutique%22%7D+%3D%3D+0 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_endpoint_address_available{namespace="boutique"} == 0)
+2026-04-07 08:02:06,932 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_persistentvolumeclaim_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Pending%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_persistentvolumeclaim_status_phase{namespace="boutique",phase="Pending"} == 1)
+2026-04-07 08:02:06,932 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_persistentvolumeclaim_status_phase%7Bnamespace%3D%22boutique%22%2Cphase%3D%22Lost%22%7D+%3D%3D+1 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_persistentvolumeclaim_status_phase{namespace="boutique",phase="Lost"} == 1)
+2026-04-07 08:02:06,933 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=kube_resourcequota%7Bnamespace%3D%22boutique%22%2Ctype%3D%22used%22%7D+%2F+on%28namespace%2Cresourcequota%2Cresource%29+kube_resourcequota%7Bnamespace%3D%22boutique%22%2Ctype%3D%22hard%22%7D+%3E+0.9 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: kube_resourcequota{namespace="boutique",type="used"} / on(namespace,resourcequota,resource) kube_resourcequota{namespace="boutique",type="hard"} > 0.9)
+2026-04-07 08:02:06,934 [ERROR] src.collector.prometheus: Prometheus query error: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=rate%28cilium_drop_count_total%5B5m%5D%29+%3E+0 (Caused by NewConnectionError("HTTPConnection(host='localhost', port=9090): Failed to establish a new connection: [Errno 61] Connection refused")) (query: rate(cilium_drop_count_total[5m]) > 0)
+2026-04-07 08:02:10,388 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F1
+2026-04-07 08:02:10,391 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-04-07 08:02:34,255 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:02:40,693 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:02:40,694 [INFO] experiments.shared.runner: System A: predicted=OOMKill, confidence=0.90
+2026-04-07 08:02:40,695 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-04-07 08:03:06,946 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:03:09,541 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:03:09,544 [INFO] experiments.shared.runner: System B: predicted=OOMKill, confidence=0.90
+2026-04-07 08:03:09,604 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F1_t2_A_20260407_080309.json
+2026-04-07 08:03:09,644 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F1_t2_B_20260407_080309.json
+2026-04-07 08:03:09,644 [INFO] experiments.shared.runner: Recovering from fault...
+2026-04-07 08:03:09,644 [INFO] scripts.stabilize.recovery: Recovering from F1 trial 2...
+2026-04-07 08:03:09,985 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-04-07 08:03:10,076 [INFO] scripts.stabilize.recovery: All deployments healthy (0s)
+2026-04-07 08:03:10,077 [INFO] experiments.shared.runner: Recovery complete
+2026-04-07 08:03:10,077 [INFO] experiments.shared.runner: Trial complete: F1 t2 | A: OOMKill (score=0.50) correct | B: OOMKill (score=0.75) correct
+2026-04-07 08:03:10,081 [INFO] experiment.v2: Progress: 2/50
+2026-04-07 08:03:10,082 [INFO] experiment.v2: Short cooldown (60s)...
+2026-04-07 08:04:10,086 [WARNING] experiments.shared.infra: [HEALTH] Prometheus down before F1 t3 — restarting...
+2026-04-07 08:04:14,202 [ERROR] experiments.shared.infra: Port-forward kube-prometheus-stack-prometheus:9090 restart FAILED
+2026-04-07 08:04:14,223 [ERROR] experiments.shared.infra: [HEALTH] FAILED for F1 t3: Prometheus unreachable
+2026-04-07 08:04:14,223 [ERROR] experiment.v2: Health check failed for F1 t3 — retrying in 10s...
+2026-04-07 08:04:24,226 [WARNING] experiments.shared.infra: [HEALTH] Prometheus down before F1 t3 — restarting...
+2026-04-07 08:04:28,336 [ERROR] experiments.shared.infra: Port-forward kube-prometheus-stack-prometheus:9090 restart FAILED
+2026-04-07 08:04:28,355 [ERROR] experiments.shared.infra: [HEALTH] FAILED for F1 t3: Prometheus unreachable
+2026-04-07 08:04:28,355 [ERROR] experiment.v2: Health check failed again — SKIPPING F1 t3
+2026-04-07 08:04:28,356 [WARNING] experiments.shared.infra: [HEALTH] Prometheus down before F1 t4 — restarting...
+2026-04-07 08:04:32,461 [ERROR] experiments.shared.infra: Port-forward kube-prometheus-stack-prometheus:9090 restart FAILED
+2026-04-07 08:04:32,478 [ERROR] experiments.shared.infra: [HEALTH] FAILED for F1 t4: Prometheus unreachable
+2026-04-07 08:04:32,478 [ERROR] experiment.v2: Health check failed for F1 t4 — retrying in 10s...
+2026-04-07 08:04:42,490 [WARNING] experiments.shared.infra: [HEALTH] Prometheus down before F1 t4 — restarting...
+2026-04-07 08:04:46,597 [ERROR] experiments.shared.infra: Port-forward kube-prometheus-stack-prometheus:9090 restart FAILED
+2026-04-07 08:04:46,614 [ERROR] experiments.shared.infra: [HEALTH] FAILED for F1 t4: Prometheus unreachable
+2026-04-07 08:04:46,615 [ERROR] experiment.v2: Health check failed again — SKIPPING F1 t4
+2026-04-07 08:04:46,616 [WARNING] experiments.shared.infra: [HEALTH] Prometheus down before F1 t5 — restarting...
+2026-04-07 08:04:50,717 [ERROR] experiments.shared.infra: Port-forward kube-prometheus-stack-prometheus:9090 restart FAILED
+2026-04-07 08:04:50,733 [ERROR] experiments.shared.infra: [HEALTH] FAILED for F1 t5: Prometheus unreachable
+2026-04-07 08:04:50,734 [ERROR] experiment.v2: Health check failed for F1 t5 — retrying in 10s...
+2026-04-07 08:05:00,746 [WARNING] experiments.shared.infra: [HEALTH] Prometheus down before F1 t5 — restarting...
+2026-04-07 08:05:04,851 [ERROR] experiments.shared.infra: Port-forward kube-prometheus-stack-prometheus:9090 restart FAILED
+2026-04-07 08:05:04,870 [ERROR] experiments.shared.infra: [HEALTH] FAILED for F1 t5: Prometheus unreachable
+2026-04-07 08:05:04,870 [ERROR] experiment.v2: Health check failed again — SKIPPING F1 t5
+2026-04-07 08:05:04,871 [INFO] experiment.v2: Cooldown (900s) between fault types...
+2026-04-07 08:20:04,882 [WARNING] experiments.shared.infra: [HEALTH] Prometheus down before F2 t1 — restarting...
+2026-04-07 08:20:09,014 [INFO] experiments.shared.infra: Port-forward kube-prometheus-stack-prometheus:9090 restarted successfully
+2026-04-07 08:20:09,032 [INFO] experiments.shared.infra: [HEALTH] OK before F2 t1
+2026-04-07 08:20:09,032 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:20:09,032 [INFO] experiments.shared.runner: Starting F2 trial 1
+2026-04-07 08:20:09,033 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:20:09,034 [INFO] scripts.fault_inject.injector: Injecting F2 trial 1: CrashLoopBackOff on paymentservice
+2026-04-07 08:20:09,172 [INFO] scripts.fault_inject.injector: F2 injected: paymentservice command → crash
+2026-04-07 08:20:09,173 [INFO] experiments.shared.runner: Injection result: override_command
+2026-04-07 08:20:09,173 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-04-07 08:22:09,184 [INFO] experiments.shared.runner: Collecting signals...
+2026-04-07 08:22:09,186 [INFO] src.collector: Collecting signals (window=5m)...
+2026-04-07 08:22:13,789 [INFO] src.collector: Signal collection complete
+2026-04-07 08:22:17,785 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F2
+2026-04-07 08:22:17,788 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-04-07 08:22:41,826 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:22:45,028 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:22:45,030 [INFO] experiments.shared.runner: System A: predicted=OOMKill, confidence=0.95
+2026-04-07 08:22:45,031 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-04-07 08:23:03,766 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:23:05,925 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:23:05,928 [INFO] experiments.shared.runner: System B: predicted=OOMKill, confidence=0.95
+2026-04-07 08:23:05,992 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F2_t1_A_20260407_082305.json
+2026-04-07 08:23:06,036 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F2_t1_B_20260407_082306.json
+2026-04-07 08:23:06,036 [INFO] experiments.shared.runner: Recovering from fault...
+2026-04-07 08:23:06,036 [INFO] scripts.stabilize.recovery: Recovering from F2 trial 1...
+2026-04-07 08:23:06,303 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-04-07 08:23:06,373 [INFO] scripts.stabilize.recovery: All deployments healthy (0s)
+2026-04-07 08:23:06,374 [INFO] experiments.shared.runner: Recovery complete
+2026-04-07 08:23:06,374 [INFO] experiments.shared.runner: Trial complete: F2 t1 | A: OOMKill (score=0.00) wrong | B: OOMKill (score=0.00) wrong
+2026-04-07 08:23:06,378 [INFO] experiment.v2: Progress: 6/50
+2026-04-07 08:23:06,378 [INFO] experiment.v2: Short cooldown (60s)...
+2026-04-07 08:24:06,445 [INFO] experiments.shared.infra: [HEALTH] OK before F2 t2
+2026-04-07 08:24:06,446 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:24:06,446 [INFO] experiments.shared.runner: Starting F2 trial 2
+2026-04-07 08:24:06,446 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:24:06,447 [INFO] scripts.fault_inject.injector: Injecting F2 trial 2: CrashLoopBackOff on emailservice
+2026-04-07 08:24:06,597 [INFO] scripts.fault_inject.injector: F2 injected: emailservice command → crash
+2026-04-07 08:24:06,597 [INFO] experiments.shared.runner: Injection result: override_command
+2026-04-07 08:24:06,597 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-04-07 08:55:15,884 [INFO] experiments.shared.infra: ============================================================
+2026-04-07 08:55:15,884 [INFO] experiments.shared.infra: PREFLIGHT CHECK
+2026-04-07 08:55:15,884 [INFO] experiments.shared.infra: ============================================================
+2026-04-07 08:55:15,929 [INFO] experiments.shared.infra: [OK] kubectl: 6 nodes reachable
+2026-04-07 08:55:15,983 [INFO] experiments.shared.infra: [OK] boutique: 13 pods running
+2026-04-07 08:55:16,007 [INFO] experiments.shared.infra: [OK] Prometheus (localhost:9090)
+2026-04-07 08:55:16,023 [INFO] experiments.shared.infra: [OK] Loki (localhost:3100)
+2026-04-07 08:55:16,023 [INFO] experiments.shared.infra: ============================================================
+2026-04-07 08:55:16,023 [INFO] experiments.shared.infra: PREFLIGHT CHECK PASSED
+2026-04-07 08:55:16,023 [INFO] experiments.shared.infra: ============================================================
+2026-04-07 08:55:16,024 [INFO] experiment.v2: Resume: 3 trials already completed
+2026-04-07 08:55:16,025 [INFO] experiment.v2: Loaded ground truth: 50 entries
+2026-04-07 08:55:16,229 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-04-07 08:55:16,286 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+2026-04-07 08:55:18,247 [INFO] sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-04-07 08:55:20,616 [INFO] src.rag.retriever: KnowledgeRetriever loaded: 1243 chunks in collection
+2026-04-07 08:55:20,616 [INFO] experiment.v2: v2 experiment: 50 trials (['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10'] × [1, 2, 3, 4, 5])
+2026-04-07 08:55:20,616 [INFO] experiment.v2: Model: gpt-4o-mini (openai)
+2026-04-07 08:55:20,616 [INFO] experiment.v2: Skipping F1 t1 (already completed)
+2026-04-07 08:55:20,617 [INFO] experiment.v2: Skipping F1 t2 (already completed)
+2026-04-07 08:55:20,728 [INFO] experiments.shared.infra: [HEALTH] OK before F1 t3
+2026-04-07 08:55:20,728 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:55:20,728 [INFO] experiments.shared.runner: Starting F1 trial 3
+2026-04-07 08:55:20,728 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:55:20,728 [INFO] scripts.fault_inject.injector: Injecting F1 trial 3: OOMKilled on checkoutservice
+2026-04-07 08:55:20,848 [INFO] scripts.fault_inject.injector: F1 injected: checkoutservice memory limit → 16Mi
+2026-04-07 08:55:20,849 [INFO] experiments.shared.runner: Injection result: patch_memory_limit
+2026-04-07 08:55:20,849 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-04-07 08:57:20,859 [INFO] experiments.shared.runner: Collecting signals...
+2026-04-07 08:57:20,860 [INFO] src.collector: Collecting signals (window=5m)...
+2026-04-07 08:57:22,526 [INFO] src.collector: Signal collection complete
+2026-04-07 08:57:24,070 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+2026-04-07 08:57:24,103 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F1
+2026-04-07 08:57:24,103 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-04-07 08:57:33,667 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:57:35,532 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:57:35,535 [INFO] experiments.shared.runner: System A: predicted=CrashLoopBackOff, confidence=0.85
+2026-04-07 08:57:35,535 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-04-07 08:57:44,488 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:57:46,168 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 08:57:46,174 [INFO] experiments.shared.runner: System B: predicted=CrashLoopBackOff, confidence=0.85
+2026-04-07 08:57:46,176 [INFO] experiments.shared.runner: CSV verified: F1 t3 A written (row 7)
+2026-04-07 08:57:46,176 [INFO] experiments.shared.runner: CSV verified: F1 t3 B written (row 8)
+2026-04-07 08:57:46,184 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F1_t3_A_20260407_085746.json
+2026-04-07 08:57:46,208 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F1_t3_B_20260407_085746.json
+2026-04-07 08:57:46,209 [INFO] experiments.shared.runner: Recovering from fault...
+2026-04-07 08:57:46,209 [INFO] scripts.stabilize.recovery: Recovering from F1 trial 3...
+2026-04-07 08:58:08,265 [INFO] scripts.stabilize.recovery: Cleaned up Succeeded pods: pod "cartservice-57b87c6b4d-22nnw" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-2zhpb" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-42ctd" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-46xdx" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-4b4fc" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-4dfx8" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-5chmt" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-5h455" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-6wxm2" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-7czvw" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-7k8k5" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-8dm8m" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-8v5hf" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-8vf4q" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-8w6tm" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-9dwzq" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-9xtm7" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-b5jlj" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-bpvkn" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-cgww4" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-cjhdn" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-f6q2j" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-fq2h9" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-g528b" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-gwjrx" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-h5gk8" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-hfsxs" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-kkzcp" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-knfvj" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-kvcjp" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-l58tw" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-qqt74" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-rj96g" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-rjvrw" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-rxp4h" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-s6mwx" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-sjvh9" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-sqnxn" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-stbzb" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-tsm24" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-tt9lr" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-w52g9" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-wlqj7" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-wvkxs" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-xbdlv" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-xd546" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-xnfls" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-zksld" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-zl2bk" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-zqfdn" deleted from boutique namespace
+pod "cartservice-57b87c6b4d-ztrb4" deleted from boutique namespace
+pod "loadgenerator-56567d57dc-7r567" deleted from boutique namespace
+pod "loadgenerator-56567d57dc-fmljv" deleted from boutique namespace
+pod "loadgenerator-56567d57dc-j8fb6" deleted from boutique namespace
+pod "loadgenerator-56567d57dc-jc4rn" deleted from boutique namespace
+pod "loadgenerator-56567d57dc-kgsr5" deleted from boutique namespace
+pod "redis-cart-69c6df4db6-5hsbj" deleted from boutique namespace
+pod "redis-cart-69c6df4db6-dq5cg" deleted from boutique namespace
+pod "redis-cart-69c6df4db6-l4549" deleted from boutique namespace
+pod "redis-cart-69c6df4db6-lnffs" deleted from boutique namespace
+pod "redis-cart-69c6df4db6-msns9" deleted from boutique namespace
+pod "redis-cart-69c6df4db6-qb7lm" deleted from boutique namespace
+pod "redis-cart-69c6df4db6-t6mzx" deleted from boutique namespace
+pod "redis-cart-69c6df4db6-vqsdw" deleted from boutique namespace
+2026-04-07 08:58:08,266 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-04-07 08:58:08,401 [INFO] scripts.stabilize.recovery: All deployments healthy, 13 pods running (0s)
+2026-04-07 08:58:08,401 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-04-07 08:58:08,401 [INFO] experiments.shared.runner: Trial complete: F1 t3 | A: CrashLoopBackOff (score=0.00) wrong | B: CrashLoopBackOff (score=0.00) wrong
+2026-04-07 08:58:08,402 [INFO] experiment.v2: Progress: 3/50
+2026-04-07 08:58:08,402 [INFO] experiment.v2: Short cooldown (60s) + cluster stabilization check...
+2026-04-07 08:59:08,541 [INFO] experiments.shared.infra: [HEALTH] OK before F1 t3
+2026-04-07 08:59:08,640 [INFO] experiments.shared.infra: [HEALTH] OK before F1 t4
+2026-04-07 08:59:08,640 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:59:08,641 [INFO] experiments.shared.runner: Starting F1 trial 4
+2026-04-07 08:59:08,641 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 08:59:08,641 [INFO] scripts.fault_inject.injector: Injecting F1 trial 4: OOMKilled on productcatalogservice
+2026-04-07 08:59:08,756 [INFO] scripts.fault_inject.injector: F1 injected: productcatalogservice memory limit → 16Mi
+2026-04-07 08:59:08,757 [INFO] experiments.shared.runner: Injection result: patch_memory_limit
+2026-04-07 08:59:08,757 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-04-07 09:01:08,762 [INFO] experiments.shared.runner: Collecting signals...
+2026-04-07 09:01:08,764 [INFO] src.collector: Collecting signals (window=5m)...
+2026-04-07 09:01:10,188 [INFO] src.collector: Signal collection complete
+2026-04-07 09:01:12,177 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F1
+2026-04-07 09:01:12,178 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-04-07 09:01:23,435 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 09:01:28,160 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 09:01:28,163 [INFO] experiments.shared.runner: System A: predicted=CrashLoopBackOff, confidence=0.90
+2026-04-07 09:01:28,163 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-04-07 09:01:40,583 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 09:01:43,974 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-07 09:01:43,976 [INFO] experiments.shared.runner: System B: predicted=CrashLoopBackOff, confidence=0.85
+2026-04-07 09:01:43,978 [INFO] experiments.shared.runner: CSV verified: F1 t4 A written (row 9)
+2026-04-07 09:01:43,979 [INFO] experiments.shared.runner: CSV verified: F1 t4 B written (row 10)
+2026-04-07 09:01:43,982 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F1_t4_A_20260407_090143.json
+2026-04-07 09:01:44,003 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/Documents/thesis-rca/results/raw/F1_t4_B_20260407_090144.json
+2026-04-07 09:01:44,003 [INFO] experiments.shared.runner: Recovering from fault...
+2026-04-07 09:01:44,003 [INFO] scripts.stabilize.recovery: Recovering from F1 trial 4...
+2026-04-07 09:01:45,904 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-04-07 09:01:46,012 [INFO] scripts.stabilize.recovery: All deployments healthy, 14 pods running (0s)
+2026-04-07 09:01:46,013 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-04-07 09:01:46,013 [INFO] experiments.shared.runner: Trial complete: F1 t4 | A: CrashLoopBackOff (score=0.00) wrong | B: CrashLoopBackOff (score=0.10) wrong
+2026-04-07 09:01:46,013 [INFO] experiment.v2: Progress: 4/50
+2026-04-07 09:01:46,013 [INFO] experiment.v2: Short cooldown (60s) + cluster stabilization check...
+2026-04-07 09:02:46,139 [INFO] experiments.shared.infra: [HEALTH] OK before F1 t4
+2026-04-07 09:02:46,235 [INFO] experiments.shared.infra: [HEALTH] OK before F1 t5
+2026-04-07 09:02:46,235 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 09:02:46,235 [INFO] experiments.shared.runner: Starting F1 trial 5
+2026-04-07 09:02:46,235 [INFO] experiments.shared.runner: ============================================================
+2026-04-07 09:02:46,236 [INFO] scripts.fault_inject.injector: Injecting F1 trial 5: OOMKilled on frontend
+2026-04-07 09:02:46,358 [INFO] scripts.fault_inject.injector: F1 injected: frontend memory limit → 32Mi
+2026-04-07 09:02:46,358 [INFO] experiments.shared.runner: Injection result: patch_memory_limit
+2026-04-07 09:02:46,358 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...

@@ -1,0 +1,3 @@
+- [K8s Lab Infrastructure](reference_lab_infra.md) — Proxmox 6대 + K8s 클러스터 접속 정보, SSH 터널 구성, 포트 매핑
+- [Lab Skills](reference_lab_skills.md) — /lab-tunnel, /lab-restore 스킬 용도 및 실험 워크플로우
+- [터널 재사용 선호](feedback_tunnel_reuse.md) — 기존 터널 정상이면 재연결하지 말고 그대로 사용

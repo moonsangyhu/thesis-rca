@@ -64,10 +64,13 @@ python -m scripts.evaluate.analyze
 2. 실험 중 문제 발견 시: 실험 중단 → 오케스트레이터에게 보고 → 수정 결정 후 진행
 3. `results/` 디렉토리의 기존 데이터 절대 삭제 금지
 4. 실험 전 preflight check 수행: kubectl 연결, Prometheus/Loki 접근, boutique 파드 상태
-5. **실험 후 반드시 `/lab-restore` 스킬을 실행하여 환경 정상화**
-6. 실험 환경 인프라 정보는 `docs/lab-environment.md` 참조
-7. 이미 완료된 trial 재실행 방지 — CSV에서 완료 여부 확인 후 진행
-8. 새 설정 테스트 시 반드시 `--dry-run` 먼저 실행
+5. **매 trial 완료 즉시 결과 CSV에 기록** — 배치로 모아서 하지 말고 trial마다 즉시 기록
+6. **매 trial 후 반드시 `/lab-restore` 스킬로 환경 정상화한 뒤 다음 trial 시작**
+7. **매 trial 종료 시 결과와 완료 사실을 사용자에게 보고**
+8. 실험 시작 시 클러스터/터널 상태 검사 — 정상이면 재시작하지 않음
+9. 실험 환경 인프라 정보는 `docs/lab-environment.md` 참조
+10. 이미 완료된 trial 재실행 방지 — CSV에서 완료 여부 확인 후 진행
+11. 새 설정 테스트 시 반드시 `--dry-run` 먼저 실행
 
 ## 출력
 
