@@ -35,18 +35,20 @@ class RCAEngineV3(BaseLLMClient):
         eval_result = self._evaluate(context, output)
         output = self._apply_eval(output, eval_result)
 
-        # Step 4: Retry loop
-        while eval_result.get("should_retry") and output.retry_count < MAX_RETRIES:
+        # Step 4: Retry loop (retry_count managed externally to avoid reset)
+        retry_count = 0
+        while eval_result.get("should_retry") and retry_count < MAX_RETRIES:
+            retry_count += 1
             logger.info(
-                "Retry %d: eval_score=%.1f, critique=%s",
-                output.retry_count + 1,
+                "Retry %d/%d: eval_score=%.1f, critique=%s",
+                retry_count, MAX_RETRIES,
                 eval_result.get("overall_score", 0),
                 str(eval_result.get("critique", ""))[:100],
             )
             output = self._generate_with_feedback(
                 context, fault_id, trial, system, eval_result,
             )
-            output.retry_count += 1
+            output.retry_count = retry_count
 
             output.evidence_chain, output.faithfulness_score = (
                 self._verify_evidence(output.evidence_chain, context)
