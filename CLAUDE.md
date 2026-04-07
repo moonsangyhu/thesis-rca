@@ -48,9 +48,40 @@ python -m scripts.evaluate.analyze                         # 통계 분석
 - **`@results-writer`** — 결과 분석·요약 (CSV/JSON → 분석 리포트). sonnet.
 - **`@paper-writer`** — 논문 작성 (results/ 데이터 기반 학술 글쓰기). opus.
 
-### 협업 패턴
+### 실험 파이프라인 (강제)
 
-hypothesis-reviewer → experiment-planner → experiment → experiment-modifier → results-writer → paper-writer
+사용자가 "다음 실험 진행해", "실험 해줘" 등 실험 수행을 지시하면 **반드시 아래 4단계를 순서대로** 실행한다. 단계를 건너뛰거나 순서를 바꾸지 않는다.
+
+```
+Step 1: @experiment-planner  →  실험 계획서 작성 (docs/plans/experiment_plan_v{N}.md)
+                                   이전 결과 깊이 분석 → 개선 가설 → 상세 계획서 → commit-push
+                                   ⬇
+Step 2: @hypothesis-reviewer  →  계획서 피드백 (docs/plans/review_v{N}.md)
+                                   방법론 비평, 교란 변수, 대안 가설 → commit-push
+                                   ⬇
+Step 3: 피드백 반영 → @experiment 실험 수행
+         - 수정 필요시: @experiment-modifier가 코드 수정 → commit-push → @experiment 실행
+         - 수정 불필요시: @experiment가 바로 실행
+         - 실험은 계획서(docs/plans/experiment_plan_v{N}.md) 기반으로만 수행
+         - nohup으로 백그라운드 실행, /experiment-status로 모니터링
+                                   ⬇
+Step 4: @results-writer  →  결과 리포트 작성 (results/analysis_v{N}.md)
+                              통계 요약, fault별 비교, key findings → commit-push
+```
+
+**오케스트레이터(Claude Code)의 역할:**
+- 각 단계의 에이전트를 순서대로 호출
+- 이전 단계의 산출물(계획서, 리뷰)을 다음 에이전트에게 전달
+- Step 2 피드백 후 수정 필요 여부를 판단하여 Step 3 분기
+- 각 단계 완료 시 사용자에게 요약 보고
+
+**산출물 경로:**
+- 실험 계획서: `docs/plans/experiment_plan_v{N}.md`
+- 가설 리뷰: `docs/plans/review_v{N}.md`
+- 실험 결과: `results/experiment_results_v{N}.csv`
+- 분석 리포트: `results/analysis_v{N}.md`
+
+### 에이전트 간 토론
 
 에이전트 간 **토론**: 각 에이전트는 다른 에이전트의 산출물에 대해 의견을 제시하고, 이견이 있으면 근거를 들어 토론한다. 최종 결정은 오케스트레이터(사용자)가 내린다.
 

@@ -48,8 +48,29 @@ GitOps-aware Kubernetes RCA 석사 논문의 연구 방법론 자문역. 실험 
 4. **통계적 타당성**: 표본 크기, 검정 선택이 적절한가?
 5. **대안 가설**: 정확도 차이가 GitOps가 아닌 다른 요인에 의한 것은 아닌가?
 
+## 실험 파이프라인에서의 역할
+
+실험 파이프라인 Step 2에서 호출된다. `@experiment-planner`가 작성한 `docs/plans/experiment_plan_v{N}.md`를 읽고 피드백을 작성한다.
+
+### 입력
+- `docs/plans/experiment_plan_v{N}.md` — experiment-planner의 실험 계획서
+
+### 리뷰 항목
+1. 이전 결과 분석이 충분한가? 놓친 패턴이 있는가?
+2. 개선 가설의 근거가 타당한가? 대안 ���명은 고려했는가?
+3. System B 성능 향상에 실제로 기여할 개선인가?
+4. 실험 설계에 교란 변수가 통제되었는가?
+5. 성공 기준이 현실적이고 측정 가능한가?
+
+### 출력
+- `docs/plans/review_v{N}.md` — 리뷰 결과
+  - ��인/수정필요/재설계 중 하나로 결론
+  - 수정 필요시 구체적 수정 사항 목록
+  - commit-push 수행
+
 ## 데이터 소스
 
+- `docs/plans/experiment_plan_v{N}.md` — 리뷰 대상 계획서
 - `results/ground_truth.csv` — 50 trial 정답 레이블
 - `results/experiment_results*.csv` — 실험 결과
 - `results/experiment_changes_*.md` — 이전 실험 교훈
