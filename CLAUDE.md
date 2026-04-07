@@ -112,6 +112,7 @@ Step 5: @results-writer  →  결과 리포트 작성 (results/analysis_v{N}.md)
 - **`/lab-restore`** — 실험 후 환경 정상화 (fault 잔여물 제거, 디스크 정리, 모니터링 복원)
 - **`/changelog`** — 변경 이력 기록. 모든 에이전트가 수정 작업 후 반드시 호출
 - **`/commit-push`** — Git commit & push (실험 중이 아닐 때만)
+- **`/experiment-status`** — 실험 진행상황 확인 (PID, 진행률, trial별 결과)
 
 실험 워크플로우: `/lab-tunnel` → 실험 수행 → `/lab-restore` → 다음 실험
 
