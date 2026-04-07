@@ -63,8 +63,9 @@ python -m scripts.evaluate.analyze
 
 ## 작업 완료 후
 
-1. `/changelog` — 변경 이력 기록 (코드·설정 수정 시 필수)
-2. `/commit-push` — 커밋·푸시 (실험 중이 아닐 때만)
+1. `/lab-restore` — **실험 환경 정상화 (필수)** — 실험 완료 후 반드시 실행하여 fault 잔여물 제거, 클러스터 정상 상태 확인
+2. `/changelog` — 변경 이력 기록 (코드·설정 수정 시 필수)
+3. `/commit-push` — 커밋·푸시 (실험 중이 아닐 때만)
 
 ## 불문률
 
@@ -73,8 +74,9 @@ python -m scripts.evaluate.analyze
 3. `results/` 디렉토리의 기존 데이터 절대 삭제 금지
 4. 실험 전 preflight check 수행: kubectl 연결, Prometheus/Loki 접근, boutique 파드 상태
 5. **매 trial 완료 즉시 결과 CSV에 기록** — 배치로 모아서 하지 말고 trial마다 즉시 기록
-6. **매 trial 후 반드시 `/lab-restore` 스킬로 환경 정상화한 뒤 다음 trial 시작**
-7. **매 trial 종료 시 결과와 완료 사실을 사용자에게 보고**
+6. **매 trial 후 환경 정상화 확인 뒤 다음 trial 시작**
+7. **전체 실험 완료 후 반드시 `/lab-restore`로 실험 환경을 깨끗하게 정리** — 잔여 fault pod, 비정상 ReplicaSet, Error/Evicted pod 모두 제거 확인 후 종료
+8. **매 trial 종료 시 결과와 완료 사실을 사용자에게 보고**
 8. 실험 시작 시 클러스터/터널 상태 검사 — 정상이면 재시작하지 않음
 9. 실험 환경 인프라 정보는 `docs/lab-environment.md` 참조
 10. 이미 완료된 trial 재실행 방지 — CSV에서 완료 여부 확인 후 진행

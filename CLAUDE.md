@@ -41,40 +41,49 @@ python -m scripts.evaluate.analyze                         # 통계 분석
 
 ### 에이전트 목록 (`.claude/agents/`)
 
-- **`@hypothesis-reviewer`** — 가설 검토 (방법론 비평, 교란 변수 식별, 대안 가설 제안). opus.
 - **`@experiment-planner`** — 실험 계획 수립 (파라미터 결정, 선행 결과 분석, 계획서 작성). opus.
+- **`@hypothesis-reviewer`** — 실험 설계 리뷰 (방법론 비평, 교란 변수 식별, 대안 가설 제안). opus. 코드 리뷰 제외.
+- **`@code-reviewer`** — 코드 리뷰·수정 (이전 실험 교훈 기반 코드 개선, 실험 가설에 따른 코드 수정). sonnet.
 - **`@experiment`** — 실험 운영 (fault injection, signal collection, RCA, 통계 분석). sonnet.
-- **`@experiment-modifier`** — 실험 시나리오 수정 (결과 분석, 교훈 도출, 코드 개선, 변경 이력 기록). sonnet.
+- **`@experiment-modifier`** — 실험 중 시나리오 수정 (실행 중 발생한 문제의 긴급 코드 수정). sonnet.
 - **`@results-writer`** — 결과 분석·요약 (CSV/JSON → 분석 리포트). sonnet.
 - **`@paper-writer`** — 논문 작성 (results/ 데이터 기반 학술 글쓰기). opus.
 
 ### 실험 파이프라인 (강제)
 
-사용자가 "다음 실험 진행해", "실험 해줘" 등 실험 수행을 지시하면 **반드시 아래 4단계를 순서대로** 실행한다. 단계를 건너뛰거나 순서를 바꾸지 않는다.
+사용자가 "다음 실험 진행해", "실험 해줘" 등 실험 수행을 지시하면 **반드시 아래 5단계를 순서대로** 실행한다. 단계를 건너뛰거나 순서를 바꾸지 않는다.
 
 ```
 Step 1: @experiment-planner  →  실험 계획서 작성 (docs/plans/experiment_plan_v{N}.md)
                                    이전 결과 깊이 분석 → 개선 가설 → 상세 계획서 → commit-push
                                    ⬇
-Step 2: @hypothesis-reviewer  →  계획서 피드백 (docs/plans/review_v{N}.md)
+Step 2: @hypothesis-reviewer  →  실험 설계 리뷰 (docs/plans/review_v{N}.md)
                                    방법론 비평, 교란 변수, 대안 가설 → commit-push
+                                   (코드 리뷰는 하지 않음 — Step 3에서 전담)
                                    ⬇
-Step 3: 피드백 반영 → @experiment 실험 수행
-         - 수정 필요시: @experiment-modifier가 코드 수정 → commit-push → @experiment 실행
-         - 수정 불필요시: @experiment가 바로 실행
+Step 3: @code-reviewer  →  코드 검증·수정
+         - 이전 실험 교훈(experiment_changes_v*.md)의 미반영 개선사항 확인
+         - 코드 레벨 버그·안정성 문제 식별 및 수정
+         - 계획서·리뷰에서 결정된 실험 가설에 맞게 코드 수정
+         - --dry-run 검증 → /changelog → /commit-push
+                                   ⬇
+Step 4: @experiment  →  실험 수행
+         - /lab-tunnel로 터널 연결 (오케스트레이터가 사전 수행)
          - 실험은 계획서(docs/plans/experiment_plan_v{N}.md) 기반으로만 수행
          - nohup으로 백그라운드 실행, /experiment-status로 모니터링
+         - 실험 완료 후 반드시 /lab-restore로 실험 환경 정상화
                                    ⬇
-Step 4: @results-writer  →  결과 리포트 작성 (results/analysis_v{N}.md)
+Step 5: @results-writer  →  결과 리포트 작성 (results/analysis_v{N}.md)
                               통계 요약, fault별 비교, key findings
                               실험 결과 데이터(CSV, 로그) + 분석 리포트 함께 commit-push
 ```
 
 **오케스트레이터(Claude Code)의 역할:**
 - 각 단계의 에이전트를 순서대로 호출
-- 이전 단계의 산출물(계획서, 리뷰)을 다음 에이전트에게 전달
-- Step 2 피드백 후 수정 필요 여부를 판단하여 Step 3 분기
+- 이전 단계의 산출물(계획서, 리뷰, 코드 수정)을 다음 에이전트에게 전달
 - 각 단계 완료 시 사용자에게 요약 보고
+- **실험 전**: `/lab-tunnel`로 터널 연결 + preflight check
+- **실험 후**: `/lab-restore`로 실험 환경 정상화 확인 후 Step 5 진행
 
 **산출물 경로:**
 - 실험 계획서: `docs/plans/experiment_plan_v{N}.md`
