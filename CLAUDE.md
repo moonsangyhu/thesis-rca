@@ -120,6 +120,7 @@ Step 5: @results-writer  →  3개 결과 비교 분석 + 최선 선택
 - **`/changelog`** — 변경 이력 기록. 모든 에이전트가 수정 작업 후 반드시 호출
 - **`/commit-push`** — Git commit & push (실험 중이 아닐 때만)
 - **`/experiment-status`** — 실험 진행상황 확인 (PID, 진행률, trial별 결과)
+- **`/paper-survey`** — AIOps 논문 조사 (최근 3년 LLM+RCA 논문 서베이, `docs/surveys/`에 결과 저장)
 
 실험 워크플로우: `/lab-tunnel` → 실험 수행 → `/lab-restore` → 다음 실험
 
