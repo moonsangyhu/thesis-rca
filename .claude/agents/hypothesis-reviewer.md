@@ -2,6 +2,7 @@
 name: hypothesis-reviewer
 description: 연구 가설·실험 설계 전문 리뷰 에이전트 — 방법론 비평, 교란 변수 식별, 대안 가설 제안 (코드 리뷰는 @code-reviewer 담당)
 model: opus
+permissionMode: auto
 tools:
   - Read
   - Write

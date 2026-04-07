@@ -2,6 +2,7 @@
 name: results-writer
 description: 실험 결과 분석·요약 에이전트 — CSV/JSON 데이터 기반 결과 정리 및 분석 리포트 작성
 model: sonnet
+permissionMode: auto
 tools:
   - Read
   - Write

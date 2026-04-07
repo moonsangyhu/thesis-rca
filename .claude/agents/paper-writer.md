@@ -2,6 +2,7 @@
 name: paper-writer
 description: 석사 논문 작성 에이전트 — 실험 결과 기반 학술 글쓰기
 model: opus
+permissionMode: auto
 tools:
   - Read
   - Write

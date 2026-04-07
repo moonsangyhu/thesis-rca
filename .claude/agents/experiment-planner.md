@@ -2,6 +2,7 @@
 name: experiment-planner
 description: 실험 계획 수립 에이전트 — 이전 결과 깊이 분석, System B 성능 향상을 위한 최적 실험 설계, 구조화된 계획서 작성·푸시
 model: opus
+permissionMode: auto
 tools:
   - Read
   - Write

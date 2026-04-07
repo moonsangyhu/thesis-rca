@@ -2,6 +2,7 @@
 name: experiment-modifier
 description: 실험 시나리오 수정 에이전트 — 실험 결과 분석, 교훈 도출, 코드 개선, 변경 이력 기록
 model: sonnet
+permissionMode: auto
 tools:
   - Bash
   - Read

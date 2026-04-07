@@ -2,6 +2,7 @@
 name: experiment
 description: K8s RCA 실험 운영 에이전트 — fault injection, signal collection, LLM 분석, 통계 처리
 model: sonnet
+permissionMode: auto
 tools:
   - Bash
   - Read

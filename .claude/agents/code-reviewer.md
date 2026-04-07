@@ -2,6 +2,7 @@
 name: code-reviewer
 description: 실험 코드 리뷰·수정 에이전트 — 이전 실험 교훈 기반 코드 개선, 실험 가설에 따른 코드 수정
 model: sonnet
+permissionMode: auto
 tools:
   - Bash
   - Read
