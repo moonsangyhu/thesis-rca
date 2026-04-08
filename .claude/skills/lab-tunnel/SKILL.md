@@ -54,40 +54,80 @@ KUBECONFIG=~/.kube/config-k8s-lab kubectl get nodes
 
 실패 시: SSH 키 경로, Proxmox 호스트 접근, k8s-master01 VM 상태를 순서대로 확인한다.
 
-### 4. Worker 노드 disk-pressure 점검
+### 4. Worker 노드 디스크 + 상태 점검
 
+**4a. Node Condition 확인** (taint뿐 아니라 DiskPressure condition 직접 확인):
 ```bash
-KUBECONFIG=~/.kube/config-k8s-lab kubectl get nodes -o custom-columns='NAME:.metadata.name,TAINTS:.spec.taints[*].key'
+KUBECONFIG=~/.kube/config-k8s-lab kubectl get nodes -o custom-columns='NAME:.metadata.name,READY:.status.conditions[?(@.type=="Ready")].status,DISK:.status.conditions[?(@.type=="DiskPressure")].status,MEM:.status.conditions[?(@.type=="MemoryPressure")].status,TAINTS:.spec.taints[*].key'
 ```
 
-`disk-pressure` taint가 있는 Worker 노드가 있으면:
+**4b. 실제 디스크 사용량 확인** (taint 없어도 반드시 수행):
+```bash
+for pair in "22018:211:worker01" "22019:212:worker02" "22020:213:worker03"; do
+    port="${pair%%:*}"; rest="${pair#*:}"; ip="${rest%%:*}"; name="${rest#*:}"
+    usage=$(ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+        -i /Users/yumunsang/Documents/yms-classic-key.pem -p $port debian@211.62.97.71 \
+        "sshpass -p 'Nextktc1!' ssh -o StrictHostKeyChecking=no ktcloud@192.168.100.$ip \
+        'df / --output=pcent | tail -1'" 2>/dev/null | tr -d ' %')
+    echo "$name: ${usage}%"
+done
+```
 
-1. 해당 노드에 SSH 접속하여 디스크 정리:
-   - proxmox 포트 매핑: worker01=22018/211, worker02=22019/212, worker03=22020/213
-   ```bash
-   ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
-       -i /Users/yumunsang/Documents/yms-classic-key.pem -p PORT debian@211.62.97.71 \
-       "sshpass -p 'Nextktc1!' ssh -o StrictHostKeyChecking=no ktcloud@192.168.100.IP \
-       'echo Nextktc1! | sudo -S bash -c \"
-           crictl rmi --prune 2>/dev/null
-           journalctl --vacuum-size=50M 2>/dev/null
-           apt-get clean 2>/dev/null
-           find /var/log -name \\\\\\\"*.gz\\\\\\\" -delete 2>/dev/null
-           find /var/log -name \\\\\\\"*.1\\\\\\\" -delete 2>/dev/null
-           df -h /
-       \"'"
-   ```
+**⚠️ 디스크 사용률 75% 이상이면 자동 정리 수행** (DiskPressure 예방):
 
+```bash
+# proxmox 포트 매핑: worker01=22018/211, worker02=22019/212, worker03=22020/213
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+    -i /Users/yumunsang/Documents/yms-classic-key.pem -p PORT debian@211.62.97.71 \
+    "sshpass -p 'Nextktc1!' ssh -o StrictHostKeyChecking=no ktcloud@192.168.100.IP \
+    'echo Nextktc1! | sudo -S bash -c \"
+        crictl rmi --prune 2>/dev/null
+        journalctl --vacuum-size=30M 2>/dev/null
+        apt-get clean 2>/dev/null
+        truncate -s 0 /var/log/syslog 2>/dev/null
+        truncate -s 0 /var/log/kern.log 2>/dev/null
+        find /var/log -name \\\\\\\"*.gz\\\\\\\" -delete 2>/dev/null
+        find /var/log -name \\\\\\\"*.1\\\\\\\" -delete 2>/dev/null
+        find /tmp -type f -mtime +1 -delete 2>/dev/null
+        find /opt/local-path-provisioner/ -maxdepth 4 -name chunks -type d 2>/dev/null | while read d; do
+            parent=\\\\\\\$(dirname \\\\\\\$d)
+            mod=\\\\\\\$(stat -c %Y \\\\\\\$parent 2>/dev/null)
+            now=\\\\\\\$(date +%s)
+            age=\\\\\\\$(( (now - mod) / 86400 ))
+            if [ \\\\\\\$age -gt 2 ]; then rm -rf \\\\\\\$parent; fi
+        done
+        df -h /
+    \"'"
+```
+
+`disk-pressure` taint가 있거나 DiskPressure condition=True이면:
+1. 위 정리 수행 후
 2. taint 수동 제거:
    ```bash
    KUBECONFIG=~/.kube/config-k8s-lab kubectl taint nodes NODE node.kubernetes.io/disk-pressure:NoSchedule-
    ```
-
-3. 필요 시 kubelet 재시작:
+3. kubelet 재시작하여 condition 재평가:
    ```bash
-   # VM에서
-   echo Nextktc1! | sudo -S systemctl restart kubelet
+   ssh ... 'echo Nextktc1! | sudo -S systemctl restart kubelet'
    ```
+4. 30초 대기 후 DiskPressure=False 확인. 실패 시 사용자에게 보고.
+
+### 4c. 이전 실험 잔여물 확인
+
+```bash
+# Failed/Evicted pods 정리 (이전 실험의 F10 ResourceQuota 등 잔여물)
+KUBECONFIG=~/.kube/config-k8s-lab kubectl delete pods -A --field-selector=status.phase=Failed 2>/dev/null || true
+
+# ResourceQuota, LimitRange, NetworkPolicy 잔여물 제거
+KUBECONFIG=~/.kube/config-k8s-lab kubectl delete resourcequota -n boutique -l experiment=true 2>/dev/null || true
+KUBECONFIG=~/.kube/config-k8s-lab kubectl delete limitrange -n boutique --all 2>/dev/null || true
+KUBECONFIG=~/.kube/config-k8s-lab kubectl delete networkpolicy -n boutique --all 2>/dev/null || true
+
+# Boutique deployment replica 정상화 (모두 1/1)
+for deploy in $(KUBECONFIG=~/.kube/config-k8s-lab kubectl get deploy -n boutique -o name); do
+    KUBECONFIG=~/.kube/config-k8s-lab kubectl scale $deploy -n boutique --replicas=1 2>/dev/null
+done
+```
 
 ### 5. Prometheus/Loki 상태 확인 및 port-forward
 
@@ -143,7 +183,9 @@ KUBECONFIG=~/.kube/config-k8s-lab kubectl get pods -n boutique --field-selector=
 | Loki (localhost:3100) | OK / FAIL |
 | Worker 노드 | N/3 Ready |
 | Boutique pods | N/12 Running |
-| 디스크 이슈 | 있음/없음 |
+| DiskPressure condition | 모든 노드 False 확인 |
+| 디스크 사용률 (worker별) | N% (75% 미만이어야 안전) |
+| 실험 잔여물 (quota/policy) | 없음/있음 |
 
 ## Rules
 
@@ -151,3 +193,5 @@ KUBECONFIG=~/.kube/config-k8s-lab kubectl get pods -n boutique --field-selector=
 - 3회 시도 후에도 실패하면 사용자에게 보고하고 중단한다
 - 기존 실험 데이터(`results/`)는 절대 건드리지 않는다
 - 터널링 과정에서 클러스터 설정을 변경하지 않는다
+- **디스크 사용률 75% 이상이면 실험 진행 불가** — 자동 정리 수행 후 재확인
+- **DiskPressure condition이 True인 노드가 있으면 실험 진행 불가** — 정리 + kubelet 재시작 필수

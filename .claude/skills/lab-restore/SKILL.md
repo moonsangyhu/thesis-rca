@@ -168,9 +168,9 @@ kubectl get pods -n monitoring -l app.kubernetes.io/name=loki
 # Pending이면 disk-pressure 관련 → 디스크 정리 수행 (Step 7)
 ```
 
-### 7. Worker 노드 디스크 정리
+### 7. Worker 노드 디스크 정리 (강화)
 
-모든 Worker 노드에서 디스크 정리 수행:
+모든 Worker 노드에서 디스크 정리 수행. **기본 정리 + Prometheus TSDB 오래된 블록 + 대용량 로그 truncate**:
 
 ```bash
 # worker01 (22018 → 192.168.100.211)
@@ -184,11 +184,24 @@ for pair in "22018:211" "22019:212" "22020:213"; do
         -i /Users/yumunsang/Documents/yms-classic-key.pem -p $port debian@211.62.97.71 \
         "sshpass -p 'Nextktc1!' ssh -o StrictHostKeyChecking=no ktcloud@192.168.100.$ip \
         'echo Nextktc1! | sudo -S bash -c \"
+            # 기본 정리
             crictl rmi --prune 2>/dev/null
-            journalctl --vacuum-size=50M 2>/dev/null
+            journalctl --vacuum-size=30M 2>/dev/null
             apt-get clean 2>/dev/null
             find /var/log -name \\\\\\\"*.gz\\\\\\\" -delete 2>/dev/null
             find /var/log -name \\\\\\\"*.1\\\\\\\" -delete 2>/dev/null
+            find /tmp -type f -mtime +1 -delete 2>/dev/null
+            # 대용량 로그 truncate
+            truncate -s 0 /var/log/syslog 2>/dev/null
+            truncate -s 0 /var/log/kern.log 2>/dev/null
+            # Prometheus TSDB 오래된 블록 삭제 (2일 이상)
+            find /opt/local-path-provisioner/ -maxdepth 4 -name chunks -type d 2>/dev/null | while read d; do
+                parent=\\\\\\\$(dirname \\\\\\\$d)
+                mod=\\\\\\\$(stat -c %Y \\\\\\\$parent 2>/dev/null)
+                now=\\\\\\\$(date +%s)
+                age=\\\\\\\$(( (now - mod) / 86400 ))
+                if [ \\\\\\\$age -gt 2 ]; then rm -rf \\\\\\\$parent; echo deleted \\\\\\\$parent; fi
+            done
             df -h /
         \"'" 2>/dev/null
 done
@@ -199,6 +212,22 @@ disk-pressure taint가 남아있으면 제거:
 for node in k8s-worker01 k8s-worker02 k8s-worker03; do
     kubectl taint nodes $node node.kubernetes.io/disk-pressure:NoSchedule- 2>/dev/null || true
 done
+```
+
+DiskPressure condition 확인 — True이면 kubelet 재시작:
+```bash
+for pair in "22018:211:k8s-worker01" "22019:212:k8s-worker02" "22020:213:k8s-worker03"; do
+    port="${pair%%:*}"; rest="${pair#*:}"; ip="${rest%%:*}"; name="${rest#*:}"
+    dp=$(kubectl get node $name -o jsonpath='{.status.conditions[?(@.type=="DiskPressure")].status}')
+    if [ "$dp" = "True" ]; then
+        echo "Restarting kubelet on $name (DiskPressure=True)"
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+            -i /Users/yumunsang/Documents/yms-classic-key.pem -p $port debian@211.62.97.71 \
+            "sshpass -p 'Nextktc1!' ssh -o StrictHostKeyChecking=no ktcloud@192.168.100.$ip \
+            'echo Nextktc1! | sudo -S systemctl restart kubelet'"
+    fi
+done
+sleep 15
 ```
 
 ### 8. Cooldown 대기
@@ -215,6 +244,9 @@ sleep 30
 echo "=== Nodes ==="
 kubectl get nodes
 
+echo "=== Node Conditions ==="
+kubectl get nodes -o custom-columns='NAME:.metadata.name,READY:.status.conditions[?(@.type=="Ready")].status,DISK:.status.conditions[?(@.type=="DiskPressure")].status,MEM:.status.conditions[?(@.type=="MemoryPressure")].status'
+
 echo "=== Boutique Pods ==="
 kubectl get pods -n boutique
 
@@ -226,6 +258,20 @@ curl -s http://localhost:9090/-/ready 2>/dev/null || echo "NOT READY (port-forwa
 
 echo "=== Loki ==="
 curl -s http://localhost:3100/ready 2>/dev/null || echo "NOT READY (port-forward may need restart)"
+
+echo "=== Disk Usage ==="
+for pair in "22018:211:worker01" "22019:212:worker02" "22020:213:worker03"; do
+    port="${pair%%:*}"; rest="${pair#*:}"; ip="${rest%%:*}"; name="${rest#*:}"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+        -i /Users/yumunsang/Documents/yms-classic-key.pem -p $port debian@211.62.97.71 \
+        "sshpass -p 'Nextktc1!' ssh -o StrictHostKeyChecking=no ktcloud@192.168.100.$ip \
+        'df / --output=pcent | tail -1'" 2>/dev/null | xargs -I{} echo "$name: {}"
+done
+
+echo "=== Experiment Residuals ==="
+kubectl get resourcequota -n boutique --no-headers 2>/dev/null | wc -l | xargs -I{} echo "ResourceQuotas: {}"
+kubectl get limitrange -n boutique --no-headers 2>/dev/null | wc -l | xargs -I{} echo "LimitRanges: {}"
+kubectl get networkpolicy -n boutique --no-headers 2>/dev/null | wc -l | xargs -I{} echo "NetworkPolicies: {}"
 ```
 
 ### 10. 결과 보고
@@ -235,18 +281,22 @@ curl -s http://localhost:3100/ready 2>/dev/null || echo "NOT READY (port-forward
 | 항목 | 상태 | 비고 |
 |------|------|------|
 | Worker 노드 | N/3 Ready | |
+| DiskPressure condition | 모든 노드 False | ⚠️ True이면 실험 불가 |
 | Boutique pods | N/12 Running | |
 | disk-pressure taint | 있음/없음 | |
 | Evicted pods 잔여 | N개 | |
 | Prometheus | Ready/Not Ready | |
 | Loki | Ready/Not Ready | |
-| 디스크 사용률 (최대) | N% | |
+| 디스크 사용률 (worker별) | N% | ⚠️ 75% 이상이면 경고 |
+| 실험 잔여물 (quota/policy) | N개 | 0이어야 정상 |
+
+**⚠️ DiskPressure=True 또는 디스크 75% 이상인 노드가 있으면 "실험 환경 미준비" 상태로 보고한다.**
 
 ## Rules
 
 - **기존 실험 데이터(`results/`)는 절대 건드리지 않는다**
 - fault injection 복원 시 `rollout undo`를 우선 사용 (이전 정상 상태로 돌아감)
 - 3회 재시도 후에도 복원 안 되면 사용자에게 보고
-- 디스크 정리 시 `/opt/local-path-provisioner/` 데이터는 삭제하지 않는다 (Prometheus/Loki PV)
+- 디스크 정리 시 **Prometheus TSDB 오래된 블록(2일 이상)은 삭제 가능** (최근 데이터는 보존)
 - 정상화가 완료되어야 다음 실험 진행 가능
 - Prometheus/Loki port-forward가 끊겼으면 재시작 안내 (또는 `/lab-tunnel` 재실행)
