@@ -25,3 +25,25 @@
 - V5a: Structured Symptom Extraction → Diagnosis 2단계 분리 (프롬프트 구조)
 - V5b: Confidence-Weighted Self-Consistency Voting (생성 전략)
 - V5c: Differential Evaluator + 구체적 피드백 Retry (하네스 개선)
+
+---
+
+### 2. V5 실험 계획서 + 리뷰 + 코드 구현 — 2026-04-08
+
+- **수정 에이전트**: @experiment-planner, @hypothesis-reviewer, 오케스트레이터
+- **증상/문제**: V5 실험 코��� 필요
+- **원인**: deep-analysis에서 도출된 V5a(2단계 분리) 가설 구현
+- **수정 내용**:
+  1. ���획서: `docs/plans/experiment_plan_v5.md` (상세 설계)
+  2. 리뷰: `docs/plans/review_v5.md` (방법론 비평, 교란 변수)
+  3. 코드: `experiments/v5/` 5개 파일 생성 (engine, prompts, config, run, __init__)
+  4. 리뷰 반영: MAX_TOKENS_EXTRACTION 1024→1536, signal count fallback(< 3)
+- **수정 파일**:
+  - `experiments/v5/__init__.py` (신규)
+  - `experiments/v5/config.py` (신규)
+  - `experiments/v5/prompts.py` (신규)
+  - `experiments/v5/engine.py` (신규)
+  - `experiments/v5/run.py` (신규)
+  - `docs/plans/experiment_plan_v5.md` (신규)
+  - `docs/plans/review_v5.md` (신규)
+- **상태**: 수정됨, dry-run 검증 완료
