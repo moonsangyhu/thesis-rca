@@ -125,6 +125,7 @@ Step 5: @results-writer  →  결과 분석
 - **`/commit-push`** — Git commit & push (실험 중이 아닐 때만)
 - **`/experiment-status`** — 실험 진행상황 확인 (PID, 진행률, trial별 결과)
 - **`/deep-analysis`** — 실험 개선점 심층 분석 (이전 데이터 분석 + LLM/AIOps 서칭 → 3개 개선 가설 도출)
+- **`/paper-reader`** — 논문 심층 읽기 (20년차 SRE 관점, LLM+클라우드 운영 적용 분석). **에이전트가 논문을 읽을 때 반드시 사용**
 - **`/paper-survey`** — AIOps 논문 조사 (최근 3년 LLM+RCA 논문 서베이, `docs/surveys/`에 결과 저장)
 
 실험 워크플로우: `/lab-tunnel` → 실험 수행 → `/lab-restore` → 다음 실험
