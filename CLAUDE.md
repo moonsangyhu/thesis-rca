@@ -55,8 +55,15 @@ python -m scripts.evaluate.analyze                         # 통계 분석
 사용자가 "다음 실험 진행해", "실험 해줘" 등 실험 수행을 지시하면 **반드시 아래 5단계를 순서대로** 실행한다. 각 라운드에서 **3개 가설을 병렬로 실행**하여 최선을 선택한다.
 
 ```
-Step 1: @experiment-planner  →  3개 가설 제안
-         - 이전 결과 깊이 분석 + AIOps 논문 조사
+Step 0.5: /deep-analysis  →  심층 분석 + 3개 가설 도출
+         - 이전 실험 데이터 깊이 분석 (오답 패턴, 버전 간 추세, 컨텍스트 구조)
+         - LLM/AIOps 기법 인터넷 서칭 참조
+         - 3개 개선 가설(a/b/c) 도출 + 데이터 근거 제시
+         - 산출물: docs/surveys/deep_analysis_v{N}.md
+         - commit-push
+                                   ⬇
+Step 1: @experiment-planner  →  3개 가설 상세 계획서 작성
+         - /deep-analysis 결과를 기반으로 상세 실험 계획 수립
          - 3개 개선 가설(a/b/c) 각각에 대한 상세 계획서 작성
          - 산출물: docs/plans/experiment_plan_v{N}a.md, v{N}b.md, v{N}c.md
          - commit-push
@@ -120,6 +127,7 @@ Step 5: @results-writer  →  3개 결과 비교 분석 + 최선 선택
 - **`/changelog`** — 변경 이력 기록. 모든 에이전트가 수정 작업 후 반드시 호출
 - **`/commit-push`** — Git commit & push (실험 중이 아닐 때만)
 - **`/experiment-status`** — 실험 진행상황 확인 (PID, 진행률, trial별 결과)
+- **`/deep-analysis`** — 실험 개선점 심층 분석 (이전 데이터 분석 + LLM/AIOps 서칭 → 3개 개선 가설 도출)
 - **`/paper-survey`** — AIOps 논문 조사 (최근 3년 LLM+RCA 논문 서베이, `docs/surveys/`에 결과 저장)
 
 실험 워크플로우: `/lab-tunnel` → 실험 수행 → `/lab-restore` → 다음 실험
