@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/data-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "./hooks/secret-scanner.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/experiment-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "./hooks/bash-guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
