@@ -1,0 +1,811 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-6f474777c9-4l6pq",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-6f474777c9-4l6pq",
+          "container": "server",
+          "terminated_reason": "Error"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "currencyservice-6f474777c9-4l6pq",
+          "container": "server",
+          "restarts": 3
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "currencyservice-6f474777c9-4l6pq",
+          "container": "",
+          "throttle_ratio": 0.983
+        },
+        {
+          "pod": "currencyservice-6f474777c9-4l6pq",
+          "container": "server",
+          "throttle_ratio": 0.952
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-6f474777c9-4l6pq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": false,
+              "restartCount": 4,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded",
+          "object": "adservice-d88c76b44-p8r5c",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-04-09T06:25:51Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded",
+          "object": "adservice-d88c76b44-p8r5c",
+          "kind": "Pod",
+          "count": 8,
+          "lastTimestamp": "2026-04-09T06:25:52Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.233:7000\" within 1s: context deadline exceeded",
+          "object": "currencyservice-6f474777c9-4l6pq",
+          "kind": "Pod",
+          "count": 11,
+          "lastTimestamp": "2026-04-09T06:30:52Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.2.233:7000\" within 1s: context deadline exceeded",
+          "object": "currencyservice-6f474777c9-4l6pq",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-04-09T06:31:02Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "currencyservice-6f474777c9-4l6pq",
+          "describe_excerpt": "    Host Port:      0/TCP (grpc)\n    State:          Running\n      Started:      Thu, 09 Apr 2026 15:32:21 +0900\n    Ready:          False\n    Restart Count:  4\n    Limits:\n      cpu:     5m\n      memory:  128Mi\n    Requests:\n      cpu:      5m\n      memory:   64Mi\n    Liveness:   grpc <pod>:7000  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:7000  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:              7000\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-b7ft7 (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-b7ft7:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason     Age                    From               Message\n  ----     ------     ----                   ----               -------\n  Normal   Scheduled  3m29s                  default-scheduler  Successfully assigned boutique/currencyservice-6f474777c9-4l6pq to k8s-worker02"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-qxlqk: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\ncurrencyservice-6f474777c9-4l6pq: Running\n  container/server: NOT READY restarts=4\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-5llhq: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-hhh6f: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/adservice-d88c76b44-p8r5c: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded (count=6)\n[Warning] Pod/adservice-d88c76b44-p8r5c: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded (count=8)\n[Warning] Pod/currencyservice-6f474777c9-4l6pq: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.233:7000\" within 1s: context deadline exceeded (count=11)\n[Warning] Pod/currencyservice-6f474777c9-4l6pq: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.2.233:7000\" within 1s: context deadline exceeded (count=6)\n\n## Metric Anomalies\nCPU throttled: currencyservice-6f474777c9-4l6pq/ (98%), currencyservice-6f474777c9-4l6pq/server (95%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F7",
+    "trial": 5,
+    "system": "A",
+    "identified_fault_type": "CPU Throttling and Readiness Probes Failures",
+    "root_cause": "The 'currencyservice' pod is experiencing severe CPU throttling, leading to readiness probe failures and consequently causing service availability issues.",
+    "confidence": 0.8,
+    "affected_components": [
+      "currencyservice",
+      "frontend"
+    ],
+    "remediation": [
+      "Review the resource limits for the 'currencyservice' pod and adjust as necessary.",
+      "Investigate the readiness probe configuration for the affected services."
+    ],
+    "detail": "The high CPU throttling percentages indicate the 'currencyservice' pod is exceeding its allocated limits, leading to readiness probe failures. This impacts other services relying on 'currencyservice', as the frontend is showing '0 endpoints'. Adjusting resource limits should prevent further service disruption. Additionally, the readiness probe timeout may need tuning.",
+    "reasoning": "In Step 1, all nodes are in 'Ready' state, with no purported conditions indicating node-level issues. In Step 2, while most pods are 'Running', the 'currencyservice-6f474777c9-4l6pq' pod is notable for showing readiness probe failures and significant CPU throttling (98% and 95% respectively). These failures suggest that its service availability is likely impacted due to resource constraints. In Step 3, the frontend service is noted to have '0 endpoints', which could signify issues related to the noted readiness probe failures or the CPU throttling in the respective pod handling requests. In Step 4, no network-related issues were flagged. Lastly, in Step 5, the CPU throttling above 50% indicates resource exhaustion likely affecting overall performance and availability. This links the high CPU usage to the readiness probe failures observed. Therefore, while the '0 endpoints' condition is present, it appears to stem from the resource constraints experienced by the 'currencyservice' pod, establishing this as a cascading effect and reinforcing that resource issues are primary.",
+    "root_cause_ko": "‘currencyservice’ 파드가 심각한 CPU 제한을 겪고 있어 준비 탐지 실패가 발생하고, 결과적으로 서비스 가용성 문제를 일으킴.",
+    "remediation_ko": [
+      "'currencyservice' 파드의 리소스 제한을 검토하고 필요에 따라 조정하십시오.",
+      "'currencyservice'와 같은 영향을 받는 서비스의 준비 탐지 구성에 대해 조사하십시오."
+    ],
+    "detail_ko": "높은 CPU 제한 비율은 ‘currencyservice’ 파드가 할당된 제한을 초과하고 있음을 나타내며, 이로 인해 준비 탐지 실패가 발생합니다. 이는 'currencyservice'에 의존하는 다른 서비스에도 영향을 미치며, 프런트엔드는 '0 엔드포인트'를 표시하고 있습니다. 리소스 제한 조정을 통해 추가 서비스 중단을 방지해야 합니다. 또한 준비 탐지 시간 초과 조정이 필요할 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "metric",
+        "source": "CPU throttled: currencyservice-6f474777c9-4l6pq",
+        "content": "CPU throttled: currencyservice-6f474777c9-4l6pq/ (98%), currencyservice-6f474777c9-4l6pq/server (95%)",
+        "supports": "Indicates severe resource constraints affecting service availability.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Pod/currencyservice-6f474777c9-4l6pq",
+        "content": "Unhealthy - Readiness probe failed: timeout: failed to connect service '10.0.2.233:7000' within 1s: context deadline exceeded (count=11)",
+        "supports": "Indicates that the readiness probe failures are linked to service unavailability directly.",
+        "verified": true,
+        "match_ratio": 0.93
+      },
+      {
+        "type": "event",
+        "source": "Services with 0 endpoints: frontend",
+        "content": "Services with 0 endpoints: frontend",
+        "supports": "Signals service availability issues potentially linked to the 'currencyservice' pod.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The '0 endpoints' for the frontend service could be due to a network issue or misconfiguration.",
+        "confidence": 0.4,
+        "reason_rejected": "No network-related events or log errors indicate an underlying network issue; the evidence primarily points toward resource limits affecting readiness."
+      }
+    ],
+    "confidence_2nd": 0.7,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The analysis effectively references metrics and events present in the context. However, it could strengthen the explanation about how the 0 endpoints directly connect to the issues caused by the currencyservice. While alternative hypotheses were considered, the reasoning for rejecting the '0 endpoints' due to a network issue could have included more detail regarding why a configuration issue was ruled out. Overall, it demonstrates solid logic and grounding, but providing more thorough reasoning around alternative hypotheses would improve the completeness.",
+    "retry_count": 1,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The diagnosis identifies CPU throttling as the root cause mechanism, which aligns with the ground truth. However, it introduces additional details related to readiness probe failures without specifically addressing the significant latency issue caused by currency conversion, which is a key symptom mentioned in the ground truth.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 14193,
+    "prompt_tokens": 4816,
+    "completion_tokens": 1193,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"In Step 1, all nodes are in 'Ready' state, with no purported conditions indicating node-level issues. In Step 2, while most pods are 'Running', the 'currencyservice-6f474777c9-4l6pq' pod is notable for showing readiness probe failures and significant CPU throttling (98% and 95% respectively). These failures suggest that its service availability is likely impacted due to resource constraints. In Step 3, the frontend service is noted to have '0 endpoints', which could signify issues related to the noted readiness probe failures or the CPU throttling in the respective pod handling requests. In Step 4, no network-related issues were flagged. Lastly, in Step 5, the CPU throttling above 50% indicates resource exhaustion likely affecting overall performance and availability. This links the high CPU usage to the readiness probe failures observed. Therefore, while the '0 endpoints' condition is present, it appears to stem from the resource constraints experienced by the 'currencyservice' pod, establishing this as a cascading effect and reinforcing that resource issues are primary.\",\n  \"identified_fault_type\": \"CPU Throttling and Readiness Probes Failures\",\n  \"root_cause\": \"The 'currencyservice' pod is experiencing severe CPU throttling, leading to readiness probe failures and consequently causing service availability issues.\",\n  \"root_cause_ko\": \"‘currencyservice’ 파드가 심각한 CPU 제한을 겪고 있어 준비 탐지 실패가 발생하고, 결과적으로 서비스 가용성 문제를 일으킴.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.7,\n  \"affected_components\": [\"currencyservice\", \"frontend\"],\n  \"remediation\": [\"Review the resource limits for the 'currencyservice' pod and adjust as necessary.\", \"Investigate the readiness probe configuration for the affected services.\"],\n  \"remediation_ko\": [\"'currencyservice' 파드의 리소스 제한을 검토하고 필요에 따라 조정하십시오.\", \"'currencyservice'와 같은 영향을 받는 서비스의 준비 탐지 구성에 대해 조사하십시오.\"],\n  \"detail\": \"The high CPU throttling percentages indicate the 'currencyservice' pod is exceeding its allocated limits, leading to readiness probe failures. This impacts other services relying on 'currencyservice', as the frontend is showing '0 endpoints'. Adjusting resource limits should prevent further service disruption. Additionally, the readiness probe timeout may need tuning.\",\n  \"detail_ko\": \"높은 CPU 제한 비율은 ‘currencyservice’ 파드가 할당된 제한을 초과하고 있음을 나타내며, 이로 인해 준비 탐지 실패가 발생합니다. 이는 'currencyservice'에 의존하는 다른 서비스에도 영향을 미치며, 프런트엔드는 '0 엔드포인트'를 표시하고 있습니다. 리소스 제한 조정을 통해 추가 서비스 중단을 방지해야 합니다. 또한 준비 탐지 시간 초과 조정이 필요할 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"metric\",\n      \"source\": \"CPU throttled: currencyservice-6f474777c9-4l6pq\",\n      \"content\": \"CPU throttled: currencyservice-6f474777c9-4l6pq/ (98%), currencyservice-6f474777c9-4l6pq/server (95%)\",\n      \"supports\": \"Indicates severe resource constraints affecting service availability.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Pod/currencyservice-6f474777c9-4l6pq\",\n      \"content\": \"Unhealthy - Readiness probe failed: timeout: failed to connect service '10.0.2.233:7000' within 1s: context deadline exceeded (count=11)\",\n      \"supports\": \"Indicates that the readiness probe failures are linked to service unavailability directly.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Services with 0 endpoints: frontend\",\n      \"content\": \"Services with 0 endpoints: frontend\",\n      \"supports\": \"Signals service availability issues potentially linked to the 'currencyservice' pod.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The '0 endpoints' for the frontend service could be due to a network issue or misconfiguration.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No network-related events or log errors indicate an underlying network issue; the evidence primarily points toward resource limits affecting readiness.\"\n    }\n  ]\n}"
+}

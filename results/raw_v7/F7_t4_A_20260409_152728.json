@@ -1,0 +1,830 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-d88c76b44-p8r5c",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-d88c76b44-p8r5c",
+          "container": "server",
+          "terminated_reason": "Error"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "adservice-d88c76b44-p8r5c",
+          "container": "server",
+          "restarts": 2
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "adservice-d88c76b44-p8r5c",
+          "container": "",
+          "throttle_ratio": 0.987
+        },
+        {
+          "pod": "adservice-d88c76b44-p8r5c",
+          "container": "server",
+          "throttle_ratio": 0.982
+        },
+        {
+          "pod": "adservice-d88c76b44-p8r5c",
+          "container": "server",
+          "throttle_ratio": 1.0
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [
+        {
+          "node": "k8s-worker03",
+          "condition": "DiskPressure",
+          "status": "unhealthy"
+        },
+        {
+          "node": "k8s-worker01",
+          "condition": "DiskPressure",
+          "status": "unhealthy"
+        }
+      ],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "adservice-d88c76b44-p8r5c",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": false,
+              "restartCount": 2,
+              "state": [
+                "running"
+              ],
+              "lastTerminatedReason": "Error"
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.4.174:3550\" within 1s: context deadline exceeded",
+          "object": "productcatalogservice-8449f4ccd6-wm84l",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T06:17:10Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.4.174:3550\" within 1s: context deadline exceeded",
+          "object": "productcatalogservice-8449f4ccd6-wm84l",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T06:17:10Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded",
+          "object": "adservice-d88c76b44-p8r5c",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-04-09T06:25:51Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded",
+          "object": "adservice-d88c76b44-p8r5c",
+          "kind": "Pod",
+          "count": 8,
+          "lastTimestamp": "2026-04-09T06:25:52Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [
+            "DiskPressure"
+          ],
+          "taints": [
+            "node.kubernetes.io/disk-pressure"
+          ]
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [
+            "DiskPressure"
+          ],
+          "taints": [
+            "node.kubernetes.io/disk-pressure"
+          ]
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "adservice-d88c76b44-p8r5c",
+          "describe_excerpt": "    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 15:25:56 +0900\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    143\n      Started:      Thu, 09 Apr 2026 15:24:59 +0900\n      Finished:     Thu, 09 Apr 2026 15:25:54 +0900\n    Ready:          False\n    Restart Count:  2\n    Limits:\n      cpu:     5m\n      memory:  300Mi\n    Requests:\n      cpu:      5m\n      memory:   180Mi\n    Liveness:   grpc <pod>:9555  delay=20s timeout=1s period=15s #success=1 #failure=3\n    Readiness:  grpc <pod>:9555  delay=20s timeout=1s period=15s #success=1 #failure=3\n    Environment:\n      PORT:  9555\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-885wk (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-885wk:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\nadservice-d88c76b44-p8r5c: Running\n  container/server: NOT READY restarts=2\n    last terminated: Error (exit code ?)\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-qxlqk: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-5llhq: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-hhh6f: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/productcatalogservice-8449f4ccd6-wm84l: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.174:3550\" within 1s: context deadline exceeded (count=3)\n[Warning] Pod/productcatalogservice-8449f4ccd6-wm84l: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.4.174:3550\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/adservice-d88c76b44-p8r5c: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded (count=6)\n[Warning] Pod/adservice-d88c76b44-p8r5c: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded (count=8)\n\n## Metric Anomalies\nCPU throttled: adservice-d88c76b44-p8r5c/ (99%), adservice-d88c76b44-p8r5c/server (98%), adservice-d88c76b44-p8r5c/server (100%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready | issues: DiskPressure | taints: node.kubernetes.io/disk-pressure\nk8s-worker02: Ready\nk8s-worker03: Ready | issues: DiskPressure | taints: node.kubernetes.io/disk-pressure",
+  "rca_output": {
+    "fault_id": "F7",
+    "trial": 4,
+    "system": "A",
+    "identified_fault_type": "Disk Pressure on Nodes",
+    "root_cause": "Disk pressure on k8s-worker01 and k8s-worker03 nodes is causing pod readiness and liveness probe failures in adservice and productcatalogservice.",
+    "confidence": 0.8,
+    "affected_components": [
+      "k8s-worker01",
+      "k8s-worker03",
+      "adservice-d88c76b44-p8r5c",
+      "productcatalogservice-8449f4ccd6-wm84l"
+    ],
+    "remediation": [
+      "Free up disk space on the affected nodes (k8s-worker01 and k8s-worker03).",
+      "Ensure proper resource allocation to prevent DiskPressure."
+    ],
+    "detail": "The nodes k8s-worker01 and k8s-worker03 are experiencing DiskPressure, which leads to pod readiness and liveness checks failing. This condition needs to be addressed to restore healthy pod status and reliable service performance. A thorough disk usage cleanup or scaling may be required.",
+    "reasoning": "Step 1: Checked Node Health and found that k8s-worker01 and k8s-worker03 have DiskPressure conditions, indicating a potential node-level issue. Step 2: Analyzed Pod Status, where adservice-d88c76b44-p8r5c is not healthy, with readiness and liveness probe failures but didn't find OOMKilled or CrashLoopBackOff. Instead, the symptoms point towards resource constraints likely linked to node health. Step 3: Service frontend shows 0 endpoints; however, it appears this is secondary to the node issues causing pod unavailability. Thus, I continue with the node-level issue as my primary focus. Step 4: Network issues were not checked further as the node issues take precedence. Step 5: Resource limits were not the direct issue since 0 endpoints are more likely tied to node resource constraints as well, ranking the node issue higher. Therefore, I conclude that the root cause is tied to node health affecting pod availability.",
+    "root_cause_ko": "k8s-worker01 및 k8s-worker03 노드의 디스크 압력이 adservice 및 productcatalogservice의 준비 및 생존성 프로브 실패를 유발하고 있습니다.",
+    "remediation_ko": [
+      "영향을 받는 노드(k8s-worker01 및 k8s-worker03)의 디스크 공간을 확보하십시오.",
+      "DiskPressure를 방지하기 위해 적절한 리소스 배분을 보장하십시오."
+    ],
+    "detail_ko": "k8s-worker01 및 k8s-worker03 노드에서 DiskPressure가 발생하고 있으며, 이로 인해 포드 준비 및 생존성 체크가 실패하고 있습니다. 이 문제를 해결해야 건강한 포드 상태와 신뢰할 수 있는 서비스 성능을 복원할 수 있습니다. 포트 사용량 정리 또는 스케일링이 필요할 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/adservice-d88c76b44-p8r5c: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.4.175:9555\" within 1s: context deadline exceeded (count=6)",
+        "supports": "Indicates that the pod's liveness check is failing due to insufficient resources, likely caused by DiskPressure.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Node Status",
+        "content": "k8s-worker01: Ready | issues: DiskPressure | taints: node.kubernetes.io/disk-pressure",
+        "supports": "Confirms that the node is under DiskPressure, affecting pod health.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Pod resource contention causing readiness/liveness checks to fail.",
+        "confidence": 0.4,
+        "reason_rejected": "No evidence of resource limits being exceeded apart from node disk pressure, which is the primary issue."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The diagnosis provides strong evidence grounding and logical reasoning connecting the Disk Pressure on nodes to pod readiness and liveness failures. However, while the alternative hypothesis was considered and rejected, it would benefit from further detail or additional alternative explanations related to the pods experiencing issues. Additionally, since the metrics show CPU throttling on adservice, further exploration of this issue could strengthen the analysis. Confidence of 0.8 is appropriate given the evidence provided.",
+    "retry_count": 0,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis incorrectly identifies 'Disk Pressure' as the issue, while the ground truth indicates that the root cause is related to CPU limits affecting startup time of the adservice. There is no alignment between the identified fault and the actual root cause mechanism, resulting in a complete mismatch.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 13574,
+    "prompt_tokens": 4693,
+    "completion_tokens": 1098,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health and found that k8s-worker01 and k8s-worker03 have DiskPressure conditions, indicating a potential node-level issue. Step 2: Analyzed Pod Status, where adservice-d88c76b44-p8r5c is not healthy, with readiness and liveness probe failures but didn't find OOMKilled or CrashLoopBackOff. Instead, the symptoms point towards resource constraints likely linked to node health. Step 3: Service frontend shows 0 endpoints; however, it appears this is secondary to the node issues causing pod unavailability. Thus, I continue with the node-level issue as my primary focus. Step 4: Network issues were not checked further as the node issues take precedence. Step 5: Resource limits were not the direct issue since 0 endpoints are more likely tied to node resource constraints as well, ranking the node issue higher. Therefore, I conclude that the root cause is tied to node health affecting pod availability.\",\n  \"identified_fault_type\": \"Disk Pressure on Nodes\",\n  \"root_cause\": \"Disk pressure on k8s-worker01 and k8s-worker03 nodes is causing pod readiness and liveness probe failures in adservice and productcatalogservice.\",\n  \"root_cause_ko\": \"k8s-worker01 및 k8s-worker03 노드의 디스크 압력이 adservice 및 productcatalogservice의 준비 및 생존성 프로브 실패를 유발하고 있습니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"k8s-worker01\", \"k8s-worker03\", \"adservice-d88c76b44-p8r5c\", \"productcatalogservice-8449f4ccd6-wm84l\"],\n  \"remediation\": [\"Free up disk space on the affected nodes (k8s-worker01 and k8s-worker03).\", \"Ensure proper resource allocation to prevent DiskPressure.\"],\n  \"remediation_ko\": [\"영향을 받는 노드(k8s-worker01 및 k8s-worker03)의 디스크 공간을 확보하십시오.\", \"DiskPressure를 방지하기 위해 적절한 리소스 배분을 보장하십시오.\"],\n  \"detail\": \"The nodes k8s-worker01 and k8s-worker03 are experiencing DiskPressure, which leads to pod readiness and liveness checks failing. This condition needs to be addressed to restore healthy pod status and reliable service performance. A thorough disk usage cleanup or scaling may be required.\",\n  \"detail_ko\": \"k8s-worker01 및 k8s-worker03 노드에서 DiskPressure가 발생하고 있으며, 이로 인해 포드 준비 및 생존성 체크가 실패하고 있습니다. 이 문제를 해결해야 건강한 포드 상태와 신뢰할 수 있는 서비스 성능을 복원할 수 있습니다. 포트 사용량 정리 또는 스케일링이 필요할 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/adservice-d88c76b44-p8r5c: Unhealthy - Liveness probe failed: timeout: failed to connect service \\\"10.0.4.175:9555\\\" within 1s: context deadline exceeded (count=6)\",\n      \"supports\": \"Indicates that the pod's liveness check is failing due to insufficient resources, likely caused by DiskPressure.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Node Status\",\n      \"content\": \"k8s-worker01: Ready | issues: DiskPressure | taints: node.kubernetes.io/disk-pressure\",\n      \"supports\": \"Confirms that the node is under DiskPressure, affecting pod health.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Pod resource contention causing readiness/liveness checks to fail.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No evidence of resource limits being exceeded apart from node disk pressure, which is the primary issue.\"\n    }\n  ]\n}"
+}

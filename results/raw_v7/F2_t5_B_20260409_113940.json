@@ -1,0 +1,914 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-7b7d67498c-m4nqv",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-7b7d67498c-m4nqv",
+          "container": "adservice",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "adservice-7b7d67498c-m4nqv",
+          "container": "adservice",
+          "terminated_reason": "Error"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "adservice-7b7d67498c-m4nqv",
+          "container": "adservice",
+          "restarts": 3
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "adservice-7b7d67498c-m4nqv",
+          "container": "server",
+          "throttle_ratio": 0.652
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "adservice-7b7d67498c-m4nqv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "adservice",
+              "ready": false,
+              "restartCount": 4,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "Error"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/bin/sh\": stat /bin/sh: no such file or directory: unknown",
+          "object": "shippingservice-7d866b6f4d-dtgwd",
+          "kind": "Pod",
+          "count": 4,
+          "lastTimestamp": "2026-04-09T02:29:53Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container shippingservice in pod shippingservice-7d866b6f4d-dtgwd_boutique(75f7800a-ca1e-46a2-a9ee-7ba13a47d76b)",
+          "object": "shippingservice-7d866b6f4d-dtgwd",
+          "kind": "Pod",
+          "count": 7,
+          "lastTimestamp": "2026-04-09T02:30:22Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "adservice-7b7d67498c-m4nqv",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T02:35:51Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container adservice in pod adservice-7b7d67498c-m4nqv_boutique(ced7289e-4b74-4ed9-8fd2-d5ba911c07a5)",
+          "object": "adservice-7b7d67498c-m4nqv",
+          "kind": "Pod",
+          "count": 7,
+          "lastTimestamp": "2026-04-09T02:36:47Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "adservice-7b7d67498c-m4nqv",
+          "describe_excerpt": "    Host Port:     <none>\n    Command:\n      /bin/sh\n      -c\n      exit 2\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    2\n      Started:      Thu, 09 Apr 2026 11:37:01 +0900\n      Finished:     Thu, 09 Apr 2026 11:37:01 +0900\n    Ready:          False\n    Restart Count:  4\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vhnvx (ro)\n  server:\n    Container ID:   containerd://6a60e026e0e17a5adaa47dfdab675f774716195db6d9e3ab6825066389f0266b\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/adservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/adservice@sha256:2abbc0505d527711ff8ba233aaf6e0590f72acd86c016332ea3a5f2595ea70a8\n    Port:           9555/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 11:35:30 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     300m\n      memory:  300Mi\n    Requests:\n      cpu:      200m\n      memory:   180Mi\n    Liveness:   grpc <pod>:9555  delay=20s timeout=1s period=15s #success=1 #failure=3\n    Readiness:  grpc <pod>:9555  delay=20s timeout=1s period=15s #success=1 #failure=3\n    Environment:\n      PORT:  9555\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vhnvx (ro)\nConditions:"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:6611fed964896c38e1113ca1095edcae13b9880e",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "True",
+            "message": "Helm install succeeded for release argocd/argocd.v1 with chart argo-cd@7.9.1"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/loki.v1 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastUpdate": "2026-04-09T01:17:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\nadservice-7b7d67498c-m4nqv: Running\n  container/adservice: NOT READY (CrashLoopBackOff) restarts=4\n    last terminated: Error (exit code ?)\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-s98rw: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-9dptt: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-vt2pv: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/shippingservice-7d866b6f4d-dtgwd: Failed - Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/bin/sh\": stat /bin/sh: no such file or directory: unknown (count=4)\n[Warning] Pod/shippingservice-7d866b6f4d-dtgwd: BackOff - Back-off restarting failed container shippingservice in pod shippingservice-7d866b6f4d-dtgwd_boutique(75f7800a-ca1e-46a2-a9ee-7ba13a47d76b) (count=7)\n[Warning] Pod/adservice-7b7d67498c-m4nqv: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/adservice-7b7d67498c-m4nqv: BackOff - Back-off restarting failed container adservice in pod adservice-7b7d67498c-m4nqv_boutique(ced7289e-4b74-4ed9-8fd2-d5ba911c07a5) (count=7)\n\n## Metric Anomalies\nCPU throttled: adservice-7b7d67498c-m4nqv/server (65%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:66)\n- argocd: Ready (rev: main@sha1:f6)\n- flux-system: Ready (rev: main@sha1:f6)\n- infrastructure: Ready (rev: main@sha1:f6)\n- monitoring: Ready (rev: main@sha1:f6)\n### FluxCD HelmReleases\n- argocd/argocd: Ready\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/pod-crashloopbackoff.md | Score: 0.82]\n# Pod CrashLoopBackOff Diagnosis\n# Pod CrashLoopBackOff Diagnosis\n\n## Overview\nCrashLoopBackOff occurs when a container repeatedly starts, crashes, and Kubernetes backs off restarting it. The backoff interval doubles each time (10s, 20s, 40s... up to 5 minutes). This is one of the most common pod failure states and can stem from application errors, misconfigurations, resource exhaustion, or failed health checks.\n\n---\n[Source: runbooks/rca-f2-crashloopbackoff.md | Score: 0.82]\n# Runbook: F2 - CrashLoopBackOff Root Cause Analysis\n# Runbook: F2 - CrashLoopBackOff Root Cause Analysis\n\n## Trigger Conditions\nUse this runbook when pods are in `CrashLoopBackOff` state, containers are repeatedly restarting (restartCount > 3), or alerts fire for `KubePodCrashLooping`. Also applicable when a pod shows `Error` state between restarts.\n\n## Severity\n**Critical** — CrashLoopBackOff with exponential backoff means the service is unavailable for increasingly long periods. Downstream services will accumulate errors.\n\n---\n[Source: debugging/pod-crashloopbackoff.md | Score: 0.81]\n# Pod CrashLoopBackOff Diagnosis\n## Common Causes\n\n1. **Application startup failure**: The application exits immediately due to missing configuration, failed database connections, or initialization errors. Check logs for connection refused, missing env vars, or panic messages.\n\n2. **OOMKilled (Exit 137)**: The container exceeded its memory limit and was killed by the kernel OOM killer. Memory limit is too low or there is a memory leak.\n\n---\n[Source: runbooks/loki-log-analysis-runbook.md | Score: 0.79]\n# Runbook: Loki LogQL Analysis for Root Cause Analysis\ntep 4: Fault-type specific queries\n\n**F1 - OOMKilled:**\n```logql\n\n# Look for memory warnings before OOMKill\n{namespace=\"boutique\", pod=~\"frontend.*\"} |~ \"(?i)(out of memory|OOM|heap|memory allocation)\"\n\n# System-level OOM messages\n{job=\"systemd-journal\"} |= \"oom-kill\" | logfmt\n```\n\n**F2 - CrashLoopBackOff:**\n```logql\n\n# Last logs before crash (look for panic, fatal, unhandled exception)\n{namespace=\"boutique\", pod=~\"frontend.*\"} |~ \"(?i)(panic|fatal|exception|segfault|SIGABRT)\"\n\n---\n[Source: known-issues/init-container-failure.md | Score: 0.76]\n# Known Issue: Init Container Failure Prevents Main Container from Starting\n# Known Issue: Init Container Failure Prevents Main Container from Starting\n\n## Issue ID\nKI-019\n\n## Affected Components\n- All pods with `initContainers` configured\n- Applications with database dependency checks (wait-for-db pattern)\n- Applications with configuration initialization steps\n",
+  "rca_output": {
+    "fault_id": "F2",
+    "trial": 5,
+    "system": "B",
+    "identified_fault_type": "CrashLoopBackOff",
+    "root_cause": "Application misconfiguration in the adservice pod is causing it to fail readiness checks.",
+    "confidence": 0.8,
+    "affected_components": [
+      "adservice"
+    ],
+    "remediation": [
+      "Investigate the configuration and startup command of the adservice pod to ensure all dependencies and required files are correctly set up.",
+      "Increase resource limits if necessary to prevent CPU throttling."
+    ],
+    "detail": "The adservice pod is stuck in a CrashLoopBackOff state due to readiness probe failures. These failures indicate that the application is not starting correctly, possibly due to misconfiguration. The CPU throttling adds a layer of concern, but the readiness probe result is more critical indicating an issue with application logic or setup. A review of the application's startup process is necessary to identify what is failing.",
+    "reasoning": "Step 1: Checked node health and found all nodes are Ready without any pressure conditions. Proceeded to Step 2. Step 2: Found the adservice pod in 'CrashLoopBackOff' state with readiness probe failures, indicating a potential application misconfiguration. The readiness probe failure message indicates a timeout on a health check, which is a strong indicator of misconfiguration or an application issue. The adservice pod's CPU throttling was at 65%, which could suggest resource pressure, but the critical readiness probe failure hints more strongly at misconfiguration, given the absence of OOMKilled signals. Proceeded to Step 3. Step 3: Found no services showing 0 endpoints; specifically, the frontend has endpoints but may not be related to the primary issue with adservice. Proceeded to Step 4. Step 4: No abnormal network conditions noted. Proceeded to Step 5. Step 5: Found CPU throttling over 50%, possibly leading to performance degradation. However, since the readiness probe failures are more acute, I support the application misconfiguration hypothesis as more likely than just resource limits alone. Final diagnosis points to application misconfiguration for the adservice pod, with strong evidence from the readiness probe failures.",
+    "root_cause_ko": "adservice 포드에서 애플리케이션 구성 오류로 인해 준비 상태 검사를 실패하게 됩니다.",
+    "remediation_ko": [
+      "adservice 포드의 구성과 시작 명령을 조사하여 모든 종속성과 필요한 파일이 올바르게 설정되었는지 확인합니다.",
+      "CPU 스로틀링을 방지하려면 리소스 한계를 늘립니다."
+    ],
+    "detail_ko": "adservice 포드가 준비 상태 검사가 실패하여 CrashLoopBackOff 상태에 빠졌습니다. 이러한 실패는 애플리케이션이 제대로 시작되지 않음을 나타내며, 이는 잘못된 구성 때문일 수 있습니다. CPU 스로틀링이 우려를 더하지만, 준비 상태 검사 결과는 애플리케이션 논리나 설정에 문제가 있음을 더 어필합니다. 애플리케이션의 시작 프로세스를 검토하여 무엇이 실패하고 있는지 확인해야 합니다.",
+    "evidence_chain": [
+      {
+        "type": "pod status",
+        "source": "adservice-7b7d67498c-m4nqv",
+        "content": "Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)",
+        "supports": "Indicates a readiness probe failure due to application misconfiguration.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "CPU throttled",
+        "content": "adservice-7b7d67498c-m4nqv/server (65%)",
+        "supports": "Indicates potential resource throttling affecting pod performance.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Low resource limits causing the application to become unresponsive.",
+        "confidence": 0.5,
+        "reason_rejected": "While CPU throttling is noted, the specific readiness probe failure indicates configuration issues more strongly than simple resource limits."
+      }
+    ],
+    "confidence_2nd": 0.7,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence grounding is strong as all cited evidence is found in the input context. The reasoning chain connects the critical readiness probe failure and CPU throttling to propose application misconfiguration as a likely cause. However, there is a minor gap in differentiating the role of CPU throttling as it could still indicate resource limits affecting application performance, hence the alternative hypothesis could have been explored further. It's important to explicitly mention how the alternative could manifest within the symptoms already identified. Overall, the confidence level seems appropriate given the situation.",
+    "retry_count": 2,
+    "correctness_score": 0.5,
+    "correctness_reasoning": "The diagnosis mentions application misconfiguration and readiness probe failures, which are somewhat related to the ground truth, but it does not specify that the error is due to a missing required command-line flag. Therefore, while it identifies a symptom (CrashLoopBackOff) that is related to the issue, it does not pinpoint the exact root cause mechanism as detailed in the ground truth.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 11872,
+    "prompt_tokens": 6542,
+    "completion_tokens": 1140,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health and found all nodes are Ready without any pressure conditions. Proceeded to Step 2. Step 2: Found the adservice pod in 'CrashLoopBackOff' state with readiness probe failures, indicating a potential application misconfiguration. The readiness probe failure message indicates a timeout on a health check, which is a strong indicator of misconfiguration or an application issue. The adservice pod's CPU throttling was at 65%, which could suggest resource pressure, but the critical readiness probe failure hints more strongly at misconfiguration, given the absence of OOMKilled signals. Proceeded to Step 3. Step 3: Found no services showing 0 endpoints; specifically, the frontend has endpoints but may not be related to the primary issue with adservice. Proceeded to Step 4. Step 4: No abnormal network conditions noted. Proceeded to Step 5. Step 5: Found CPU throttling over 50%, possibly leading to performance degradation. However, since the readiness probe failures are more acute, I support the application misconfiguration hypothesis as more likely than just resource limits alone. Final diagnosis points to application misconfiguration for the adservice pod, with strong evidence from the readiness probe failures.\",\n  \"identified_fault_type\": \"CrashLoopBackOff\",\n  \"root_cause\": \"Application misconfiguration in the adservice pod is causing it to fail readiness checks.\",\n  \"root_cause_ko\": \"adservice 포드에서 애플리케이션 구성 오류로 인해 준비 상태 검사를 실패하게 됩니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.7,\n  \"affected_components\": [\"adservice\"],\n  \"remediation\": [\n    \"Investigate the configuration and startup command of the adservice pod to ensure all dependencies and required files are correctly set up.\",\n    \"Increase resource limits if necessary to prevent CPU throttling.\"\n  ],\n  \"remediation_ko\": [\n    \"adservice 포드의 구성과 시작 명령을 조사하여 모든 종속성과 필요한 파일이 올바르게 설정되었는지 확인합니다.\",\n    \"CPU 스로틀링을 방지하려면 리소스 한계를 늘립니다.\"\n  ],\n  \"detail\": \"The adservice pod is stuck in a CrashLoopBackOff state due to readiness probe failures. These failures indicate that the application is not starting correctly, possibly due to misconfiguration. The CPU throttling adds a layer of concern, but the readiness probe result is more critical indicating an issue with application logic or setup. A review of the application's startup process is necessary to identify what is failing.\",\n  \"detail_ko\": \"adservice 포드가 준비 상태 검사가 실패하여 CrashLoopBackOff 상태에 빠졌습니다. 이러한 실패는 애플리케이션이 제대로 시작되지 않음을 나타내며, 이는 잘못된 구성 때문일 수 있습니다. CPU 스로틀링이 우려를 더하지만, 준비 상태 검사 결과는 애플리케이션 논리나 설정에 문제가 있음을 더 어필합니다. 애플리케이션의 시작 프로세스를 검토하여 무엇이 실패하고 있는지 확인해야 합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"pod status\",\n      \"source\": \"adservice-7b7d67498c-m4nqv\",\n      \"content\": \"Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\",\n      \"supports\": \"Indicates a readiness probe failure due to application misconfiguration.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"CPU throttled\",\n      \"content\": \"adservice-7b7d67498c-m4nqv/server (65%)\",\n      \"supports\": \"Indicates potential resource throttling affecting pod performance.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Low resource limits causing the application to become unresponsive.\",\n      \"confidence\": 0.5,\n      \"reason_rejected\": \"While CPU throttling is noted, the specific readiness probe failure indicates configuration issues more strongly than simple resource limits.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/pod-crashloopbackoff.md",
+      "score": 0.8186968564987183
+    },
+    {
+      "source": "runbooks/rca-f2-crashloopbackoff.md",
+      "score": 0.8174520432949066
+    },
+    {
+      "source": "debugging/pod-crashloopbackoff.md",
+      "score": 0.8109278082847595
+    },
+    {
+      "source": "runbooks/loki-log-analysis-runbook.md",
+      "score": 0.7897622585296631
+    },
+    {
+      "source": "known-issues/init-container-failure.md",
+      "score": 0.7632453143596649
+    }
+  ]
+}

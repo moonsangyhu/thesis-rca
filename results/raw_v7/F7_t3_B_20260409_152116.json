@@ -1,0 +1,856 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-8449f4ccd6-wm84l",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "productcatalogservice-8449f4ccd6-wm84l",
+          "container": "",
+          "throttle_ratio": 0.836
+        },
+        {
+          "pod": "productcatalogservice-8449f4ccd6-wm84l",
+          "container": "server",
+          "throttle_ratio": 0.703
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-8449f4ccd6-wm84l",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.122:5050\" within 1s: context deadline exceeded",
+          "object": "checkoutservice-58448479cc-mfcz5",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T06:10:28Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.2.122:5050\" within 1s: context deadline exceeded",
+          "object": "checkoutservice-58448479cc-mfcz5",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T06:10:29Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.4.174:3550\" within 1s: context deadline exceeded",
+          "object": "productcatalogservice-8449f4ccd6-wm84l",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T06:17:10Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.4.174:3550\" within 1s: context deadline exceeded",
+          "object": "productcatalogservice-8449f4ccd6-wm84l",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T06:17:10Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:6611fed964896c38e1113ca1095edcae13b9880e",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "True",
+            "message": "Helm install succeeded for release argocd/argocd.v1 with chart argo-cd@7.9.1"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/loki.v1 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastUpdate": "2026-04-09T01:17:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-qxlqk: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-5llhq: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-8449f4ccd6-wm84l: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/checkoutservice-58448479cc-mfcz5: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.122:5050\" within 1s: context deadline exceeded (count=2)\n[Warning] Pod/checkoutservice-58448479cc-mfcz5: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.2.122:5050\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/productcatalogservice-8449f4ccd6-wm84l: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.174:3550\" within 1s: context deadline exceeded (count=3)\n[Warning] Pod/productcatalogservice-8449f4ccd6-wm84l: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.4.174:3550\" within 1s: context deadline exceeded (count=1)\n\n## Metric Anomalies\nCPU throttled: productcatalogservice-8449f4ccd6-wm84l/ (84%), productcatalogservice-8449f4ccd6-wm84l/server (70%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:66)\n- argocd: Ready (rev: main@sha1:f6)\n- flux-system: Ready (rev: main@sha1:f6)\n- infrastructure: Ready (rev: main@sha1:f6)\n- monitoring: Ready (rev: main@sha1:f6)\n### FluxCD HelmReleases\n- argocd/argocd: Ready\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: runbooks/rca-f7-cputhrottle.md | Score: 0.86]\n# Runbook: F7 - CPU Throttle Root Cause Analysis\nte.spec.containers[] | {name: .name, resources: .resources}'\n```\n\n### Step 4: Understand CPU limits vs requests ratio\nKubernetes CPU throttling is driven by CFS (Completely Fair Scheduler) quotas:\n- **Requests**: Used for scheduling (guaranteed CPU)\n- **Limits**: Enforced via CFS quotas — even if node has free CPU, a container is throttled when it hits its limit\n\n**Dangerous patterns:**\n- `limits.cpu` = `requests.cpu` (no burst headroom)\n- Very low `limits.cpu` (e.g., `100m`) with bursty workloads\n- `limits.cpu` not set (unlimited — but can cause noisy neighbor issues)\n\n---\n[Source: runbooks/prometheus-alerting-runbook.md | Score: 0.86]\n# Runbook: Prometheus Alert → RCA Workflow\n# F7: CPU Throttle  \n    - alert: ThesisCPUThrottleHigh\n      expr: |\n        rate(container_cpu_cfs_throttled_periods_total{namespace=\"online-boutique\", container!=\"\"}[5m])\n        / rate(container_cpu_cfs_periods_total{namespace=\"online-boutique\", container!=\"\"}[5m]) > 0.5\n      for: 5m\n      labels:\n        severity: warning\n        fault_type: F7\n      annotations:\n        summary: \"CPU throttle >50% for {{ \\$labels.container }} in {{ \\$labels.pod }}\"\n        runbook_url: \"docs/runbooks/rca-f7-cputhrott\n\n---\n[Source: debugging/cpu-throttling.md | Score: 0.85]\n# CPU Throttling Detection and Resolution\n## Overview\nCPU throttling occurs when a container's CPU usage exceeds its configured CPU limit. Unlike memory limits (which cause OOMKill), CPU limits use cgroup CPU quota to restrict CPU time without killing the process. The Linux kernel forces the container to pause when it has used its allocated CPU quota for the period (typically 100ms). Throttling causes increased latency and degraded throughput but does not crash the pod. It is often invisible without proper metrics, making it a stealthy performance \n\n---\n[Source: debugging/cpu-throttling.md | Score: 0.84]\n# CPU Throttling Detection and Resolution\nabels.pod }} is CPU throttled {{ $value | humanizePercentage }}\"\n\n# Alert: Severe CPU throttling above 75%\n- alert: ContainerCPUSevereThrottling\n  expr: |\n    rate(container_cpu_cfs_throttled_seconds_total{container!=\"\"}[5m])\n    / rate(container_cpu_cfs_periods_total{container!=\"\"}[5m]) > 0.75\n  for: 2m\n  labels:\n    severity: critical\n```\n\n## cgroup v2 Differences\n\n```bash\n\n# In newer kernels/distros using cgroup v2:\n\n# Path changes from /sys/fs/cgroup/cpu/ to /sys/fs/cgroup/\n\n# cpu.stat file contains:\n\n---\n[Source: runbooks/rca-f7-cputhrottle.md | Score: 0.83]\n# Runbook: F7 - CPU Throttle Root Cause Analysis\nu_cfs_periods_total{namespace=\"<namespace>\", container!=\"\"}[5m])\n\n# Top 10 most throttled containers\ntopk(10,\n  rate(container_cpu_cfs_throttled_periods_total{namespace=\"<namespace>\"}[5m])\n  / rate(container_cpu_cfs_periods_total{namespace=\"<namespace>\"}[5m])\n)\n\n# CPU usage vs limit\nsum by (pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"<namespace>\"}[5m]))\n  / sum by (pod, container) (kube_pod_container_resource_limits{resource=\"cpu\", namespace=\"<namespace>\"})\n",
+  "rca_output": {
+    "fault_id": "F7",
+    "trial": 3,
+    "system": "B",
+    "identified_fault_type": "CPU Throttling",
+    "root_cause": "The root cause of the issue is CPU throttling exceeding 75% on the productcatalogservice, causing connectivity problems with dependencies.",
+    "confidence": 0.8,
+    "affected_components": [
+      "productcatalogservice",
+      "frontend"
+    ],
+    "remediation": [
+      "Increase the CPU limit for the productcatalogservice.",
+      "Review the resource limits and requests configuration for the frontend service."
+    ],
+    "detail": "The primary issue is CPU throttling at 84% for the productcatalogservice, which is hindering its ability to respond to readiness and liveness probes. This situation has led to the frontend service having 0 endpoints due to service connectivity issues originating from the dependencies being throttled.",
+    "reasoning": "Step 1: All nodes are in 'Ready' state, so no node-related issues have been identified. Step 2: All pods are in 'Running' state, however, the checkoutservice and productcatalogservice have unhealthy probe failures indicating connectivity issues. Step 3: The frontend service shows 0 endpoints, which implies a potential issue; however, it needs reverse-tracing. Step 4: CPU throttling is observed with productcatalogservice at 84%, indicating resource limits setup concerns. Step 5: No ResourceQuota violations reported. Final diagnosis indicates a CPU throttling issue impacting pods' liveness and readiness.",
+    "root_cause_ko": "문제의 근본 원인은 productcatalogservice에서 CPU 제한을 초과하여 75%이상의 CPU 트로틀링이 발생하여 의존성 문제를 일으킨 것입니다.",
+    "remediation_ko": [
+      "productcatalogservice의 CPU 제한을 늘리세요.",
+      "frontend 서비스의 리소스 제한 및 요청 구성을 검토하세요."
+    ],
+    "detail_ko": "주요 문제는 productcatalogservice에서 CPU 제한이 84%에 이르러 readiness 및 liveness probe에 대응할 수 없는 상황입니다. 이로 인해 frontend 서비스는 의존성 문제로 인해 0개의 엔드포인트를 가지게되었습니다.",
+    "evidence_chain": [
+      {
+        "type": "metrics",
+        "source": "CPU throttled",
+        "content": "CPU throttled: productcatalogservice-8449f4ccd6-wm84l/ (84%)",
+        "supports": "indicates high CPU throttling contributing to service connectivity issues.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "events",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/productcatalogservice-8449f4ccd6-wm84l: Unhealthy - Readiness probe failed: timeout: failed to connect service '10.0.4.174:3550' within 1s: context deadline exceeded (count=3)",
+        "supports": "indicates failed readiness probe due to unresponsiveness potentially linked to CPU throttling.",
+        "verified": true,
+        "match_ratio": 0.94
+      },
+      {
+        "type": "events",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/checkoutservice-58448479cc-mfcz5: Unhealthy - Readiness probe failed: timeout: failed to connect service '10.0.2.122:5050' within 1s: context deadline exceeded (count=2)",
+        "supports": "the checkoutservice's failures may also be linked to resource constraints affecting inter-service communication.",
+        "verified": true,
+        "match_ratio": 0.94
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "A network policy issue is causing service communications to fail.",
+        "confidence": 0.4,
+        "reason_rejected": "No evidence of network policy drops or misconfigurations found in the logs or metrics."
+      }
+    ],
+    "confidence_2nd": 0.7,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 8.0,
+    "eval_confidence_calibration": 7.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence cited in the diagnosis correlates well with the original context. The metrics regarding CPU throttling for productcatalogservice were accurately referenced, as were the readiness probe failures for both productcatalogservice and checkoutservice, making them applicable. The rejection of the alternative hypothesis concerning network policies was well-founded given the lack of supporting evidence in the logs or metrics. However, while the reasoning is strong, a bit more clarity could be given to the connection between CPU throttling and the implications it has on other services, hence a slight reduction in scores for diagnostic logic and confidence calibration. The confidence level of 0.8 feels reasonable but could be tempered slightly since the diagnosis would benefit from more context on how CPU throttling specifically affects the identified connectivity issues.",
+    "retry_count": 0,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The diagnosis correctly identifies CPU throttling as the mechanism causing the issues, which aligns with the ground truth. However, it lacks specific details about the CPU limit being set to 5m and does not mention the expected symptoms related to slow product pages and gRPC deadlines. The connection to dependencies is mentioned but is not in the ground truth, which detracts from the accuracy of the diagnosis.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 13087,
+    "prompt_tokens": 6588,
+    "completion_tokens": 1109,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: All nodes are in 'Ready' state, so no node-related issues have been identified. Step 2: All pods are in 'Running' state, however, the checkoutservice and productcatalogservice have unhealthy probe failures indicating connectivity issues. Step 3: The frontend service shows 0 endpoints, which implies a potential issue; however, it needs reverse-tracing. Step 4: CPU throttling is observed with productcatalogservice at 84%, indicating resource limits setup concerns. Step 5: No ResourceQuota violations reported. Final diagnosis indicates a CPU throttling issue impacting pods' liveness and readiness.\",\n  \"identified_fault_type\": \"CPU Throttling\",\n  \"root_cause\": \"The root cause of the issue is CPU throttling exceeding 75% on the productcatalogservice, causing connectivity problems with dependencies.\",\n  \"root_cause_ko\": \"문제의 근본 원인은 productcatalogservice에서 CPU 제한을 초과하여 75%이상의 CPU 트로틀링이 발생하여 의존성 문제를 일으킨 것입니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.7,\n  \"affected_components\": [\"productcatalogservice\", \"frontend\"],\n  \"remediation\": [\"Increase the CPU limit for the productcatalogservice.\", \"Review the resource limits and requests configuration for the frontend service.\"],\n  \"remediation_ko\": [\"productcatalogservice의 CPU 제한을 늘리세요.\", \"frontend 서비스의 리소스 제한 및 요청 구성을 검토하세요.\"],\n  \"detail\": \"The primary issue is CPU throttling at 84% for the productcatalogservice, which is hindering its ability to respond to readiness and liveness probes. This situation has led to the frontend service having 0 endpoints due to service connectivity issues originating from the dependencies being throttled.\",\n  \"detail_ko\": \"주요 문제는 productcatalogservice에서 CPU 제한이 84%에 이르러 readiness 및 liveness probe에 대응할 수 없는 상황입니다. 이로 인해 frontend 서비스는 의존성 문제로 인해 0개의 엔드포인트를 가지게되었습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"metrics\",\n      \"source\": \"CPU throttled\",\n      \"content\": \"CPU throttled: productcatalogservice-8449f4ccd6-wm84l/ (84%)\",\n      \"supports\": \"indicates high CPU throttling contributing to service connectivity issues.\"\n    },\n    {\n      \"type\": \"events\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/productcatalogservice-8449f4ccd6-wm84l: Unhealthy - Readiness probe failed: timeout: failed to connect service '10.0.4.174:3550' within 1s: context deadline exceeded (count=3)\",\n      \"supports\": \"indicates failed readiness probe due to unresponsiveness potentially linked to CPU throttling.\"\n    },\n    {\n      \"type\": \"events\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/checkoutservice-58448479cc-mfcz5: Unhealthy - Readiness probe failed: timeout: failed to connect service '10.0.2.122:5050' within 1s: context deadline exceeded (count=2)\",\n      \"supports\": \"the checkoutservice's failures may also be linked to resource constraints affecting inter-service communication.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"A network policy issue is causing service communications to fail.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No evidence of network policy drops or misconfigurations found in the logs or metrics.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "runbooks/rca-f7-cputhrottle.md",
+      "score": 0.8635191023349762
+    },
+    {
+      "source": "runbooks/prometheus-alerting-runbook.md",
+      "score": 0.8579504489898682
+    },
+    {
+      "source": "debugging/cpu-throttling.md",
+      "score": 0.8543158173561096
+    },
+    {
+      "source": "debugging/cpu-throttling.md",
+      "score": 0.8449614346027374
+    },
+    {
+      "source": "runbooks/rca-f7-cputhrottle.md",
+      "score": 0.8261458873748779
+    }
+  ]
+}

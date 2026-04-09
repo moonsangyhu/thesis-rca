@@ -1,0 +1,1035 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-8v7xm",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-7d866b6f4d-xkv66",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5dfcb4f7b5-4tkts",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-7d866b6f4d-xkv66",
+          "container": "shippingservice",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "emailservice-5dfcb4f7b5-4tkts",
+          "container": "emailservice",
+          "waiting_reason": "CrashLoopBackOff"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "shippingservice-7d866b6f4d-xkv66",
+          "container": "shippingservice",
+          "restarts": 14
+        },
+        {
+          "pod": "emailservice-5dfcb4f7b5-4tkts",
+          "container": "emailservice",
+          "restarts": 3
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "emailservice-5dfcb4f7b5-4tkts",
+          "container": "server",
+          "throttle_ratio": 0.359
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-5dfcb4f7b5-4tkts",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "emailservice",
+              "ready": false,
+              "restartCount": 4,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "StartError"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-8v7xm",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-7d866b6f4d-xkv66",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            },
+            {
+              "name": "shippingservice",
+              "ready": false,
+              "restartCount": 14,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "StartError"
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad",
+          "object": "checkoutservice-5b69ffdc57-lwj8p",
+          "kind": "Pod",
+          "count": 10,
+          "lastTimestamp": "2026-04-09T07:55:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.4.112:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5dfcb4f7b5-4tkts",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T07:59:44Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.4.112:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5dfcb4f7b5-4tkts",
+          "kind": "Pod",
+          "count": 5,
+          "lastTimestamp": "2026-04-09T07:59:44Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: invalid environment variable \"DISABLE_TRACING\": contains nul byte (\\x00): unknown",
+          "object": "emailservice-5dfcb4f7b5-4tkts",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T07:59:48Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container emailservice in pod emailservice-5dfcb4f7b5-4tkts_boutique(717126a5-9988-4b98-ad0c-f68cb73fd00f)",
+          "object": "emailservice-5dfcb4f7b5-4tkts",
+          "kind": "Pod",
+          "count": 4,
+          "lastTimestamp": "2026-04-09T08:00:02Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container shippingservice in pod shippingservice-7d866b6f4d-xkv66_boutique(9fb99a23-a5aa-435a-a8ea-cad893e5fb2b)",
+          "object": "shippingservice-7d866b6f4d-xkv66",
+          "kind": "Pod",
+          "count": 231,
+          "lastTimestamp": "2026-04-09T08:00:55Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "emailservice-5dfcb4f7b5-4tkts",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       StartError\n      Message:      failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: invalid environment variable \"DISABLE_TRACING\": contains nul byte (\\x00): unknown\n      Exit Code:    128\n      Started:      Thu, 01 Jan 1970 09:00:00 +0900\n      Finished:     Thu, 09 Apr 2026 17:01:07 +0900\n    Ready:          False\n    Restart Count:  4\n    Environment:\n      DISABLE_TRACING:  corrupt_value_\u0000\u0001\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-r49dv (ro)\n  server:\n    Container ID:   containerd://4231771afbf6445dff9a3ebb14a2d2436de6c698bc9796233972d30fc92222bf\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/emailservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/emailservice@sha256:c6de94237cad0708ec674085a54a52d9856be37d9bf2d6ec2ddfe7b725d02bb2\n    Port:           8080/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 16:59:34 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Readiness:  grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:              8080\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-r49dv (ro)\nConditions:\n  Type                        Status"
+        },
+        {
+          "pod": "shippingservice-7d866b6f4d-xkv66",
+          "describe_excerpt": "    Host Port:     <none>\n    Command:\n      /bin/sh\n      -c\n      exit 1\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       StartError\n      Message:      failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/bin/sh\": stat /bin/sh: no such file or directory: unknown\n      Exit Code:    128\n      Started:      Thu, 01 Jan 1970 09:00:00 +0900\n      Finished:     Thu, 09 Apr 2026 16:57:35 +0900\n    Ready:          False\n    Restart Count:  14\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jj9zh (ro)\n  server:\n    Container ID:   containerd://e4547825293f337b7a16c57b2751c0c86a10892ba33eab1f15ddec0cb9ce7a89\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice@sha256:0d2be86f0280a0a5594de9593eecd47ca2380e90946a3434b30d956373599b44\n    Port:           50051/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 16:10:52 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:50051  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:50051  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:              50051\n      DISABLE_PROFILER:  1\n    Mounts:"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:6611fed964896c38e1113ca1095edcae13b9880e",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "True",
+            "message": "Helm install succeeded for release argocd/argocd.v1 with chart argo-cd@7.9.1"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/loki.v1 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastUpdate": "2026-04-09T01:17:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-qxlqk: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-5dfcb4f7b5-4tkts: Running\n  container/emailservice: NOT READY (CrashLoopBackOff) restarts=4\n    last terminated: StartError (exit code ?)\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-5llhq: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-8v7xm: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-hhh6f: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\nshippingservice-7d866b6f4d-xkv66: Running\n  container/shippingservice: NOT READY (CrashLoopBackOff) restarts=14\n    last terminated: StartError (exit code ?)\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/checkoutservice-5b69ffdc57-lwj8p: Failed - Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)\n[Warning] Pod/emailservice-5dfcb4f7b5-4tkts: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.4.112:8080\" within 1s: context deadline exceeded (count=2)\n[Warning] Pod/emailservice-5dfcb4f7b5-4tkts: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.112:8080\" within 1s: context deadline exceeded (count=5)\n[Warning] Pod/emailservice-5dfcb4f7b5-4tkts: Failed - Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: invalid environment variable \"DISABLE_TRACING\": contains nul byte (\\x00): unknown (count=3)\n[Warning] Pod/emailservice-5dfcb4f7b5-4tkts: BackOff - Back-off restarting failed container emailservice in pod emailservice-5dfcb4f7b5-4tkts_boutique(717126a5-9988-4b98-ad0c-f68cb73fd00f) (count=4)\n[Warning] Pod/shippingservice-7d866b6f4d-xkv66: BackOff - Back-off restarting failed container shippingservice in pod shippingservice-7d866b6f4d-xkv66_boutique(9fb99a23-a5aa-435a-a8ea-cad893e5fb2b) (count=231)\n\n## Metric Anomalies\nCPU throttled: emailservice-5dfcb4f7b5-4tkts/server (36%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:66)\n- argocd: Ready (rev: main@sha1:f6)\n- flux-system: Ready (rev: main@sha1:f6)\n- infrastructure: Ready (rev: main@sha1:f6)\n- monitoring: Ready (rev: main@sha1:f6)\n### FluxCD HelmReleases\n- argocd/argocd: Ready\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/secret-configmap-issues.md | Score: 0.81]\n# Debugging Secret and ConfigMap Issues\nas application startup failures or runtime configuration errors.\n\n## Symptoms\n- Pod stuck in `CreateContainerConfigError` status\n- Events: `Error: configmap \"X\" not found` or `Error: secret \"X\" not found`\n- Events: `couldn't find key Y in ConfigMap/Secret`\n- Application logs showing missing or empty configuration values\n- Application behavior not changing after ConfigMap/Secret update\n\n## Diagnostic Commands\n\n```bash\n\n---\n[Source: debugging/pod-crashloopbackoff.md | Score: 0.79]\n# Pod CrashLoopBackOff Diagnosis\n3. **Missing ConfigMap or Secret**: Application cannot start because a referenced ConfigMap key or Secret does not exist. Exit code typically 1 with error about missing env var or file.\n\n4. **Liveness probe killing healthy container**: The liveness probe timeout or threshold is too aggressive. The container starts fine but is killed before it's ready to serve. Common during slow startup.\n\n---\n[Source: debugging/secret-configmap-issues.md | Score: 0.79]\n# Debugging Secret and ConfigMap Issues\npassword123\" | base64     # WRONG: includes trailing newline\n```\n\n### 4. Env var injection with wrong reference type\nUsing `configMapKeyRef` when it should be `secretKeyRef`, or vice versa.\n```yaml\nenv:\n- name: DB_PASSWORD\n  valueFrom:\n    secretKeyRef:       # not configMapKeyRef\n      name: db-credentials\n      key: password\n```\n\n---\n[Source: debugging/secret-configmap-issues.md | Score: 0.78]\n# Debugging Secret and ConfigMap Issues\n# Debugging Secret and ConfigMap Issues\n\n## Overview\nSecrets and ConfigMaps are the primary mechanisms for injecting configuration into pods. Issues range from missing resources, wrong keys, encoding problems, to stale mounted data. These often manifest as application startup failures or runtime configuration errors.\n\n---\n[Source: debugging/secret-configmap-issues.md | Score: 0.77]\n# Debugging Secret and ConfigMap Issues\nrestart)\n- Immutable ConfigMaps/Secrets cannot be updated at all\n\n### 6. Optional reference not set\nIf a ConfigMap/Secret may not exist, set `optional: true`:\n```yaml\nenvFrom:\n- configMapRef:\n    name: optional-config\n    optional: true\n```\n\n## Resolution Steps\n\n### Missing ConfigMap/Secret\n```bash\n\n# Create the missing resource\nkubectl create configmap app-config -n boutique --from-file=config.yaml\nkubectl create secret generic db-creds -n boutique --from-literal=password=mypass\n",
+  "rca_output": {
+    "fault_id": "F9",
+    "trial": 5,
+    "system": "B",
+    "identified_fault_type": "Missing ConfigMap/Secret",
+    "root_cause": "A missing API_KEY in the Secret and an invalid environment variable in emailservice are leading to the service crashes.",
+    "confidence": 0.8,
+    "affected_components": [
+      "emailservice",
+      "checkoutservice",
+      "frontend"
+    ],
+    "remediation": [
+      "Create the missing Secret 'checkout-secret-bad' and ensure API_KEY is correctly defined.",
+      "Fix the environment variable 'DISABLE_TRACING' to remove the null byte."
+    ],
+    "detail": "The emailservice is failing due to an invalid environment variable which contains a null byte, while the checkoutservice is failing as it cannot find a required key in a missing secret. Corrections to these configuration issues are needed to restore functionality. Additionally, the frontend service having 0 endpoints is another issue that should be investigated further related to service configuration.",
+    "reasoning": "Step 1: Checked Node Health - All nodes are Ready, no issues found. Step 2: Checked Pod Status - The emailservice and shippingservice are in CrashLoopBackOff state, indicating misconfiguration or other issues. For the emailservice, specific event messages indicate that the container is failing due to an invalid environment variable. Additionally, the shippingservice is back-off restarting consistently, indicating it likely has its own issues as well. However, without direct error logs, this remains somewhat ambiguous. Step 3: Checked Service Connectivity - The frontend service shows 0 endpoints, which indicates a potential issue with service configuration or connectivity. Step 4: Network Check - No specific network issues found. Step 5: Resource Limits - Some CPU throttling detected for the emailservice. Overall, the emailservice failure appears to stem from the invalid environment variable and the missing secret for the checkoutservice. This leads to the conclusion that the primary issues originated from missing configuration, causing the services to fail accordingly.",
+    "root_cause_ko": "API_KEY가 비밀의 누락과 emailservice의 잘못된 환경 변수가 서비스 크래시로 이어지고 있습니다.",
+    "remediation_ko": [
+      "'checkout-secret-bad' 비밀을 생성하고 API_KEY가 올바르게 정의되었는지 확인하세요.",
+      "'DISABLE_TRACING' 환경 변수를 수정하여 널 바이트를 제거하세요."
+    ],
+    "detail_ko": "emailservice는 널 바이트가 포함된 잘못된 환경 변수로 인해 실패하고 있으며, checkoutservice는 누락된 비밀에서 필요한 키를 찾을 수 없어 실패하고 있습니다. 이러한 구성 문제를 수정해야 기능이 복원됩니다. 또한, 프론트엔드 서비스가 0 엔드포인트인 것도 서비스 구성과 관련하여 더 조사해야 할 다른 문제입니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/checkoutservice-5b69ffdc57-lwj8p: Failed - Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)",
+        "supports": "Indicates missing key in Secret causing pod failure.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/emailservice-5dfcb4f7b5-4tkts: Failed - Error: failed to create containerd task: error during container init: invalid environment variable \"DISABLE_TRACING\": contains nul byte (\u0000): unknown (count=3)",
+        "supports": "Indicates emailservice failure due to invalid environment variable.",
+        "verified": true,
+        "match_ratio": 0.96
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The frontend service currently has incorrect selectors causing 0 endpoints.",
+        "confidence": 0.4,
+        "reason_rejected": "No independent evidence directly linking the frontend service to any specific configuration error."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The diagnosis provides strong grounding in the evidence, particularly with the identified error messages regarding the missing API_KEY and the invalid environment variable. While the reasoning steps are logical and build a strong case, the hypothesis addressing the frontend service could have included consideration of service connectivity issues as an alternative explanation. The alternative hypothesis presented lacked a direct connection to the failure of the emailservice but might still warrant further investigation. Overall, the confidence level seems appropriate given the strength of the evidence.",
+    "retry_count": 0,
+    "correctness_score": 0.1,
+    "correctness_reasoning": "The diagnosis mentions issues related to missing configuration and invalid environment variables, but it does not accurately identify the root cause related to corrupted Secret values. It also introduces information about a missing API_KEY which is not in the ground truth, indicating a misalignment with the true root cause mechanism.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 14759,
+    "prompt_tokens": 6593,
+    "completion_tokens": 1074,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health - All nodes are Ready, no issues found. Step 2: Checked Pod Status - The emailservice and shippingservice are in CrashLoopBackOff state, indicating misconfiguration or other issues. For the emailservice, specific event messages indicate that the container is failing due to an invalid environment variable. Additionally, the shippingservice is back-off restarting consistently, indicating it likely has its own issues as well. However, without direct error logs, this remains somewhat ambiguous. Step 3: Checked Service Connectivity - The frontend service shows 0 endpoints, which indicates a potential issue with service configuration or connectivity. Step 4: Network Check - No specific network issues found. Step 5: Resource Limits - Some CPU throttling detected for the emailservice. Overall, the emailservice failure appears to stem from the invalid environment variable and the missing secret for the checkoutservice. This leads to the conclusion that the primary issues originated from missing configuration, causing the services to fail accordingly.\",\n  \"identified_fault_type\": \"Missing ConfigMap/Secret\",\n  \"root_cause\": \"A missing API_KEY in the Secret and an invalid environment variable in emailservice are leading to the service crashes.\",\n  \"root_cause_ko\": \"API_KEY가 비밀의 누락과 emailservice의 잘못된 환경 변수가 서비스 크래시로 이어지고 있습니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"emailservice\", \"checkoutservice\", \"frontend\"],\n  \"remediation\": [\n    \"Create the missing Secret 'checkout-secret-bad' and ensure API_KEY is correctly defined.\",\n    \"Fix the environment variable 'DISABLE_TRACING' to remove the null byte.\"\n  ],\n  \"remediation_ko\": [\n    \"'checkout-secret-bad' 비밀을 생성하고 API_KEY가 올바르게 정의되었는지 확인하세요.\",\n    \"'DISABLE_TRACING' 환경 변수를 수정하여 널 바이트를 제거하세요.\"\n  ],\n  \"detail\": \"The emailservice is failing due to an invalid environment variable which contains a null byte, while the checkoutservice is failing as it cannot find a required key in a missing secret. Corrections to these configuration issues are needed to restore functionality. Additionally, the frontend service having 0 endpoints is another issue that should be investigated further related to service configuration.\",\n  \"detail_ko\": \"emailservice는 널 바이트가 포함된 잘못된 환경 변수로 인해 실패하고 있으며, checkoutservice는 누락된 비밀에서 필요한 키를 찾을 수 없어 실패하고 있습니다. 이러한 구성 문제를 수정해야 기능이 복원됩니다. 또한, 프론트엔드 서비스가 0 엔드포인트인 것도 서비스 구성과 관련하여 더 조사해야 할 다른 문제입니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/checkoutservice-5b69ffdc57-lwj8p: Failed - Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)\",\n      \"supports\": \"Indicates missing key in Secret causing pod failure.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/emailservice-5dfcb4f7b5-4tkts: Failed - Error: failed to create containerd task: error during container init: invalid environment variable \\\"DISABLE_TRACING\\\": contains nul byte (\\u0000): unknown (count=3)\",\n      \"supports\": \"Indicates emailservice failure due to invalid environment variable.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The frontend service currently has incorrect selectors causing 0 endpoints.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No independent evidence directly linking the frontend service to any specific configuration error.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/secret-configmap-issues.md",
+      "score": 0.810593456029892
+    },
+    {
+      "source": "debugging/pod-crashloopbackoff.md",
+      "score": 0.7921542227268219
+    },
+    {
+      "source": "debugging/secret-configmap-issues.md",
+      "score": 0.7919168770313263
+    },
+    {
+      "source": "debugging/secret-configmap-issues.md",
+      "score": 0.7835808098316193
+    },
+    {
+      "source": "debugging/secret-configmap-issues.md",
+      "score": 0.7745046317577362
+    }
+  ]
+}

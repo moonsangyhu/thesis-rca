@@ -1,0 +1,923 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5896b599f-wsclz",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5896b599f-wsclz",
+          "container": "emailservice",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "emailservice-5896b599f-wsclz",
+          "container": "emailservice",
+          "terminated_reason": "Error"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "emailservice-5896b599f-wsclz",
+          "container": "emailservice",
+          "restarts": 3
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "emailservice-5896b599f-wsclz",
+          "container": "server",
+          "throttle_ratio": 0.276
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-5896b599f-wsclz",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "emailservice",
+              "ready": false,
+              "restartCount": 4,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "Error"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.211:50051\" within 1s: context deadline exceeded",
+          "object": "paymentservice-8487fb8995-gb9sb",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T02:09:20Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container paymentservice in pod paymentservice-8487fb8995-gb9sb_boutique(c5ea0047-5684-45f8-b50c-b5face5a1bc4)",
+          "object": "paymentservice-8487fb8995-gb9sb",
+          "kind": "Pod",
+          "count": 7,
+          "lastTimestamp": "2026-04-09T02:10:29Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5896b599f-wsclz",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T02:16:27Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5896b599f-wsclz",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-04-09T02:16:27Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container emailservice in pod emailservice-5896b599f-wsclz_boutique(38adda19-ffba-4828-9c85-d1c09ac54001)",
+          "object": "emailservice-5896b599f-wsclz",
+          "kind": "Pod",
+          "count": 4,
+          "lastTimestamp": "2026-04-09T02:16:47Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "emailservice-5896b599f-wsclz",
+          "describe_excerpt": "    Host Port:     <none>\n    Command:\n      /bin/sh\n      -c\n      exit 1\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    1\n      Started:      Thu, 09 Apr 2026 11:18:02 +0900\n      Finished:     Thu, 09 Apr 2026 11:18:02 +0900\n    Ready:          False\n    Restart Count:  4\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-t727w (ro)\n  server:\n    Container ID:   containerd://7d6c4d13258b720a6136311722adeebe363219a4474e3f5e5745262da938069c\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/emailservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/emailservice@sha256:c6de94237cad0708ec674085a54a52d9856be37d9bf2d6ec2ddfe7b725d02bb2\n    Port:           8080/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 11:16:20 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Readiness:  grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:              8080\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-t727w (ro)"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:6611fed964896c38e1113ca1095edcae13b9880e",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "True",
+            "message": "Helm install succeeded for release argocd/argocd.v1 with chart argo-cd@7.9.1"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/loki.v1 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastUpdate": "2026-04-09T01:17:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-s98rw: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-5896b599f-wsclz: Running\n  container/emailservice: NOT READY (CrashLoopBackOff) restarts=4\n    last terminated: Error (exit code ?)\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-9dptt: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-vt2pv: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/paymentservice-8487fb8995-gb9sb: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.211:50051\" within 1s: context deadline exceeded (count=2)\n[Warning] Pod/paymentservice-8487fb8995-gb9sb: BackOff - Back-off restarting failed container paymentservice in pod paymentservice-8487fb8995-gb9sb_boutique(c5ea0047-5684-45f8-b50c-b5face5a1bc4) (count=7)\n[Warning] Pod/emailservice-5896b599f-wsclz: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded (count=2)\n[Warning] Pod/emailservice-5896b599f-wsclz: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded (count=6)\n[Warning] Pod/emailservice-5896b599f-wsclz: BackOff - Back-off restarting failed container emailservice in pod emailservice-5896b599f-wsclz_boutique(38adda19-ffba-4828-9c85-d1c09ac54001) (count=4)\n\n## Metric Anomalies\nCPU throttled: emailservice-5896b599f-wsclz/server (28%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:66)\n- argocd: Ready (rev: main@sha1:f6)\n- flux-system: Ready (rev: main@sha1:f6)\n- infrastructure: Ready (rev: main@sha1:f6)\n- monitoring: Ready (rev: main@sha1:f6)\n### FluxCD HelmReleases\n- argocd/argocd: Ready\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/pod-crashloopbackoff.md | Score: 0.82]\n# Pod CrashLoopBackOff Diagnosis\n# Pod CrashLoopBackOff Diagnosis\n\n## Overview\nCrashLoopBackOff occurs when a container repeatedly starts, crashes, and Kubernetes backs off restarting it. The backoff interval doubles each time (10s, 20s, 40s... up to 5 minutes). This is one of the most common pod failure states and can stem from application errors, misconfigurations, resource exhaustion, or failed health checks.\n\n---\n[Source: runbooks/rca-f2-crashloopbackoff.md | Score: 0.82]\n# Runbook: F2 - CrashLoopBackOff Root Cause Analysis\n# Runbook: F2 - CrashLoopBackOff Root Cause Analysis\n\n## Trigger Conditions\nUse this runbook when pods are in `CrashLoopBackOff` state, containers are repeatedly restarting (restartCount > 3), or alerts fire for `KubePodCrashLooping`. Also applicable when a pod shows `Error` state between restarts.\n\n## Severity\n**Critical** — CrashLoopBackOff with exponential backoff means the service is unavailable for increasingly long periods. Downstream services will accumulate errors.\n\n---\n[Source: debugging/pod-crashloopbackoff.md | Score: 0.81]\n# Pod CrashLoopBackOff Diagnosis\n## Common Causes\n\n1. **Application startup failure**: The application exits immediately due to missing configuration, failed database connections, or initialization errors. Check logs for connection refused, missing env vars, or panic messages.\n\n2. **OOMKilled (Exit 137)**: The container exceeded its memory limit and was killed by the kernel OOM killer. Memory limit is too low or there is a memory leak.\n\n---\n[Source: runbooks/loki-log-analysis-runbook.md | Score: 0.79]\n# Runbook: Loki LogQL Analysis for Root Cause Analysis\ntep 4: Fault-type specific queries\n\n**F1 - OOMKilled:**\n```logql\n\n# Look for memory warnings before OOMKill\n{namespace=\"boutique\", pod=~\"frontend.*\"} |~ \"(?i)(out of memory|OOM|heap|memory allocation)\"\n\n# System-level OOM messages\n{job=\"systemd-journal\"} |= \"oom-kill\" | logfmt\n```\n\n**F2 - CrashLoopBackOff:**\n```logql\n\n# Last logs before crash (look for panic, fatal, unhandled exception)\n{namespace=\"boutique\", pod=~\"frontend.*\"} |~ \"(?i)(panic|fatal|exception|segfault|SIGABRT)\"\n\n---\n[Source: known-issues/init-container-failure.md | Score: 0.76]\n# Known Issue: Init Container Failure Prevents Main Container from Starting\n# Known Issue: Init Container Failure Prevents Main Container from Starting\n\n## Issue ID\nKI-019\n\n## Affected Components\n- All pods with `initContainers` configured\n- Applications with database dependency checks (wait-for-db pattern)\n- Applications with configuration initialization steps\n",
+  "rca_output": {
+    "fault_id": "F2",
+    "trial": 2,
+    "system": "B",
+    "identified_fault_type": "CrashLoopBackOff",
+    "root_cause": "The emailservice pod is in a CrashLoopBackOff state due to misconfiguration leading to failed health checks.",
+    "confidence": 0.8,
+    "affected_components": [
+      "emailservice"
+    ],
+    "remediation": [
+      "Check the configuration of the emailservice pod to ensure all required parameters are set correctly.",
+      "Review the readiness and liveness probes for necessary timeout periods."
+    ],
+    "detail": "The emailservice pod is failing health checks due to misconfiguration or application errors, causing it to enter a CrashLoopBackOff state. The service configuration should be reviewed and adjusted to correct any potential issues leading to the observed failure state and backoff behavior.",
+    "reasoning": "Step 1: Checked node health and found all nodes are Ready. No issues at the node level. Step 2: Checked pod status and noted the emailservice pod is not in a Running/Ready state, showing CrashLoopBackOff and restarts=4 with no exit code. This indicates an application crash that may be due to misconfiguration. Step 3: No service connectivity issues are indicated as there are no services with 0 endpoints and no system messages suggesting network issues. Step 4: No significant network anomalies found. Step 5: Emailservice has CPU throttling at 28%, but further detailed health check failures also suggest the root cause is tied to the application misconfigurations causing the CrashLoopBackOff state. The primary fault is identified at the Pod level due to the emailservice pod being in CrashLoopBackOff. No additional faults in other systems contribute to the primary issue identified.",
+    "root_cause_ko": "이메일 서비스 포드는 잘못된 구성으로 인해 헬스 체크 실패로 CrashLoopBackOff 상태에 있습니다.",
+    "remediation_ko": [
+      "이메일 서비스 포드의 구성을 확인하여 모든 필수 매개변수가 올바르게 설정되었는지 확인하십시오.",
+      "필요한 시간 초과 기간을 위해 헬스 체크를 검토하십시오."
+    ],
+    "detail_ko": "이메일 서비스 포드는 잘못된 구성이나 응용 프로그램 오류로 인해 헬스 체크를 통과하지 못하고 CrashLoopBackOff 상태에 진입하고 있습니다. 서비스 구성을 검토하고 수정하여 관찰된 실패 상태 및 백오프 동작의 원인이 되는 잠재적인 문제를 해결해야 합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Pod/emailservice-5896b599f-wsclz",
+        "content": "Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded (count=6)",
+        "supports": "indicates the emailservice pod is failing its health checks",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Pod/emailservice-5896b599f-wsclz",
+        "content": "BackOff - Back-off restarting failed container emailservice in pod emailservice-5896b599f-wsclz_boutique(38adda19-ffba-4828-9c85-d1c09ac54001) (count=4)",
+        "supports": "confirms the emailservice pod is in a CrashLoopBackOff state",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The emailservice pod could be crashing due to insufficient resources leading to throttling.",
+        "confidence": 0.4,
+        "reason_rejected": "While there is CPU throttling, there is no direct evidence that this is exclusively causing the CrashLoopBackOff; the health check failures are a more direct cause."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence grounding is solid as all cited events are found in the input context, particularly the repeated health check failures affecting the emailservice pod. However, the diagnosis could improve by providing clearer reasoning for rejecting the alternative hypothesis regarding CPU throttling. While there's some mention of CPU throttling, further details could establish why it is not contributing to the CrashLoopBackOff adequately, given it has a lower confidence rating. Additionally, it would be helpful to clarify the relationship between health checks and misconfigurations to strengthen the argument. Overall, the diagnosis is strong but could enhance logical flow to reduce any potential ambiguity around the differential completeness criterion.",
+    "retry_count": 0,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The diagnosis identifies the correct fault category (CrashLoopBackOff) and recognizes that there is a misconfiguration causing the pod to fail health checks. However, it doesn't specify that the misconfiguration is specifically related to the SMTP endpoint, which is crucial for accurately determining the root cause mechanism.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 11491,
+    "prompt_tokens": 6403,
+    "completion_tokens": 1082,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health and found all nodes are Ready. No issues at the node level. Step 2: Checked pod status and noted the emailservice pod is not in a Running/Ready state, showing CrashLoopBackOff and restarts=4 with no exit code. This indicates an application crash that may be due to misconfiguration. Step 3: No service connectivity issues are indicated as there are no services with 0 endpoints and no system messages suggesting network issues. Step 4: No significant network anomalies found. Step 5: Emailservice has CPU throttling at 28%, but further detailed health check failures also suggest the root cause is tied to the application misconfigurations causing the CrashLoopBackOff state. The primary fault is identified at the Pod level due to the emailservice pod being in CrashLoopBackOff. No additional faults in other systems contribute to the primary issue identified.\",\n  \"identified_fault_type\": \"CrashLoopBackOff\",\n  \"root_cause\": \"The emailservice pod is in a CrashLoopBackOff state due to misconfiguration leading to failed health checks.\",\n  \"root_cause_ko\": \"이메일 서비스 포드는 잘못된 구성으로 인해 헬스 체크 실패로 CrashLoopBackOff 상태에 있습니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"emailservice\"],\n  \"remediation\": [\"Check the configuration of the emailservice pod to ensure all required parameters are set correctly.\", \"Review the readiness and liveness probes for necessary timeout periods.\"],\n  \"remediation_ko\": [\"이메일 서비스 포드의 구성을 확인하여 모든 필수 매개변수가 올바르게 설정되었는지 확인하십시오.\", \"필요한 시간 초과 기간을 위해 헬스 체크를 검토하십시오.\"],\n  \"detail\": \"The emailservice pod is failing health checks due to misconfiguration or application errors, causing it to enter a CrashLoopBackOff state. The service configuration should be reviewed and adjusted to correct any potential issues leading to the observed failure state and backoff behavior.\",\n  \"detail_ko\": \"이메일 서비스 포드는 잘못된 구성이나 응용 프로그램 오류로 인해 헬스 체크를 통과하지 못하고 CrashLoopBackOff 상태에 진입하고 있습니다. 서비스 구성을 검토하고 수정하여 관찰된 실패 상태 및 백오프 동작의 원인이 되는 잠재적인 문제를 해결해야 합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Pod/emailservice-5896b599f-wsclz\",\n      \"content\": \"Unhealthy - Liveness probe failed: timeout: failed to connect service \\\"10.0.2.25:8080\\\" within 1s: context deadline exceeded (count=6)\",\n      \"supports\": \"indicates the emailservice pod is failing its health checks\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Pod/emailservice-5896b599f-wsclz\",\n      \"content\": \"BackOff - Back-off restarting failed container emailservice in pod emailservice-5896b599f-wsclz_boutique(38adda19-ffba-4828-9c85-d1c09ac54001) (count=4)\",\n      \"supports\": \"confirms the emailservice pod is in a CrashLoopBackOff state\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The emailservice pod could be crashing due to insufficient resources leading to throttling.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"While there is CPU throttling, there is no direct evidence that this is exclusively causing the CrashLoopBackOff; the health check failures are a more direct cause.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/pod-crashloopbackoff.md",
+      "score": 0.8186968564987183
+    },
+    {
+      "source": "runbooks/rca-f2-crashloopbackoff.md",
+      "score": 0.8174520432949066
+    },
+    {
+      "source": "debugging/pod-crashloopbackoff.md",
+      "score": 0.8109278082847595
+    },
+    {
+      "source": "runbooks/loki-log-analysis-runbook.md",
+      "score": 0.7897622585296631
+    },
+    {
+      "source": "known-issues/init-container-failure.md",
+      "score": 0.7632453143596649
+    }
+  ]
+}

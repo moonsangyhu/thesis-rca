@@ -1,0 +1,956 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-wr7h4",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-rfcrs",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-s6vsh",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "server",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "server",
+          "terminated_reason": "OOMKilled"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "server",
+          "restarts": 4
+        }
+      ],
+      "oom_events": [
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "server"
+        }
+      ],
+      "cpu_throttling": [
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "container": "",
+          "throttle_ratio": 0.114
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "container": "server",
+          "throttle_ratio": 0.188
+        },
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "",
+          "throttle_ratio": 0.919
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-wr7h4",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-s6vsh",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-rfcrs",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-6c6b9998b9-zndgj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": false,
+              "restartCount": 4,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "OOMKilled"
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-7449597ff9-gkjjk",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T01:21:57Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-7449597ff9-gkjjk",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T01:21:57Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-57b87c6b4d-d78cx",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T01:26:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-57b87c6b4d-d78cx",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T01:26:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container server in pod recommendationservice-6c6b9998b9-zndgj_boutique(b4a1da08-ba8f-478f-81b0-ea358058261a)",
+          "object": "recommendationservice-6c6b9998b9-zndgj",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T01:28:54Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.2.60:8080\" within 1s: context deadline exceeded",
+          "object": "recommendationservice-6c6b9998b9-zndgj",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T01:29:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.60:8080\" within 1s: context deadline exceeded",
+          "object": "recommendationservice-6c6b9998b9-zndgj",
+          "kind": "Pod",
+          "count": 10,
+          "lastTimestamp": "2026-04-09T01:29:12Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "describe_excerpt": "    Host Port:      0/TCP\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       OOMKilled\n      Exit Code:    137\n      Started:      Thu, 09 Apr 2026 10:30:04 +0900\n      Finished:     Thu, 09 Apr 2026 10:30:10 +0900\n    Ready:          False\n    Restart Count:  4\n    Limits:\n      cpu:     200m\n      memory:  24Mi\n    Requests:\n      cpu:      100m\n      memory:   24Mi\n    Liveness:   grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Readiness:  grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:                          8080\n      PRODUCT_CATALOG_SERVICE_ADDR:  productcatalogservice:3550\n      DISABLE_PROFILER:              1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-5qxgd (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-5qxgd:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:6611fed964896c38e1113ca1095edcae13b9880e",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "True",
+            "message": "Helm install succeeded for release argocd/argocd.v1 with chart argo-cd@7.9.1"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/loki.v1 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastUpdate": "2026-04-09T01:17:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-wr7h4: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-s6vsh: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-rfcrs: Running\nrecommendationservice-6c6b9998b9-zndgj: Running\n  container/server: NOT READY (CrashLoopBackOff) restarts=4\n    last terminated: OOMKilled (exit code ?)\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/cartservice-7449597ff9-gkjjk: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-7449597ff9-gkjjk: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-57b87c6b4d-d78cx: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-57b87c6b4d-d78cx: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/recommendationservice-6c6b9998b9-zndgj: BackOff - Back-off restarting failed container server in pod recommendationservice-6c6b9998b9-zndgj_boutique(b4a1da08-ba8f-478f-81b0-ea358058261a) (count=2)\n[Warning] Pod/recommendationservice-6c6b9998b9-zndgj: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.2.60:8080\" within 1s: context deadline exceeded (count=3)\n[Warning] Pod/recommendationservice-6c6b9998b9-zndgj: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.60:8080\" within 1s: context deadline exceeded (count=10)\n\n## Metric Anomalies\nOOMKilled containers: recommendationservice-6c6b9998b9-zndgj/server\nCPU throttled: cartservice-57b87c6b4d-d78cx/ (11%), cartservice-57b87c6b4d-d78cx/server (19%), recommendationservice-6c6b9998b9-zndgj/ (92%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:66)\n- argocd: Ready (rev: main@sha1:f6)\n- flux-system: Ready (rev: main@sha1:f6)\n- infrastructure: Ready (rev: main@sha1:f6)\n- monitoring: Ready (rev: main@sha1:f6)\n### FluxCD HelmReleases\n- argocd/argocd: Ready\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/pod-oomkilled.md | Score: 0.87]\n# Pod OOMKilled Diagnosis\n# Pod OOMKilled Diagnosis\n\n## Overview\nOOMKilled (Out of Memory Killed) occurs when a container exceeds its configured memory limit. The Linux kernel OOM killer terminates the process with SIGKILL (exit code 137). This is distinct from node-level OOM events. Kubernetes enforces memory limits using cgroup memory limits, and when a container hits this limit, the kernel immediately terminates the process without a graceful shutdown.\n\n---\n[Source: debugging/memory-pressure.md | Score: 0.85]\n# Debugging Memory Pressure (Node and Pod Level)\node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100\n\n# Container working set memory (what OOM killer looks at)\ncontainer_memory_working_set_bytes{namespace=\"boutique\"}\n\n# Container RSS (resident set size - actual physical memory)\ncontainer_memory_rss{namespace=\"boutique\"}\n\n# Memory usage vs limit ratio (alert when > 80%)\ncontainer_memory_working_set_bytes{namespace=\"boutique\"}\n  / container_spec_memory_limit_bytes{namespace=\"boutique\"} * 100\n\n---\n[Source: runbooks/rca-f1-oomkilled.md | Score: 0.84]\n# Runbook: F1 - OOMKilled Root Cause Analysis\n# Runbook: F1 - OOMKilled Root Cause Analysis\n\n## Trigger Conditions\nUse this runbook when containers are being killed with `OOMKilled` reason, pods are in `CrashLoopBackOff` after OOM events, or Prometheus alerts fire for memory saturation (e.g., `KubePodOOMKilled`, `ContainerMemoryNearLimit`).\n\n## Severity\n**Critical** — OOMKill cascades can take down entire service chains. In Online Boutique, a killed `cartservice` will cause `frontend` to return 500s.\n\n---\n[Source: debugging/pod-crashloopbackoff.md | Score: 0.84]\n# Pod CrashLoopBackOff Diagnosis\n## Common Causes\n\n1. **Application startup failure**: The application exits immediately due to missing configuration, failed database connections, or initialization errors. Check logs for connection refused, missing env vars, or panic messages.\n\n2. **OOMKilled (Exit 137)**: The container exceeded its memory limit and was killed by the kernel OOM killer. Memory limit is too low or there is a memory leak.\n\n---\n[Source: debugging/pod-oomkilled.md | Score: 0.81]\n# Pod OOMKilled Diagnosis\notations:\n    summary: \"Pod {{ $labels.pod }} memory near limit\"\n\n# Alert: OOMKill detected\n- alert: PodOOMKilled\n  expr: |\n    increase(kube_pod_container_status_last_terminated_reason{reason=\"OOMKilled\"}[1h]) > 0\n  labels:\n    severity: critical\n```\n\n## Related Issues\n- `pod-crashloopbackoff.md` - CrashLoopBackOff often caused by OOMKilled\n- `memory-pressure.md` - Node-level memory pressure\n- `node-pressure.md` - Node MemoryPressure condition\n- `pod-evicted.md` - Pods evicted due to memory pressure\n",
+  "rca_output": {
+    "fault_id": "F1",
+    "trial": 2,
+    "system": "B",
+    "identified_fault_type": "OOM Kill",
+    "root_cause": "The recommendationservice pod was killed due to exceeding its memory limits, causing cascading failures in the application.",
+    "confidence": 0.85,
+    "affected_components": [
+      "recommendationservice"
+    ],
+    "remediation": [
+      "Increase the memory limits for the recommendationservice to prevent OOMKilled errors.",
+      "Investigate frontend service endpoint configurations to ensure it connects properly to the recommendationservice."
+    ],
+    "detail": "The recommendationservice is encountering OOMKilled errors, indicating that it is exceeding the memory limits set for it. This is corroborated by the metrics showing a 92% CPU throttle, which is likely affecting its performance and contributing to its unstable state. This instability could lead to cascading failures, as the frontend service is unable to connect properly and reports 0 endpoints. Adjustments to resource limits and service configurations are required to restore full functionality.",
+    "reasoning": "Step 1: Node Health — All nodes are in Ready state with no conditions like DiskPressure or MemoryPressure. No issues found here. Continuing to Step 2. Step 2: Pod Status — The recommendationservice is in a CrashLoopBackOff state due to an OOMKilled reason. This indicates the pod is exceeding its memory limit, which is a primary candidate for the fault. Moreover, metrics show that it is currently experiencing 92% CPU throttling, which ties into its performance issues. Step 3: Service Connectivity — The frontend service has 0 endpoints, but the logs do not indicate any networking issues. This is noted as a secondary candidate as it might be a symptom of the underlying pod issue or another misconfiguration. Step 4: Network — No anomalies were indicated in the logs with connection refused errors or other network performance issues. Step 5: Resource Limits — CPU throttling was noted at 92% for the recommendationservice, indicating possible resource exhaustion that could be linked to the OOMKilled status as well. Final diagnosis is that the root cause is the memory limit exceeded leading to OOMKilled errors in recommendationservice, contributing to the frontend service reporting 0 endpoints due to cascading failures from recommendationservice. Diagnosing the reason for the 0 endpoints on the frontend is further required, as the issue could stem from various configurations. However, this graphically supports the primary fault as the OOMKilled instance.",
+    "root_cause_ko": "recommendationservice 포드가 메모리 한계를 초과하여 종료되어 애플리케이션의 연쇄 실패를 초래했습니다.",
+    "remediation_ko": [
+      "recommendationservice의 메모리 한계를 늘려 OOMKilled 오류를 방지하세요.",
+      "recommendationservice와의 연결을 보장하기 위해 프런트엔드 서비스 엔드포인트 구성을 조사하세요."
+    ],
+    "detail_ko": "recommendationservice는 설정된 메모리 한계를 초과하여 OOMKilled 오류가 발생하고 있습니다. 이는 92%의 CPU 저하로 확인되며, 이는 성능에 영향을 미치고 불안정한 상태에 기여할 가능성이 높습니다. 이러한 불안정성은 프런트엔드 서비스가 적절히 연결할 수 없고 0 엔드포인트를 보고하는 연쇄 실패로 이어질 수 있습니다. 전체 기능을 복원하기 위해 리소스 한계 및 서비스 구성을 조정해야 합니다.",
+    "evidence_chain": [
+      {
+        "type": "pod status",
+        "source": "recommendationservice-6c6b9998b9-zndgj",
+        "content": "container/server: NOT READY (CrashLoopBackOff) last terminated: OOMKilled",
+        "supports": "This indicates that the recommendationservice pod is being repeatedly killed due to memory limit violations.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "recommendationservice metrics",
+        "content": "CPU throttled: recommendationservice-6c6b9998b9-zndgj/ (92%)",
+        "supports": "This further points to the performance issue being exacerbated by CPU throttling, which may be related to the memory stress.",
+        "verified": true,
+        "match_ratio": 0.8
+      },
+      {
+        "type": "event",
+        "source": "frontend service",
+        "content": "Services with 0 endpoints: frontend",
+        "supports": "This indicates a direct service connectivity issue that may stem from the OOMKilled state of recommendationservice.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The 0 endpoints for the frontend service could be due to a misconfiguration unrelated to the OOMKilled status.",
+        "confidence": 0.5,
+        "reason_rejected": "This hypothesis is weakened by the clear link between the OOMKilled status and cascading effects on service availability."
+      }
+    ],
+    "confidence_2nd": 0.75,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 9.0,
+    "eval_overall_score": 8.25,
+    "eval_critique": "The mention of CPU throttling at 92% for the recommendationservice could have been elaborated on, considering it's a significant percentage that might also indicate resource contention affecting performance. While the diagnosis effectively correlates the OOMKilled state with the service connectivity issue, it could also discuss the possibility of increased traffic leading to that state or other factors not related to memory limits. The alternative hypothesis was addressed but could have included more detail on how misconfiguration could lead to 0 endpoints, providing a more robust analysis.",
+    "retry_count": 2,
+    "correctness_score": 0.9,
+    "correctness_reasoning": "The diagnosis identifies the root cause as the recommendationservice exceeding its memory limits, which aligns with the ground truth regarding the OOMKilled scenario. However, it lacks specific mention of the memory limit (24Mi) and does not explicitly connect the OOMKilled condition to the model loading process, which are key details in the ground truth. Therefore, it scores close to full correctness but misses some specificities.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 17843,
+    "prompt_tokens": 7060,
+    "completion_tokens": 1295,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Node Health — All nodes are in Ready state with no conditions like DiskPressure or MemoryPressure. No issues found here. Continuing to Step 2. Step 2: Pod Status — The recommendationservice is in a CrashLoopBackOff state due to an OOMKilled reason. This indicates the pod is exceeding its memory limit, which is a primary candidate for the fault. Moreover, metrics show that it is currently experiencing 92% CPU throttling, which ties into its performance issues. Step 3: Service Connectivity — The frontend service has 0 endpoints, but the logs do not indicate any networking issues. This is noted as a secondary candidate as it might be a symptom of the underlying pod issue or another misconfiguration. Step 4: Network — No anomalies were indicated in the logs with connection refused errors or other network performance issues. Step 5: Resource Limits — CPU throttling was noted at 92% for the recommendationservice, indicating possible resource exhaustion that could be linked to the OOMKilled status as well. Final diagnosis is that the root cause is the memory limit exceeded leading to OOMKilled errors in recommendationservice, contributing to the frontend service reporting 0 endpoints due to cascading failures from recommendationservice. Diagnosing the reason for the 0 endpoints on the frontend is further required, as the issue could stem from various configurations. However, this graphically supports the primary fault as the OOMKilled instance.\",\"identified_fault_type\": \"OOM Kill\",\n  \"root_cause\": \"The recommendationservice pod was killed due to exceeding its memory limits, causing cascading failures in the application.\",\n  \"root_cause_ko\": \"recommendationservice 포드가 메모리 한계를 초과하여 종료되어 애플리케이션의 연쇄 실패를 초래했습니다.\",\n  \"confidence\": 0.85,\n  \"confidence_2nd\": 0.75,\n  \"affected_components\": [\"recommendationservice\"],\n  \"remediation\": [\n    \"Increase the memory limits for the recommendationservice to prevent OOMKilled errors.\",\n    \"Investigate frontend service endpoint configurations to ensure it connects properly to the recommendationservice.\"\n  ],\n  \"remediation_ko\": [\n    \"recommendationservice의 메모리 한계를 늘려 OOMKilled 오류를 방지하세요.\",\n    \"recommendationservice와의 연결을 보장하기 위해 프런트엔드 서비스 엔드포인트 구성을 조사하세요.\"\n  ],\n  \"detail\": \"The recommendationservice is encountering OOMKilled errors, indicating that it is exceeding the memory limits set for it. This is corroborated by the metrics showing a 92% CPU throttle, which is likely affecting its performance and contributing to its unstable state. This instability could lead to cascading failures, as the frontend service is unable to connect properly and reports 0 endpoints. Adjustments to resource limits and service configurations are required to restore full functionality.\",\n  \"detail_ko\": \"recommendationservice는 설정된 메모리 한계를 초과하여 OOMKilled 오류가 발생하고 있습니다. 이는 92%의 CPU 저하로 확인되며, 이는 성능에 영향을 미치고 불안정한 상태에 기여할 가능성이 높습니다. 이러한 불안정성은 프런트엔드 서비스가 적절히 연결할 수 없고 0 엔드포인트를 보고하는 연쇄 실패로 이어질 수 있습니다. 전체 기능을 복원하기 위해 리소스 한계 및 서비스 구성을 조정해야 합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"pod status\",\n      \"source\": \"recommendationservice-6c6b9998b9-zndgj\",\n      \"content\": \"container/server: NOT READY (CrashLoopBackOff) last terminated: OOMKilled\",\n      \"supports\": \"This indicates that the recommendationservice pod is being repeatedly killed due to memory limit violations.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"recommendationservice metrics\",\n      \"content\": \"CPU throttled: recommendationservice-6c6b9998b9-zndgj/ (92%)\",\n      \"supports\": \"This further points to the performance issue being exacerbated by CPU throttling, which may be related to the memory stress.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"frontend service\",\n      \"content\": \"Services with 0 endpoints: frontend\",\n      \"supports\": \"This indicates a direct service connectivity issue that may stem from the OOMKilled state of recommendationservice.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The 0 endpoints for the frontend service could be due to a misconfiguration unrelated to the OOMKilled status.\",\n      \"confidence\": 0.5,\n      \"reason_rejected\": \"This hypothesis is weakened by the clear link between the OOMKilled status and cascading effects on service availability.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/pod-oomkilled.md",
+      "score": 0.8686744272708893
+    },
+    {
+      "source": "debugging/memory-pressure.md",
+      "score": 0.8531699180603027
+    },
+    {
+      "source": "runbooks/rca-f1-oomkilled.md",
+      "score": 0.8421439528465271
+    },
+    {
+      "source": "debugging/pod-crashloopbackoff.md",
+      "score": 0.8389761745929718
+    },
+    {
+      "source": "debugging/pod-oomkilled.md",
+      "score": 0.8081228733062744
+    }
+  ]
+}

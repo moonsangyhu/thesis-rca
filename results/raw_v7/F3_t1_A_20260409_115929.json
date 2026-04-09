@@ -1,0 +1,786 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "frontend-5bd5755454-5z9pr",
+          "phase": "Pending"
+        },
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5bd5755454-5z9pr",
+          "container": "frontend",
+          "waiting_reason": "ImagePullBackOff"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-5bd5755454-5z9pr",
+          "phase": "Pending",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "frontend",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "ImagePullBackOff"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"frontend:v99.99.99\": failed to pull and unpack image \"docker.io/library/frontend:v99.99.99\": failed to resolve reference \"docker.io/library/frontend:v99.99.99\": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed",
+          "object": "frontend-5bd5755454-5z9pr",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T02:56:35Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "frontend-5bd5755454-5z9pr",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T02:56:35Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "frontend-5bd5755454-5z9pr",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-04-09T02:57:00Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "frontend-5bd5755454-5z9pr",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       ImagePullBackOff\n    Ready:          False\n    Restart Count:  0\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-wvrvz (ro)\n  server:\n    Container ID:   containerd://9ed32d9c0d464aa4dbb42a90f999b88ef2cbafe7d058ee0a2b90d241e90cdab4\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/frontend:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/frontend@sha256:50ca57c513de1ef22a97b6ef76989a73878d4a3873f85b5314bfc207853d5475\n    Port:           8080/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 11:55:55 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   http-get http://:8080/_healthz delay=10s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  http-get http://:8080/_healthz delay=10s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:                             8080\n      PRODUCT_CATALOG_SERVICE_ADDR:     productcatalogservice:3550\n      CURRENCY_SERVICE_ADDR:            currencyservice:7000\n      CART_SERVICE_ADDR:                cartservice:7070\n      RECOMMENDATION_SERVICE_ADDR:      recommendationservice:8080\n      SHIPPING_SERVICE_ADDR:            shippingservice:50051\n      CHECKOUT_SERVICE_ADDR:            checkoutservice:5050\n      AD_SERVICE_ADDR:                  adservice:9555\n      SHOPPING_ASSISTANT_SERVICE_ADDR:  shoppingassistantservice:80\n      ENABLE_PROFILER:                  0\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-wvrvz (ro)\nConditions:"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-s98rw: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-5bd5755454-5z9pr: Pending\n  container/frontend: NOT READY (ImagePullBackOff) restarts=0\nfrontend-67fc78b7c7-9dptt: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-vt2pv: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/frontend-5bd5755454-5z9pr: Failed - Failed to pull image \"frontend:v99.99.99\": failed to pull and unpack image \"docker.io/library/frontend:v99.99.99\": failed to resolve reference \"docker.io/library/frontend:v99.99.99\": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed (count=3)\n[Warning] Pod/frontend-5bd5755454-5z9pr: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/frontend-5bd5755454-5z9pr: Failed - Error: ImagePullBackOff (count=6)\n\n## Metric Anomalies\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F3",
+    "trial": 1,
+    "system": "A",
+    "identified_fault_type": "Image Pull Failure",
+    "root_cause": "The frontend pod is in Pending state due to an ImagePullBackOff error, which prevents the service from becoming available.",
+    "confidence": 0.8,
+    "affected_components": [
+      "frontend pod",
+      "frontend service"
+    ],
+    "remediation": [
+      "Verify the image name and tag in the frontend deployment and ensure the image exists in the specified registry.",
+      "Check for authentication issues with the registry if the image is available but access is denied."
+    ],
+    "detail": "The frontend pod's failure to pull the specified image leads directly to its Pending state, which in turn causes the frontend service to show 0 endpoints. Addressing this image pull failure is essential to restore service function.",
+    "reasoning": "Step 1: Checked node health and found all nodes are in Ready state; proceed to Step 2. Step 2: Reviewed pod status and identified frontend pod in Pending state with ImagePullBackOff reason; noted as primary candidate. Other pods are Running. Step 3: Found service 'frontend' showing 0 endpoints, which is a symptom of a deeper issue; this aligns with the ImagePullBackOff condition of the frontend pod. Step 4: No network issues indicated. Step 5: Resource limits were not checked due to downgrade priority. The primary diagnosis focuses on the ImagePullBackOff issue, leading to the frontend service having 0 endpoints, thus confirming a cascading issue and establishing root cause.",
+    "root_cause_ko": "프론트엔드 팟이 ImagePullBackOff 오류로 인해 보류 상태이며, 이는 서비스의 가용성을 방해합니다.",
+    "remediation_ko": [
+      "프론트엔드 배포에서 이미지 이름과 태그를 확인하고 지정된 레지스트리에 이미지가 존재하는지 확인합니다.",
+      "이미지가 있지만 접근이 거부되는 경우 레지스트리에 대한 인증 문제를 확인합니다."
+    ],
+    "detail_ko": "프론트엔드 팟이 지정된 이미지를 가져오는 데 실패하면 보류 상태가 되어 프론트엔드 서비스가 0 엔드포인트를 표시합니다. 이 이미지 가져오기 실패를 해결하는 것이 서비스 기능 복원에 필수적입니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/frontend-5bd5755454-5z9pr: Failed - Failed to pull image \"frontend:v99.99.99\": failed to pull and unpack image \"docker.io/library/frontend:v99.99.99\": failed to resolve reference \"docker.io/library/frontend:v99.99.99\": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed (count=3)",
+        "supports": "This indicates that the frontend pod cannot be instantiated because it cannot access the required Docker image.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "Metric Anomalies",
+        "content": "Services with 0 endpoints: frontend",
+        "supports": "This confirms that the frontend service is impacted due to the frontend pod being in Pending state.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The frontend service showing 0 endpoints could be due to a scheduling issue unrelated to image pull failures.",
+        "confidence": 0.4,
+        "reason_rejected": "No indications of ResourceQuota or taint issues were found to suggest conflicting scheduling constraints."
+      }
+    ],
+    "confidence_2nd": 0.5,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence grounding is strong, with both warning events about image pull failures and metric anomalies about 0 endpoints being correctly identified. The diagnostic logic is mostly sound, but there is a minor gap regarding the lack of checks for resource limits, which could further support the diagnosis. The alternative hypothesis is acknowledged, but could benefit from more detail about its implications. Overall confidence of 0.8 is reasonable given the evidence.",
+    "retry_count": 1,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The LLM diagnosis identifies the correct fault category (ImagePullBackOff) and correctly explains that the frontend pod is unable to become available due to an image pull failure. However, it does not explicitly mention that the specific root cause is that the image frontend:v99.99.99 does not exist in the registry, which is a key detail of the ground truth.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 10833,
+    "prompt_tokens": 4476,
+    "completion_tokens": 1014,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health and found all nodes are in Ready state; proceed to Step 2. Step 2: Reviewed pod status and identified frontend pod in Pending state with ImagePullBackOff reason; noted as primary candidate. Other pods are Running. Step 3: Found service 'frontend' showing 0 endpoints, which is a symptom of a deeper issue; this aligns with the ImagePullBackOff condition of the frontend pod. Step 4: No network issues indicated. Step 5: Resource limits were not checked due to downgrade priority. The primary diagnosis focuses on the ImagePullBackOff issue, leading to the frontend service having 0 endpoints, thus confirming a cascading issue and establishing root cause.\",\n  \"identified_fault_type\": \"Image Pull Failure\",\n  \"root_cause\": \"The frontend pod is in Pending state due to an ImagePullBackOff error, which prevents the service from becoming available.\",\n  \"root_cause_ko\": \"프론트엔드 팟이 ImagePullBackOff 오류로 인해 보류 상태이며, 이는 서비스의 가용성을 방해합니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.5,\n  \"affected_components\": [\"frontend pod\", \"frontend service\"],\n  \"remediation\": [\n    \"Verify the image name and tag in the frontend deployment and ensure the image exists in the specified registry.\",\n    \"Check for authentication issues with the registry if the image is available but access is denied.\"\n  ],\n  \"remediation_ko\": [\n    \"프론트엔드 배포에서 이미지 이름과 태그를 확인하고 지정된 레지스트리에 이미지가 존재하는지 확인합니다.\",\n    \"이미지가 있지만 접근이 거부되는 경우 레지스트리에 대한 인증 문제를 확인합니다.\"\n  ],\n  \"detail\": \"The frontend pod's failure to pull the specified image leads directly to its Pending state, which in turn causes the frontend service to show 0 endpoints. Addressing this image pull failure is essential to restore service function.\",\n  \"detail_ko\": \"프론트엔드 팟이 지정된 이미지를 가져오는 데 실패하면 보류 상태가 되어 프론트엔드 서비스가 0 엔드포인트를 표시합니다. 이 이미지 가져오기 실패를 해결하는 것이 서비스 기능 복원에 필수적입니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/frontend-5bd5755454-5z9pr: Failed - Failed to pull image \\\"frontend:v99.99.99\\\": failed to pull and unpack image \\\"docker.io/library/frontend:v99.99.99\\\": failed to resolve reference \\\"docker.io/library/frontend:v99.99.99\\\": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed (count=3)\",\n      \"supports\": \"This indicates that the frontend pod cannot be instantiated because it cannot access the required Docker image.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"Metric Anomalies\",\n      \"content\": \"Services with 0 endpoints: frontend\",\n      \"supports\": \"This confirms that the frontend service is impacted due to the frontend pod being in Pending state.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The frontend service showing 0 endpoints could be due to a scheduling issue unrelated to image pull failures.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No indications of ResourceQuota or taint issues were found to suggest conflicting scheduling constraints.\"\n    }\n  ]\n}"
+}

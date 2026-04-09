@@ -1,0 +1,930 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "productcatalogservice-78755b8c99-qxjqb",
+          "phase": "Pending"
+        },
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-78755b8c99-qxjqb",
+          "container": "productcatalogservice",
+          "waiting_reason": "ImagePullBackOff"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "cartservice-5f9455bb96-xkl9t",
+          "container": "server",
+          "throttle_ratio": 0.345
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-78755b8c99-qxjqb",
+          "phase": "Pending",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "productcatalogservice",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "ImagePullBackOff"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-5f9455bb96-xkl9t",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T03:02:08Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "cartservice-5f9455bb96-xkl9t",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T03:02:41Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 127.0.0.53:53: no such host",
+          "object": "cartservice-5f9455bb96-xkl9t",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T03:02:41Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "cartservice-5f9455bb96-xkl9t",
+          "kind": "Pod",
+          "count": 5,
+          "lastTimestamp": "2026-04-09T03:02:53Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to pull and unpack image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to resolve reference \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to do request: Head \"https://gcr.typo.io/v2/google-samples/productcatalogservice/manifests/latest\": dial tcp: lookup gcr.typo.io on 127.0.0.53:53: no such host",
+          "object": "productcatalogservice-78755b8c99-qxjqb",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T03:08:26Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "productcatalogservice-78755b8c99-qxjqb",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T03:08:26Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "productcatalogservice-78755b8c99-qxjqb",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-04-09T03:08:53Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "productcatalogservice-78755b8c99-qxjqb",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       ImagePullBackOff\n    Ready:          False\n    Restart Count:  0\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9gd5r (ro)\n  server:\n    Container ID:   containerd://09679b45565a64f1a1cf1a16d4ac72df80b02cb3075c79dad9b541179386c58f\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/productcatalogservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/productcatalogservice@sha256:6e0d2218e0edecf671230d54cbbb565209d3a7592215d9167aca918dcb251e14\n    Port:           3550/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 12:07:39 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:3550  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:3550  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:              3550\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9gd5r (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-9gd5r:"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:6611fed964896c38e1113ca1095edcae13b9880e",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastAttempted": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "True",
+            "message": "Helm install succeeded for release argocd/argocd.v1 with chart argo-cd@7.9.1"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/loki.v1 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:f6e12d10af6fc92f4c64b33802672da8dc5ca8b8",
+            "lastUpdate": "2026-04-09T01:17:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-s98rw: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-9dptt: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-vt2pv: Running\nproductcatalogservice-78755b8c99-qxjqb: Pending\n  container/productcatalogservice: NOT READY (ImagePullBackOff) restarts=0\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/cartservice-5f9455bb96-xkl9t: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-5f9455bb96-xkl9t: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/cartservice-5f9455bb96-xkl9t: Failed - Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 127.0.0.53:53: no such host (count=3)\n[Warning] Pod/cartservice-5f9455bb96-xkl9t: Failed - Error: ImagePullBackOff (count=5)\n[Warning] Pod/productcatalogservice-78755b8c99-qxjqb: Failed - Failed to pull image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to pull and unpack image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to resolve reference \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to do request: Head \"https://gcr.typo.io/v2/google-samples/productcatalogservice/manifests/latest\": dial tcp: lookup gcr.typo.io on 127.0.0.53:53: no such host (count=3)\n[Warning] Pod/productcatalogservice-78755b8c99-qxjqb: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/productcatalogservice-78755b8c99-qxjqb: Failed - Error: ImagePullBackOff (count=6)\n\n## Metric Anomalies\nCPU throttled: cartservice-5f9455bb96-xkl9t/server (34%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:66)\n- argocd: Ready (rev: main@sha1:f6)\n- flux-system: Ready (rev: main@sha1:f6)\n- infrastructure: Ready (rev: main@sha1:f6)\n- monitoring: Ready (rev: main@sha1:f6)\n### FluxCD HelmReleases\n- argocd/argocd: Ready\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.79]\n# Pod ImagePullBackOff Diagnosis\n## Common Causes\n\n1. **Wrong image tag**: The specified tag does not exist in the registry. Common after a typo or when using a tag that was never pushed (e.g., `latest` when only versioned tags exist).\n\n2. **Wrong image name**: Repository or image name is misspelled or the full registry URL is missing for private registries.\n\n3. **Missing imagePullSecret**: Private registry requires authentication but no pull secret is configured on the pod or service account.\n\n---\n[Source: runbooks/rca-f3-imagepullbackoff.md | Score: 0.75]\n# Runbook: F3 - ImagePullBackOff Root Cause Analysis\nRegistry unreachable — use image mirror or cached image\n```bash\n\n# Update deployment to use a mirror registry\nkubectl patch deployment <deployment-name> -n <namespace> --type='json' \\\n  -p='[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/image\",\"value\":\"<mirror-registry>/<image>:<tag>\"}]'\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.75]\n# Pod ImagePullBackOff Diagnosis\n### Step 2: Create imagePullSecret for private registry\n```bash\n\n# Create secret from Docker credentials\nkubectl create secret docker-registry <secret-name> \\\n  --docker-server=<registry-server> \\\n  --docker-username=<username> \\\n  --docker-password=<password> \\\n  --docker-email=<email> \\\n  -n <namespace>\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.75]\n# Pod ImagePullBackOff Diagnosis\n# Pod ImagePullBackOff Diagnosis\n\n## Overview\nImagePullBackOff (and its precursor ErrImagePull) occurs when Kubernetes cannot pull the container image from the registry. The kubelet attempts to pull the image and upon failure, enters a backoff state with increasing retry intervals. This can be caused by authentication failures, incorrect image names or tags, network connectivity issues, or registry unavailability.\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.75]\n# Pod ImagePullBackOff Diagnosis\nt no longer exists (deleted from registry).\n\n## Resolution Steps\n\n### Step 1: Fix wrong image name or tag\n```bash\n\n# Update the image in the deployment\nkubectl set image deployment/<deployment-name> \\\n  <container-name>=<correct-registry>/<image>:<correct-tag> \\\n  -n <namespace>\n\n# Or edit deployment directly\nkubectl edit deployment <deployment-name> -n <namespace>\n```\n\n### Step 2: Create imagePullSecret for private registry\n```bash\n",
+  "rca_output": {
+    "fault_id": "F3",
+    "trial": 3,
+    "system": "B",
+    "identified_fault_type": "Image Pull Failure",
+    "root_cause": "The pod 'cartservice' and 'productcatalogservice' failed to pull images due to DNS resolution failures.",
+    "confidence": 0.9,
+    "affected_components": [
+      "cartservice",
+      "productcatalogservice"
+    ],
+    "remediation": [
+      "Check and correct the image names and tags for the affected deployments.",
+      "Ensure the DNS resolution for the image registries is functioning correctly."
+    ],
+    "detail": "The two services, 'cartservice' and 'productcatalogservice', were unable to pull their respective images due to DNS resolution issues which resulted in an ImagePullBackOff state. This must be resolved to restore normal operation.",
+    "reasoning": "Step 1 checked node health and found all nodes in 'Ready' state with no pressure conditions, so no node-level faults were identified. Step 2 checked pod status and found two pods ('cartservice-5f9455bb96-xkl9t' and 'productcatalogservice-78755b8c99-qxjqb') in 'ImagePullBackOff' state, indicating an issue with pulling images. This points to potential misconfiguration of image names or registry access. Step 3 revealed services with 0 endpoints, specifically 'frontend'; however, this is a symptom of the underlying image pull issue. Step 4 found no network issues. Step 5 indicated CPU throttling in the 'cartservice' pod but this is secondary to the pod status. The primary issue stems from the inability to pull images due to DNS resolution failures for both services. Therefore, the root cause is confirmed as an ImagePullBackOff fault.",
+    "root_cause_ko": "포드 'cartservice'와 'productcatalogservice'가 DNS 해상도 실패로 인해 이미지를 풀지 못했습니다.",
+    "remediation_ko": [
+      "영향을 받은 배포의 이미지 이름과 태그를 확인하고 수정하십시오.",
+      "이미지 레지스트리에 대한 DNS 해상도가 제대로 작동하는지 확인하십시오."
+    ],
+    "detail_ko": "'cartservice'와 'productcatalogservice' 서비스는 DNS 해상도 문제로 인해 각각의 이미지를 풀지 못해 ImagePullBackOff 상태가 되었습니다. 정상 작동을 복구하려면 이 문제를 해결해야 합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/cartservice-5f9455bb96-xkl9t: Failed - Error: ErrImagePull (count=3) [Warning] Pod/cartservice-5f9455bb96-xkl9t: Failed - Error: ImagePullBackOff (count=5)",
+        "supports": "Pod is experiencing ImagePullBackOff due to image resolution failure.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/productcatalogservice-78755b8c99-qxjqb: Failed - Error: ErrImagePull (count=3) [Warning] Pod/productcatalogservice-78755b8c99-qxjqb: Failed - Error: ImagePullBackOff (count=6)",
+        "supports": "Pod is experiencing ImagePullBackOff due to image resolution failure.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Incorrect image tag or name could be causing the issue.",
+        "confidence": 0.5,
+        "reason_rejected": "The logs provide clear evidence of DNS resolution failure, negating this hypothesis."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "While the evidence cited is strong and well-supported by the input context, there's a slight over-reliance on the assumption of DNS resolution failures without explicitly addressing potential misconfigurations of the image names or registry access in more detail. Though predominant logs indicate issues with DNS, mention of post-resolution checks could strengthen the conclusions. The alternative hypothesis regarding incorrect image tag or name is valid, but the reasoning for its rejection relied heavily on the assumption of DNS issues without fully exploring other alternatives that might suggest configuration problems.",
+    "retry_count": 0,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The diagnosis correctly identifies the fault category (ImagePullBackOff) and mentions DNS resolution failures but does not specify the exact mechanism (i.e., misspelled registry hostname) that caused the issue. Overall, it captures the essence of the problem but lacks specific details about the root cause.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 13042,
+    "prompt_tokens": 6484,
+    "completion_tokens": 1029,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1 checked node health and found all nodes in 'Ready' state with no pressure conditions, so no node-level faults were identified. Step 2 checked pod status and found two pods ('cartservice-5f9455bb96-xkl9t' and 'productcatalogservice-78755b8c99-qxjqb') in 'ImagePullBackOff' state, indicating an issue with pulling images. This points to potential misconfiguration of image names or registry access. Step 3 revealed services with 0 endpoints, specifically 'frontend'; however, this is a symptom of the underlying image pull issue. Step 4 found no network issues. Step 5 indicated CPU throttling in the 'cartservice' pod but this is secondary to the pod status. The primary issue stems from the inability to pull images due to DNS resolution failures for both services. Therefore, the root cause is confirmed as an ImagePullBackOff fault.\",\n  \"identified_fault_type\": \"Image Pull Failure\",\n  \"root_cause\": \"The pod 'cartservice' and 'productcatalogservice' failed to pull images due to DNS resolution failures.\",\n  \"root_cause_ko\": \"포드 'cartservice'와 'productcatalogservice'가 DNS 해상도 실패로 인해 이미지를 풀지 못했습니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"cartservice\", \"productcatalogservice\"],\n  \"remediation\": [\n    \"Check and correct the image names and tags for the affected deployments.\",\n    \"Ensure the DNS resolution for the image registries is functioning correctly.\"\n  ],\n  \"remediation_ko\": [\n    \"영향을 받은 배포의 이미지 이름과 태그를 확인하고 수정하십시오.\",\n    \"이미지 레지스트리에 대한 DNS 해상도가 제대로 작동하는지 확인하십시오.\"\n  ],\n  \"detail\": \"The two services, 'cartservice' and 'productcatalogservice', were unable to pull their respective images due to DNS resolution issues which resulted in an ImagePullBackOff state. This must be resolved to restore normal operation.\",\n  \"detail_ko\": \"'cartservice'와 'productcatalogservice' 서비스는 DNS 해상도 문제로 인해 각각의 이미지를 풀지 못해 ImagePullBackOff 상태가 되었습니다. 정상 작동을 복구하려면 이 문제를 해결해야 합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/cartservice-5f9455bb96-xkl9t: Failed - Error: ErrImagePull (count=3) [Warning] Pod/cartservice-5f9455bb96-xkl9t: Failed - Error: ImagePullBackOff (count=5)\",\n      \"supports\": \"Pod is experiencing ImagePullBackOff due to image resolution failure.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/productcatalogservice-78755b8c99-qxjqb: Failed - Error: ErrImagePull (count=3) [Warning] Pod/productcatalogservice-78755b8c99-qxjqb: Failed - Error: ImagePullBackOff (count=6)\",\n      \"supports\": \"Pod is experiencing ImagePullBackOff due to image resolution failure.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Incorrect image tag or name could be causing the issue.\",\n      \"confidence\": 0.5,\n      \"reason_rejected\": \"The logs provide clear evidence of DNS resolution failure, negating this hypothesis.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7944373488426208
+    },
+    {
+      "source": "runbooks/rca-f3-imagepullbackoff.md",
+      "score": 0.7543522119522095
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7540529072284698
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7517383694648743
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7487226128578186
+    }
+  ]
+}

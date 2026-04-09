@@ -1,0 +1,894 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "checkoutservice-5b69ffdc57-lwj8p",
+          "phase": "Pending"
+        },
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-8v7xm",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-7d866b6f4d-xkv66",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-7d866b6f4d-xkv66",
+          "container": "shippingservice",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "checkoutservice-5b69ffdc57-lwj8p",
+          "container": "checkoutservice",
+          "waiting_reason": "CreateContainerConfigError"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "shippingservice-7d866b6f4d-xkv66",
+          "container": "shippingservice",
+          "restarts": 13
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-5b69ffdc57-lwj8p",
+          "phase": "Pending",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "checkoutservice",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CreateContainerConfigError"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-8v7xm",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-7d866b6f4d-xkv66",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            },
+            {
+              "name": "shippingservice",
+              "ready": false,
+              "restartCount": 13,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "StartError"
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "FailedMount",
+          "message": "MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found",
+          "object": "paymentservice-5b58dc8c94-qmwkc",
+          "kind": "Pod",
+          "count": 9,
+          "lastTimestamp": "2026-04-09T07:49:33Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad",
+          "object": "checkoutservice-5b69ffdc57-lwj8p",
+          "kind": "Pod",
+          "count": 10,
+          "lastTimestamp": "2026-04-09T07:55:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container shippingservice in pod shippingservice-7d866b6f4d-xkv66_boutique(9fb99a23-a5aa-435a-a8ea-cad893e5fb2b)",
+          "object": "shippingservice-7d866b6f4d-xkv66",
+          "kind": "Pod",
+          "count": 209,
+          "lastTimestamp": "2026-04-09T07:55:54Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "checkoutservice-5b69ffdc57-lwj8p",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       CreateContainerConfigError\n    Ready:          False\n    Restart Count:  0\n    Environment:\n      CHECKOUT_WRONG_KEY:  <set to the key 'API_KEY' in secret 'checkout-secret-bad'>  Optional: false\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-skw6l (ro)\n  server:\n    Container ID:   containerd://c880a238a01a73afc9aecbac4fc25044fb20b8304e6da31ba42dc2c47fe82462\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/checkoutservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/checkoutservice@sha256:403f4056479bcf2d36a865bf037ba2de0f84a60408519cee1b80e705e99f622a\n    Port:           5050/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 16:53:50 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:5050  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:5050  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:                          5050\n      PRODUCT_CATALOG_SERVICE_ADDR:  productcatalogservice:3550\n      SHIPPING_SERVICE_ADDR:         shippingservice:50051\n      PAYMENT_SERVICE_ADDR:          paymentservice:50051\n      EMAIL_SERVICE_ADDR:            emailservice:5000\n      CURRENCY_SERVICE_ADDR:         currencyservice:7000\n      CART_SERVICE_ADDR:             cartservice:7070\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-skw6l (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True "
+        },
+        {
+          "pod": "shippingservice-7d866b6f4d-xkv66",
+          "describe_excerpt": "    Host Port:     <none>\n    Command:\n      /bin/sh\n      -c\n      exit 1\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       StartError\n      Message:      failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/bin/sh\": stat /bin/sh: no such file or directory: unknown\n      Exit Code:    128\n      Started:      Thu, 01 Jan 1970 09:00:00 +0900\n      Finished:     Thu, 09 Apr 2026 16:52:26 +0900\n    Ready:          False\n    Restart Count:  13\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jj9zh (ro)\n  server:\n    Container ID:   containerd://e4547825293f337b7a16c57b2751c0c86a10892ba33eab1f15ddec0cb9ce7a89\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice@sha256:0d2be86f0280a0a5594de9593eecd47ca2380e90946a3434b30d956373599b44\n    Port:           50051/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 09 Apr 2026 16:10:52 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:50051  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:50051  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:              50051\n      DISABLE_PROFILER:  1\n    Mounts:"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-5b69ffdc57-lwj8p: Pending\n  container/checkoutservice: NOT READY (CreateContainerConfigError) restarts=0\ncheckoutservice-b7654c84c-qxlqk: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-5llhq: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-8v7xm: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-hhh6f: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\nshippingservice-7d866b6f4d-xkv66: Running\n  container/shippingservice: NOT READY (CrashLoopBackOff) restarts=13\n    last terminated: StartError (exit code ?)\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/paymentservice-5b58dc8c94-qmwkc: FailedMount - MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found (count=9)\n[Warning] Pod/checkoutservice-5b69ffdc57-lwj8p: Failed - Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)\n[Warning] Pod/shippingservice-7d866b6f4d-xkv66: BackOff - Back-off restarting failed container shippingservice in pod shippingservice-7d866b6f4d-xkv66_boutique(9fb99a23-a5aa-435a-a8ea-cad893e5fb2b) (count=209)\n\n## Metric Anomalies\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F9",
+    "trial": 4,
+    "system": "A",
+    "identified_fault_type": "Secret/ConfigMap Fault",
+    "root_cause": "The checkoutservice pod is failing to start due to a missing Secret 'checkout-secret-bad'.",
+    "confidence": 0.8,
+    "affected_components": [
+      "checkoutservice",
+      "shippingservice",
+      "frontend service"
+    ],
+    "remediation": [
+      "Create the missing Secret 'checkout-secret-bad' with the required data.",
+      "Review shippingservice logs to diagnose the cause of the CrashLoopBackOff."
+    ],
+    "detail": "The pending status of the checkoutservice pod directly results from the absence of its required Secret, preventing proper configuration upon startup. Meanwhile, the shippingservice failing with CrashLoopBackOff may require further scrutiny of its initialization sequence or configurations, but the primary issue causing service endpoints to drop is specifically related to the missing Secret.",
+    "reasoning": "In Step 1, I checked node health and found all nodes are Ready, so I proceeded to Step 2. In Step 2, the checkoutservice pod is in a Pending state due to a CreateContainerConfigError, indicating a missing Secret. Additionally, the shippingservice pod is in a CrashLoopBackOff state due to a restart error, but it does not qualify as a primary cause because there's another evident fault. Moving to Step 3, I noticed the frontend service has 0 endpoints, implying a connectivity issue that could stem from the pod failures. I then transitioned to Step 4 and found no network-related issues since there are no specific connection errors, DNS failures, or abnormal latencies present in logs or metrics, allowing me to move to Step 5. In Step 5, I did not find any evidence of resource limits or violations. The diagnosis indicates that the root cause of pending pods and service endpoint issues is a missing Secret for checkoutservice, and potentially a misconfiguration or deeper application issue for shippingservice.",
+    "root_cause_ko": "checkoutservice 팟이 'checkout-secret-bad' 비밀이 없어 시작에 실패하고 있습니다.",
+    "remediation_ko": [
+      "필요한 데이터로 'checkout-secret-bad' 비밀을 생성하십시오.",
+      "CrashLoopBackOff 원인을 진단하기 위해 shippingservice 로그를 검토하십시오."
+    ],
+    "detail_ko": "checkoutservice 팟의 대기 상태는 필요 불가결한 비밀이 없기 때문에 발생하며, 시작 시 적절한 구성 방지를 초래합니다. 동시에 shippingservice의 CrashLoopBackOff 문제는 초기화 시퀀스 또는 구성을 추가로 조사해야 할 수 있지만, 서비스 엔드포인트가 사라지게 하는 주요 문제는 구체적으로 누락된 비밀과 관련이 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "Pod/checkoutservice-5b69ffdc57-lwj8p: Failed - Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)",
+        "supports": "This indicates there is a missing Secret that is causing the checkoutservice pod to remain Pending.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "pod status",
+        "source": "Pod Status",
+        "content": "checkoutservice-5b69ffdc57-lwj8p: Pending, container/checkoutservice: NOT READY (CreateContainerConfigError) restarts=0",
+        "supports": "The CreateContainerConfigError confirms that the pod cannot start due to the missing Secret.",
+        "verified": true,
+        "match_ratio": 0.86
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The shippingservice pod may have its own configuration issue separately from the checkoutservice.",
+        "confidence": 0.4,
+        "reason_rejected": "While shippingservice shows signs of failing, the clear fault indicated for checkoutservice provides a more concrete root cause."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence regarding the missing Secret for checkoutservice and the CreateContainerConfigError is accurately drawn from the input context. However, the reasoning could better address why the repeated CrashLoopBackOff for shippingservice does not detract from identifying the primary fault. Consider explaining why there's a clear distinction between the faults despite both pods failing. The alternative hypothesis could have included deeper potential dependencies or configurations between checkoutservice and frontend services, as well as not ruling out the potential effect of 0 endpoints for frontend on overall traffic. The confidence is reasonable, yet further information on fixing shippingservice could indicate the relationship between these failures more deeply. Overall, solid grounding with minor gaps in the logical connections and alternative considerations.",
+    "retry_count": 0,
+    "correctness_score": 0.1,
+    "correctness_reasoning": "The diagnosis mentions a 'missing Secret', which indicates a fault with configuration, but it does not accurately reflect the ground truth that involves a key lookup failure due to the wrong key name. The diagnosis identifies a symptom (pod failing to start) but misinterprets the specific root cause mechanism related to the key name mismatch.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 11463,
+    "prompt_tokens": 4506,
+    "completion_tokens": 1110,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"In Step 1, I checked node health and found all nodes are Ready, so I proceeded to Step 2. In Step 2, the checkoutservice pod is in a Pending state due to a CreateContainerConfigError, indicating a missing Secret. Additionally, the shippingservice pod is in a CrashLoopBackOff state due to a restart error, but it does not qualify as a primary cause because there's another evident fault. Moving to Step 3, I noticed the frontend service has 0 endpoints, implying a connectivity issue that could stem from the pod failures. I then transitioned to Step 4 and found no network-related issues since there are no specific connection errors, DNS failures, or abnormal latencies present in logs or metrics, allowing me to move to Step 5. In Step 5, I did not find any evidence of resource limits or violations. The diagnosis indicates that the root cause of pending pods and service endpoint issues is a missing Secret for checkoutservice, and potentially a misconfiguration or deeper application issue for shippingservice.\",\n  \"identified_fault_type\": \"Secret/ConfigMap Fault\",\n  \"root_cause\": \"The checkoutservice pod is failing to start due to a missing Secret 'checkout-secret-bad'.\",\n  \"root_cause_ko\": \"checkoutservice 팟이 'checkout-secret-bad' 비밀이 없어 시작에 실패하고 있습니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"checkoutservice\", \"shippingservice\", \"frontend service\"],\n  \"remediation\": [\"Create the missing Secret 'checkout-secret-bad' with the required data.\", \"Review shippingservice logs to diagnose the cause of the CrashLoopBackOff.\"],\n  \"remediation_ko\": [\"필요한 데이터로 'checkout-secret-bad' 비밀을 생성하십시오.\", \"CrashLoopBackOff 원인을 진단하기 위해 shippingservice 로그를 검토하십시오.\"],\n  \"detail\": \"The pending status of the checkoutservice pod directly results from the absence of its required Secret, preventing proper configuration upon startup. Meanwhile, the shippingservice failing with CrashLoopBackOff may require further scrutiny of its initialization sequence or configurations, but the primary issue causing service endpoints to drop is specifically related to the missing Secret.\",\n  \"detail_ko\": \"checkoutservice 팟의 대기 상태는 필요 불가결한 비밀이 없기 때문에 발생하며, 시작 시 적절한 구성 방지를 초래합니다. 동시에 shippingservice의 CrashLoopBackOff 문제는 초기화 시퀀스 또는 구성을 추가로 조사해야 할 수 있지만, 서비스 엔드포인트가 사라지게 하는 주요 문제는 구체적으로 누락된 비밀과 관련이 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"Pod/checkoutservice-5b69ffdc57-lwj8p: Failed - Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)\",\n      \"supports\": \"This indicates there is a missing Secret that is causing the checkoutservice pod to remain Pending.\"\n    },\n    {\n      \"type\": \"pod status\",\n      \"source\": \"Pod Status\",\n      \"content\": \"checkoutservice-5b69ffdc57-lwj8p: Pending, container/checkoutservice: NOT READY (CreateContainerConfigError) restarts=0\",\n      \"supports\": \"The CreateContainerConfigError confirms that the pod cannot start due to the missing Secret.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The shippingservice pod may have its own configuration issue separately from the checkoutservice.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"While shippingservice shows signs of failing, the clear fault indicated for checkoutservice provides a more concrete root cause.\"\n    }\n  ]\n}"
+}

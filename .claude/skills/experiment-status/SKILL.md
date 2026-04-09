@@ -163,3 +163,45 @@ tail -3 results/experiment_v2.log
 ```
 
 현재 어떤 trial이 진행 중인지 표시한다.
+
+### 6. 이슈 추출 및 기록 (필수)
+
+**실험 상태 확인 때마다 반드시 수행한다.**
+
+실험 로그에서 ERROR/WARNING/CRITICAL/SKIP 패턴을 추출하고, `docs/issues/experiment_issues_v{N}.md`에 구조화하여 기록한다. `/experiment-issues` 스킬의 워크플로우를 따른다.
+
+핵심 수행 항목:
+1. `grep -E "(ERROR|WARNING|CRITICAL|FAILED|SKIP)" results/experiment_v{N}_nohup.log`에서 이슈 추출
+2. 카테고리 분류 (infra/recovery/injection/prompt/data/code)
+3. 심각도 판정 (P0~P3)
+4. `docs/issues/experiment_issues_v{N}.md` 파일에 이슈 추가/업데이트
+5. 이전에 기록된 이슈와 중복 확인 — 새 이슈만 추가, 기존 이슈는 빈도 업데이트
+
+**출력 시 이슈 요약도 함께 보여준다:**
+```
+### 발견된 이슈
+| # | 카테고리 | 심각도 | 설명 | 빈도 |
+|---|----------|--------|------|------|
+```
+
+### 7. F11/F12 Ground Truth (네트워크 fault)
+
+F11/F12가 포함된 실험이면 아래 정보도 표시한다:
+
+### F11 — NetworkDelay (네트워크 지연)
+| Trial | 대상 노드 | 주입 방법 |
+|-------|----------|----------|
+| t1 | worker01 | 500ms delay |
+| t2 | worker02 | 1s ± 200ms jitter |
+| t3 | worker01 | 2s severe delay |
+| t4 | worker03 | 300ms normal distribution |
+| t5 | worker02 | 5s near-timeout |
+
+### F12 — NetworkLoss (패킷 손실)
+| Trial | 대상 노드 | 주입 방법 |
+|-------|----------|----------|
+| t1 | worker01 | 10% packet loss |
+| t2 | worker02 | 30% packet loss |
+| t3 | worker03 | 50% severe |
+| t4 | worker01 | 5% correlated loss |
+| t5 | worker02 | 80% extreme |

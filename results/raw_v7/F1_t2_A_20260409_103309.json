@@ -1,0 +1,828 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-wr7h4",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-rfcrs",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-s6vsh",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "server",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "server",
+          "terminated_reason": "OOMKilled"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "server",
+          "restarts": 4
+        }
+      ],
+      "oom_events": [
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "server"
+        }
+      ],
+      "cpu_throttling": [
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "container": "",
+          "throttle_ratio": 0.111
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "container": "server",
+          "throttle_ratio": 0.116
+        },
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "container": "",
+          "throttle_ratio": 0.919
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-wr7h4",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-s6vsh",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-rfcrs",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-6c6b9998b9-zndgj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": false,
+              "restartCount": 5,
+              "state": [
+                "running"
+              ],
+              "lastTerminatedReason": "OOMKilled"
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-57b87c6b4d-d78cx",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T01:26:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-57b87c6b4d-d78cx",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T01:26:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container server in pod recommendationservice-6c6b9998b9-zndgj_boutique(b4a1da08-ba8f-478f-81b0-ea358058261a)",
+          "object": "recommendationservice-6c6b9998b9-zndgj",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T01:28:54Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.2.60:8080\" within 1s: context deadline exceeded",
+          "object": "recommendationservice-6c6b9998b9-zndgj",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-09T01:29:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.60:8080\" within 1s: context deadline exceeded",
+          "object": "recommendationservice-6c6b9998b9-zndgj",
+          "kind": "Pod",
+          "count": 10,
+          "lastTimestamp": "2026-04-09T01:29:12Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "recommendationservice-6c6b9998b9-zndgj",
+          "describe_excerpt": "    Host Port:      0/TCP\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       OOMKilled\n      Exit Code:    137\n      Started:      Thu, 09 Apr 2026 10:31:40 +0900\n      Finished:     Thu, 09 Apr 2026 10:31:46 +0900\n    Ready:          False\n    Restart Count:  5\n    Limits:\n      cpu:     200m\n      memory:  24Mi\n    Requests:\n      cpu:      100m\n      memory:   24Mi\n    Liveness:   grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Readiness:  grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:                          8080\n      PRODUCT_CATALOG_SERVICE_ADDR:  productcatalogservice:3550\n      DISABLE_PROFILER:              1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-5qxgd (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-5qxgd:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-wr7h4: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-s6vsh: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-rfcrs: Running\nrecommendationservice-6c6b9998b9-zndgj: Running\n  container/server: NOT READY restarts=5\n    last terminated: OOMKilled (exit code ?)\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/cartservice-57b87c6b4d-d78cx: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-57b87c6b4d-d78cx: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/recommendationservice-6c6b9998b9-zndgj: BackOff - Back-off restarting failed container server in pod recommendationservice-6c6b9998b9-zndgj_boutique(b4a1da08-ba8f-478f-81b0-ea358058261a) (count=2)\n[Warning] Pod/recommendationservice-6c6b9998b9-zndgj: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.2.60:8080\" within 1s: context deadline exceeded (count=3)\n[Warning] Pod/recommendationservice-6c6b9998b9-zndgj: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.60:8080\" within 1s: context deadline exceeded (count=10)\n\n## Metric Anomalies\nOOMKilled containers: recommendationservice-6c6b9998b9-zndgj/server\nCPU throttled: cartservice-57b87c6b4d-d78cx/ (11%), cartservice-57b87c6b4d-d78cx/server (12%), recommendationservice-6c6b9998b9-zndgj/ (92%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F1",
+    "trial": 2,
+    "system": "A",
+    "identified_fault_type": "Resource Exhaustion (OOM Kill)",
+    "root_cause": "Memory limit exceeded on recommendationservice container caused OOMKilled and CPU throttling.",
+    "confidence": 0.9,
+    "affected_components": [
+      "recommendationservice",
+      "cartservice"
+    ],
+    "remediation": [
+      "Increase memory limits for recommendationservice to prevent OOMKilled errors.",
+      "Monitor CPU limits for cartservice to reduce throttling."
+    ],
+    "detail": "The recommendationservice pod experienced OOMKilled due to exceeding its memory limits, while the cartservice pod showed high CPU throttling, indicating overall resource strain impacting application performance. Addressing memory and CPU resource configurations is essential for system stability.",
+    "reasoning": "Step 1: Checked Node Health - All nodes are Ready. No node issues detected. Proceed to Step 2. Step 2: Pod Status - Found recommendationservice-6c6b9998b9-zndgj container/server showing OOMKilled due to memory limit exceeded. Found cartservice-57b87c6b4d-d78cx showing CPU throttling at 11%. Proceed to Step 3 to check for additional or cascading issues. Step 3: Service Connectivity - Found 0 endpoints for the frontend service. This requires reverse-tracing the cause. No NetworkPolicy issues identified, and no PVC issues found. Undetermined if it’s a service selector mismatch. Proceed to Step 4. Step 4: Network Check - No connection refused errors or abnormal latency identified. Network appears healthy. Proceed to Step 5. Step 5: Resource Limits - Found CPU throttling (92%) on recommendationservice indicates resource contention issues. Concluding that the recommendationservice OOMKilled and high CPU throttling are primarily causing degraded performance, thus the root cause is confirmed as resource exhaustion.",
+    "root_cause_ko": "recommendationservice 컨테이너의 메모리 한도를 초과하여 OOMKilled 및 CPU 스로틀링이 발생했습니다.",
+    "remediation_ko": [
+      "recommendationservice에 대한 메모리 한계를 높여 OOMKilled 오류를 방지합니다.",
+      "cartservice의 CPU 한계를 모니터링하여 스로틀링을 줄입니다."
+    ],
+    "detail_ko": "recommendationservice 파드는 메모리 한도를 초과하여 OOMKilled가 발생했으며, cartservice 파드는 높은 CPU 스로틀링을 나타내어 애플리케이션 성능에 영향을 미치는 전반적인 리소스 압박을 나타냅니다. 시스템 안정성을 위해 메모리 및 CPU 리소스 구성을 조정하는 것이 중요합니다.",
+    "evidence_chain": [
+      {
+        "type": "pod status",
+        "source": "Pod/recommendationservice-6c6b9998b9-zndgj",
+        "content": "NOT READY restarts=5, last terminated: OOMKilled",
+        "supports": "Indicates resource limit issues causing OOMKilled",
+        "verified": true,
+        "match_ratio": 0.83
+      },
+      {
+        "type": "metrics",
+        "source": "recommendationservice CPU usage",
+        "content": "CPU throttled: recommendationservice-6c6b9998b9-zndgj/ (92%)",
+        "supports": "Indicates resource contention issue leading to poor performance",
+        "verified": true,
+        "match_ratio": 0.8
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Cartservice may be misconfigured leading to readiness probe failures.",
+        "confidence": 0.4,
+        "reason_rejected": "No direct evidence of misconfiguration, primarily CPU throttling observed without crashes."
+      }
+    ],
+    "confidence_2nd": 0.9,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "Overall, the diagnosis is solid, but the reasoning could better connect the CPU throttling of the cartservice to the conclusion. It may be beneficial to explore how this affects the immediate resource constraints. Additionally, while the alternative hypothesis regarding the cartservice misconfiguration is mentioned, it could be further explained how it could intersect with the observed metrics. This would enhance the depth of the differential completeness.",
+    "retry_count": 0,
+    "correctness_score": 0.9,
+    "correctness_reasoning": "The diagnosis correctly identifies the root cause mechanism of OOMKilled due to exceeding the memory limit on the recommendationservice container. However, it includes additional detail about CPU throttling in the cartservice, which, while related to resource issues, does not pertain directly to the specific root cause regarding the recommendationservice. Overall, the key mechanism of OOMKilled is correctly identified.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 11527,
+    "prompt_tokens": 4723,
+    "completion_tokens": 1015,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health - All nodes are Ready. No node issues detected. Proceed to Step 2. Step 2: Pod Status - Found recommendationservice-6c6b9998b9-zndgj container/server showing OOMKilled due to memory limit exceeded. Found cartservice-57b87c6b4d-d78cx showing CPU throttling at 11%. Proceed to Step 3 to check for additional or cascading issues. Step 3: Service Connectivity - Found 0 endpoints for the frontend service. This requires reverse-tracing the cause. No NetworkPolicy issues identified, and no PVC issues found. Undetermined if it’s a service selector mismatch. Proceed to Step 4. Step 4: Network Check - No connection refused errors or abnormal latency identified. Network appears healthy. Proceed to Step 5. Step 5: Resource Limits - Found CPU throttling (92%) on recommendationservice indicates resource contention issues. Concluding that the recommendationservice OOMKilled and high CPU throttling are primarily causing degraded performance, thus the root cause is confirmed as resource exhaustion.\",\n  \"identified_fault_type\": \"Resource Exhaustion (OOM Kill)\",\n  \"root_cause\": \"Memory limit exceeded on recommendationservice container caused OOMKilled and CPU throttling.\",\n  \"root_cause_ko\": \"recommendationservice 컨테이너의 메모리 한도를 초과하여 OOMKilled 및 CPU 스로틀링이 발생했습니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.9,\n  \"affected_components\": [\"recommendationservice\", \"cartservice\"],\n  \"remediation\": [\n    \"Increase memory limits for recommendationservice to prevent OOMKilled errors.\",\n    \"Monitor CPU limits for cartservice to reduce throttling.\"\n  ],\n  \"remediation_ko\": [\n    \"recommendationservice에 대한 메모리 한계를 높여 OOMKilled 오류를 방지합니다.\",\n    \"cartservice의 CPU 한계를 모니터링하여 스로틀링을 줄입니다.\"\n  ],\n  \"detail\": \"The recommendationservice pod experienced OOMKilled due to exceeding its memory limits, while the cartservice pod showed high CPU throttling, indicating overall resource strain impacting application performance. Addressing memory and CPU resource configurations is essential for system stability.\",\n  \"detail_ko\": \"recommendationservice 파드는 메모리 한도를 초과하여 OOMKilled가 발생했으며, cartservice 파드는 높은 CPU 스로틀링을 나타내어 애플리케이션 성능에 영향을 미치는 전반적인 리소스 압박을 나타냅니다. 시스템 안정성을 위해 메모리 및 CPU 리소스 구성을 조정하는 것이 중요합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"pod status\",\n      \"source\": \"Pod/recommendationservice-6c6b9998b9-zndgj\",\n      \"content\": \"NOT READY restarts=5, last terminated: OOMKilled\",\n      \"supports\": \"Indicates resource limit issues causing OOMKilled\"\n    },\n    {\n      \"type\": \"metrics\",\n      \"source\": \"recommendationservice CPU usage\",\n      \"content\": \"CPU throttled: recommendationservice-6c6b9998b9-zndgj/ (92%)\",\n      \"supports\": \"Indicates resource contention issue leading to poor performance\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Cartservice may be misconfigured leading to readiness probe failures.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No direct evidence of misconfiguration, primarily CPU throttling observed without crashes.\"\n    }\n  ]\n}"
+}

@@ -1,0 +1,768 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-c88b8ffd6-8tc9z",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "paymentservice-c88b8ffd6-8tc9z",
+          "container": "",
+          "throttle_ratio": 0.482
+        },
+        {
+          "pod": "paymentservice-c88b8ffd6-8tc9z",
+          "container": "server",
+          "throttle_ratio": 0.378
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-qxlqk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-5llhq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "paymentservice-c88b8ffd6-8tc9z",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-hhh6f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.4.103:50051\" within 1s: context deadline exceeded",
+          "object": "paymentservice-c88b8ffd6-8tc9z",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T07:01:49Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.106:50051\" within 1s: context deadline exceeded",
+          "object": "paymentservice-9b9bd7d65-qh454",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-09T07:01:58Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-qxlqk: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-5llhq: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\npaymentservice-c88b8ffd6-8tc9z: Running\nproductcatalogservice-6d97457584-hhh6f: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/paymentservice-c88b8ffd6-8tc9z: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.103:50051\" within 1s: context deadline exceeded (count=2)\n[Warning] Pod/paymentservice-9b9bd7d65-qh454: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.106:50051\" within 1s: context deadline exceeded (count=1)\n\n## Metric Anomalies\nCPU throttled: paymentservice-c88b8ffd6-8tc9z/ (48%), paymentservice-c88b8ffd6-8tc9z/server (38%)\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F8",
+    "trial": 3,
+    "system": "A",
+    "identified_fault_type": "CPU Throttling and Readiness Probe Failure",
+    "root_cause": "Payment service pods are experiencing high CPU throttling, leading to readiness probe timeouts.",
+    "confidence": 0.8,
+    "affected_components": [
+      "paymentservice"
+    ],
+    "remediation": [
+      "Increase CPU limits for paymentservice pods.",
+      "Investigate and reduce workload on paymentservice."
+    ],
+    "detail": "The payment service pods are facing high CPU throttling, which has resulted in readiness probe failures. Readiness probes are timing out while attempting to connect, indicating that the service is not processing requests in a timely manner. Adjusting the resource limits is necessary to stabilize the service.",
+    "reasoning": "Step 1: Checked node health; all nodes are Ready. Proceed to Step 2. Step 2: Pods mostly are in Running/Ready state, but paymentservice pods show readiness probe failures. Found reasons for health issues as timeout connecting to service. Proceed to Step 3 as all pods are not completely healthy. Step 3: Found services with 0 endpoints; specifically 'frontend' has 0 endpoints. Proceed to Step 4 to check Network. Step 4: No connectivity errors or abnormal metrics found related to Network. Proceed to Step 5. Step 5: Noted CPU throttling in paymentservice pods. Key issue is 'paymentservice' readiness probes failing due to high CPU throttling causing delays. FINAL DIAGNOSIS: Payment service pods can't respond in time due to CPU throttling, leading to readiness probe failures.",
+    "root_cause_ko": "결제 서비스 파드가 높은 CPU 제한으로 인해 준비 상태 프로브 타임아웃 현상을 겪고 있습니다.",
+    "remediation_ko": [
+      "결제 서비스 파드의 CPU 한도를 늘립니다.",
+      "결제 서비스의 작업 부하를 조사하고 줄입니다."
+    ],
+    "detail_ko": "결제 서비스 파드가 높은 CPU 제한에 직면하여 준비 상태 프로브 실패를 초래합니다. 준비 상태 프로브가 연결 시도 중에 타임아웃되어 서비스가 요청을 적시에 처리하지 못하고 있음을 나타냅니다. 자원 한도를 조정해야 서비스를 안정화할 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/paymentservice-c88b8ffd6-8tc9z: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.103:50051\" within 1s: context deadline exceeded (count=2)",
+        "supports": "Readiness probe is timing out for the paymentservice due to CPU throttling.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "Metric Anomalies",
+        "content": "CPU throttled: paymentservice-c88b8ffd6-8tc9z/ (48%), paymentservice-c88b8ffd6-8tc9z/server (38%)",
+        "supports": "High CPU throttling percentages found specifically in paymentservice pods.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Possible network issues affecting the paymentservice.",
+        "confidence": 0.4,
+        "reason_rejected": "No network drops or errors found in logs or metrics."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence supporting CPU throttling and readiness probe failures is well-grounded in the input context. The diagnosis could improve by discussing whether other potential issues (e.g., impact of 0 endpoints in frontend service) might affect overall service response but logical reasoning about the direct causes to paymentservice is sound. Confidence is appropriate, but it may subtly elevate due to partial evidence of other influencing endpoints. To enhance reliability, considering specific metrics or impact analysis regarding the frontend service could provide better context.",
+    "retry_count": 0,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis focuses on CPU throttling and readiness probe failures, which are symptoms of resource contention but does not relate to the root cause of the payment service pods not being selected by the Service due to the removal of the app label. The root cause mechanism described in the ground truth is fundamentally different from what the LLM diagnosis presents.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 12959,
+    "prompt_tokens": 4217,
+    "completion_tokens": 978,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health; all nodes are Ready. Proceed to Step 2. Step 2: Pods mostly are in Running/Ready state, but paymentservice pods show readiness probe failures. Found reasons for health issues as timeout connecting to service. Proceed to Step 3 as all pods are not completely healthy. Step 3: Found services with 0 endpoints; specifically 'frontend' has 0 endpoints. Proceed to Step 4 to check Network. Step 4: No connectivity errors or abnormal metrics found related to Network. Proceed to Step 5. Step 5: Noted CPU throttling in paymentservice pods. Key issue is 'paymentservice' readiness probes failing due to high CPU throttling causing delays. FINAL DIAGNOSIS: Payment service pods can't respond in time due to CPU throttling, leading to readiness probe failures.\",\n  \"identified_fault_type\": \"CPU Throttling and Readiness Probe Failure\",\n  \"root_cause\": \"Payment service pods are experiencing high CPU throttling, leading to readiness probe timeouts.\",\n  \"root_cause_ko\": \"결제 서비스 파드가 높은 CPU 제한으로 인해 준비 상태 프로브 타임아웃 현상을 겪고 있습니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"paymentservice\"],\n  \"remediation\": [\"Increase CPU limits for paymentservice pods.\", \"Investigate and reduce workload on paymentservice.\"],\n  \"remediation_ko\": [\"결제 서비스 파드의 CPU 한도를 늘립니다.\", \"결제 서비스의 작업 부하를 조사하고 줄입니다.\"],\n  \"detail\": \"The payment service pods are facing high CPU throttling, which has resulted in readiness probe failures. Readiness probes are timing out while attempting to connect, indicating that the service is not processing requests in a timely manner. Adjusting the resource limits is necessary to stabilize the service.\",\n  \"detail_ko\": \"결제 서비스 파드가 높은 CPU 제한에 직면하여 준비 상태 프로브 실패를 초래합니다. 준비 상태 프로브가 연결 시도 중에 타임아웃되어 서비스가 요청을 적시에 처리하지 못하고 있음을 나타냅니다. 자원 한도를 조정해야 서비스를 안정화할 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/paymentservice-c88b8ffd6-8tc9z: Unhealthy - Readiness probe failed: timeout: failed to connect service \\\"10.0.4.103:50051\\\" within 1s: context deadline exceeded (count=2)\",\n      \"supports\": \"Readiness probe is timing out for the paymentservice due to CPU throttling.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"Metric Anomalies\",\n      \"content\": \"CPU throttled: paymentservice-c88b8ffd6-8tc9z/ (48%), paymentservice-c88b8ffd6-8tc9z/server (38%)\",\n      \"supports\": \"High CPU throttling percentages found specifically in paymentservice pods.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Possible network issues affecting the paymentservice.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No network drops or errors found in logs or metrics.\"\n    }\n  ]\n}"
+}

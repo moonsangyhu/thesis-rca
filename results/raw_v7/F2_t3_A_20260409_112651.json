@@ -1,0 +1,825 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "adservice-5c57999778-jv5rj",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running"
+        },
+        {
+          "pod": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-6976f865cc-4gssc",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-6976f865cc-4gssc",
+          "container": "currencyservice",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "currencyservice-6976f865cc-4gssc",
+          "container": "currencyservice",
+          "terminated_reason": "Error"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "currencyservice-6976f865cc-4gssc",
+          "container": "currencyservice",
+          "restarts": 4
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": []
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-jv5rj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-57b87c6b4d-d78cx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "checkoutservice-b7654c84c-s98rw",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-2crh6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-6976f865cc-4gssc",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "currencyservice",
+              "ready": false,
+              "restartCount": 4,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "Error"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "emailservice-64c4648d5c-x8nxk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-67fc78b7c7-9dptt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-56567d57dc-mh7cv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-lm5xr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-vt2pv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-zfqbj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "redis-cart-69c6df4db6-th5m8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-646cf484b-nfwp6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5896b599f-wsclz",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T02:16:27Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5896b599f-wsclz",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-04-09T02:16:27Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container emailservice in pod emailservice-5896b599f-wsclz_boutique(38adda19-ffba-4828-9c85-d1c09ac54001)",
+          "object": "emailservice-5896b599f-wsclz",
+          "kind": "Pod",
+          "count": 4,
+          "lastTimestamp": "2026-04-09T02:16:47Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.197:7000\" within 1s: context deadline exceeded",
+          "object": "currencyservice-6976f865cc-4gssc",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-09T02:23:11Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container currencyservice in pod currencyservice-6976f865cc-4gssc_boutique(472e1bde-136a-49f1-ae60-3deeeac25c37)",
+          "object": "currencyservice-6976f865cc-4gssc",
+          "kind": "Pod",
+          "count": 7,
+          "lastTimestamp": "2026-04-09T02:24:25Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "currencyservice-6976f865cc-4gssc",
+          "describe_excerpt": "    Host Port:     <none>\n    Command:\n      /bin/sh\n      -c\n      exit 1\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    1\n      Started:      Thu, 09 Apr 2026 11:24:40 +0900\n      Finished:     Thu, 09 Apr 2026 11:24:40 +0900\n    Ready:          False\n    Restart Count:  4\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-6bn46 (ro)\n  server:\n    Container ID:   containerd://976b6488c6caa6ee208c6b3a123740bb2576538499bdb30f42bbbf2a317b6f58\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/currencyservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/currencyservice@sha256:1ced46aa236c5093a3cc6642f67edf50e0deccdc07262871ffacf6173fc8c6fa\n    Port:           7000/TCP (grpc)\n    Host Port:      0/TCP (grpc)\n    State:          Running\n      Started:      Thu, 09 Apr 2026 11:23:08 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:7000  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:7000  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:              7000\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-6bn46 (ro)"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-jv5rj: Running\ncartservice-57b87c6b4d-d78cx: Running\ncheckoutservice-b7654c84c-s98rw: Running\ncurrencyservice-58f6b4b6f-2crh6: Running\ncurrencyservice-6976f865cc-4gssc: Running\n  container/currencyservice: NOT READY (CrashLoopBackOff) restarts=4\n    last terminated: Error (exit code ?)\nemailservice-64c4648d5c-x8nxk: Running\nfrontend-67fc78b7c7-9dptt: Running\nloadgenerator-56567d57dc-mh7cv: Running\npaymentservice-9b9bd7d65-lm5xr: Running\nproductcatalogservice-6d97457584-vt2pv: Running\nrecommendationservice-799dd6fd95-zfqbj: Running\nredis-cart-69c6df4db6-th5m8: Running\nshippingservice-646cf484b-nfwp6: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/emailservice-5896b599f-wsclz: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded (count=2)\n[Warning] Pod/emailservice-5896b599f-wsclz: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded (count=6)\n[Warning] Pod/emailservice-5896b599f-wsclz: BackOff - Back-off restarting failed container emailservice in pod emailservice-5896b599f-wsclz_boutique(38adda19-ffba-4828-9c85-d1c09ac54001) (count=4)\n[Warning] Pod/currencyservice-6976f865cc-4gssc: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.197:7000\" within 1s: context deadline exceeded (count=2)\n[Warning] Pod/currencyservice-6976f865cc-4gssc: BackOff - Back-off restarting failed container currencyservice in pod currencyservice-6976f865cc-4gssc_boutique(472e1bde-136a-49f1-ae60-3deeeac25c37) (count=7)\n\n## Metric Anomalies\nServices with 0 endpoints: frontend\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F2",
+    "trial": 3,
+    "system": "A",
+    "identified_fault_type": "Service Endpoint Issue",
+    "root_cause": "The frontend service has 0 endpoints due to the related failures in currencyservice and emailservice, primarily caused by probe timeouts.",
+    "confidence": 0.8,
+    "affected_components": [
+      "frontend",
+      "currencyservice",
+      "emailservice"
+    ],
+    "remediation": [
+      "Investigate the currencyservice pod to address the CrashLoopBackOff, possibly by checking logs or configuration.",
+      "Investigate the emailservice pod to resolve the liveness/readiness probe failures, checking for misconfigurations or resource limits."
+    ],
+    "detail": "The currencyservice pod is failing due to multiple restarts (CrashLoopBackOff), while the emailservice pod is exhibiting issues with both liveness and readiness probes timing out. These failures lead to the frontend service having no available endpoints.",
+    "reasoning": "Step 1: Checked Node Health. All nodes are Ready with no pressure conditions. Step 2: Checked Pod Status. currencyservice pod is in CrashLoopBackOff state and emailservice pod exhibits liveness and readiness probe failures. Step 3: Checked Service Connectivity. Found the frontend service has 0 endpoints which is a symptom, requiring reverse-tracing. Step 4: Checked Network. No evident network issues. Step 5: Checked Resource Limits. No signs of resource exhaustion. Primary candidate issues are in the pods, particularly currencyservice and emailservice with probe-related failures, leading to service downtime.",
+    "root_cause_ko": "프론트엔드 서비스는 currencyservice와 emailservice의 실패로 인해 0개의 엔드포인트가 됩니다. 주로 프로브 타임아웃으로 인한 문제입니다.",
+    "remediation_ko": [
+      "currencyservice 팟을 조사하여 CrashLoopBackOff 문제를 해결하고, 로그 또는 구성을 확인합니다.",
+      "emailservice 팟을 조사하여 생명 및 준비 상태 프로브 실패를 해결하고, 잘못된 구성이나 자원 제한을 확인합니다."
+    ],
+    "detail_ko": "currencyservice 팟은 여러 번의 재시도로 인해 실패하고 있으며 (CrashLoopBackOff), emailservice 팟은 생명 및 준비 상태 프로브가 타임아웃되는 문제를 보이고 있습니다. 이러한 실패로 인해 프론트엔드 서비스는 사용 가능한 엔드포인트가 없습니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/currencyservice-6976f865cc-4gssc: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.197:7000\" within 1s: context deadline exceeded (count=2)",
+        "supports": "indicates that currencyservice readiness probe is failing, affecting service endpoint availability",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/emailservice-5896b599f-wsclz: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.25:8080\" within 1s: context deadline exceeded (count=6)",
+        "supports": "indicates that emailservice readiness probe is failing, also contributing to the lack of endpoints",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "Metrics",
+        "content": "Services with 0 endpoints: frontend",
+        "supports": "direct evidence of frontend service having no endpoints due to dependent services' failure",
+        "verified": true,
+        "match_ratio": 0.8
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "A potential network issue causing connectivity problems for probes.",
+        "confidence": 0.2,
+        "reason_rejected": "No evidence of network issues was found, such as cilium policy drops or DNS resolution failures."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The diagnosis effectively uses evidence from the input context, particularly regarding the probe failures of currencyservice and emailservice. However, it could improve by expanding on the state of the pods to include the CrashLoopBackOff status explicitly mentioned in the context. While a network issue is mentioned, it would be beneficial to discuss other potential factors leading to the zero endpoints, such as misconfiguration or external issues impacting the services. Overall, the confidence level is slightly high but reasonable given the verified evidence.",
+    "retry_count": 0,
+    "correctness_score": 0.1,
+    "correctness_reasoning": "The diagnosis identifies that the currencyservice pod is failing and mentions the CrashLoopBackOff status, which relates to symptoms of the ground truth. However, it does not accurately capture the specific root cause of the crash (unhandled exception during initialization) and instead focuses on endpoint issues caused by probe timeouts, which is a different category of failure.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 14365,
+    "prompt_tokens": 4702,
+    "completion_tokens": 1091,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health. All nodes are Ready with no pressure conditions. Step 2: Checked Pod Status. currencyservice pod is in CrashLoopBackOff state and emailservice pod exhibits liveness and readiness probe failures. Step 3: Checked Service Connectivity. Found the frontend service has 0 endpoints which is a symptom, requiring reverse-tracing. Step 4: Checked Network. No evident network issues. Step 5: Checked Resource Limits. No signs of resource exhaustion. Primary candidate issues are in the pods, particularly currencyservice and emailservice with probe-related failures, leading to service downtime.\",\n  \"identified_fault_type\": \"Service Endpoint Issue\",\n  \"root_cause\": \"The frontend service has 0 endpoints due to the related failures in currencyservice and emailservice, primarily caused by probe timeouts.\",\n  \"root_cause_ko\": \"프론트엔드 서비스는 currencyservice와 emailservice의 실패로 인해 0개의 엔드포인트가 됩니다. 주로 프로브 타임아웃으로 인한 문제입니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"frontend\", \"currencyservice\", \"emailservice\"],\n  \"remediation\": [\n    \"Investigate the currencyservice pod to address the CrashLoopBackOff, possibly by checking logs or configuration.\",\n    \"Investigate the emailservice pod to resolve the liveness/readiness probe failures, checking for misconfigurations or resource limits.\"\n  ],\n  \"remediation_ko\": [\n    \"currencyservice 팟을 조사하여 CrashLoopBackOff 문제를 해결하고, 로그 또는 구성을 확인합니다.\",\n    \"emailservice 팟을 조사하여 생명 및 준비 상태 프로브 실패를 해결하고, 잘못된 구성이나 자원 제한을 확인합니다.\"\n  ],\n  \"detail\": \"The currencyservice pod is failing due to multiple restarts (CrashLoopBackOff), while the emailservice pod is exhibiting issues with both liveness and readiness probes timing out. These failures lead to the frontend service having no available endpoints.\",\n  \"detail_ko\": \"currencyservice 팟은 여러 번의 재시도로 인해 실패하고 있으며 (CrashLoopBackOff), emailservice 팟은 생명 및 준비 상태 프로브가 타임아웃되는 문제를 보이고 있습니다. 이러한 실패로 인해 프론트엔드 서비스는 사용 가능한 엔드포인트가 없습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/currencyservice-6976f865cc-4gssc: Unhealthy - Readiness probe failed: timeout: failed to connect service \\\"10.0.2.197:7000\\\" within 1s: context deadline exceeded (count=2)\",\n      \"supports\": \"indicates that currencyservice readiness probe is failing, affecting service endpoint availability\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/emailservice-5896b599f-wsclz: Unhealthy - Readiness probe failed: timeout: failed to connect service \\\"10.0.2.25:8080\\\" within 1s: context deadline exceeded (count=6)\",\n      \"supports\": \"indicates that emailservice readiness probe is failing, also contributing to the lack of endpoints\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"Metrics\",\n      \"content\": \"Services with 0 endpoints: frontend\",\n      \"supports\": \"direct evidence of frontend service having no endpoints due to dependent services' failure\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"A potential network issue causing connectivity problems for probes.\",\n      \"confidence\": 0.2,\n      \"reason_rejected\": \"No evidence of network issues was found, such as cilium policy drops or DNS resolution failures.\"\n    }\n  ]\n}"
+}
