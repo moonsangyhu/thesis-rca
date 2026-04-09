@@ -272,9 +272,16 @@ class PrometheusCollector:
         ]
 
     def _collect_request_latency(self, ns: str) -> list[dict]:
-        """gRPC/HTTP request latency p95."""
+        """gRPC/HTTP request latency p95.
+
+        Tries grpc_server_handling_seconds_bucket first, falls back to
+        grpc_client metrics (apiserver→etcd) as a cluster-level latency proxy.
+        """
+        # Try server-side metrics first (Online Boutique services)
         data = self._query(
-            'histogram_quantile(0.95, sum(rate(grpc_server_handling_seconds_bucket{grpc_service=~".*",job=~".*"}[2m])) by (le, grpc_service, grpc_method))'
+            'histogram_quantile(0.95, sum(rate('
+            'grpc_server_handling_seconds_bucket{grpc_service=~".*",job=~".*"}'
+            '[2m])) by (le, grpc_service, grpc_method))'
         )
         results = []
         for item in data:
@@ -285,12 +292,32 @@ class PrometheusCollector:
                     "method": item["metric"].get("grpc_method", ""),
                     "p95_seconds": round(val, 3),
                 })
+        # If no server metrics, check client-side (apiserver→etcd) as proxy
+        if not results:
+            data = self._query(
+                'sum(rate(grpc_client_started_total[2m])) by (grpc_service)'
+                ' - sum(rate(grpc_client_handled_total{grpc_code="OK"}[2m])) by (grpc_service)'
+            )
+            for item in data:
+                err_rate = float(item["value"][1])
+                if err_rate > 0.1:  # significant non-OK rate
+                    results.append({
+                        "service": item["metric"].get("grpc_service", "unknown"),
+                        "method": "client_errors",
+                        "p95_seconds": -1,  # indicates error rate, not latency
+                        "error_rate": round(err_rate, 4),
+                    })
         return results
 
     def _collect_grpc_errors(self, ns: str) -> list[dict]:
-        """gRPC non-OK error rates."""
+        """gRPC non-OK error rates.
+
+        Uses grpc_client_handled_total (apiserver→etcd) as these are
+        available even when application-level gRPC metrics are not scraped.
+        """
         data = self._query(
-            'sum(rate(grpc_server_handled_total{grpc_code!="OK",job=~".*"}[2m])) by (grpc_service, grpc_code) > 0'
+            'sum(rate(grpc_client_handled_total{grpc_code!="OK"}[2m])) '
+            'by (grpc_service, grpc_code) > 0'
         )
         return [
             {
