@@ -8,7 +8,7 @@ from .csv_io import append_result, save_raw
 
 logger = logging.getLogger(__name__)
 
-ALL_FAULTS = [f"F{i}" for i in range(1, 11)]
+ALL_FAULTS = [f"F{i}" for i in range(1, 13)]
 ALL_TRIALS = [1, 2, 3, 4, 5]
 
 

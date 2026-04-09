@@ -27,4 +27,6 @@ INJECTION_WAIT = {
     "F8": 60,    # ServiceEndpoint: immediate effect
     "F9": 90,    # SecretConfigMap: varies
     "F10": 90,   # ResourceQuota: immediate on new pod creation
+    "F11": 120,  # NetworkDelay: wait for latency to propagate
+    "F12": 120,  # NetworkLoss: wait for packet loss effects
 }

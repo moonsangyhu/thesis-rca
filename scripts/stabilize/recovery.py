@@ -33,6 +33,8 @@ class Recovery:
             "F8": self._recover_f8,
             "F9": self._recover_f9,
             "F10": self._recover_f10,
+            "F11": self._recover_f11_network_delay,
+            "F12": self._recover_f12_network_loss,
         }
 
     def recover(self, fault_id: str, trial: int, injection_result: dict) -> dict:
@@ -54,6 +56,21 @@ class Recovery:
         self._cleanup_failed_pods()
         # Wait for pods to stabilize
         self._wait_for_healthy()
+
+        # Comprehensive verification (100% restoration guarantee)
+        from scripts.stabilize.health_verify import comprehensive_health_check
+        ok, issues = comprehensive_health_check(max_retries=3, retry_delay=30)
+        if not ok:
+            logger.error("Comprehensive health check FAILED: %s — attempting full reset", issues)
+            self._full_reset()
+            self._wait_for_healthy(timeout=300)
+            ok2, issues2 = comprehensive_health_check(max_retries=2, retry_delay=20)
+            if not ok2:
+                logger.error("CRITICAL: Cluster not fully restored after full reset: %s", issues2)
+                result["health_check_passed"] = False
+                result["remaining_issues"] = issues2
+                return result
+        result["health_check_passed"] = True
         return result
 
     def _full_reset(self) -> dict:
@@ -243,3 +260,23 @@ class Recovery:
         time.sleep(5)
         kubectl("rollout", "restart", "deployment", "--all", namespace=NAMESPACE)
         return {"action": "delete_quota", "trial": trial}
+
+    # ── F11: Network Delay ──────────────────────────────────────
+
+    def _recover_f11_network_delay(self, trial: int, ctx: dict) -> dict:
+        """Remove tc netem delay rules."""
+        node_name = ctx.get("node", "worker01")
+        iface = ctx.get("interface", "ens18")
+        output = ssh_node(node_name, f"sudo tc qdisc del dev {iface} root 2>/dev/null; echo ok", timeout=15)
+        logger.info("F11 recovered: removed netem delay on %s", node_name)
+        return {"action": "remove_netem_delay", "node": node_name, "output": output}
+
+    # ── F12: Network Loss ───────────────────────────────────────
+
+    def _recover_f12_network_loss(self, trial: int, ctx: dict) -> dict:
+        """Remove tc netem loss rules."""
+        node_name = ctx.get("node", "worker01")
+        iface = ctx.get("interface", "ens18")
+        output = ssh_node(node_name, f"sudo tc qdisc del dev {iface} root 2>/dev/null; echo ok", timeout=15)
+        logger.info("F12 recovered: removed netem loss on %s", node_name)
+        return {"action": "remove_netem_loss", "node": node_name, "output": output}

@@ -1,5 +1,5 @@
 """
-Fault injector implementations for F1~F10.
+Fault injector implementations for F1~F12.
 
 Each fault is injected via kubectl patch/apply/delete.
 Node-level faults (F4) use SSH.
@@ -47,6 +47,8 @@ class FaultInjector:
             "F8": self._inject_f8_service_endpoint,
             "F9": self._inject_f9_secret_configmap,
             "F10": self._inject_f10_resource_quota,
+            "F11": self._inject_f11_network_delay,
+            "F12": self._inject_f12_network_loss,
         }
 
     def inject(self, fault_id: str, trial: int) -> dict:
@@ -657,3 +659,66 @@ class FaultInjector:
                 "kubectl_output": result,
             }
         return {"action": "unknown_trial"}
+
+    # ── F11: Network Delay ─────────────────────────────────────────
+
+    NETEM_IFACE = "ens18"
+
+    def _inject_f11_network_delay(self, target: str, trial: int, gt: dict) -> dict:
+        """Inject network delay via tc netem on worker node."""
+        delay_configs = {
+            1: ("worker01", "delay 500ms"),
+            2: ("worker02", "delay 1000ms 200ms"),
+            3: ("worker01", "delay 2000ms"),
+            4: ("worker03", "delay 300ms 100ms distribution normal"),
+            5: ("worker02", "delay 5000ms"),
+        }
+        node_name, netem_params = delay_configs.get(trial, ("worker01", "delay 500ms"))
+        iface = self.NETEM_IFACE
+
+        # Apply netem with safety timeout (auto-remove after 5 minutes)
+        command = (
+            f"sudo tc qdisc add dev {iface} root netem {netem_params} 2>/dev/null || "
+            f"sudo tc qdisc change dev {iface} root netem {netem_params}; "
+            f"(sleep 300 && sudo tc qdisc del dev {iface} root 2>/dev/null) &"
+        )
+        output = ssh_node(node_name, command, timeout=15)
+        logger.info("F11 injected: netem %s on %s (%s)", netem_params, node_name, iface)
+
+        return {
+            "action": "netem_delay",
+            "node": node_name,
+            "netem_params": netem_params,
+            "interface": iface,
+            "ssh_output": output,
+        }
+
+    # ── F12: Network Loss ──────────────────────────────────────────
+
+    def _inject_f12_network_loss(self, target: str, trial: int, gt: dict) -> dict:
+        """Inject packet loss via tc netem on worker node."""
+        loss_configs = {
+            1: ("worker01", "loss 10%"),
+            2: ("worker02", "loss 30%"),
+            3: ("worker03", "loss 50%"),
+            4: ("worker01", "loss 5% 25%"),
+            5: ("worker02", "loss 80%"),
+        }
+        node_name, netem_params = loss_configs.get(trial, ("worker01", "loss 10%"))
+        iface = self.NETEM_IFACE
+
+        command = (
+            f"sudo tc qdisc add dev {iface} root netem {netem_params} 2>/dev/null || "
+            f"sudo tc qdisc change dev {iface} root netem {netem_params}; "
+            f"(sleep 300 && sudo tc qdisc del dev {iface} root 2>/dev/null) &"
+        )
+        output = ssh_node(node_name, command, timeout=15)
+        logger.info("F12 injected: netem %s on %s (%s)", netem_params, node_name, iface)
+
+        return {
+            "action": "netem_loss",
+            "node": node_name,
+            "netem_params": netem_params,
+            "interface": iface,
+            "ssh_output": output,
+        }
