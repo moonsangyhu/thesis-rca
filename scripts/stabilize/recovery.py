@@ -54,8 +54,18 @@ class Recovery:
         result = recoverer(trial, injection_result)
         # Clean up failed/evicted pods before waiting
         self._cleanup_failed_pods()
+        # Restart all deployments to flush any stale network state (netem residuals, env changes)
+        self._restart_all_deployments()
         # Wait for pods to stabilize
         self._wait_for_healthy()
+        # Verify all service endpoints have at least one ready address
+        ep_ok, ep_issues = self._verify_endpoints()
+        if not ep_ok:
+            logger.warning("Endpoint verification issues: %s — retrying after 30s", ep_issues)
+            time.sleep(30)
+            ep_ok, ep_issues = self._verify_endpoints()
+            if not ep_ok:
+                logger.error("Endpoint verification still failing: %s", ep_issues)
 
         # Comprehensive verification (100% restoration guarantee)
         from scripts.stabilize.health_verify import comprehensive_health_check
@@ -121,6 +131,36 @@ class Recovery:
                     logger.info("Cleaned up %s pods: %s", phase, output.strip())
             except Exception as e:
                 logger.warning("Failed to cleanup %s pods: %s", phase, e)
+
+    def _restart_all_deployments(self):
+        """Rollout restart all deployments to flush stale network state (e.g., tc netem residuals)."""
+        try:
+            output = kubectl("rollout", "restart", "deployment", "--all", namespace=NAMESPACE)
+            logger.info("Rollout restart all deployments: %s", (output or "").strip())
+        except Exception as e:
+            logger.warning("Failed to rollout restart deployments: %s", e)
+
+    def _verify_endpoints(self) -> tuple[bool, list[str]]:
+        """Verify all services in NAMESPACE have at least one ready endpoint address."""
+        issues = []
+        try:
+            ep_json = kubectl_get_json("endpoints", namespace=NAMESPACE)
+            items = ep_json.get("items", []) if ep_json else []
+            for ep in items:
+                name = ep.get("metadata", {}).get("name", "")
+                subsets = ep.get("subsets", [])
+                ready_count = sum(
+                    len(s.get("addresses", [])) for s in (subsets or [])
+                )
+                if ready_count == 0:
+                    issues.append(f"endpoint/{name}: 0 ready addresses")
+            if issues:
+                logger.warning("Endpoint issues: %s", issues)
+                return False, issues
+        except Exception as e:
+            logger.warning("Endpoint verification error: %s", e)
+            return False, [str(e)]
+        return True, []
 
     # ── Per-fault recovery ─────────────────────────────────────────
 

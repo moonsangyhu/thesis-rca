@@ -221,6 +221,38 @@ class ContextBuilder:
                 f"{d['reason']} {d['direction']} (rate={d['rate']})" for d in drops
             ))
 
+        # Request latency
+        latency = metrics.get("request_latency", [])
+        if latency:
+            parts.append("High request latency (p95 > 500ms): " + ", ".join(
+                f"{l['service']}/{l['method']} p95={l['p95_seconds']:.3f}s"
+                for l in latency
+            ))
+
+        # gRPC errors
+        grpc_err = metrics.get("grpc_errors", [])
+        if grpc_err:
+            parts.append("gRPC errors: " + ", ".join(
+                f"{e['service']} {e['code']} rate={e['rate']}/s"
+                for e in grpc_err
+            ))
+
+        # Node network errors
+        net_err = metrics.get("network_errors", [])
+        if net_err:
+            parts.append("Node network errors: " + ", ".join(
+                f"{e['node']} {e['device']} {e['type']} rate={e['rate']}/s"
+                for e in net_err
+            ))
+
+        # TCP retransmissions
+        tcp_retrans = metrics.get("tcp_retransmissions", [])
+        if tcp_retrans:
+            parts.append("TCP retransmissions: " + ", ".join(
+                f"{t['node']} rate={t['retrans_rate']}/s"
+                for t in tcp_retrans
+            ))
+
         return "\n".join(parts) if parts else "No metric anomalies detected."
 
     def _build_error_logs(self, logs: list[dict]) -> str:

@@ -86,4 +86,14 @@ FAULT_TYPES = {
         "description": "Namespace resource quota exceeded, new resources cannot be created",
         "keywords": ["ResourceQuota", "exceeded", "quota", "forbidden", "LimitRange"],
     },
+    "F11": {
+        "name": "NetworkDelay",
+        "description": "Network delay (latency) injected via tc netem causing service timeouts and increased response times",
+        "keywords": ["delay", "latency", "timeout", "deadline", "slow", "netem", "context deadline exceeded"],
+    },
+    "F12": {
+        "name": "NetworkLoss",
+        "description": "Packet loss injected via tc netem causing intermittent connection failures and retransmissions",
+        "keywords": ["loss", "packet", "retransmission", "reset", "broken pipe", "EOF", "connection refused"],
+    },
 }

@@ -78,6 +78,10 @@ class PrometheusCollector:
             "pvc_status": self._collect_pvc(namespace),
             "resource_quota": self._collect_quota(namespace),
             "network_drops": self._collect_network_drops(namespace),
+            "request_latency": self._collect_request_latency(namespace),
+            "grpc_errors": self._collect_grpc_errors(namespace),
+            "network_errors": self._collect_network_errors(),
+            "tcp_retransmissions": self._collect_tcp_retrans(),
         }
 
     def _collect_pod_status(self, ns: str) -> list[dict]:
@@ -256,7 +260,7 @@ class PrometheusCollector:
     def _collect_network_drops(self, ns: str) -> list[dict]:
         """Cilium/CNI network policy drops."""
         data = self._query(
-            'rate(cilium_drop_count_total[5m]) > 0'
+            'rate(cilium_drop_count_total[2m]) > 0'
         )
         return [
             {
@@ -266,3 +270,60 @@ class PrometheusCollector:
             }
             for item in data
         ]
+
+    def _collect_request_latency(self, ns: str) -> list[dict]:
+        """gRPC/HTTP request latency p95."""
+        data = self._query(
+            'histogram_quantile(0.95, sum(rate(grpc_server_handling_seconds_bucket{grpc_service=~".*",job=~".*"}[2m])) by (le, grpc_service, grpc_method))'
+        )
+        results = []
+        for item in data:
+            val = float(item["value"][1])
+            if val > 0.5:  # p95 > 500ms
+                results.append({
+                    "service": item["metric"].get("grpc_service", "unknown"),
+                    "method": item["metric"].get("grpc_method", ""),
+                    "p95_seconds": round(val, 3),
+                })
+        return results
+
+    def _collect_grpc_errors(self, ns: str) -> list[dict]:
+        """gRPC non-OK error rates."""
+        data = self._query(
+            'sum(rate(grpc_server_handled_total{grpc_code!="OK",job=~".*"}[2m])) by (grpc_service, grpc_code) > 0'
+        )
+        return [
+            {
+                "service": item["metric"].get("grpc_service", "unknown"),
+                "code": item["metric"].get("grpc_code", ""),
+                "rate": round(float(item["value"][1]), 4),
+            }
+            for item in data
+        ]
+
+    def _collect_network_errors(self) -> list[dict]:
+        """Node-level network transmit/receive errors."""
+        results = []
+        for metric in ["node_network_transmit_errs_total", "node_network_receive_errs_total"]:
+            data = self._query(f'rate({metric}{{device!~"lo|veth.*|cali.*|cilium.*"}}[2m]) > 0')
+            for item in data:
+                results.append({
+                    "node": item["metric"].get("instance", "unknown"),
+                    "device": item["metric"].get("device", ""),
+                    "type": "transmit_err" if "transmit" in metric else "receive_err",
+                    "rate": round(float(item["value"][1]), 4),
+                })
+        return results
+
+    def _collect_tcp_retrans(self) -> list[dict]:
+        """TCP retransmission rate per node."""
+        data = self._query('rate(node_netstat_Tcp_RetransSegs[2m]) > 1.0')
+        results = []
+        for item in data:
+            val = float(item["value"][1])
+            if val > 1.0:  # filter trivial retransmissions
+                results.append({
+                    "node": item["metric"].get("instance", "unknown"),
+                    "retrans_rate": round(val, 2),
+                })
+        return results

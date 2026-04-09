@@ -8,7 +8,10 @@
 | **v2** | 힌트 제거 + Chain-of-Thought | `experiments/v2/` |
 | **v3** | v2 + Harness (Evaluator + Retry + Evidence Verification) | `experiments/v3/` |
 | **v4** | System A retry 비활성화 (v3에서 -12.2pp 성능 저하 확인) | `experiments/v4/` |
-| **v5** | Symptom Extraction → Diagnosis 2단�� 분리 | `experiments/v5/` |
+| **v5** | Symptom Extraction → Diagnosis 2단계 분리 | `experiments/v5/` |
+| **v6** | SOP-Guided Prompt (단계별 진단 절차서) | `experiments/v6/` |
+| **v7** | V6 + Step 3 역추적 + 증거 다중성 규칙 | `experiments/v7/` |
+| **v8** | V7 + F11/F12 네트워크 Fault + 확장 네트워크 메트릭 (gRPC latency, TCP retransmissions) | `experiments/v8/` |
 
 ## 실행 방법
 
