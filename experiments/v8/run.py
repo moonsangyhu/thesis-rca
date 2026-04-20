@@ -54,6 +54,10 @@ def main():
     parser.add_argument("--no-preflight", action="store_true")
     args = parser.parse_args()
 
+    # 실험 종료 Slack 알림 (정상/비정상/예외 모두 포착)
+    from experiments.shared import notify
+    notify.register(version="v8")
+
     RESULTS_DIR.mkdir(exist_ok=True)
     RAW_DIR.mkdir(exist_ok=True)
     init_csv(RESULTS_CSV, CSV_HEADERS)
