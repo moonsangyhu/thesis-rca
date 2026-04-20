@@ -6,6 +6,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "./hooks/claude-config-guard.sh"
+          },
+          {
+            "type": "command",
             "command": "./hooks/data-guard.sh"
           },
           {
@@ -17,6 +21,10 @@
       {
         "matcher": "Bash",
         "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/pr-only-guard.sh"
+          },
           {
             "type": "command",
             "command": "./hooks/experiment-guard.sh"
