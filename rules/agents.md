@@ -12,6 +12,15 @@
 | `@results-writer` | 결과 분석·요약 (CSV/JSON → 분석 리포트) | sonnet |
 | `@paper-writer` | 논문 작성 (results/ 데이터 기반 학술 글쓰기) | opus |
 
+## 모델 할당 원칙 (강제)
+
+- **계획·리뷰·저술**(`@experiment-planner`, `@hypothesis-reviewer`, `@paper-writer`) → **opus**
+  깊은 추론·선행 결과 해석·반박 가능한 설계가 필요한 단계.
+- **실험 수행·코드·분석**(`@experiment`, `@code-reviewer`, `@experiment-modifier`, `@results-writer`) → **sonnet**
+  명확한 지시에 따른 실행·코드 편집·수치 처리 단계.
+
+`Agent` 도구 호출 시 `model` 파라미터로 위 매핑을 **덮어쓸 수 없다**. `hooks/agent-model-guard.sh`가 위반 호출을 차단한다. 규칙을 바꾸려면 본 표와 훅의 `REQUIRED_MODEL` 매핑을 함께 수정한다.
+
 ## 오케스트레이터(Claude Code)의 역할
 
 - 각 단계의 에이전트를 순서대로 호출
