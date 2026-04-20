@@ -1,5 +1,7 @@
 # K8s RCA 석사 논문 실험 플랫폼
 
+> 🛡️ 이 워크트리는 **Claude 설정 전용**(`claude-config` 브랜치)입니다. `hooks/claude-config-guard.sh`가 Claude 관련 경로(`.claude/**`, `CLAUDE.md`, `rules/agents.md`, `hooks/claude-config-guard.sh`, `.gitignore`) 외의 Write/Edit/MultiEdit를 차단합니다. 도메인 파일 수정은 메인 워크트리(`/Users/yumunsang/Documents/thesis-rca`, `main` 브랜치)에서 수행하세요.
+
 GitOps 컨텍스트(FluxCD/ArgoCD) 추가 시 LLM 기반 장애 원인 분석 정확도 향상을 검증한다.
 
 - **System A**: Prometheus + Loki + kubectl → LLM
