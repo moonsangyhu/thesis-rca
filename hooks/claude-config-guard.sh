@@ -18,7 +18,8 @@ if [[ -z "$FILE_PATH" ]]; then
   exit 0
 fi
 
-# 홈 하위 Claude 메타 경로(플랜, 메모리)는 Claude 관련 자산이므로 허용
+# 홈 하위 Claude 메타 경로는 Claude 관련 자산이므로 허용
+if [[ "$FILE_PATH" == /Users/*/.claude/* ]]; then exit 0; fi
 if [[ "$FILE_PATH" == /Users/*/.claude/plans/* ]]; then exit 0; fi
 if [[ "$FILE_PATH" == /Users/*/.claude/projects/*/memory/* ]]; then exit 0; fi
 
