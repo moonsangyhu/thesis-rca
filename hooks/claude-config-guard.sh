@@ -34,6 +34,7 @@ case "$REL_PATH" in
   CLAUDE.md|\
   rules/agents.md|\
   hooks/claude-config-guard.sh|\
+  hooks/pr-only-guard.sh|\
   .gitignore)
     allow=1
     ;;
@@ -45,6 +46,6 @@ fi
 
 echo -e "${RED}🚫 BLOCKED: claude-config 워크트리는 Claude 설정 파일만 수정할 수 있습니다.${NC}" >&2
 echo -e "${RED}File: $FILE_PATH${NC}" >&2
-echo -e "${YELLOW}허용 경로: .claude/**, CLAUDE.md, rules/agents.md, hooks/claude-config-guard.sh, .gitignore${NC}" >&2
+echo -e "${YELLOW}허용 경로: .claude/**, CLAUDE.md, rules/agents.md, hooks/claude-config-guard.sh, hooks/pr-only-guard.sh, .gitignore${NC}" >&2
 echo -e "${YELLOW}다른 경로를 수정하려면 메인 워크트리(main 브랜치)로 전환하세요.${NC}" >&2
 exit 2

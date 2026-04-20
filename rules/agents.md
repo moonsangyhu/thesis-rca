@@ -27,4 +27,5 @@
 ## 공통 규칙
 
 - 수정 작업 후 반드시 `/changelog` 스킬로 변경 이력 기록
-- 작업 완료 후 `/commit-push` 스킬로 커밋·푸시
+- feature 브랜치에서의 **중간 커밋**은 `/commit-push` 사용. **main으로의 push 금지**.
+- 작업 최종 완료(=main에 반영) 시에는 반드시 `/pr-merge` 스킬로 **한글 PR → 사용자 승인 → rebase 머지** 경로를 따른다. main 브랜치 직접 커밋·머지·푸시는 `hooks/pr-only-guard.sh`가 차단한다.
