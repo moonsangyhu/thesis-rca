@@ -5,6 +5,8 @@ description: K8s 실험 환경 터널링 설정. 사용 시점 - 실험 전 "/la
 
 # Lab Tunnel — 실험 환경 터널링 및 Preflight Check
 
+> **Superpowers 흐름 위치**: Experiment 트랙 Step 4의 `superpowers:executing-plans` 첫 번째 task로 호출된다(`@experiment` wrapper의 task 매핑 참조).
+
 실험 환경(K8s 클러스터)에 접속하기 위한 SSH 터널 + kubectl port-forward를 설정하고, 실험 수행 가능 여부를 점검한다.
 
 ## 환경 정보

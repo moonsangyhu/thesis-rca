@@ -5,6 +5,8 @@ description: Git commit and push workflow. Use when the user asks to commit and 
 
 # Commit & Push
 
+> **Superpowers 흐름 위치**: **feature 브랜치에서의 중간 커밋 전용**. main 브랜치로의 push는 절대 시도하지 않는다(pr-only-guard가 차단). 작업 최종 완료(=main 반영)는 `superpowers:finishing-a-development-branch` 옵션 2 선택 후 `/pr-merge` 스킬로 이행한다.
+
 ## Workflow
 
 1. **Inspect changes** — run in parallel:

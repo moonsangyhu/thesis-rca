@@ -1,9 +1,13 @@
 ---
 name: paper-reader
-description: 논문 심층 읽기 스킬. "/paper-reader" 또는 "논문 읽어줘", "논문 분석"이라고 말할 때 사용. 20년차 클라우드 SRE 전문가 관점에서 논문을 깊이 읽고, LLM+클라우드 운영에의 가치와 적용 원리를 분석.
+description: 논문 심층 읽기 스킬 (Research 트랙 R-2 sub-agent 도구). "/paper-reader" 또는 "논문 읽어줘", "논문 분석"이라고 말할 때 사용. 20년차 클라우드 SRE 전문가 관점에서 논문을 깊이 읽고, LLM+클라우드 운영에의 가치와 적용 원리를 분석.
 ---
 
-# Paper Reader — 논문 심층 읽기
+# Paper Reader — 논문 심층 읽기 (Research Track R-2)
+
+> **Research 트랙 위치**: R-1 `superpowers:brainstorming` → **R-2 `superpowers:dispatching-parallel-agents`** 에서 각 sub-agent가 WebSearch로 논문을 찾은 뒤 본 스킬을 호출하여 1편씩 심층 분석 → R-3 `/paper-survey`(aggregator) → R-4 `superpowers:verification-before-completion`. 단독 호출도 가능(특정 논문 1편 분석).
+
+> **Sub-agent 모드 다이얼로그 단축**: R-2 컨텍스트에서 호출되면 페르소나·7축 분석은 그대로 유지하되, 사용자 인터랙션(질문 던지기)은 생략하고 분석 결과만 `docs/papers/{slug}.md`에 즉시 작성한다. 단독 호출 시에는 평소대로 작동.
 
 20년차 클라우드 SRE 전문가의 관점에서 논문을 깊이 읽고, 클라우드 운영에 LLM을 접목하는 데 있어 어떤 가치가 있는지, 어떤 원리를 적용했는지 분석한다.
 

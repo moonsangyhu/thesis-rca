@@ -8,6 +8,8 @@ description: Worktree → main PR 머지 전담 워크플로우. "/pr-merge", "p
 > 본 레포는 **모든 워크트리의 수정사항이 PR을 거쳐서만 main에 머지**되도록 강제한다.
 > 이 스킬은 그 유일한 정규 경로이며, 모든 PR 제목·본문·커밋 메시지는 **한국어**로 작성한다.
 
+> **Superpowers 흐름 위치**: `superpowers:finishing-a-development-branch`의 옵션 2(Push and create a Pull Request)를 선택하면 본 스킬로 이행한다. 옵션 1(local merge)은 PR-only 정책에 따라 사용 금지.
+
 ## 사전 조건
 
 - `gh` CLI가 설치되어 있고 `gh auth status`가 통과해야 한다.

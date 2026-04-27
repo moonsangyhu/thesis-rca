@@ -5,6 +5,8 @@ description: 변경 이력 기록 스킬. 코드나 문서 수정 후 "/changelo
 
 # Changelog — 변경 이력 기록
 
+> **Superpowers 흐름 위치**: 모든 코드·문서 수정 직후 호출되며, 특히 (1) `superpowers:systematic-debugging` Phase 4(Verify the fix) 직전, (2) `superpowers:finishing-a-development-branch` 옵션 선택 직전, (3) Step 5 verification 게이트 통과 직전에 마지막으로 호출된다.
+
 에이전트가 코드·문서·설정을 수정한 후 변경 이력을 마크다운 문서에 기록한다.
 
 ## Workflow
