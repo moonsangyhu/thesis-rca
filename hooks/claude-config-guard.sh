@@ -18,6 +18,13 @@ if [[ -z "$FILE_PATH" ]]; then
   exit 0
 fi
 
+# 이 가드는 claude-config 워크트리(claude-config 브랜치) 전용이다.
+# 다른 브랜치(main, experiment, feature/*)에서는 도메인 파일 수정을 허용한다.
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+if [[ "$CURRENT_BRANCH" != "claude-config" ]]; then
+  exit 0
+fi
+
 # 홈 하위 Claude 메타 경로는 Claude 관련 자산이므로 허용
 if [[ "$FILE_PATH" == /Users/*/.claude/* ]]; then exit 0; fi
 if [[ "$FILE_PATH" == /Users/*/.claude/plans/* ]]; then exit 0; fi
