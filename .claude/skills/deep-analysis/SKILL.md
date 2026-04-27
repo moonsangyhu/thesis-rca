@@ -1,9 +1,13 @@
 ---
 name: deep-analysis
-description: 실험 개선점 심층 분석 스킬. "/deep-analysis" 또는 "개선점 분석", "실험 분석"이라고 말할 때 사용. 이전 실험 데이터를 깊게 분석하고 LLM/AIOps 기법을 인터넷 서칭하여 구체적인 개선 가설을 도출.
+description: 실험 개선점 심층 분석 스킬 (Experiment 트랙 Step 0.5). "/deep-analysis" 또는 "개선점 분석", "실험 분석"이라고 말할 때 사용. 이전 실험 데이터를 깊게 분석하고 LLM/AIOps 기법을 인터넷 서칭하여 구체적인 개선 가설을 도출.
 ---
 
-# Deep Analysis — 실험 개선점 심층 분석
+# Deep Analysis — 실험 개선점 심층 분석 (Experiment Step 0.5)
+
+> **Experiment 트랙 위치**: **Step 0.5 (이 스킬)** → Step 1 `superpowers:brainstorming`(이 스킬의 산출물이 brainstorming 컨텍스트로 흐름) → Step 2 `superpowers:writing-plans` → ...
+>
+> **Research 트랙 연동**: 진입 직후 최근 90일 내 `docs/surveys/paper_survey_v*.md`이 존재하는지 확인. 없거나 오래되면 사용자에게 **Research 트랙(`/paper-survey` 또는 R-1 brainstorming) 선행을 권유**한다. WebSearch 부분(섹션 3)은 Research 트랙으로 위임 가능.
 
 이전 실험 결과(CSV, raw JSON, 분석 리포트)를 깊게 분석하고, LLM/AIOps 관련 인터넷 서칭을 참조하여 다음 실험의 구체적 개선 가설을 도출한다.
 
