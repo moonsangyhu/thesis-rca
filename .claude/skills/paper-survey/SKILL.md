@@ -1,9 +1,13 @@
 ---
 name: paper-survey
-description: AIOps 논문 조사 스킬. "/paper-survey" 또는 "논문 조사", "선행 연구 조사"라고 말할 때 사용. 최근 3년 AIOps+LLM 논문에서 성능 개선 기법을 조사하여 문서화.
+description: AIOps 논문 조사 스킬 (Research 트랙 R-3 aggregator). "/paper-survey" 또는 "논문 조사", "선행 연구 조사"라고 말할 때 사용. 최근 3년 AIOps+LLM 논문에서 성능 개선 기법을 조사하여 문서화.
 ---
 
-# Paper Survey — AIOps 논문 조사
+# Paper Survey — AIOps 논문 조사 (Research Track R-3)
+
+> **Research 트랙 위치**: R-1 `superpowers:brainstorming`(범위 확정) → R-2 `superpowers:dispatching-parallel-agents`(다중 키워드 병렬 검색 + `/paper-reader`) → **R-3 `/paper-survey` (이 스킬, aggregator 역할)** → R-4 `superpowers:verification-before-completion`(품질 게이트). 단독 호출 시에는 R-1 brainstorming부터 권장한다.
+
+> **Aggregator 모드**: R-2에서 sub-agent들이 생성한 `docs/papers/*.md`가 이미 존재하는 경우, WebSearch를 다시 수행하지 않고 그 산출물을 통합하여 표·인사이트로 정리한다. 신규 단독 호출이면 아래 워크플로우대로 WebSearch부터.
 
 최근 3년(2023-2026) AIOps + LLM 관련 논문에서 성능 개선이 보고된 기법을 조사하고, 실험 계획에 활용할 수 있는 인사이트를 정리한다.
 
@@ -93,13 +97,15 @@ description: AIOps 논문 조사 스킬. "/paper-survey" 또는 "논문 조사",
 ### 5. 완료 보고
 
 - 조사된 논문 수와 핵심 인사이트를 요약 보고
+- **R-4 호출**: `superpowers:verification-before-completion` — 5+ 논문, 정량 수치, URL, 적용가능성 체크리스트 통과 전엔 완료 주장 금지
 - `/changelog` 호출
 - `/commit-push` 호출
 
 ## Rules
 
-- **최소 5편 이상** 논문을 조사해야 한다
-- WebSearch 결과가 부족하면 키워드를 변형하여 재검색한다
+- **최소 5편 이상** 논문을 조사해야 한다 (R-4 verification 게이트가 강제)
+- WebSearch 결과가 부족하면 키워드를 변형하여 재검색 (최대 3회). 그 후에도 부족하면 학습 데이터 기반 지식으로 보완하되 명시적으로 표시
 - 논문의 정량적 결과(정확도 수치)가 없으면 선별에서 제외한다
 - 기존 조사 결과(`docs/surveys/paper_survey_v*.md`)가 있으면 읽고, 이전에 조사한 논문은 중복 포함하지 않는다
 - 결과 문서는 한국어로 작성하되, 논문 제목과 기법명은 영문 유지
+- aggregator 모드에서는 `docs/papers/{slug}.md`의 출처를 표에 명시

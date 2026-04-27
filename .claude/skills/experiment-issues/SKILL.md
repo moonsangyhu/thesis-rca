@@ -5,6 +5,8 @@ description: 실험 이슈 기록 스킬. 실험 진행 중 발견된 문제를 
 
 # Experiment Issues — 실험 이슈 추적 및 기록
 
+> **Superpowers 흐름 위치**: `/experiment-status`(executing-plans review checkpoint)에서 자동 호출되어, 발견된 이슈가 `superpowers:systematic-debugging` Phase 1(Root Cause Investigation)의 입력으로 흐른다. systematic-debugging Phase 4(Verify the fix) 직전엔 `/changelog`를 호출한다(`rules/agents.md`의 흡수 룰).
+
 실험 진행 중 발견된 모든 문제(인프라, 코드, 프롬프트, 데이터)를 구조화하여 `docs/issues/experiment_issues_v{N}.md`에 기록한다. 다음 실험 계획 시 이 문서를 참고하여 동일 문제 재발을 방지한다.
 
 ## 트리거
