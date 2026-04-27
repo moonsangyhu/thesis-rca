@@ -314,10 +314,16 @@ class PrometheusCollector:
 
         Uses grpc_client_handled_total (apiserver→etcd) as these are
         available even when application-level gRPC metrics are not scraped.
+
+        Threshold (V8 dry-run §7-2-4 tuning): rate > 0.1/s. etcd watch
+        cancellation generates a baseline ~0.01-0.05/s `Canceled` rate that
+        appears in every trial. Filtering at 0.1/s suppresses this baseline
+        noise while preserving real fault signals (network faults typically
+        produce >>0.1/s error rates across multiple services).
         """
         data = self._query(
             'sum(rate(grpc_client_handled_total{grpc_code!="OK"}[2m])) '
-            'by (grpc_service, grpc_code) > 0'
+            'by (grpc_service, grpc_code) > 0.1'
         )
         return [
             {

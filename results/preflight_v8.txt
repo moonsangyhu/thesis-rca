@@ -1,0 +1,70 @@
+=== V8 Preflight Check — 2026-04-27 19:35:46 ===
+grpc_server_handling_seconds_bucket: 0 series
+grpc_server_handled_total: 0 series
+node_network_transmit_errs_total: 91 series
+node_network_receive_errs_total: 91 series
+node_netstat_Tcp_RetransSegs: 6 series
+Loki labels: 10
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+  File "/Users/yumunsang/Documents/thesis-experiment/src/rag/retriever.py", line 53, in __init__
+    raise RuntimeError(
+RuntimeError: ChromaDB not found at /Users/yumunsang/Documents/thesis-experiment/data/chromadb. Run: python -m src.rag.ingest
+/Users/yumunsang/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+AttributeError: 'RetrievedDoc' object has no attribute 'get'
+F2: 5 docs retrieved
+/Users/yumunsang/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+F2: 5 docs retrieved
+  - ?
+  - ?
+  - ?
+F11: 5 docs retrieved
+  - ?
+  - ?
+  - ?
+F12: 5 docs retrieved
+  - ?
+  - ?
+  - ?
+
+=== 통과 기준 표 평가 ===
+
+| 항목                            | 통과 기준    | 실제      | 판정          |
+|---------------------------------|--------------|-----------|---------------|
+| grpc_server_handling_seconds_bucket | ≥ 1 series   | 0 series  | **❌ 미통과** |
+| grpc_server_handled_total       | (참고)       | 0 series  | -             |
+| node_network_transmit_errs_total| ≥ 1 series   | 91 series | ✓ 통과        |
+| node_network_receive_errs_total | ≥ 1 series   | 91 series | ✓ 통과        |
+| node_netstat_Tcp_RetransSegs    | ≥ 1 series   | 6 series  | ✓ 통과        |
+| RAG F11 검색                    | ≥ 1 doc      | 5 docs    | ✓ 통과        |
+| RAG F12 검색                    | ≥ 1 doc      | 5 docs    | ✓ 통과        |
+| RAG 일관성 (F2)                 | ≥ 1 doc      | 5 docs    | ✓ 통과        |
+| Loki API                        | 동작         | 10 labels | ✓ 통과        |
+
+=== 시나리오 결정 ===
+
+**시나리오 Beta — gRPC 메트릭 부재 (Fallback 모드)**
+
+근거:
+- gRPC histogram bucket 0 series, gRPC handled_total 0 series 확인.
+- Online Boutique 서비스가 grpc_server_handling_seconds_bucket을 expose하지 않음 (interceptor 미설정).
+- ServiceMonitor 추가 또는 gRPC interceptor 활성화는 V9 선결조건으로 이월.
+
+V8 진행 조건 (시나리오 Beta):
+- 독립변수 축소: 4종 중 2종(`request_latency`, `grpc_errors`)이 빈 결과 반환 → context_builder가 해당 섹션을 출력하지 않으므로 부작용 없음.
+- 실질 독립변수: (1) node-exporter 네트워크 메트릭 2종 + (2)+(3) RAG/런북.
+- 로그 패턴 매칭 강화: pod log에서 "context deadline exceeded", "connection reset", "broken pipe", "EOF" 패턴이 컨텍스트에 충분히 반영되는지 dry-run에서 별도 확인.
+- 성공 기준 하향 조정 (plan §7-1):
+  - F11 B ≥ 30% (1.5/5 이상, 상향 목표 50%)
+  - F12 B ≥ 30% (1.5/5 이상, 상향 목표 50%)
+  - 전체 B ≥ 42% (V7=38% 대비 +4pp 이상)
+  - F1-F10 B 회귀 허용 폭은 동일 (-5pp 이내)
+- 결과 해석: Beta에서 F11/F12 정확도가 0%를 유지하면 "node-exporter 메트릭만으로는 부족" 결론. ServiceMonitor 추가를 V9 선결조건으로 정의.
+
+본 시나리오 결정은 본 실험 시작 후 변경하지 않는다. (plan §7-1 후속 변경 금지 조항)
+
+작성: 2026-04-27 19:36 (KST)
