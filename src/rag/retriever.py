@@ -168,17 +168,24 @@ class KnowledgeRetriever:
         return results[0] if results else None
 
     def format_context(self, docs: list[RetrievedDoc], max_tokens: int = 3000) -> str:
-        """Format retrieved docs as context string for LLM prompt."""
+        """Format retrieved docs as context string for LLM prompt.
+
+        V9 환경 전제조건 (plan §3-5): chunk content가 이미 markdown H1(`# Title`)으로
+        시작하면 prepended `# {doc.title}`를 생략하여 중복 출력을 방지한다.
+        raw_v8 샘플(F11_t1_B 등)에서 `# Runbook: F11 - NetworkDelay Root Cause Analysis`가
+        두 번 출력되는 패턴이 발견되어 본 단계에서 제거.
+        """
         context_parts = []
         total_chars = 0
         char_limit = max_tokens * 4  # rough chars-per-token estimate
 
         for doc in docs:
-            header = (
-                f"[Source: {doc.short_source} | Score: {doc.score:.2f}]\n"
-                f"# {doc.title}\n"
-            )
-            section = header + doc.content + "\n"
+            content = doc.content or ""
+            content_starts_with_h1 = content.lstrip().startswith("# ")
+            header = f"[Source: {doc.short_source} | Score: {doc.score:.2f}]\n"
+            if not content_starts_with_h1:
+                header += f"# {doc.title}\n"
+            section = header + content + "\n"
 
             if total_chars + len(section) > char_limit:
                 # Truncate last doc to fit
