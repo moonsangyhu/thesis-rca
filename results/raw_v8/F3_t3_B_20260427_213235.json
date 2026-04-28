@@ -1,0 +1,1021 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "cartservice-5579bdc967-9vmh6",
+          "container": "server",
+          "throttle_ratio": 0.211
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "paymentservice-9b9bd7d65-r4r6x",
+          "container": "server",
+          "line": "UnacceptedCreditCard [Error]: Sorry, we cannot process visa_electron credit cards. Only VISA or MasterCard is accepted."
+        },
+        {
+          "pod": "loadgenerator-7648d7bf7c-26gnv",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        },
+        {
+          "pod": "frontend-68d4c847b8-kzjt8",
+          "container": "server",
+          "line": "{\"error\":\"failed to complete the order: rpc error: code = Internal desc = failed to charge card: could not charge the card: rpc error: code = Code(400) desc = Sorry, we cannot process visa_electron credit cards. Only VISA or MasterCard is accepted.\",\"http.req.id\":\"6611995a-1b5f-491f-b91f-92d404e232e5\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart/checkout\",\"message\":\"request error\",\"session\":\"74b67d25-d1b3-454c-9f13-85b10335d0f7\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T12:30:45.827267605Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"daltonparks@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:20.399556782Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"katrina20@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:13.927458856Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"juan78@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:10.575729432Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"perkinscrystal@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:02.244533986Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"madelinehughes@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:02.237667672Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"diane68@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:30:36.744918831Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"dleach@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:30:02.426989159Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"martinezjames@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:43.568462301Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"tonya51@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:33.83852805Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"yaguirre@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:27.440942742Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"ywilliams@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:22.086524273Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"jacksondonald@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:05.235089462Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"hannah76@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:00.761602026Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"fmcguire@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:28:42.545509297Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"beverly30@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:28:26.743483318Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"savannahgray@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:28:08.425799493Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"eddieyoung@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:28:04.745442797Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"mhoward@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:58.239304704Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"garnerlisa@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:45.348263176Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"christy24@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:37.733097341Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"albert68@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:27.524968105Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"rileyanderson@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:24.736948723Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"arthur21@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:23.834708969Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"tmoon@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: connect: connection timed out\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:26:59.149510775Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"steven69@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: connect: connection timed out\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:26:43.244737952Z\"}"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-94flx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-65f6f65c5-gzt2l",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "checkoutservice-6f9b655544-sgfbq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-7tfbt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "emailservice-64c4648d5c-vhb47",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-68d4c847b8-kzjt8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-7648d7bf7c-26gnv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-r4r6x",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-88fjk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-78755b8c99-zrztf",
+          "phase": "Pending",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "productcatalogservice",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "ImagePullBackOff"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-9x78f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "redis-cart-575b844ddb-p9zrn",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-759b59d959-qfq9w",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-5579bdc967-9vmh6",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-27T12:24:14Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-5579bdc967-9vmh6",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-27T12:24:14Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 127.0.0.53:53: no such host",
+          "object": "cartservice-5579bdc967-9vmh6",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-27T12:24:43Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "cartservice-5579bdc967-9vmh6",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-27T12:24:43Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "cartservice-5579bdc967-9vmh6",
+          "kind": "Pod",
+          "count": 5,
+          "lastTimestamp": "2026-04-27T12:24:54Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to pull and unpack image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to resolve reference \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to do request: Head \"https://gcr.typo.io/v2/google-samples/productcatalogservice/manifests/latest\": dial tcp: lookup gcr.typo.io on 127.0.0.53:53: no such host",
+          "object": "productcatalogservice-78755b8c99-zrztf",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-27T12:30:35Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "productcatalogservice-78755b8c99-zrztf",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-27T12:30:35Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "productcatalogservice-78755b8c99-zrztf",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-04-27T12:30:47Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "productcatalogservice-78755b8c99-zrztf",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       ImagePullBackOff\n    Ready:          False\n    Restart Count:  0\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jkpqr (ro)\n  server:\n    Container ID:   containerd://32e5b10659c6811b493a6b058e70a0700bcfc2e993a7e1d0cc4d307f5c91ff04\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/productcatalogservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/productcatalogservice@sha256:6e0d2218e0edecf671230d54cbbb565209d3a7592215d9167aca918dcb251e14\n    Port:           3550/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Mon, 27 Apr 2026 21:29:52 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:3550  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:3550  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:              3550\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jkpqr (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-jkpqr:"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:6611fed964896c38e1113ca1095edcae13b9880e",
+            "lastAttempted": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "revision": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "lastAttempted": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "revision": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "lastAttempted": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "revision": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "lastAttempted": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "revision": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "lastAttempted": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "True",
+            "message": "Helm install succeeded for release argocd/argocd.v1 with chart argo-cd@7.9.1"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/loki.v1 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:d2f0c4179395ddadae39a7cae669e017aa3d59aa",
+            "lastUpdate": "2026-04-27T10:47:31Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-94flx: Running\ncartservice-65f6f65c5-gzt2l: Running\ncheckoutservice-6f9b655544-sgfbq: Running\ncurrencyservice-58f6b4b6f-7tfbt: Running\nemailservice-64c4648d5c-vhb47: Running\nfrontend-68d4c847b8-kzjt8: Running\nloadgenerator-7648d7bf7c-26gnv: Running\npaymentservice-9b9bd7d65-r4r6x: Running\nproductcatalogservice-6d97457584-88fjk: Running\nproductcatalogservice-78755b8c99-zrztf: Pending\n  container/productcatalogservice: NOT READY (ImagePullBackOff) restarts=0\nrecommendationservice-799dd6fd95-9x78f: Running\nredis-cart-575b844ddb-p9zrn: Running\nshippingservice-759b59d959-qfq9w: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/cartservice-5579bdc967-9vmh6: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-5579bdc967-9vmh6: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-5579bdc967-9vmh6: Failed - Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 127.0.0.53:53: no such host (count=3)\n[Warning] Pod/cartservice-5579bdc967-9vmh6: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/cartservice-5579bdc967-9vmh6: Failed - Error: ImagePullBackOff (count=5)\n[Warning] Pod/productcatalogservice-78755b8c99-zrztf: Failed - Failed to pull image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to pull and unpack image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to resolve reference \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to do request: Head \"https://gcr.typo.io/v2/google-samples/productcatalogservice/manifests/latest\": dial tcp: lookup gcr.typo.io on 127.0.0.53:53: no such host (count=3)\n[Warning] Pod/productcatalogservice-78755b8c99-zrztf: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/productcatalogservice-78755b8c99-zrztf: Failed - Error: ImagePullBackOff (count=6)\n\n## Metric Anomalies\nCPU throttled: cartservice-5579bdc967-9vmh6/server (21%)\n\n## Error Logs\n[paymentservice-9b9bd7d65-r4r6x] UnacceptedCreditCard [Error]: Sorry, we cannot process visa_electron credit cards. Only VISA or MasterCard is accepted.\n[loadgenerator-7648d7bf7c-26gnv] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n[frontend-68d4c847b8-kzjt8] {\"error\":\"failed to complete the order: rpc error: code = Internal desc = failed to charge card: could not charge the card: rpc error: code = Code(400) desc = Sorry, we cannot process visa_electron credit cards. Only VISA or MasterCard is accepted.\",\"http.req.id\":\"6611995a-1b5f-491f-b91f-92d404e232e...\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"daltonparks@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:20.399556782Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"katrina20@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:13.927458856Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"juan78@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:10.575729432Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"perkinscrystal@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:02.244533986Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"madelinehughes@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:31:02.237667672Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"diane68@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:30:36.744918831Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"dleach@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:30:02.426989159Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"martinezjames@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:43.568462301Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"tonya51@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:33.83852805Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"yaguirre@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:27.440942742Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"ywilliams@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:22.086524273Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"jacksondonald@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:05.235089462Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"hannah76@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:29:00.761602026Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"fmcguire@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:28:42.545509297Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"beverly30@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:28:26.743483318Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"savannahgray@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:28:08.425799493Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"eddieyoung@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:28:04.745442797Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"mhoward@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:58.239304704Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"garnerlisa@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:45.348263176Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"christy24@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:37.733097341Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"albert68@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:27.524968105Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"rileyanderson@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:24.736948723Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"arthur21@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:27:23.834708969Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"tmoon@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: connect: connection timed out\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:26:59.149510775Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"steven69@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: connect: connection timed out\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:26:43.244737952Z\"}\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:66)\n- argocd: Ready (rev: main@sha1:d2)\n- flux-system: Ready (rev: main@sha1:d2)\n- infrastructure: Ready (rev: main@sha1:d2)\n- monitoring: Ready (rev: main@sha1:d2)\n### FluxCD HelmReleases\n- argocd/argocd: Ready\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.79]\n# Pod ImagePullBackOff Diagnosis\n## Common Causes\n\n1. **Wrong image tag**: The specified tag does not exist in the registry. Common after a typo or when using a tag that was never pushed (e.g., `latest` when only versioned tags exist).\n\n2. **Wrong image name**: Repository or image name is misspelled or the full registry URL is missing for private registries.\n\n3. **Missing imagePullSecret**: Private registry requires authentication but no pull secret is configured on the pod or service account.\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.76]\n# Pod ImagePullBackOff Diagnosis\nfore deploying\n- Use admission webhooks to enforce image pull policy and registry allowlists\n- Monitor for `ErrImagePull` events with alerting\n\n---\n[Source: runbooks/rca-f3-imagepullbackoff.md | Score: 0.75]\n# Runbook: F3 - ImagePullBackOff Root Cause Analysis\nRegistry unreachable — use image mirror or cached image\n```bash\n\n# Update deployment to use a mirror registry\nkubectl patch deployment <deployment-name> -n <namespace> --type='json' \\\n  -p='[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/image\",\"value\":\"<mirror-registry>/<image>:<tag>\"}]'\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.75]\n# Pod ImagePullBackOff Diagnosis\n### Step 2: Create imagePullSecret for private registry\n```bash\n\n# Create secret from Docker credentials\nkubectl create secret docker-registry <secret-name> \\\n  --docker-server=<registry-server> \\\n  --docker-username=<username> \\\n  --docker-password=<password> \\\n  --docker-email=<email> \\\n  -n <namespace>\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.75]\n# Pod ImagePullBackOff Diagnosis\n# Pod ImagePullBackOff Diagnosis\n\n## Overview\nImagePullBackOff (and its precursor ErrImagePull) occurs when Kubernetes cannot pull the container image from the registry. The kubelet attempts to pull the image and upon failure, enters a backoff state with increasing retry intervals. This can be caused by authentication failures, incorrect image names or tags, network connectivity issues, or registry unavailability.\n",
+  "rca_output": {
+    "fault_id": "F3",
+    "trial": 3,
+    "system": "B",
+    "identified_fault_type": "Image Pull Failure",
+    "root_cause": "The productcatalogservice pod is unable to pull its image due to DNS resolution failures for the image registry.",
+    "confidence": 0.8,
+    "affected_components": [
+      "productcatalogservice",
+      "cartservice"
+    ],
+    "remediation": [
+      "Investigate DNS resolution issues; ensure that the DNS service is up and correctly configured.",
+      "Verify the image registry accessibility and consider implementing a mirror registry if persistent DNS issues occur."
+    ],
+    "detail": "The ImagePullBackOff state for the productcatalogservice indicates that Kubernetes is unable to resolve the registry URL, leading to failure in pulling necessary images. This is likely due to DNS issues within the cluster. The cartservice also shows readiness probe failures that could be linked to this issue, as it may be waiting for dependent services that are not available due to the image pull failure.",
+    "reasoning": "Step 1: Checked Node Health. All nodes are Ready. Step 2: Checked Pod Status. Productcatalogservice pod is in Pending state due to ImagePullBackOff. Found evidence of ErrImagePull and ImagePullBackOff events indicating failure to pull image due to 'no such host' DNS resolution errors, supporting a candidate for the root cause. Step 3: No service connectivity issues detected (no 0 endpoints). Step 4: Checked for network issues; DNS resolution is failing. Step 5: No CPU or memory issues found. Final diagnosis is that there are DNS issues causing ImagePullBackOff failures for the productcatalogservice, which is affecting its readiness for requests from services that depend on it.",
+    "root_cause_ko": "productcatalogservice 파드가 이미지 레지스트리에 대한 DNS 해석 실패로 인해 이미지를 가져올 수 없습니다.",
+    "remediation_ko": [
+      "DNS 해석 문제를 조사하고 DNS 서비스가 가동 중이고 올바르게 구성되어 있는지 확인하십시오.",
+      "이미지 레지스트리 접근성을 확인하고 지속적인 DNS 문제가 발생하는 경우 미러 레지를 구현하는 것을 고려하십시오."
+    ],
+    "detail_ko": "productcatalogservice의 ImagePullBackOff 상태는 Kubernetes가 레지스트리 URL을 해석할 수 없어 필요한 이미지를 가져오지 못하게 됨을 나타냅니다. 이는 클러스터 내 DNS 문제로 인한 것으로 보입니다. cartservice는 이 문제와 관련이 있을 수 있는 준비 상태 탐지 실패를 보이고 있으며, 이는 이미지 풀 실패로 인해 사용 가능한 종속 서비스를 기다리고 있을 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/productcatalogservice-78755b8c99-zrztf: Failed - Failed to pull image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to pull and unpack image \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to resolve reference \"gcr.typo.io/google-samples/productcatalogservice:latest\": failed to do request: Head \"https://gcr.typo.io/v2/google-samples/productcatalogservice/manifests/latest\": dial tcp: lookup gcr.typo.io on 127.0.0.53:53: no such host (count=3)",
+        "supports": "Indicates an image pull failure due to DNS resolution failure.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/cartservice-5579bdc967-9vmh6: Failed - Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 127.0.0.53:53: no such host (count=3)",
+        "supports": "Shows a similar pattern of DNS resolution failure impacting another service.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The image syntax or tag might be wrong, causing the pod to be stuck in ImagePullBackOff.",
+        "confidence": 0.4,
+        "reason_rejected": "DNS resolution failures indicated that the registry cannot be reached, rather than an incorrect image name or tag."
+      }
+    ],
+    "confidence_2nd": 0.7,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "Evidence from Kubernetes events was correctly cited. The logic was solid with a clear explanation of how each step led to the conclusion. However, while the alternative hypothesis regarding an incorrect image syntax was acknowledged, the rejection could have been addressed with more specific reasons related to the events in the input context. The confidence level seems appropriate but could be lowered slightly to reflect the potential for other underlying issues beyond DNS resolution failing.",
+    "retry_count": 0,
+    "correctness_score": 0.9,
+    "correctness_reasoning": "The diagnosis correctly identifies that the productcatalogservice pod is unable to pull its image due to DNS resolution failures, which aligns with the ground truth. However, it lacks the specificity of the misspelled registry hostname as the exact root cause, which prevents a perfect score. The mention of related symptoms such as ImagePullBackOff state and potential impacts on other services further supports the diagnosis, although it does not detail the typo aspect of the hostname.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 21757,
+    "prompt_tokens": 11682,
+    "completion_tokens": 1231,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health. All nodes are Ready. Step 2: Checked Pod Status. Productcatalogservice pod is in Pending state due to ImagePullBackOff. Found evidence of ErrImagePull and ImagePullBackOff events indicating failure to pull image due to 'no such host' DNS resolution errors, supporting a candidate for the root cause. Step 3: No service connectivity issues detected (no 0 endpoints). Step 4: Checked for network issues; DNS resolution is failing. Step 5: No CPU or memory issues found. Final diagnosis is that there are DNS issues causing ImagePullBackOff failures for the productcatalogservice, which is affecting its readiness for requests from services that depend on it.\",\n  \"identified_fault_type\": \"Image Pull Failure\",\n  \"root_cause\": \"The productcatalogservice pod is unable to pull its image due to DNS resolution failures for the image registry.\",\n  \"root_cause_ko\": \"productcatalogservice 파드가 이미지 레지스트리에 대한 DNS 해석 실패로 인해 이미지를 가져올 수 없습니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.7,\n  \"affected_components\": [\"productcatalogservice\", \"cartservice\"],\n  \"remediation\": [\n    \"Investigate DNS resolution issues; ensure that the DNS service is up and correctly configured.\",\n    \"Verify the image registry accessibility and consider implementing a mirror registry if persistent DNS issues occur.\"\n  ],\n  \"remediation_ko\": [\n    \"DNS 해석 문제를 조사하고 DNS 서비스가 가동 중이고 올바르게 구성되어 있는지 확인하십시오.\",\n    \"이미지 레지스트리 접근성을 확인하고 지속적인 DNS 문제가 발생하는 경우 미러 레지를 구현하는 것을 고려하십시오.\"\n  ],\n  \"detail\": \"The ImagePullBackOff state for the productcatalogservice indicates that Kubernetes is unable to resolve the registry URL, leading to failure in pulling necessary images. This is likely due to DNS issues within the cluster. The cartservice also shows readiness probe failures that could be linked to this issue, as it may be waiting for dependent services that are not available due to the image pull failure.\",\n  \"detail_ko\": \"productcatalogservice의 ImagePullBackOff 상태는 Kubernetes가 레지스트리 URL을 해석할 수 없어 필요한 이미지를 가져오지 못하게 됨을 나타냅니다. 이는 클러스터 내 DNS 문제로 인한 것으로 보입니다. cartservice는 이 문제와 관련이 있을 수 있는 준비 상태 탐지 실패를 보이고 있으며, 이는 이미지 풀 실패로 인해 사용 가능한 종속 서비스를 기다리고 있을 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/productcatalogservice-78755b8c99-zrztf: Failed - Failed to pull image \\\"gcr.typo.io/google-samples/productcatalogservice:latest\\\": failed to pull and unpack image \\\"gcr.typo.io/google-samples/productcatalogservice:latest\\\": failed to resolve reference \\\"gcr.typo.io/google-samples/productcatalogservice:latest\\\": failed to do request: Head \\\"https://gcr.typo.io/v2/google-samples/productcatalogservice/manifests/latest\\\": dial tcp: lookup gcr.typo.io on 127.0.0.53:53: no such host (count=3)\",\n      \"supports\": \"Indicates an image pull failure due to DNS resolution failure.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/cartservice-5579bdc967-9vmh6: Failed - Failed to pull image \\\"private.registry.io/boutique/cartservice:latest\\\": failed to pull and unpack image \\\"private.registry.io/boutique/cartservice:latest\\\": failed to resolve reference \\\"private.registry.io/boutique/cartservice:latest\\\": failed to do request: Head \\\"https://private.registry.io/v2/boutique/cartservice/manifests/latest\\\": dial tcp: lookup private.registry.io on 127.0.0.53:53: no such host (count=3)\",\n      \"supports\": \"Shows a similar pattern of DNS resolution failure impacting another service.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The image syntax or tag might be wrong, causing the pod to be stuck in ImagePullBackOff.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"DNS resolution failures indicated that the registry cannot be reached, rather than an incorrect image name or tag.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7944372892379761
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7608519196510315
+    },
+    {
+      "source": "runbooks/rca-f3-imagepullbackoff.md",
+      "score": 0.7543522715568542
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7540528774261475
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.751738429069519
+    }
+  ]
+}

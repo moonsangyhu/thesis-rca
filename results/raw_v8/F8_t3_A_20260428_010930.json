@@ -1,0 +1,734 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "paymentservice-c88b8ffd6-786fg",
+          "container": "",
+          "throttle_ratio": 0.556
+        },
+        {
+          "pod": "paymentservice-c88b8ffd6-786fg",
+          "container": "server",
+          "throttle_ratio": 0.595
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "frontend-68d4c847b8-zrj8f",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"849fe522-a56c-4c5c-b34d-1c4d2b34cf04\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/66VCHSJNUP\",\"message\":\"request error\",\"session\":\"086d2800-b56b-4ce2-aef1-e2e5a892818e\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T16:08:22.288619783Z\"}"
+        },
+        {
+          "pod": "frontend-68d4c847b8-zrj8f",
+          "container": "server",
+          "line": "{\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"4c465e65-cad0-4a05-932f-7d00b3f3b977\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"e2d9b21d-99af-42d9-a70f-5dbe4b72e2cc\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T16:08:21.625399598Z\"}"
+        },
+        {
+          "pod": "frontend-68d4c847b8-zrj8f",
+          "container": "server",
+          "line": "{\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"135791f2-4ce7-4fa0-a6ae-cd31c3747c46\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart/checkout\",\"message\":\"request error\",\"session\":\"4aa50ce3-8e50-4eb2-b307-67c3e019944d\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T16:08:17.939780115Z\"}"
+        },
+        {
+          "pod": "loadgenerator-7648d7bf7c-26gnv",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-94flx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-65f6f65c5-gzt2l",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "checkoutservice-6f9b655544-h6zvg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-7tfbt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "emailservice-64c4648d5c-vhb47",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-68d4c847b8-zrj8f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-7648d7bf7c-26gnv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-r4r6x",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-c88b8ffd6-786fg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-92tsv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-9x78f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "redis-cart-575b844ddb-p9zrn",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-759b59d959-qfq9w",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.2.99:50051\" within 1s: context deadline exceeded",
+          "object": "paymentservice-c88b8ffd6-786fg",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-27T16:07:28Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-94flx: Running\ncartservice-65f6f65c5-gzt2l: Running\ncheckoutservice-6f9b655544-h6zvg: Running\ncurrencyservice-58f6b4b6f-7tfbt: Running\nemailservice-64c4648d5c-vhb47: Running\nfrontend-68d4c847b8-zrj8f: Running\nloadgenerator-7648d7bf7c-26gnv: Running\npaymentservice-9b9bd7d65-r4r6x: Running\npaymentservice-c88b8ffd6-786fg: Running\nproductcatalogservice-6d97457584-92tsv: Running\nrecommendationservice-799dd6fd95-9x78f: Running\nredis-cart-575b844ddb-p9zrn: Running\nshippingservice-759b59d959-qfq9w: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/paymentservice-c88b8ffd6-786fg: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.99:50051\" within 1s: context deadline exceeded (count=2)\n\n## Metric Anomalies\nCPU throttled: paymentservice-c88b8ffd6-786fg/ (56%), paymentservice-c88b8ffd6-786fg/server (60%)\n\n## Error Logs\n[frontend-68d4c847b8-zrj8f] {\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"849fe522-a56c-4c5c-b34d-1c4d2b34cf04\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/66VCHSJ...\n[frontend-68d4c847b8-zrj8f] {\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"4c465e65-cad0-4a05-932f-7d00b3f3b977\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":...\n[frontend-68d4c847b8-zrj8f] {\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"1...\n[loadgenerator-7648d7bf7c-26gnv] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F8",
+    "trial": 3,
+    "system": "A",
+    "identified_fault_type": "Readiness Probe Failure, Connection Refused",
+    "root_cause": "The paymentservice pod has reached CPU limits causing throttling and unavailability, leading to readiness probe failures.",
+    "confidence": 0.85,
+    "affected_components": [
+      "paymentservice"
+    ],
+    "remediation": [
+      "Increase CPU limits for the paymentservice pod",
+      "Investigate and resolve issues related to the connection refused errors."
+    ],
+    "detail": "The paymentservice pod is experiencing CPU throttling, leading to readiness probe failures and connection issues from dependent services like frontend. This indicates that resource constraints are causing instability in service availability. Addressing resource limits should improve service reliability.",
+    "reasoning": "Step 1: Checked node health; found all nodes are Ready. Proceeded to Step 2. Step 2: All pods are in Running state, but paymentservice-c88b8ffd6-786fg has readiness probe failures indicating the pod is unhealthy. I noted this as a candidate. Step 3: Checked service connectivity. The service is showing errors related to connection refused, indicating a potential connectivity issue. Step 4: Checked network metrics and found connection refused errors for the frontend attempting to connect to the payment service. This suggests a network connectivity issue possibly related to paymentservice. Step 5: Examined resource limits; found CPU throttling on paymentservice-c88b8ffd6-786fg. However, the network connection errors are more indicative of the actual issue causing operational failures. Final diagnosis indicates the readiness probe failures are from the service not being able to connect, likely exacerbated by resource limits being approached.",
+    "root_cause_ko": "paymentservice 포드가 CPU 한계에 도달해 조정되었고, 이로 인해 준비 상태 검사 실패가 발생했습니다.",
+    "remediation_ko": [
+      "paymentservice 포드의 CPU 한계를 늘려야 합니다.",
+      "연결 거부 오류와 관련된 문제를 조사하고 해결해야 합니다."
+    ],
+    "detail_ko": "paymentservice 포드는 CPU가 조정되어 준비 상태 검사 실패 및 프론트엔드와 같은 종속 서비스의 연결 문제를 일으키고 있습니다. 이는 리소스 제약으로 인해 서비스 가용성이 불안정하다는 것을 나타냅니다. 리소스 한계를 해결하면 서비스 안정성이 향상될 것입니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/paymentservice-c88b8ffd6-786fg: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.2.99:50051\" within 1s: context deadline exceeded (count=2)",
+        "supports": "Indicates that the paymentservice pod's readiness probe is failing, likely due to an underlying connectivity issue.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "log",
+        "source": "Error Logs",
+        "content": "[frontend-68d4c847b8-zrj8f] {\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\"}",
+        "supports": "Indicates that the frontend service cannot connect to the paymentservice, contributing to the readiness probe failures.",
+        "verified": true,
+        "match_ratio": 0.95
+      },
+      {
+        "type": "metric",
+        "source": "Metric Anomalies",
+        "content": "CPU throttled: paymentservice-c88b8ffd6-786fg/ (56%), paymentservice-c88b8ffd6-786fg/server (60%)",
+        "supports": "Shows that CPU throttling is occurring, which could lead to instability in the paymentservice pod.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "NetworkPolicy blocking traffic to paymentservice",
+        "confidence": 0.4,
+        "reason_rejected": "No evidence of NetworkPolicy in the provided signals; direct connectivity errors were found instead."
+      }
+    ],
+    "confidence_2nd": 0.65,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence is well-grounded in the provided context. However, the reasoning underplays the significance of CPU throttling in causing readiness probe failures. While the connection refused errors are important, the CPU throttling is directly linked to pod performance. Also, the alternative hypothesis about NetworkPolicy could benefit from additional exploration, such as why it was not considered as serious enough despite being a possible source of connectivity issues.",
+    "retry_count": 0,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis discusses CPU limits and readiness probe failures, which are symptoms of resource constraints, but does not address the actual root cause related to service endpoints being empty due to the removal of the app label from paymentservice pods. Thus, it entirely misses the specified root cause mechanism.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 18644,
+    "prompt_tokens": 4936,
+    "completion_tokens": 1103,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health; found all nodes are Ready. Proceeded to Step 2. Step 2: All pods are in Running state, but paymentservice-c88b8ffd6-786fg has readiness probe failures indicating the pod is unhealthy. I noted this as a candidate. Step 3: Checked service connectivity. The service is showing errors related to connection refused, indicating a potential connectivity issue. Step 4: Checked network metrics and found connection refused errors for the frontend attempting to connect to the payment service. This suggests a network connectivity issue possibly related to paymentservice. Step 5: Examined resource limits; found CPU throttling on paymentservice-c88b8ffd6-786fg. However, the network connection errors are more indicative of the actual issue causing operational failures. Final diagnosis indicates the readiness probe failures are from the service not being able to connect, likely exacerbated by resource limits being approached.\",\n  \"identified_fault_type\": \"Readiness Probe Failure, Connection Refused\",\n  \"root_cause\": \"The paymentservice pod has reached CPU limits causing throttling and unavailability, leading to readiness probe failures.\",\n  \"root_cause_ko\": \"paymentservice 포드가 CPU 한계에 도달해 조정되었고, 이로 인해 준비 상태 검사 실패가 발생했습니다.\",\n  \"confidence\": 0.85,\n  \"confidence_2nd\": 0.65,\n  \"affected_components\": [\"paymentservice\"],\n  \"remediation\": [\"Increase CPU limits for the paymentservice pod\", \"Investigate and resolve issues related to the connection refused errors.\"],\n  \"remediation_ko\": [\"paymentservice 포드의 CPU 한계를 늘려야 합니다.\", \"연결 거부 오류와 관련된 문제를 조사하고 해결해야 합니다.\"],\n  \"detail\": \"The paymentservice pod is experiencing CPU throttling, leading to readiness probe failures and connection issues from dependent services like frontend. This indicates that resource constraints are causing instability in service availability. Addressing resource limits should improve service reliability.\",\n  \"detail_ko\": \"paymentservice 포드는 CPU가 조정되어 준비 상태 검사 실패 및 프론트엔드와 같은 종속 서비스의 연결 문제를 일으키고 있습니다. 이는 리소스 제약으로 인해 서비스 가용성이 불안정하다는 것을 나타냅니다. 리소스 한계를 해결하면 서비스 안정성이 향상될 것입니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/paymentservice-c88b8ffd6-786fg: Unhealthy - Readiness probe failed: timeout: failed to connect service \\\"10.0.2.99:50051\\\" within 1s: context deadline exceeded (count=2)\",\n      \"supports\": \"Indicates that the paymentservice pod's readiness probe is failing, likely due to an underlying connectivity issue.\"\n    },\n    {\n      \"type\": \"log\",\n      \"source\": \"Error Logs\",\n      \"content\": \"[frontend-68d4c847b8-zrj8f] {\\\"error\\\":\\\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\\\\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\\\\\"\\\"}\",\n      \"supports\": \"Indicates that the frontend service cannot connect to the paymentservice, contributing to the readiness probe failures.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"Metric Anomalies\",\n      \"content\": \"CPU throttled: paymentservice-c88b8ffd6-786fg/ (56%), paymentservice-c88b8ffd6-786fg/server (60%)\",\n      \"supports\": \"Shows that CPU throttling is occurring, which could lead to instability in the paymentservice pod.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"NetworkPolicy blocking traffic to paymentservice\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No evidence of NetworkPolicy in the provided signals; direct connectivity errors were found instead.\"\n    }\n  ]\n}"
+}
