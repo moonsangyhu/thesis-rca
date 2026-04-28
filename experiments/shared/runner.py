@@ -26,6 +26,7 @@ class TrialRunner:
         collector=None,
         builder=None,
         retriever=None,
+        validator=None,   # V9: StateValidator (None for older versions)
     ):
         self.engine = engine
         self.csv_path = csv_path
@@ -36,6 +37,7 @@ class TrialRunner:
         self.collector = collector
         self.builder = builder
         self.retriever = retriever
+        self.validator = validator
 
     def run_trial(
         self,
@@ -44,10 +46,39 @@ class TrialRunner:
         dry_run: bool = False,
         ground_truth: dict = None,
     ):
-        """Run a single trial: inject → collect → RCA(A/B) → record → recover."""
+        """Run a single trial: inject → collect → RCA(A/B) → record → recover.
+
+        V9: Step 0.5 (Pre-Trial State Validation) added before Step 1 inject.
+        """
         logger.info("=" * 60)
         logger.info("Starting %s trial %d", fault_id, trial)
         logger.info("=" * 60)
+
+        # ── Step 0.5: Pre-Trial State Validation (V9 only) ──
+        validator_result = None
+        if not dry_run and self.validator is not None:
+            try:
+                logger.info("Validating pre-trial cluster state...")
+                validator_result = self.validator.validate_and_correct(
+                    fault_id=fault_id, trial=trial,
+                )
+                logger.info("Validator: %s", validator_result.summary())
+                if validator_result.status == "skipped":
+                    self._record_skipped(fault_id, trial, validator_result, ground_truth)
+                    logger.warning(
+                        "Trial SKIPPED: %s t%d (stale not corrected after %d attempts)",
+                        fault_id, trial, validator_result.correction_attempts,
+                    )
+                    return  # do not inject, do not record A/B results
+            except Exception as e:
+                logger.error(
+                    "Validator failed (treating as skipped): %s", e, exc_info=True,
+                )
+                self._record_skipped(
+                    fault_id, trial, None, ground_truth,
+                    error=f"validator_exception: {e}",
+                )
+                return
 
         # ── Step 1: Inject ──
         injection_result = {}
@@ -127,9 +158,12 @@ class TrialRunner:
 
         # ── Step 8: Record results + verify ──
         timestamp = datetime.now().isoformat()
+        # V9: validator metadata to attach to each row
+        validator_meta = self._validator_meta_dict(validator_result, status_default="clean")
         for result in [result_a, result_b]:
             row = result.to_dict()
             row["timestamp"] = timestamp
+            row.update(validator_meta)
             # Count rows before
             before = self._count_csv_rows()
             append_result(row, self.csv_path, self.csv_headers)
@@ -193,6 +227,95 @@ class TrialRunner:
             return 0
         with open(self.csv_path) as f:
             return sum(1 for line in f if line.strip()) - 1  # minus header
+
+    @staticmethod
+    def _validator_meta_dict(validator_result, status_default: str = "") -> dict:
+        """Convert ValidationResult to CSV row fields. V9 only; pre-V9 returns empty defaults."""
+        if validator_result is None:
+            return {
+                "skipped": "false",
+                "validator_status": status_default,
+                "validator_findings": "",
+                "validator_attempts": "",
+            }
+        return {
+            "skipped": "true" if validator_result.status == "skipped" else "false",
+            "validator_status": validator_result.status,
+            "validator_findings": str(len(validator_result.findings)),
+            "validator_attempts": str(validator_result.correction_attempts),
+        }
+
+    def _record_skipped(
+        self,
+        fault_id: str,
+        trial: int,
+        validator_result,
+        ground_truth: dict = None,
+        error: str = "",
+    ) -> None:
+        """Record A/B skipped rows to CSV + save validator metadata to raw.
+
+        skipped trial은 LLM 호출 없이 CSV에 1쌍의 skip 레코드만 추가하고 통계 분모에서 제외된다.
+        """
+        from datetime import datetime
+        import json
+
+        timestamp = datetime.now().isoformat()
+        meta = self._validator_meta_dict(
+            validator_result,
+            status_default="skipped" if validator_result is None else None,
+        )
+        # If validator_result is None (exception path), force skipped status
+        if validator_result is None:
+            meta["skipped"] = "true"
+            meta["validator_status"] = "skipped"
+            meta["validator_findings"] = "exception"
+            meta["validator_attempts"] = "0"
+
+        for system in ("A", "B"):
+            row = {
+                "timestamp": timestamp,
+                "fault_id": fault_id,
+                "trial": trial,
+                "system": system,
+                "identified_fault_type": "",
+                "correct": "",
+                "correctness_score": "",
+                "correctness_reasoning": "skipped by validator",
+                "error": error,
+            }
+            row.update(meta)
+            append_result(row, self.csv_path, self.csv_headers)
+            logger.info(
+                "Skipped CSV row recorded: %s t%d %s (validator_status=%s)",
+                fault_id, trial, system, meta.get("validator_status"),
+            )
+
+        # Save validator findings as raw metadata (no LLM context for skipped trials)
+        try:
+            findings_dump = []
+            if validator_result is not None:
+                for f in validator_result.findings:
+                    findings_dump.append({
+                        "kind": f.kind,
+                        "name": f.name,
+                        "deployment": f.deployment,
+                        "detail": f.detail,
+                    })
+            raw_payload = {
+                "skipped": True,
+                "validator_status": meta.get("validator_status"),
+                "validator_findings": findings_dump,
+                "correction_attempts": meta.get("validator_attempts"),
+                "error": error,
+            }
+            ts_short = datetime.now().strftime("%Y%m%d_%H%M%S")
+            out = self.raw_dir / f"{fault_id}_t{trial}_SKIPPED_{ts_short}.json"
+            self.raw_dir.mkdir(parents=True, exist_ok=True)
+            with open(out, "w") as fp:
+                json.dump(raw_payload, fp, indent=2)
+        except Exception as e:
+            logger.warning("Failed to write skipped raw payload: %s", e)
 
     @staticmethod
     def _print_signal_summary(signals: dict):
