@@ -1,0 +1,752 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-7648d7bf7c-26gnv",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-94flx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-65f6f65c5-gzt2l",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "checkoutservice-6f9b655544-h6zvg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-7tfbt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "emailservice-64c4648d5c-vhb47",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-68d4c847b8-xcmhk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-7648d7bf7c-26gnv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-r4r6x",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-wkcrv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-92tsv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-9x78f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "redis-cart-575b844ddb-p9zrn",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-759b59d959-qfq9w",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "shippingservice-865585fdff-2lw2n",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            },
+            {
+              "name": "shippingservice",
+              "ready": false,
+              "restartCount": 26,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "StartError"
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container shippingservice in pod shippingservice-865585fdff-2lw2n_boutique(da04f019-6457-4e7b-a6ef-b12523ba50d8)",
+          "object": "shippingservice-865585fdff-2lw2n",
+          "kind": "Pod",
+          "count": 505,
+          "lastTimestamp": "2026-04-27T18:05:50Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "shippingservice-865585fdff-2lw2n",
+          "describe_excerpt": "    Host Port:     <none>\n    Command:\n      /bin/sh\n      -c\n      exit 1\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       StartError\n      Message:      failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/bin/sh\": stat /bin/sh: no such file or directory: unknown\n      Exit Code:    128\n      Started:      Thu, 01 Jan 1970 09:00:00 +0900\n      Finished:     Tue, 28 Apr 2026 03:03:51 +0900\n    Ready:          False\n    Restart Count:  26\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-k24r8 (ro)\n  server:\n    Container ID:   containerd://eedaa04b14aa62f67df691d9e13347f23ee23411e1eac59618e2dbb0ddef6597\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice@sha256:0d2be86f0280a0a5594de9593eecd47ca2380e90946a3434b30d956373599b44\n    Port:           50051/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Tue, 28 Apr 2026 01:15:45 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:50051  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:50051  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:              50051\n      DISABLE_PROFILER:  1\n    Mounts:"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-94flx: Running\ncartservice-65f6f65c5-gzt2l: Running\ncheckoutservice-6f9b655544-h6zvg: Running\ncurrencyservice-58f6b4b6f-7tfbt: Running\nemailservice-64c4648d5c-vhb47: Running\nfrontend-68d4c847b8-xcmhk: Running\nloadgenerator-7648d7bf7c-26gnv: Running\npaymentservice-9b9bd7d65-r4r6x: Running\npaymentservice-9b9bd7d65-wkcrv: Running\nproductcatalogservice-6d97457584-92tsv: Running\nrecommendationservice-799dd6fd95-9x78f: Running\nredis-cart-575b844ddb-p9zrn: Running\nshippingservice-759b59d959-qfq9w: Running\nshippingservice-865585fdff-2lw2n: Running\n  container/shippingservice: NOT READY (CrashLoopBackOff) restarts=26\n    last terminated: StartError (exit code ?)\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/shippingservice-865585fdff-2lw2n: BackOff - Back-off restarting failed container shippingservice in pod shippingservice-865585fdff-2lw2n_boutique(da04f019-6457-4e7b-a6ef-b12523ba50d8) (count=505)\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[loadgenerator-7648d7bf7c-26gnv] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F11",
+    "trial": 1,
+    "system": "A",
+    "identified_fault_type": "CrashLoopBackOff",
+    "root_cause": "The shippingservice pod is failing to start due to a StartError, potentially indicating an application misconfiguration.",
+    "confidence": 0.6,
+    "affected_components": [
+      "shippingservice"
+    ],
+    "remediation": [
+      "Investigate application logs for shippingservice to determine the cause of the StartError.",
+      "Examine the configuration of shippingservice for potential misconfigurations."
+    ],
+    "detail": "The shippingservice pod is showing a high number of restarts due to a StartError, but the specifics of the error are not provided in the logs. Without detailed exit codes or log messages from the container, it is challenging to identify the root cause. More investigation is required into the application configuration and relevant logs.",
+    "reasoning": "Step 1: I checked node health and found all nodes are Ready, so I proceeded to Step 2. Step 2: In pod status, most pods are Running, but the shippingservice pod is in CrashLoopBackOff with 26 restarts, and the termination reason is StartError. However, there are no clear logs or exit codes provided for the failure, which limits the ability to pinpoint the exact cause of the CrashLoopBackOff. I considered this as a primary candidate but noted that additional information is needed. Step 3: I checked service connectivity and found no indications of services with 0 endpoints or mismatches, so I moved to Step 4. Step 4: No network issues were indicated. Finally, Step 5: No resource limits or quota violations were indicated either. Given that I only have the CrashLoopBackOff and BackOff messages without specific application logs or exit codes for further diagnosis, I must lower the confidence in confirming a definitive issue and label it as a potential application misconfiguration without full evidence of the exact cause.",
+    "root_cause_ko": "shippingservice 포드가 StartError로 인해 시작되지 않고 있으며, 이는 애플리케이션 구성 오류를 나타낼 수 있습니다.",
+    "remediation_ko": [
+      "shippingservice의 애플리케이션 로그를 조사하여 StartError의 원인을 파악하십시오.",
+      "potentially 오타가 있는 shippingservice의 구성을 확인하십시오."
+    ],
+    "detail_ko": "shippingservice 포드가 StartError로 인해 높은 재시작 횟수를 보이고 있지만, 로그에는 오류에 대한 구체적인 내용이 제공되지 않습니다. 컨테이너의 상세한 종료 코드나 로그 메시지가 없으면 근본 원인을 파악하기가 어렵습니다. 애플리케이션 구성 및 관련 로그에 대한 추가 조사가 필요합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/shippingservice-865585fdff-2lw2n: BackOff - Back-off restarting failed container shippingservice in pod shippingservice-865585fdff-2lw2n_boutique(da04f019-6457-4e7b-a6ef-b12523ba50d8) (count=505)",
+        "supports": "Indicates that the shippingservice container is failing repeatedly and being backed off by Kubernetes due to excessive restart attempts.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "pod_status",
+        "source": "Pod Status",
+        "content": "shippingservice-865585fdff-2lw2n: NOT READY (CrashLoopBackOff) restarts=26",
+        "supports": "Shows repeated failures of the shippingservice container, which is indicative of a startup issue.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The shippingservice pod could be failing due to resource limitations.",
+        "confidence": 0.4,
+        "reason_rejected": "No evidence from metrics indicates resource limits are being reached."
+      }
+    ],
+    "confidence_2nd": 0.5,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 6.0,
+    "eval_overall_score": 7.5,
+    "eval_critique": "The evidence cited is mostly accurate, although it could benefit from clearer connection to the potential misconfiguration. The reasoning chain is solid but lacks a definitive link to how the 'StartError' signifies a misconfiguration rather than just a crash due to other possible issues. The alternative hypothesis regarding resource limitations was addressed, but it could further explore what the missing data from logs could indicate. Lower confidence (0.6) could be seen as slightly overconfident given the limited information from logs and other diagnosis clues.",
+    "retry_count": 2,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis does not address the described network delay issue at all and incorrectly identifies the problem as a StartError related to application configuration, which is unrelated to the root cause of the service timeouts and increased latency due to network delays.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 14615,
+    "prompt_tokens": 4479,
+    "completion_tokens": 1062,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: I checked node health and found all nodes are Ready, so I proceeded to Step 2. Step 2: In pod status, most pods are Running, but the shippingservice pod is in CrashLoopBackOff with 26 restarts, and the termination reason is StartError. However, there are no clear logs or exit codes provided for the failure, which limits the ability to pinpoint the exact cause of the CrashLoopBackOff. I considered this as a primary candidate but noted that additional information is needed. Step 3: I checked service connectivity and found no indications of services with 0 endpoints or mismatches, so I moved to Step 4. Step 4: No network issues were indicated. Finally, Step 5: No resource limits or quota violations were indicated either. Given that I only have the CrashLoopBackOff and BackOff messages without specific application logs or exit codes for further diagnosis, I must lower the confidence in confirming a definitive issue and label it as a potential application misconfiguration without full evidence of the exact cause.\",\n  \"identified_fault_type\": \"CrashLoopBackOff\",\n  \"root_cause\": \"The shippingservice pod is failing to start due to a StartError, potentially indicating an application misconfiguration.\",\n  \"root_cause_ko\": \"shippingservice 포드가 StartError로 인해 시작되지 않고 있으며, 이는 애플리케이션 구성 오류를 나타낼 수 있습니다.\",\n  \"confidence\": 0.6,\n  \"confidence_2nd\": 0.5,\n  \"affected_components\": [\"shippingservice\"],\n  \"remediation\": [\"Investigate application logs for shippingservice to determine the cause of the StartError.\", \"Examine the configuration of shippingservice for potential misconfigurations.\"],\n  \"remediation_ko\": [\"shippingservice의 애플리케이션 로그를 조사하여 StartError의 원인을 파악하십시오.\", \"potentially 오타가 있는 shippingservice의 구성을 확인하십시오.\"],\n  \"detail\": \"The shippingservice pod is showing a high number of restarts due to a StartError, but the specifics of the error are not provided in the logs. Without detailed exit codes or log messages from the container, it is challenging to identify the root cause. More investigation is required into the application configuration and relevant logs.\",\n  \"detail_ko\": \"shippingservice 포드가 StartError로 인해 높은 재시작 횟수를 보이고 있지만, 로그에는 오류에 대한 구체적인 내용이 제공되지 않습니다. 컨테이너의 상세한 종료 코드나 로그 메시지가 없으면 근본 원인을 파악하기가 어렵습니다. 애플리케이션 구성 및 관련 로그에 대한 추가 조사가 필요합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/shippingservice-865585fdff-2lw2n: BackOff - Back-off restarting failed container shippingservice in pod shippingservice-865585fdff-2lw2n_boutique(da04f019-6457-4e7b-a6ef-b12523ba50d8) (count=505)\",\n      \"supports\": \"Indicates that the shippingservice container is failing repeatedly and being backed off by Kubernetes due to excessive restart attempts.\"\n    },\n    {\n      \"type\": \"pod_status\",\n      \"source\": \"Pod Status\",\n      \"content\": \"shippingservice-865585fdff-2lw2n: NOT READY (CrashLoopBackOff) restarts=26\",\n      \"supports\": \"Shows repeated failures of the shippingservice container, which is indicative of a startup issue.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The shippingservice pod could be failing due to resource limitations.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No evidence from metrics indicates resource limits are being reached.\"\n    }\n  ]\n}"
+}

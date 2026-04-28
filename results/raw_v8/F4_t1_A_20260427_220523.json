@@ -1,0 +1,788 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-7648d7bf7c-26gnv",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"garrettparker@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:02:41.551297804Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"brianhancock@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:02:35.434715432Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"alanponce@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:02:31.241770666Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"thompsoncynthia@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:02:11.55362821Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"williamhall@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:53.531299545Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"joneshenry@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:52.228283049Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"blakenicole@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:30.631761932Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"sandra38@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:12.181880505Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"rhondasnow@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:07.052183759Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"alexandrarivas@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:06.0443435Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"adamreyes@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:05.16901453Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"xscott@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:04.623055216Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"elliottanthony@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:00:35.729429745Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"jenniferthomas@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:00:24.928767792Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"wilsondesiree@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:00:11.836144493Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"kyleclay@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:52.931457519Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"ugonzalez@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:31.145674265Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"thamilton@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:22.166323666Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"gsavage@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:16.159944807Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"pmiller@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:14.514487419Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"briancolon@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:09.546259312Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"iwalker@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:08.720107129Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"mason95@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:45.615756113Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"lrodriguez@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:39.52538427Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"leonard67@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:33.874318813Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"ojohnston@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:31.15986733Z\"}"
+        },
+        {
+          "pod": "checkoutservice-6f9b655544-sgfbq",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"jessica67@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:15.550386069Z\"}"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-94flx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-65f6f65c5-gzt2l",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "checkoutservice-6f9b655544-sgfbq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-7tfbt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "emailservice-64c4648d5c-vhb47",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-68d4c847b8-kzjt8",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-7648d7bf7c-26gnv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-r4r6x",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-88fjk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-9x78f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "redis-cart-575b844ddb-p9zrn",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-759b59d959-qfq9w",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        }
+      ],
+      "events": [],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-94flx: Running\ncartservice-65f6f65c5-gzt2l: Running\ncheckoutservice-6f9b655544-sgfbq: Running\ncurrencyservice-58f6b4b6f-7tfbt: Running\nemailservice-64c4648d5c-vhb47: Running\nfrontend-68d4c847b8-kzjt8: Running\nloadgenerator-7648d7bf7c-26gnv: Running\npaymentservice-9b9bd7d65-r4r6x: Running\nproductcatalogservice-6d97457584-88fjk: Running\nrecommendationservice-799dd6fd95-9x78f: Running\nredis-cart-575b844ddb-p9zrn: Running\nshippingservice-759b59d959-qfq9w: Running\n\n## Kubernetes Events (Warning/Error)\nNo warning/error events.\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[loadgenerator-7648d7bf7c-26gnv] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"garrettparker@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:02:41.551297804Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"brianhancock@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:02:35.434715432Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"alanponce@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:02:31.241770666Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"thompsoncynthia@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:02:11.55362821Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"williamhall@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:53.531299545Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"joneshenry@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:52.228283049Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"blakenicole@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:30.631761932Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"sandra38@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:12.181880505Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"rhondasnow@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:07.052183759Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"alexandrarivas@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:06.0443435Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"adamreyes@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:05.16901453Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"xscott@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:01:04.623055216Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"elliottanthony@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:00:35.729429745Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"jenniferthomas@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:00:24.928767792Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"wilsondesiree@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T13:00:11.836144493Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"kyleclay@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:52.931457519Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"ugonzalez@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:31.145674265Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"thamilton@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:22.166323666Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"gsavage@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:16.159944807Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"pmiller@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:14.514487419Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"briancolon@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:09.546259312Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"iwalker@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:59:08.720107129Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"mason95@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:45.615756113Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"lrodriguez@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:39.52538427Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"leonard67@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:33.874318813Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"ojohnston@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:31.15986733Z\"}\n[checkoutservice-6f9b655544-sgfbq] {\"message\":\"failed to send order confirmation to \\\"jessica67@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T12:58:15.550386069Z\"}\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F4",
+    "trial": 1,
+    "system": "A",
+    "identified_fault_type": "Network Timeout",
+    "root_cause": "The checkoutservice is unable to connect to its service endpoint due to network connectivity issues.",
+    "confidence": 0.8,
+    "affected_components": [
+      "checkoutservice"
+    ],
+    "remediation": [
+      "Investigate the network configuration (e.g., NetworkPolicies) that may block traffic to the checkoutservice.",
+      "Ensure that the service endpoint for checkoutservice is properly configured and is accessible."
+    ],
+    "detail": "The repeated timeout errors in the logs from the checkoutservice clearly indicate that the service is attempting to connect to an endpoint at 10.97.34.203:5000 but failing due to i/o timeout errors. This suggests the possibility of either network policies blocking this communication or misconfiguration of the service itself. Further investigation into the network policies and service configurations is necessary.",
+    "reasoning": "Step 1: Checked Node Health - All nodes are in 'Ready' status with no reported problems. Step 2: Checked Pod Status - All pods are in 'Running' state and no warning/error events are reported, but observed multiple 'rpc error' logs from checkoutservice. No direct cause of failure seen that would indicate a Pod-level fault. Step 3: Checked Service Connectivity - No services reported with 0 endpoints, indicating proper connectivity at the service level. Step 4: Checked Network - Encountered multiple i/o timeout errors in checkoutservice logs when attempting to connect to 10.97.34.203:5000. This indicates potential network issues or misconfiguration leading to communication failures. Step 5: Checked Resource Limits - No resource limit violations detected. The repeated timeout message may suggest underlying network policy issues or possible service misconfigurations that need detailed investigation. Final diagnosis indicates network-related issues causing connectivity failure to checkoutservice, supported by strong log evidence.",
+    "root_cause_ko": "checkoutservice가 네트워크 연결 문제로 인해 서비스 엔드포인트에 연결하지 못하고 있습니다.",
+    "remediation_ko": [
+      "checkoutservice로의 트래픽을 차단할 수 있는 네트워크 구성(예: NetworkPolicies)을 조사하십시오.",
+      "checkoutservice의 서비스 엔드포인트가 올바르게 구성되어 있고 접근 가능한지 확인하십시오."
+    ],
+    "detail_ko": "checkoutservice의 로그에서 반복되는 시간 초과 오류는 서비스가 10.97.34.203:5000의 엔드포인트에 연결하려고 시도하고 있지만 i/o 시간 초과 오류로 인해 실패하고 있음을 명확하게 나타냅니다. 이는 네트워크 정책이 이 통신을 차단하거나 서비스 자체의 잘못된 구성을 나타낼 수 있습니다. 네트워크 정책 및 서비스 구성에 대한 추가 조사가 필요합니다.",
+    "evidence_chain": [
+      {
+        "type": "log",
+        "source": "checkoutservice logs",
+        "content": "{\"message\":\"failed to send order confirmation to \\\"garrettparker@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\"}",
+        "supports": "indicates that checkoutservice cannot connect to the service due to a timeout error.",
+        "verified": true,
+        "match_ratio": 0.95
+      },
+      {
+        "type": "log",
+        "source": "checkoutservice logs",
+        "content": "{\"message\":\"failed to send order confirmation to \\\"brianhancock@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\"}",
+        "supports": "provides additional evidence of connectivity issues affecting checkoutservice.",
+        "verified": true,
+        "match_ratio": 0.95
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "A misconfiguration in the service selector or endpoint definitions.",
+        "confidence": 0.4,
+        "reason_rejected": "No evidence of service misconfiguration found in provided context; logs point directly to network issues."
+      }
+    ],
+    "confidence_2nd": 0.5,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "Overall, the diagnosis provides a well-supported conclusion, but it could strengthen the reasoning about service connectivity. While it states that 'no services reported with 0 endpoints,' it could clarify what this means for the specific connection issue identified in the checkoutservice logs. The alternative hypothesis considered is reasonable but somewhat vague; potentially, it could explore other network-related misconfigurations that could cause timeouts beyond just service misconfigurations. Confidence assigned aligns well with the context and evidence presented.",
+    "retry_count": 2,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis identifies a problem related to network connectivity impacting the checkoutservice, which is completely unrelated to the root cause of the kubelet stopping, node status changing to NotReady, and subsequent pod rescheduling. There is no overlap in the mechanisms described.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 14380,
+    "prompt_tokens": 9459,
+    "completion_tokens": 1115,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health - All nodes are in 'Ready' status with no reported problems. Step 2: Checked Pod Status - All pods are in 'Running' state and no warning/error events are reported, but observed multiple 'rpc error' logs from checkoutservice. No direct cause of failure seen that would indicate a Pod-level fault. Step 3: Checked Service Connectivity - No services reported with 0 endpoints, indicating proper connectivity at the service level. Step 4: Checked Network - Encountered multiple i/o timeout errors in checkoutservice logs when attempting to connect to 10.97.34.203:5000. This indicates potential network issues or misconfiguration leading to communication failures. Step 5: Checked Resource Limits - No resource limit violations detected. The repeated timeout message may suggest underlying network policy issues or possible service misconfigurations that need detailed investigation. Final diagnosis indicates network-related issues causing connectivity failure to checkoutservice, supported by strong log evidence.\",\n  \"identified_fault_type\": \"Network Timeout\",\n  \"root_cause\": \"The checkoutservice is unable to connect to its service endpoint due to network connectivity issues.\",\n  \"root_cause_ko\": \"checkoutservice가 네트워크 연결 문제로 인해 서비스 엔드포인트에 연결하지 못하고 있습니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.5,\n  \"affected_components\": [\"checkoutservice\"],\n  \"remediation\": [\n    \"Investigate the network configuration (e.g., NetworkPolicies) that may block traffic to the checkoutservice.\",\n    \"Ensure that the service endpoint for checkoutservice is properly configured and is accessible.\"\n  ],\n  \"remediation_ko\": [\n    \"checkoutservice로의 트래픽을 차단할 수 있는 네트워크 구성(예: NetworkPolicies)을 조사하십시오.\",\n    \"checkoutservice의 서비스 엔드포인트가 올바르게 구성되어 있고 접근 가능한지 확인하십시오.\"\n  ],\n  \"detail\": \"The repeated timeout errors in the logs from the checkoutservice clearly indicate that the service is attempting to connect to an endpoint at 10.97.34.203:5000 but failing due to i/o timeout errors. This suggests the possibility of either network policies blocking this communication or misconfiguration of the service itself. Further investigation into the network policies and service configurations is necessary.\",\n  \"detail_ko\": \"checkoutservice의 로그에서 반복되는 시간 초과 오류는 서비스가 10.97.34.203:5000의 엔드포인트에 연결하려고 시도하고 있지만 i/o 시간 초과 오류로 인해 실패하고 있음을 명확하게 나타냅니다. 이는 네트워크 정책이 이 통신을 차단하거나 서비스 자체의 잘못된 구성을 나타낼 수 있습니다. 네트워크 정책 및 서비스 구성에 대한 추가 조사가 필요합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"log\",\n      \"source\": \"checkoutservice logs\",\n      \"content\": \"{\\\"message\\\":\\\"failed to send order confirmation to \\\\\\\"garrettparker@example.net\\\\\\\": rpc error: code = Unavailable desc = connection error: desc = \\\\\\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\\\\\"\\\",\\\"severity\\\":\\\"warning\\\"}\",\n      \"supports\": \"indicates that checkoutservice cannot connect to the service due to a timeout error.\"\n    },\n    {\n      \"type\": \"log\",\n      \"source\": \"checkoutservice logs\",\n      \"content\": \"{\\\"message\\\":\\\"failed to send order confirmation to \\\\\\\"brianhancock@example.org\\\\\\\": rpc error: code = Unavailable desc = connection error: desc = \\\\\\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\\\\\"\\\",\\\"severity\\\":\\\"warning\\\"}\",\n      \"supports\": \"provides additional evidence of connectivity issues affecting checkoutservice.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"A misconfiguration in the service selector or endpoint definitions.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No evidence of service misconfiguration found in provided context; logs point directly to network issues.\"\n    }\n  ]\n}"
+}

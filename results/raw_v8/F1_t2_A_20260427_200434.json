@@ -1,0 +1,943 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "recommendationservice-6c6b9998b9-wkfwg",
+          "container": "",
+          "throttle_ratio": 0.95
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-7648d7bf7c-26gnv",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        },
+        {
+          "pod": "frontend-68d4c847b8-vbt6z",
+          "container": "server",
+          "line": "{\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"0f5e8562-1d93-4f5e-a662-8eae872cf8d2\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart/checkout\",\"message\":\"request error\",\"session\":\"e2d9b21d-99af-42d9-a70f-5dbe4b72e2cc\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T10:59:21.262333996Z\"}"
+        },
+        {
+          "pod": "frontend-68d4c847b8-vbt6z",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"0f806a97-dd1d-44da-973b-6717c88332e1\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"request error\",\"session\":\"e2d9b21d-99af-42d9-a70f-5dbe4b72e2cc\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T10:59:13.106559665Z\"}"
+        },
+        {
+          "pod": "frontend-68d4c847b8-vbt6z",
+          "container": "server",
+          "line": "{\"message\":\"Failed to fetch the Zone of the node where the pod is scheduledGet \\\"http://169.254.169.254/computeMetadata/v1/instance/zone\\\": dial tcp 169.254.169.254:80: i/o timeout\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T10:59:12.553766722Z\"}"
+        },
+        {
+          "pod": "frontend-68d4c847b8-vbt6z",
+          "container": "server",
+          "line": "{\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"9bc7c6bc-42d0-4c90-bd66-005f162bbc69\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"838e01b7-a556-457c-b08f-5920f44fd7ea\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T10:58:58.384815726Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"arnolddaniel@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:47.226990734Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"adamsdaniel@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:27.395396668Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"teresasloan@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:24.389923749Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"erica27@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:20.242534567Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"rachelgibson@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:18.814658263Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"wmiller@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:01.687602314Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"butlerchristina@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:01.185981458Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"williamherrera@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:47.899071036Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"vadams@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:45.293376889Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"timothy44@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:32.623790719Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"brian10@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:20.513111145Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"victorrichardson@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:06.059144592Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"dickersonjamie@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:01:57.88906229Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"goldenrachel@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:01:55.012734612Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"vincentcross@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:01:52.811141817Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"pcoleman@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:01:22.71151697Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"josephsmith@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:00:45.346346908Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"kharding@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:00:33.389279676Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"autumncain@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:00:29.815243849Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"tsnyder@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:58.896294552Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"adamsvictor@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:57.390755864Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"jsmith@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:55.102377348Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"garciabrandy@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:53.893304237Z\"}"
+        },
+        {
+          "pod": "checkoutservice-866db7d597-bzfmg",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"kim94@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:51.682259596Z\"}"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-94flx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-65f6f65c5-gzt2l",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "checkoutservice-866db7d597-bzfmg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-7tfbt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "emailservice-64c4648d5c-vhb47",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-68d4c847b8-vbt6z",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-7648d7bf7c-26gnv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-r4r6x",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-7hb6n",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "recommendationservice-6c6b9998b9-wkfwg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": false,
+              "restartCount": 4,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "OOMKilled"
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-9x78f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "redis-cart-575b844ddb-p9zrn",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-759b59d959-qfq9w",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "FailedScheduling",
+          "message": "0/6 nodes are available: 3 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }, 3 node(s) had untolerated taint {node.kubernetes.io/disk-pressure: }. preemption: 0/6 nodes are available: 6 Preemption is not helpful for scheduling.",
+          "object": "loadgenerator-56567d57dc-snd9k",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": null
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.4.91:7070\" within 1s: context deadline exceeded",
+          "object": "cartservice-558555b4fd-d7kmk",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-27T10:55:12Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.4.91:7070\" within 1s: context deadline exceeded",
+          "object": "cartservice-558555b4fd-d7kmk",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-27T10:55:12Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-558555b4fd-d7kmk",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-27T10:56:52Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-558555b4fd-d7kmk",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-27T10:56:52Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container server in pod cartservice-558555b4fd-d7kmk_boutique(fd7ddd85-4138-45a4-9350-1d6408f39136)",
+          "object": "cartservice-558555b4fd-d7kmk",
+          "kind": "Pod",
+          "count": 7,
+          "lastTimestamp": "2026-04-27T10:57:43Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-65f6f65c5-gzt2l",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-27T10:58:54Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-65f6f65c5-gzt2l",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-04-27T10:58:54Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container server in pod recommendationservice-6c6b9998b9-wkfwg_boutique(0b257c9d-8a41-4329-b728-227c6b508980)",
+          "object": "recommendationservice-6c6b9998b9-wkfwg",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-04-27T11:02:00Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.0.4.110:8080\" within 1s: context deadline exceeded",
+          "object": "recommendationservice-6c6b9998b9-wkfwg",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-04-27T11:02:16Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.0.4.110:8080\" within 1s: context deadline exceeded",
+          "object": "recommendationservice-6c6b9998b9-wkfwg",
+          "kind": "Pod",
+          "count": 9,
+          "lastTimestamp": "2026-04-27T11:02:18Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "recommendationservice-6c6b9998b9-wkfwg",
+          "describe_excerpt": "    Host Port:      0/TCP\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       OOMKilled\n      Exit Code:    137\n      Started:      Mon, 27 Apr 2026 20:03:14 +0900\n      Finished:     Mon, 27 Apr 2026 20:03:20 +0900\n    Ready:          False\n    Restart Count:  4\n    Limits:\n      cpu:     200m\n      memory:  24Mi\n    Requests:\n      cpu:      100m\n      memory:   24Mi\n    Liveness:   grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Readiness:  grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:                          8080\n      PRODUCT_CATALOG_SERVICE_ADDR:  productcatalogservice:3550\n      DISABLE_PROFILER:              1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vtwl6 (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-vtwl6:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-94flx: Running\ncartservice-65f6f65c5-gzt2l: Running\ncheckoutservice-866db7d597-bzfmg: Running\ncurrencyservice-58f6b4b6f-7tfbt: Running\nemailservice-64c4648d5c-vhb47: Running\nfrontend-68d4c847b8-vbt6z: Running\nloadgenerator-7648d7bf7c-26gnv: Running\npaymentservice-9b9bd7d65-r4r6x: Running\nproductcatalogservice-6d97457584-7hb6n: Running\nrecommendationservice-6c6b9998b9-wkfwg: Running\n  container/server: NOT READY (CrashLoopBackOff) restarts=4\n    last terminated: OOMKilled (exit code ?)\nrecommendationservice-799dd6fd95-9x78f: Running\nredis-cart-575b844ddb-p9zrn: Running\nshippingservice-759b59d959-qfq9w: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/loadgenerator-56567d57dc-snd9k: FailedScheduling - 0/6 nodes are available: 3 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }, 3 node(s) had untolerated taint {node.kubernetes.io/disk-pressure: }. preemption: 0/6 nodes are available: 6 Preemption is not helpful for scheduling. (count=1)\n[Warning] Pod/cartservice-558555b4fd-d7kmk: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.4.91:7070\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/cartservice-558555b4fd-d7kmk: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.91:7070\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/cartservice-558555b4fd-d7kmk: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=3)\n[Warning] Pod/cartservice-558555b4fd-d7kmk: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=3)\n[Warning] Pod/cartservice-558555b4fd-d7kmk: BackOff - Back-off restarting failed container server in pod cartservice-558555b4fd-d7kmk_boutique(fd7ddd85-4138-45a4-9350-1d6408f39136) (count=7)\n[Warning] Pod/cartservice-65f6f65c5-gzt2l: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-65f6f65c5-gzt2l: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/recommendationservice-6c6b9998b9-wkfwg: BackOff - Back-off restarting failed container server in pod recommendationservice-6c6b9998b9-wkfwg_boutique(0b257c9d-8a41-4329-b728-227c6b508980) (count=2)\n[Warning] Pod/recommendationservice-6c6b9998b9-wkfwg: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.0.4.110:8080\" within 1s: context deadline exceeded (count=3)\n[Warning] Pod/recommendationservice-6c6b9998b9-wkfwg: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.0.4.110:8080\" within 1s: context deadline exceeded (count=9)\n\n## Metric Anomalies\nCPU throttled: recommendationservice-6c6b9998b9-wkfwg/ (95%)\n\n## Error Logs\n[loadgenerator-7648d7bf7c-26gnv] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n[frontend-68d4c847b8-vbt6z] {\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"0...\n[frontend-68d4c847b8-vbt6z] {\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"0f806a97-dd1d-44da-973b-6717c88332e1\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6...\n[frontend-68d4c847b8-vbt6z] {\"message\":\"Failed to fetch the Zone of the node where the pod is scheduledGet \\\"http://169.254.169.254/computeMetadata/v1/instance/zone\\\": dial tcp 169.254.169.254:80: i/o timeout\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T10:59:12.553766722Z\"}\n[frontend-68d4c847b8-vbt6z] {\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"9bc7c6bc-42d0-4c90-bd66-005f162bbc69\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":...\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"arnolddaniel@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:47.226990734Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"adamsdaniel@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:27.395396668Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"teresasloan@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:24.389923749Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"erica27@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:20.242534567Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"rachelgibson@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:18.814658263Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"wmiller@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:01.687602314Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"butlerchristina@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:03:01.185981458Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"williamherrera@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:47.899071036Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"vadams@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:45.293376889Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"timothy44@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:32.623790719Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"brian10@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:20.513111145Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"victorrichardson@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:02:06.059144592Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"dickersonjamie@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:01:57.88906229Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"goldenrachel@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:01:55.012734612Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"vincentcross@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:01:52.811141817Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"pcoleman@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:01:22.71151697Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"josephsmith@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:00:45.346346908Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"kharding@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:00:33.389279676Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"autumncain@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T11:00:29.815243849Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"tsnyder@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:58.896294552Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"adamsvictor@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:57.390755864Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"jsmith@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:55.102377348Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"garciabrandy@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:53.893304237Z\"}\n[checkoutservice-866db7d597-bzfmg] {\"message\":\"failed to send order confirmation to \\\"kim94@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.34.203:5000: i/o timeout\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-04-27T10:59:51.682259596Z\"}\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F1",
+    "trial": 2,
+    "system": "A",
+    "identified_fault_type": "OOM Kill",
+    "root_cause": "RecommendationService is experiencing OOMKilled due to insufficient memory limits.",
+    "confidence": 0.9,
+    "affected_components": [
+      "recommendationservice"
+    ],
+    "remediation": [
+      "Increase the memory limit for the recommendationservice pod to prevent OOMKilled errors.",
+      "Monitor the resource usage of pods and adjust limits accordingly."
+    ],
+    "detail": "The recommendationservice pod has been repeatedly killed due to exceeding its memory limit (OOMKilled). This indicates that the allocated memory resources are insufficient for the workload it is handling. Additionally, the high CPU throttling at 95% suggests there may be a need to manage CPU resources more effectively as well.",
+    "reasoning": "Step 1: Checked node health and found no nodes in NotReady state or conditions like DiskPressure, MemoryPressure, or PIDPressure. Thus, I proceed to Step 2. Step 2: Found the recommendationservice pod in CrashLoopBackOff due to OOMKilled, indicating a memory limit issue. This is noted as a primary candidate. Step 3: No issues with service endpoints observed. Step 4: Checked for network issues and found no significant evidence. Step 5: CPU throttling observed at 95% for recommendationservice, contributing to the issue. Since the OOMKilled condition is the primary candidate and is linked to resource exhaustion, the root cause is associated with the recommendationservice memory limits being exceeded.",
+    "root_cause_ko": "RecommendationService는 메모리 한도가 부족하여 OOMKilled를 경험하고 있습니다.",
+    "remediation_ko": [
+      "recommendationservice 파드의 메모리 한도를 늘려 OOMKilled 오류를 방지하십시오.",
+      "파드의 리소스 사용량을 모니터링하고 한도를 적절하게 조정하십시오."
+    ],
+    "detail_ko": "recommendationservice 파드는 메모리 한도를 초과하여 반복적으로 종료되었습니다 (OOMKilled). 이는 할당된 메모리 리소스가 처리하고 있는 작업 부하에 불충분함을 나타냅니다. 또한, CPU 스로틀링이 95%로 높다는 것은 CPU 리소스를 보다 효과적으로 관리할 필요가 있음을 시사합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "recommendationservice pod",
+        "content": "CrashLoopBackOff due to OOMKilled (exit code ?)",
+        "supports": "indicates memory limit being exceeded",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "metric cpu throttled",
+        "content": "CPU throttled: recommendationservice-6c6b9998b9-wkfwg/ (95%)",
+        "supports": "indicates high resource usage contributing to the issue",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The unavailability of other services might be causing cascading issues.",
+        "confidence": 0.5,
+        "reason_rejected": "No specific failures in other services indicated a direct cause of the recommendationservice's crash."
+      }
+    ],
+    "confidence_2nd": 0.8,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence cited regarding the 'CrashLoopBackOff due to OOMKilled' is accurate and found in the input context. The reasoning chain is logically sound, although the link between CPU throttling and OOMKilled could be elaborated more. Alternative hypotheses were considered but could have been more detailed in terms of evaluating potential impacts. The confidence level seems appropriate given the evidence available, but minor adjustments in the depth of analysis on alternatives could elevate the overall reasoning.",
+    "retry_count": 0,
+    "correctness_score": 0.9,
+    "correctness_reasoning": "The diagnosis identifies the correct fault category (OOMKilled) and mechanism (insufficient memory limits leading to OOMKilled). However, it introduces additional concerns regarding CPU throttling, which, while related, is not part of the ground truth root cause description. This diagnosis is mostly correct but lacks some specific details, particularly about the exact memory limit and the trigger context (model loading).",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 13147,
+    "prompt_tokens": 10623,
+    "completion_tokens": 939,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health and found no nodes in NotReady state or conditions like DiskPressure, MemoryPressure, or PIDPressure. Thus, I proceed to Step 2. Step 2: Found the recommendationservice pod in CrashLoopBackOff due to OOMKilled, indicating a memory limit issue. This is noted as a primary candidate. Step 3: No issues with service endpoints observed. Step 4: Checked for network issues and found no significant evidence. Step 5: CPU throttling observed at 95% for recommendationservice, contributing to the issue. Since the OOMKilled condition is the primary candidate and is linked to resource exhaustion, the root cause is associated with the recommendationservice memory limits being exceeded.\",\n  \"identified_fault_type\": \"OOM Kill\",\n  \"root_cause\": \"RecommendationService is experiencing OOMKilled due to insufficient memory limits.\",\n  \"root_cause_ko\": \"RecommendationService는 메모리 한도가 부족하여 OOMKilled를 경험하고 있습니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.8,\n  \"affected_components\": [\"recommendationservice\"],\n  \"remediation\": [\n    \"Increase the memory limit for the recommendationservice pod to prevent OOMKilled errors.\",\n    \"Monitor the resource usage of pods and adjust limits accordingly.\"\n  ],\n  \"remediation_ko\": [\n    \"recommendationservice 파드의 메모리 한도를 늘려 OOMKilled 오류를 방지하십시오.\",\n    \"파드의 리소스 사용량을 모니터링하고 한도를 적절하게 조정하십시오.\"\n  ],\n  \"detail\": \"The recommendationservice pod has been repeatedly killed due to exceeding its memory limit (OOMKilled). This indicates that the allocated memory resources are insufficient for the workload it is handling. Additionally, the high CPU throttling at 95% suggests there may be a need to manage CPU resources more effectively as well.\",\n  \"detail_ko\": \"recommendationservice 파드는 메모리 한도를 초과하여 반복적으로 종료되었습니다 (OOMKilled). 이는 할당된 메모리 리소스가 처리하고 있는 작업 부하에 불충분함을 나타냅니다. 또한, CPU 스로틀링이 95%로 높다는 것은 CPU 리소스를 보다 효과적으로 관리할 필요가 있음을 시사합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"recommendationservice pod\",\n      \"content\": \"CrashLoopBackOff due to OOMKilled (exit code ?)\",\n      \"supports\": \"indicates memory limit being exceeded\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"metric cpu throttled\",\n      \"content\": \"CPU throttled: recommendationservice-6c6b9998b9-wkfwg/ (95%)\",\n      \"supports\": \"indicates high resource usage contributing to the issue\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The unavailability of other services might be causing cascading issues.\",\n      \"confidence\": 0.5,\n      \"reason_rejected\": \"No specific failures in other services indicated a direct cause of the recommendationservice's crash.\"\n    }\n  ]\n}"
+}

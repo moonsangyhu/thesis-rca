@@ -1,0 +1,837 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "frontend-68d4c847b8-zrj8f",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"c6f928e7-8ab4-48bd-9c2f-79dc8d4d4878\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"request error\",\"session\":\"b37a0430-1a41-45e6-922b-491f1d97af90\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T16:52:21.570743158Z\"}"
+        },
+        {
+          "pod": "frontend-68d4c847b8-zrj8f",
+          "container": "server",
+          "line": "{\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"ee870412-7d14-4d6d-ac01-d79fa0a792ab\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"55eebf29-dedb-4c19-b977-6d78f205abff\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T16:52:13.304201301Z\"}"
+        },
+        {
+          "pod": "frontend-68d4c847b8-zrj8f",
+          "container": "server",
+          "line": "{\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"eee2d973-4266-4a8a-8685-6b24dc7d778d\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart/checkout\",\"message\":\"request error\",\"session\":\"55eebf29-dedb-4c19-b977-6d78f205abff\",\"severity\":\"error\",\"timestamp\":\"2026-04-27T16:51:59.361272546Z\"}"
+        },
+        {
+          "pod": "loadgenerator-7648d7bf7c-26gnv",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-5c57999778-94flx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "cartservice-65f6f65c5-gzt2l",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        },
+        {
+          "name": "checkoutservice-6f9b655544-h6zvg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "currencyservice-58f6b4b6f-7tfbt",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "emailservice-64c4648d5c-vhb47",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "frontend-68d4c847b8-zrj8f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "loadgenerator-7648d7bf7c-26gnv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "paymentservice-5b58dc8c94-wz6rp",
+          "phase": "Pending",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "False"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "paymentservice",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "ContainerCreating"
+            },
+            {
+              "name": "server",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "ContainerCreating"
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-r4r6x",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "paymentservice-9b9bd7d65-wkcrv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "productcatalogservice-6d97457584-92tsv",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "recommendationservice-799dd6fd95-9x78f",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "redis-cart-575b844ddb-p9zrn",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker01"
+        },
+        {
+          "name": "shippingservice-759b59d959-qfq9w",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "k8s-worker03"
+        },
+        {
+          "name": "shippingservice-865585fdff-2lw2n",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            },
+            {
+              "name": "shippingservice",
+              "ready": false,
+              "restartCount": 11,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "StartError"
+            }
+          ],
+          "nodeName": "k8s-worker02"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container frontend in pod frontend-7c944dddd4-57fhv_boutique(25b54db8-a2a3-433f-bcf3-5cd2de9d652d)",
+          "object": "frontend-7c944dddd4-57fhv",
+          "kind": "Pod",
+          "count": 9,
+          "lastTimestamp": "2026-04-27T16:47:04Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container shippingservice in pod shippingservice-865585fdff-2lw2n_boutique(da04f019-6457-4e7b-a6ef-b12523ba50d8)",
+          "object": "shippingservice-865585fdff-2lw2n",
+          "kind": "Pod",
+          "count": 163,
+          "lastTimestamp": "2026-04-27T16:50:41Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedMount",
+          "message": "MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found",
+          "object": "paymentservice-5b58dc8c94-wz6rp",
+          "kind": "Pod",
+          "count": 8,
+          "lastTimestamp": "2026-04-27T16:51:54Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        }
+      ],
+      "nodes": [
+        {
+          "name": "k8s-master01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master02",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-master03",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "k8s-worker01",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "k8s-worker03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "paymentservice-5b58dc8c94-wz6rp",
+          "describe_excerpt": "    State:          Waiting\n      Reason:       ContainerCreating\n    Ready:          False\n    Restart Count:  0\n    Environment:    <none>\n    Mounts:\n      /etc/payment-config from config-vol (rw)\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n99lv (ro)\n  server:\n    Container ID:   \n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/paymentservice:v0.10.5\n    Image ID:       \n    Port:           50051/TCP\n    Host Port:      0/TCP\n    State:          Waiting\n      Reason:       ContainerCreating\n    Ready:          False\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:50051  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:50051  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:              50051\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n99lv (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   False \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  config-vol:"
+        },
+        {
+          "pod": "shippingservice-865585fdff-2lw2n",
+          "describe_excerpt": "    Host Port:     <none>\n    Command:\n      /bin/sh\n      -c\n      exit 1\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       StartError\n      Message:      failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/bin/sh\": stat /bin/sh: no such file or directory: unknown\n      Exit Code:    128\n      Started:      Thu, 01 Jan 1970 09:00:00 +0900\n      Finished:     Tue, 28 Apr 2026 01:47:09 +0900\n    Ready:          False\n    Restart Count:  11\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-k24r8 (ro)\n  server:\n    Container ID:   containerd://eedaa04b14aa62f67df691d9e13347f23ee23411e1eac59618e2dbb0ddef6597\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice@sha256:0d2be86f0280a0a5594de9593eecd47ca2380e90946a3434b30d956373599b44\n    Port:           50051/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Tue, 28 Apr 2026 01:15:45 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:50051  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:50051  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:              50051\n      DISABLE_PROFILER:  1\n    Mounts:"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-5c57999778-94flx: Running\ncartservice-65f6f65c5-gzt2l: Running\ncheckoutservice-6f9b655544-h6zvg: Running\ncurrencyservice-58f6b4b6f-7tfbt: Running\nemailservice-64c4648d5c-vhb47: Running\nfrontend-68d4c847b8-zrj8f: Running\nloadgenerator-7648d7bf7c-26gnv: Running\npaymentservice-5b58dc8c94-wz6rp: Pending\n  container/paymentservice: NOT READY (ContainerCreating) restarts=0\n  container/server: NOT READY (ContainerCreating) restarts=0\npaymentservice-9b9bd7d65-r4r6x: Running\npaymentservice-9b9bd7d65-wkcrv: Running\nproductcatalogservice-6d97457584-92tsv: Running\nrecommendationservice-799dd6fd95-9x78f: Running\nredis-cart-575b844ddb-p9zrn: Running\nshippingservice-759b59d959-qfq9w: Running\nshippingservice-865585fdff-2lw2n: Running\n  container/shippingservice: NOT READY (CrashLoopBackOff) restarts=11\n    last terminated: StartError (exit code ?)\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/frontend-7c944dddd4-57fhv: BackOff - Back-off restarting failed container frontend in pod frontend-7c944dddd4-57fhv_boutique(25b54db8-a2a3-433f-bcf3-5cd2de9d652d) (count=9)\n[Warning] Pod/shippingservice-865585fdff-2lw2n: BackOff - Back-off restarting failed container shippingservice in pod shippingservice-865585fdff-2lw2n_boutique(da04f019-6457-4e7b-a6ef-b12523ba50d8) (count=163)\n[Warning] Pod/paymentservice-5b58dc8c94-wz6rp: FailedMount - MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found (count=8)\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[frontend-68d4c847b8-zrj8f] {\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"c6f928e7-8ab4-48bd-9c2f-79dc8d4d4878\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3G...\n[frontend-68d4c847b8-zrj8f] {\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"ee870412-7d14-4d6d-ac01-d79fa0a792ab\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":...\n[frontend-68d4c847b8-zrj8f] {\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.97.255.67:7070: connect: connection refused\\\"\",\"http.req.id\":\"e...\n[loadgenerator-7648d7bf7c-26gnv] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nk8s-master01: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master02: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-master03: Ready | taints: node-role.kubernetes.io/control-plane\nk8s-worker01: Ready\nk8s-worker02: Ready\nk8s-worker03: Ready",
+  "rca_output": {
+    "fault_id": "F9",
+    "trial": 3,
+    "system": "A",
+    "identified_fault_type": "ConfigMap Missing",
+    "root_cause": "A missing ConfigMap ('paymentservice-config-nonexistent') is causing the paymentservice pod to be in Pending state and affecting shippingservice stability via cascading issues.",
+    "confidence": 0.8,
+    "affected_components": [
+      "paymentservice",
+      "shippingservice"
+    ],
+    "remediation": [
+      "Create the missing ConfigMap 'paymentservice-config-nonexistent' to allow the paymentservice pod to mount its configuration.",
+      "Investigate the shippingservice for proper configuration and logs to resolve its CrashLoopBackOff status."
+    ],
+    "detail": "The paymentservice pod was unable to start due to a mismatched configuration, as indicated by its FailedMount event. This can cascade into issues for other dependent services such as shippingservice, which is experiencing repeated crashes. Addressing the missing ConfigMap should alleviate these issues.",
+    "reasoning": "In Step 1, I checked node health and found all nodes in Ready state with no pressure conditions. In Step 2, I examined pod statuses and found the paymentservice pod in Pending state due to a FailedMount event, as the configmap 'paymentservice-config-nonexistent' was not found. This indicates a configuration issue related to missing ConfigMaps. Additionally, the shippingservice pod is in CrashLoopBackOff status with numerous restarts, which indicates an application-level fault as well but requires further log examination for exact exit codes. In Step 3, I noticed the paymentservice's pending state can be tied to its inability to mount the necessary configuration, leading back to a missing configmap as an underlying cause. Thus, I proceeded to conclude these could be related configuration errors affecting multiple services. In Step 4, metrics and logs showed connection refused errors, which primarily aligned with the shippingservice but were not corroborated by node or pod health metrics pointing specifically to network issues. Hence, a network fault was deemed a secondary concern. Finally, Step 5 showed no resource limit issues. The root cause, therefore, is linked to a configuration issue due to a missing ConfigMap for the payment service leading to broader service disruptions.",
+    "root_cause_ko": "누락된 ConfigMap('paymentservice-config-nonexistent') 때문에 paymentservice 파드가 Pending 상태가 되고 shippingservice의 안정성에 영향을 미칩니다.",
+    "remediation_ko": [
+      "누락된 ConfigMap 'paymentservice-config-nonexistent'를 생성하여 paymentservice 파드가 구성을 마운트할 수 있도록 하십시오.",
+      "shippingservice의 적절한 구성과 로그를 조사하여 CrashLoopBackOff 상태를 해결하십시오."
+    ],
+    "detail_ko": "paymentservice 파드는 누락된 구성으로 인해 시작할 수 없었으며, 이는 FailedMount 이벤트로 표시됩니다. 이는 shippingservice와 같은 종속 서비스에 문제를 일으킬 수 있습니다. 누락된 ConfigMap을 해결하면 이러한 문제를 완화할 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "FailedMount - MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found (count=8)",
+        "supports": "This indicates that the paymentservice is experiencing a configuration fault due to a missing ConfigMap.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "BackOff - Back-off restarting failed container shippingservice in pod shippingservice-865585fdff-2lw2n (count=163)",
+        "supports": "This indicates repeated failures in the shippingservice container, likely tied to the broader configuration issues.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Network issues leading to service connectivity failures.",
+        "confidence": 0.4,
+        "reason_rejected": "No direct evidence of network failures was found; symptoms were more related to configuration errors and pod states."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence provided is mostly verifiable and aligns well with the input context. The determination of the missing ConfigMap as the root cause follows a logical chain from the observed state of the paymentservice pod, confirmed by the FailedMount entry in Kubernetes Events. The diagnosis acknowledges the CrashLoopBackOff status of the shippingservice, but does not fully explore whether this indicates any dependency on the paymentservice or additional root causes beyond configuration issues. Alternative network hypotheses were addressed, but could further incorporate potential issues related to inter-service dependencies or improper configurations. Therefore, minor improvements could be made in exploring interdependencies and further detailing the reasoning about the shippingservice failures.",
+    "retry_count": 2,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The diagnosis correctly identifies the missing ConfigMap as the root cause for the paymentservice pod failing to start, aligning with the ground truth that a missing ConfigMap leads to the paymentservice pod being stuck. However, it mentions the pod being in a 'Pending' state rather than 'ContainerCreating' and introduces the impact on the shippingservice, which is not specified in the ground truth. The mechanism of the failure related to the volume mount is implied but not directly stated, leading to a score below 1.0.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 14317,
+    "prompt_tokens": 5535,
+    "completion_tokens": 1179,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"In Step 1, I checked node health and found all nodes in Ready state with no pressure conditions. In Step 2, I examined pod statuses and found the paymentservice pod in Pending state due to a FailedMount event, as the configmap 'paymentservice-config-nonexistent' was not found. This indicates a configuration issue related to missing ConfigMaps. Additionally, the shippingservice pod is in CrashLoopBackOff status with numerous restarts, which indicates an application-level fault as well but requires further log examination for exact exit codes. In Step 3, I noticed the paymentservice's pending state can be tied to its inability to mount the necessary configuration, leading back to a missing configmap as an underlying cause. Thus, I proceeded to conclude these could be related configuration errors affecting multiple services. In Step 4, metrics and logs showed connection refused errors, which primarily aligned with the shippingservice but were not corroborated by node or pod health metrics pointing specifically to network issues. Hence, a network fault was deemed a secondary concern. Finally, Step 5 showed no resource limit issues. The root cause, therefore, is linked to a configuration issue due to a missing ConfigMap for the payment service leading to broader service disruptions.\",\n  \"identified_fault_type\": \"ConfigMap Missing\",\n  \"root_cause\": \"A missing ConfigMap ('paymentservice-config-nonexistent') is causing the paymentservice pod to be in Pending state and affecting shippingservice stability via cascading issues.\",\n  \"root_cause_ko\": \"누락된 ConfigMap('paymentservice-config-nonexistent') 때문에 paymentservice 파드가 Pending 상태가 되고 shippingservice의 안정성에 영향을 미칩니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"paymentservice\", \"shippingservice\"],\n  \"remediation\": [\n    \"Create the missing ConfigMap 'paymentservice-config-nonexistent' to allow the paymentservice pod to mount its configuration.\",\n    \"Investigate the shippingservice for proper configuration and logs to resolve its CrashLoopBackOff status.\"\n  ],\n  \"remediation_ko\": [\n    \"누락된 ConfigMap 'paymentservice-config-nonexistent'를 생성하여 paymentservice 파드가 구성을 마운트할 수 있도록 하십시오.\",\n    \"shippingservice의 적절한 구성과 로그를 조사하여 CrashLoopBackOff 상태를 해결하십시오.\"\n  ],\n  \"detail\": \"The paymentservice pod was unable to start due to a mismatched configuration, as indicated by its FailedMount event. This can cascade into issues for other dependent services such as shippingservice, which is experiencing repeated crashes. Addressing the missing ConfigMap should alleviate these issues.\",\n  \"detail_ko\": \"paymentservice 파드는 누락된 구성으로 인해 시작할 수 없었으며, 이는 FailedMount 이벤트로 표시됩니다. 이는 shippingservice와 같은 종속 서비스에 문제를 일으킬 수 있습니다. 누락된 ConfigMap을 해결하면 이러한 문제를 완화할 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"FailedMount - MountVolume.SetUp failed for volume \\\"config-vol\\\" : configmap \\\"paymentservice-config-nonexistent\\\" not found (count=8)\",\n      \"supports\": \"This indicates that the paymentservice is experiencing a configuration fault due to a missing ConfigMap.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"BackOff - Back-off restarting failed container shippingservice in pod shippingservice-865585fdff-2lw2n (count=163)\",\n      \"supports\": \"This indicates repeated failures in the shippingservice container, likely tied to the broader configuration issues.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Network issues leading to service connectivity failures.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No direct evidence of network failures was found; symptoms were more related to configuration errors and pod states.\"\n    }\n  ]\n}"
+}
