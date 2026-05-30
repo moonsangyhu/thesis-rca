@@ -4,11 +4,14 @@
 
 ## 에이전트 목록 (`.claude/agents/`)
 
+현재 본류는 **Research 트랙**(`rules/research-pipeline.md`). Experiment 트랙은 보조(V9 실행 대기).
+
 | 에이전트 | 역할 | 모델 | superpowers 매핑 |
 |---------|------|------|------------------|
-| `@experiment-planner` | 실험 가설 수립 wrapper. 이전 결과 분석 + Research 트랙 산출물 인용 | opus | `superpowers:brainstorming` |
+| `@research-planner` | **연구 범위 수립 wrapper**. 위키(`~/ms/wiki/`)·기존 survey·이전 결과를 brainstorming 입력으로, 포지셔닝 각 확정 (Research R-1) | opus | `superpowers:brainstorming` |
+| `@paper-writer` | 석사 논문 저술. `docs/papers/`, `docs/surveys/`를 1차 인용 소스로 | opus | (저술) 도메인 특화 |
+| `@experiment-planner` | 실험 가설 수립 wrapper. 이전 결과 분석 + Research 트랙 산출물 인용 (Experiment Step 1) | opus | `superpowers:brainstorming` |
 | `@experiment` | 실험 실행 wrapper. lab-tunnel → nohup → status → lab-restore 순서 | sonnet | `superpowers:executing-plans` |
-| `@paper-writer` | 석사 논문 저술. `docs/papers/`, `docs/surveys/`를 1차 인용 소스로 | opus | (Step 6 외부) 도메인 특화 |
 
 ## 흡수된 에이전트 (삭제됨)
 
@@ -25,7 +28,7 @@
 
 ## 모델 할당 (권장)
 
-- 계획·리뷰·저술(`@experiment-planner`, `@paper-writer`) → **opus**
+- 연구·계획·리뷰·저술(`@research-planner`, `@experiment-planner`, `@paper-writer`) → **opus**
 - 실험 실행(`@experiment`) → **sonnet**
 
 `hooks/agent-model-guard.sh`는 위반 시 **stderr 경고**만 출력하고 통과시킨다(차단 아님). 강제 차단으로 되돌리려면 hook 마지막 줄을 `exit 0` → `exit 2`로 변경.
@@ -34,11 +37,11 @@
 
 1. 새 작업 진입 시 `superpowers:using-superpowers`로 적용 가능한 skill 점검.
 2. 창의·설계가 필요하면 `superpowers:brainstorming`부터(HARD-GATE 준수).
-3. 도메인 wrapper(`@experiment-planner`, `@experiment`)는 superpowers 스킬 호출의 prompt 보조 역할.
-4. **Research 트랙 진입**(`/paper-survey`, `/paper-reader`, `/deep-analysis`)은 1급 도메인 스킬 — `superpowers:brainstorming`으로 범위 확정 후 진입.
-5. 단계 완료 시 사용자에게 요약 보고.
-6. **실험 전**: `/lab-tunnel`로 터널 + preflight check.
-7. **실험 후**: `/lab-restore`로 환경 정상화.
+3. **기본 진입 = Research 트랙**(`rules/research-pipeline.md`). "논문 조사"·"선행연구"·"자료조사" 트리거 시 `@research-planner`로 범위 확정(R-1) → `superpowers:dispatching-parallel-agents`(R-2) → `/paper-survey`(R-3).
+4. 심층 단일 주제 조사는 전역 `/deep-research` 스킬을 대안으로 사용 가능.
+5. 도메인 wrapper(`@research-planner`, `@experiment-planner`, `@experiment`)는 superpowers 스킬 호출의 prompt 보조 역할.
+6. 단계 완료 시 사용자에게 요약 보고.
+7. **Experiment 트랙(보조 — V9 실행 대기)** 진입 시에만: 실험 전 `/lab-tunnel`(터널+preflight check) → 실험 후 `/lab-restore`(환경 정상화).
 8. 작업 마무리는 `superpowers:finishing-a-development-branch` → `/pr-merge`.
 
 ## 공통 규칙
