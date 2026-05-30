@@ -6,10 +6,12 @@ GitOps 컨텍스트(FluxCD/ArgoCD) 추가 시 LLM 기반 장애 원인 분석 �
 
 - **System A**: Prometheus + Loki + kubectl → LLM
 - **System B**: System A + GitOps + RAG → LLM
-- 10 fault types (F1–F10) × 5 trials = 50 cases
+- 12 fault types (F1–F12) × 5 trials = 60 cases (F11/F12는 V8부터 추가된 네트워크 장애)
 - **모델 고정**: gpt-4o-mini 고정. 개선은 프레임워크 레벨에서만
 
 문서·프롬프트는 한국어, 코드·변수명은 영어.
+
+> 🎯 **현재 포커스 = Research 트랙(선행연구 자료조사).** 실험 실행은 V9(Pre-Trial State Validator) 코드 완료 후 **보류 중**이다. 새 작업은 기본적으로 Research 트랙으로 진입하며, Experiment 트랙은 보조 트랙으로 유지된다(자산·스킬·훅 모두 보존).
 
 ## Superpowers First
 
@@ -26,9 +28,36 @@ GitOps 컨텍스트(FluxCD/ArgoCD) 추가 시 LLM 기반 장애 원인 분석 �
 
 ## Tracks
 
-이 레포는 두 개의 1급 워크플로우(트랙)를 운영한다.
+이 레포는 두 개의 워크플로우(트랙)를 운영한다. **현재 본류는 Research 트랙**, Experiment 트랙은 보조(V9 실행 대기)다.
 
-### Experiment Track — K8s RCA 실험 사이클
+### Research Track — 선행 연구 자료조사 사이클 (현재 본류)
+
+상세 규칙: `rules/research-pipeline.md`. "논문 조사"·"선행연구"·"자료조사" 트리거로 진입.
+
+```
+R-0   superpowers:using-superpowers             (세션 진입)
+  ↓
+R-1   superpowers:brainstorming                 ← @research-planner wrapper가 호출
+                                                (검색 키워드·기간·범위·포지셔닝 각 5문항 캡)
+  ↓                                              HARD-GATE: scope 승인 전 검색 금지
+                                                → docs/surveys/research_scope_v{N}.md
+  ↓
+R-2   superpowers:dispatching-parallel-agents   (키워드 N개 → N개 sub-agent)
+                                                → 각 sub-agent: WebSearch + /paper-reader
+                                                → docs/papers/{slug}.md (논문별 1파일)
+  ↓
+R-3   /paper-survey (aggregator)                → docs/surveys/paper_survey_v{N}.md
+  ↓
+R-4   superpowers:verification-before-completion (5+ 논문, 정량 수치, URL, 적용가능성)
+  ↓
+R-5   superpowers:finishing-a-development-branch → /pr-merge
+```
+
+심층 단일 주제 조사는 전역 `/deep-research` 스킬을 대안으로 쓸 수 있다.
+
+### Experiment Track — K8s RCA 실험 사이클 (보조 트랙 — V9 실행 대기)
+
+상세 규칙: `rules/experiment-pipeline.md`. 실험 재개 시에만 진입.
 
 ```
 Step 0   superpowers:using-superpowers          (세션 진입)
@@ -45,27 +74,9 @@ Step 5   superpowers:verification-before-completion + 도메인 분석
 Step 6   superpowers:finishing-a-development-branch → /pr-merge
 ```
 
-### Research Track — 선행 연구 자료조사 사이클
-
-```
-"논문 조사" 트리거
-  ↓
-R-1   superpowers:brainstorming                 (검색 키워드·기간·범위 5–8문항)
-  ↓                                              HARD-GATE: plan 승인 전 검색 금지
-R-2   superpowers:dispatching-parallel-agents   (키워드 N개 → N개 sub-agent)
-                                                → 각 sub-agent: WebSearch + /paper-reader
-                                                → docs/papers/{slug}.md (논문별 1파일)
-  ↓
-R-3   /paper-survey (aggregator)                → docs/surveys/paper_survey_v{N}.md
-  ↓
-R-4   superpowers:verification-before-completion (5+ 논문, 정량 수치, URL, 적용가능성)
-  ↓
-R-5   /commit-push                              (feature 브랜치)
-```
-
 ### 두 트랙의 결합
 
-`/deep-analysis`(Step 0.5)는 최근 90일 내 `docs/surveys/paper_survey_v*.md` 존재를 확인하고, 없으면 Research 트랙 선행을 권유한다. `@paper-writer`는 `docs/papers/*.md`와 `docs/surveys/paper_survey_v*.md`를 1차 인용 소스로 사용한다.
+Research 트랙이 선행하여 포지셔닝·기법 근거를 축적하고, Experiment 트랙은 그 산출물을 인용해 가설을 세운다. `@experiment-planner`는 최근 90일 내 `docs/surveys/paper_survey_v*.md`를 입력으로 요구하며, `/deep-analysis`(Step 0.5)는 해당 survey가 없으면 Research 트랙 선행을 권유한다. `@paper-writer`는 `docs/papers/*.md`와 `docs/surveys/paper_survey_v*.md`를 1차 인용 소스로 사용한다.
 
 ## Output Path Mapping
 
@@ -73,13 +84,14 @@ superpowers 기본 산출물 경로(`docs/superpowers/specs/`, `docs/superpowers
 
 | superpowers 기본 | 이 레포 사용 경로 | 용도 |
 |---|---|---|
-| `docs/superpowers/specs/YYYY-MM-DD-*.md` | `docs/plans/experiment_plan_v{N}.md` | brainstorming 산출물(실험 가설·설계) |
-| `docs/superpowers/specs/YYYY-MM-DD-*.md` | (Research 트랙은 `docs/surveys/paper_survey_v{N}.md`) | brainstorming 산출물(자료조사 범위) |
+| `docs/superpowers/specs/YYYY-MM-DD-*.md` | `docs/surveys/research_scope_v{N}.md` | brainstorming 산출물(**자료조사 범위** — Research R-1) |
+| `docs/superpowers/specs/YYYY-MM-DD-*.md` | `docs/plans/experiment_plan_v{N}.md` | brainstorming 산출물(실험 가설·설계 — Experiment Step 1) |
 | `docs/superpowers/plans/YYYY-MM-DD-*.md` | `docs/plans/review_v{N}.md` | writing-plans 산출물(plan critique) |
-| (없음) | `docs/papers/{slug}.md` | paper-reader 산출물 |
+| (없음) | `docs/papers/{slug}.md` | paper-reader 산출물(Research R-2) |
+| (없음) | `docs/surveys/paper_survey_v{N}.md` | paper-survey aggregator 산출물(Research R-3) |
 | (없음) | `results/analysis_v{N}.md` | verification + 도메인 분석 |
 
-도메인 wrapper(`@experiment-planner`)가 brainstorming/writing-plans 호출 시 prompt에 "Save to ... (override default)"를 명시한다. 기본 경로가 실수로 생성되면 `.gitignore`의 `docs/superpowers/`가 트래킹을 막는다.
+도메인 wrapper(`@research-planner`, `@experiment-planner`)가 brainstorming/writing-plans 호출 시 prompt에 "Save to ... (override default)"를 명시한다. 기본 경로가 실수로 생성되면 `.gitignore`의 `docs/superpowers/`가 트래킹을 막는다.
 
 ## References
 
@@ -91,7 +103,8 @@ superpowers 기본 산출물 경로(`docs/superpowers/specs/`, `docs/superpowers
 상세 규칙은 `rules/` 디렉토리에서 관리:
 
 - **agents.md** — 에이전트 목록, 흡수처 매핑, 오케스트레이션 규칙
-- **experiment-pipeline.md** — 실험 7-Step 파이프라인 *(메인 워크트리에서 별도 PR로 갱신 예정)*
+- **research-pipeline.md** — Research 트랙 R-1~R-5 파이프라인 *(현재 본류)*
+- **experiment-pipeline.md** — 실험 7-Step 파이프라인 *(보조 트랙 — V9 실행 대기)*
 - **data-safety.md** — 모델 고정, 데이터 불변, 실험 격리 *(메인 워크트리에서 톤 약화 예정)*
 - **lab-workflow.md** — 스킬 카탈로그, Lab 환경 *(메인 워크트리에서 superpowers 통합 갱신 예정)*
 

@@ -140,3 +140,22 @@
 4. 결과 분석 (`results/analysis_v9.md`)
 
 작성: 2026-04-28 (KST)
+
+---
+
+## 부록: Claude 설정 재편 (비실험 / config-only) — 2026-05-30
+
+> 실험 버전 변경이 아닌 **Claude 설정 재편** 기록(changelog 규칙 "설정 수정도 기록" 준수). 실험 데이터·코드는 무변경.
+
+### C1. Research 트랙 1급화 (Research-first 재편)
+
+- **수정 에이전트**: @claude (오케스트레이터, brainstorming 게이트 통과 후)
+- **배경/결정**: 사용자가 V9 실험 실행을 보류하고, 레포 Claude 설정의 무게중심을 "선행연구 자료조사(Research)"로 이동하기로 결정. 실험 자산은 보존하되 우선순위만 강등(접근 2 — Research 트랙 1급화).
+- **수정 내용**:
+  - `CLAUDE.md`: 포커스 배너 추가("현재 본류=Research, 실험은 V9 대기"), Tracks 순서 교체(Research→Experiment), fault 범위 정정(F1–F10/50 → F1–F12/60), Output Path Mapping 정정(연구 brainstorming 산출물 = `research_scope_v{N}.md`로 분리), Rules 목록에 research-pipeline.md 등록.
+  - `rules/agents.md`: `@research-planner` 행 추가·연구 에이전트 상단 배치, 오케스트레이터 역할 research-first 재배열, 모델 할당에 research-planner(opus) 추가.
+  - `rules/research-pipeline.md` (신규): Research R-1~R-5 파이프라인 상술.
+  - `.claude/agents/research-planner.md` (신규): superpowers:brainstorming 연구범위 wrapper.
+- **수정 파일**: `CLAUDE.md`, `rules/agents.md`, `rules/research-pipeline.md`(신규), `.claude/agents/research-planner.md`(신규)
+- **보존(미변경)**: 실험 스킬(lab-*, experiment-*, deep-analysis), 실험 에이전트(@experiment-planner/@experiment), 훅 전체, 다른 rules 파일(experiment-pipeline/lab-workflow/data-safety).
+- **상태**: 수정됨
