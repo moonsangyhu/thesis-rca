@@ -41,6 +41,10 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# Load secrets (OPENAI_API_KEY 등)에서 gitignore된 .env를 환경에 주입 — 모듈 import 전에 수행
+from dotenv import load_dotenv
+load_dotenv(PROJECT_ROOT / ".env")
+
 from src.collector import SignalCollector
 from src.processor import ContextBuilder
 from src.llm import RCAEngine
