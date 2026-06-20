@@ -3157,3 +3157,707 @@ See 'kubectl rollout restart --help' for usage.
 2026-06-20 03:33:01,163 [INFO] experiment.v10: ============================================================
 2026-06-20 03:33:01,164 [INFO] experiment.v10: v10 experiment complete! 60/60 trials
 2026-06-20 03:33:01,164 [INFO] experiment.v10: Results: /Users/yumunsang/thesis-rca/results/experiment_results_v10.csv
+2026-06-20 11:34:38,587 [INFO] experiment.v2_1: Loaded ground truth: 60 entries
+2026-06-20 11:34:38,587 [INFO] experiment.v2_1: V2.1 experiment: 1 trials (['F11'] × [1])
+2026-06-20 11:34:38,587 [INFO] experiment.v2_1: Model: gpt-4o-mini (openai)
+2026-06-20 11:34:38,587 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:34:38,587 [INFO] experiments.shared.runner: Starting F11 trial 1
+2026-06-20 11:34:38,587 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:34:38,587 [INFO] experiments.shared.runner: [DRY RUN] Skipping injection
+2026-06-20 11:34:38,587 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 11:34:38,587 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 11:34:39,774 [INFO] src.collector: Signal collection complete
+2026-06-20 11:34:40,978 [INFO] experiments.shared.runner: [DRY RUN] Signal collection complete.
+2026-06-20 11:34:40,978 [INFO] experiments.shared.runner: [DRY RUN] System A context length: 1094 chars
+2026-06-20 11:34:40,978 [INFO] experiments.shared.runner: [DRY RUN] System B context length: 1845 chars
+2026-06-20 11:34:40,978 [INFO] experiments.shared.runner:   metrics: 1/14 fields populated
+2026-06-20 11:34:40,978 [INFO] experiments.shared.runner:   logs: 1/2 fields populated
+2026-06-20 11:34:40,978 [INFO] experiments.shared.runner:   kubectl: 3/5 fields populated
+2026-06-20 11:34:40,978 [INFO] experiments.shared.runner:   gitops: 3/3 fields populated
+2026-06-20 11:34:40,978 [INFO] experiment.v2_1: Progress: 1/1
+2026-06-20 11:34:40,978 [INFO] experiment.v2_1: ============================================================
+2026-06-20 11:34:40,978 [INFO] experiment.v2_1: V2.1 experiment complete! 1/1 trials
+2026-06-20 11:34:40,978 [INFO] experiment.v2_1: Results: /Users/yumunsang/thesis-rca/results/experiment_results_v2_1.csv
+2026-06-20 11:35:01,384 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:35:01,384 [INFO] experiments.shared.infra: PREFLIGHT CHECK
+2026-06-20 11:35:01,384 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:35:01,442 [INFO] experiments.shared.infra: [OK] kubectl: 6 nodes reachable
+2026-06-20 11:35:01,491 [INFO] experiments.shared.infra: [OK] boutique: 14 pods running
+2026-06-20 11:35:01,517 [INFO] experiments.shared.infra: [OK] Prometheus (localhost:9090)
+2026-06-20 11:35:01,536 [INFO] experiments.shared.infra: [OK] Loki (localhost:3100)
+2026-06-20 11:35:01,536 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:35:01,536 [INFO] experiments.shared.infra: PREFLIGHT CHECK PASSED
+2026-06-20 11:35:01,536 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:35:01,536 [INFO] experiment.v2_1: Loaded ground truth: 60 entries
+2026-06-20 11:35:01,745 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-06-20 11:35:01,809 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+2026-06-20 11:35:04,697 [INFO] sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-06-20 11:35:07,008 [INFO] src.rag.retriever: KnowledgeRetriever loaded: 1274 chunks in collection
+2026-06-20 11:35:07,010 [INFO] experiment.v2_1: V2.1: StateValidator initialized
+2026-06-20 11:35:07,010 [INFO] experiment.v2_1: V2.1 experiment: 1 trials (['F11'] × [1])
+2026-06-20 11:35:07,010 [INFO] experiment.v2_1: Model: gpt-4o-mini (openai)
+2026-06-20 11:35:07,113 [INFO] experiments.shared.infra: [HEALTH] OK before F11 t1
+2026-06-20 11:35:07,113 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:35:07,113 [INFO] experiments.shared.runner: Starting F11 trial 1
+2026-06-20 11:35:07,113 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:35:07,113 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 11:35:07,412 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 11:35:07,413 [INFO] scripts.fault_inject.injector: Injecting F11 trial 1: NetworkDelay on worker01
+2026-06-20 11:35:07,413 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: sudo tc qdisc replace dev vmbr0 root netem delay 500ms; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 11:35:08,303 [INFO] scripts.fault_inject.injector: F11 injected: netem delay 500ms on yms-proxmox-02 (vmbr0)
+2026-06-20 11:35:08,303 [INFO] experiments.shared.runner: Injection result: netem_delay
+2026-06-20 11:35:08,303 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 11:37:08,315 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 11:37:08,318 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 11:37:09,512 [INFO] src.collector: Signal collection complete
+2026-06-20 11:37:10,699 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+2026-06-20 11:37:10,744 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F11
+2026-06-20 11:37:10,744 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 11:37:17,638 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:21,086 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:21,089 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 11:37:22,642 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:22,650 [INFO] experiments.shared.runner: System A: predicted=No Issues Detected, confidence=1.00
+2026-06-20 11:37:22,650 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 11:37:30,290 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:30,297 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:37:33,360 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:33,363 [INFO] experiments.v2_1.engine: Evaluator: overall=7.0, should_retry=True
+2026-06-20 11:37:33,364 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.0, critique=The evidence grounded in the knowledge base about symptoms related to network delays is mostly valid
+2026-06-20 11:37:42,280 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:42,287 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:37:44,692 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:44,695 [INFO] experiments.v2_1.engine: Evaluator: overall=7.8, should_retry=True
+2026-06-20 11:37:44,695 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=7.8, critique=All evidence cited about the duplicate port name in emailservice is accurate and found in the input.
+2026-06-20 11:37:54,104 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:54,110 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:37:56,622 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:56,626 [INFO] experiments.v2_1.engine: Evaluator: overall=7.8, should_retry=True
+2026-06-20 11:37:58,078 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:37:58,086 [INFO] experiments.shared.runner: System B: predicted=GitOps Deployment Failure, confidence=0.70
+2026-06-20 11:37:58,088 [INFO] experiments.shared.runner: CSV verified: F11 t1 A written (row 101)
+2026-06-20 11:37:58,089 [INFO] experiments.shared.runner: CSV verified: F11 t1 B written (row 102)
+2026-06-20 11:37:58,090 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t1_A_20260620_113758.json
+2026-06-20 11:37:58,101 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t1_B_20260620_113758.json
+2026-06-20 11:37:58,101 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 11:37:58,101 [INFO] scripts.stabilize.recovery: Recovering from F11 trial 1...
+2026-06-20 11:37:58,101 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 11:38:03,251 [INFO] scripts.stabilize.recovery: F11 recovered: removed netem delay on yms-proxmox-02
+2026-06-20 11:38:03,375 [WARNING] scripts.fault_inject.base: kubectl stderr: error: unknown flag: --all
+See 'kubectl rollout restart --help' for usage.
+2026-06-20 11:38:03,376 [INFO] scripts.stabilize.recovery: Rollout restart all deployments: 
+2026-06-20 11:38:03,376 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-06-20 11:38:03,473 [INFO] scripts.stabilize.recovery: All deployments healthy, 14 pods running (0s)
+2026-06-20 11:38:03,841 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+2026-06-20 11:38:03,980 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+2026-06-20 11:38:04,351 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+2026-06-20 11:38:04,707 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+2026-06-20 11:38:05,127 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+2026-06-20 11:38:05,524 [INFO] scripts.stabilize.health_verify: Comprehensive health check PASSED (attempt 1)
+2026-06-20 11:38:05,524 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-06-20 11:38:05,524 [INFO] experiments.shared.runner: Trial complete: F11 t1 | A: No Issues Detected (score=0.00) wrong | B: GitOps Deployment Failure (score=0.00) wrong
+2026-06-20 11:38:05,525 [INFO] experiment.v2_1: Progress: 1/1
+2026-06-20 11:38:05,525 [INFO] experiment.v2_1: ============================================================
+2026-06-20 11:38:05,525 [INFO] experiment.v2_1: V2.1 experiment complete! 1/1 trials
+2026-06-20 11:38:05,525 [INFO] experiment.v2_1: Results: /Users/yumunsang/thesis-rca/results/experiment_results_v2_1.csv
+2026-06-20 11:38:37,725 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:38:37,725 [INFO] experiments.shared.infra: PREFLIGHT CHECK
+2026-06-20 11:38:37,725 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:38:37,773 [INFO] experiments.shared.infra: [OK] kubectl: 6 nodes reachable
+2026-06-20 11:38:37,820 [INFO] experiments.shared.infra: [OK] boutique: 14 pods running
+2026-06-20 11:38:37,844 [INFO] experiments.shared.infra: [OK] Prometheus (localhost:9090)
+2026-06-20 11:38:37,861 [INFO] experiments.shared.infra: [OK] Loki (localhost:3100)
+2026-06-20 11:38:37,861 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:38:37,861 [INFO] experiments.shared.infra: PREFLIGHT CHECK PASSED
+2026-06-20 11:38:37,861 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:38:37,863 [INFO] experiment.v2_1: Resume: 51 trials already completed
+2026-06-20 11:38:37,864 [INFO] experiment.v2_1: Loaded ground truth: 60 entries
+2026-06-20 11:38:38,073 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-06-20 11:38:38,129 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+2026-06-20 11:38:40,021 [INFO] sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-06-20 11:38:42,276 [INFO] src.rag.retriever: KnowledgeRetriever loaded: 1274 chunks in collection
+2026-06-20 11:38:42,277 [INFO] experiment.v2_1: V2.1: StateValidator initialized
+2026-06-20 11:38:42,277 [INFO] experiment.v2_1: V2.1 experiment: 5 trials (['F11'] × [1, 2, 3, 4, 5])
+2026-06-20 11:38:42,277 [INFO] experiment.v2_1: Model: gpt-4o-mini (openai)
+2026-06-20 11:38:42,277 [INFO] experiment.v2_1: Skipping F11 t1 (already completed)
+2026-06-20 11:38:42,400 [INFO] experiments.shared.infra: [HEALTH] OK before F11 t2
+2026-06-20 11:38:42,400 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:38:42,400 [INFO] experiments.shared.runner: Starting F11 trial 2
+2026-06-20 11:38:42,400 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:38:42,400 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 11:38:42,680 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 11:38:42,681 [INFO] scripts.fault_inject.injector: Injecting F11 trial 2: NetworkDelay on worker02
+2026-06-20 11:38:42,681 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: sudo tc qdisc replace dev vmbr0 root netem delay 1000ms 200ms; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 11:38:44,044 [INFO] scripts.fault_inject.injector: F11 injected: netem delay 1000ms 200ms on yms-proxmox-03 (vmbr0)
+2026-06-20 11:38:44,044 [INFO] experiments.shared.runner: Injection result: netem_delay
+2026-06-20 11:38:44,044 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 11:40:44,057 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 11:40:44,058 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 11:40:45,393 [INFO] src.collector: Signal collection complete
+2026-06-20 11:40:46,537 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+2026-06-20 11:40:46,566 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F11
+2026-06-20 11:40:46,566 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 11:40:52,129 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:40:54,135 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:40:54,142 [INFO] experiments.v2_1.engine: Evaluator: overall=8.8, should_retry=False
+2026-06-20 11:40:55,388 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:40:55,389 [INFO] experiments.shared.runner: System A: predicted=No Fault Detected, confidence=1.00
+2026-06-20 11:40:55,389 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 11:41:02,771 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:41:02,781 [INFO] experiments.v2_1.engine: Evidence verification: 1/1 verified (faithfulness=1.00)
+2026-06-20 11:41:05,278 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:41:05,281 [INFO] experiments.v2_1.engine: Evaluator: overall=7.5, should_retry=True
+2026-06-20 11:41:05,281 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.5, critique=The evidence about the 'emailservice' dry-run failure mentions a duplicate 'grpc' port, but this spe
+2026-06-20 11:41:14,213 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:41:14,221 [INFO] experiments.v2_1.engine: Evidence verification: 1/1 verified (faithfulness=1.00)
+2026-06-20 11:41:17,414 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:41:17,416 [INFO] experiments.v2_1.engine: Evaluator: overall=7.8, should_retry=True
+2026-06-20 11:41:17,416 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=7.8, critique=While the majority of the evidence cited is found in the input and the logic follows a reasonable pr
+2026-06-20 11:41:29,207 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:41:29,213 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:41:32,589 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:41:32,595 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=True
+2026-06-20 11:41:36,832 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:41:36,836 [INFO] experiments.shared.runner: System B: predicted=Duplicate Port Configuration, confidence=0.80
+2026-06-20 11:41:36,839 [INFO] experiments.shared.runner: CSV verified: F11 t2 A written (row 103)
+2026-06-20 11:41:36,840 [INFO] experiments.shared.runner: CSV verified: F11 t2 B written (row 104)
+2026-06-20 11:41:36,842 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t2_A_20260620_114136.json
+2026-06-20 11:41:36,855 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t2_B_20260620_114136.json
+2026-06-20 11:41:36,855 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 11:41:36,855 [INFO] scripts.stabilize.recovery: Recovering from F11 trial 2...
+2026-06-20 11:41:36,855 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 11:41:47,175 [INFO] scripts.stabilize.recovery: F11 recovered: removed netem delay on yms-proxmox-03
+2026-06-20 11:41:47,300 [WARNING] scripts.fault_inject.base: kubectl stderr: error: unknown flag: --all
+See 'kubectl rollout restart --help' for usage.
+2026-06-20 11:41:47,300 [INFO] scripts.stabilize.recovery: Rollout restart all deployments: 
+2026-06-20 11:41:47,300 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-06-20 11:41:47,401 [INFO] scripts.stabilize.recovery: All deployments healthy, 14 pods running (0s)
+2026-06-20 11:41:47,765 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+2026-06-20 11:41:48,130 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+2026-06-20 11:41:48,278 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+2026-06-20 11:41:48,634 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+2026-06-20 11:41:49,022 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+2026-06-20 11:41:49,414 [INFO] scripts.stabilize.health_verify: Comprehensive health check PASSED (attempt 1)
+2026-06-20 11:41:49,414 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-06-20 11:41:49,414 [INFO] experiments.shared.runner: Trial complete: F11 t2 | A: No Fault Detected (score=0.00) wrong | B: Duplicate Port Configuration (score=0.00) wrong
+2026-06-20 11:41:49,415 [INFO] experiment.v2_1: Progress: 2/5
+2026-06-20 11:41:49,415 [INFO] experiment.v2_1: Short cooldown (60s) + cluster stabilization check...
+2026-06-20 11:42:49,539 [INFO] experiments.shared.infra: [HEALTH] OK before F11 t2
+2026-06-20 11:42:49,622 [INFO] experiments.shared.infra: [HEALTH] OK before F11 t3
+2026-06-20 11:42:49,622 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:42:49,622 [INFO] experiments.shared.runner: Starting F11 trial 3
+2026-06-20 11:42:49,622 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:42:49,622 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 11:42:49,897 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 11:42:49,898 [INFO] scripts.fault_inject.injector: Injecting F11 trial 3: NetworkDelay on worker01
+2026-06-20 11:42:49,898 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: sudo tc qdisc replace dev vmbr0 root netem delay 2000ms; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 11:42:52,270 [INFO] scripts.fault_inject.injector: F11 injected: netem delay 2000ms on yms-proxmox-02 (vmbr0)
+2026-06-20 11:42:52,271 [INFO] experiments.shared.runner: Injection result: netem_delay
+2026-06-20 11:42:52,271 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 11:44:52,276 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 11:44:52,278 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 11:44:53,451 [INFO] src.collector: Signal collection complete
+2026-06-20 11:44:54,564 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F11
+2026-06-20 11:44:54,564 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 11:45:00,804 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:03,644 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:03,651 [INFO] experiments.v2_1.engine: Evaluator: overall=7.8, should_retry=True
+2026-06-20 11:45:03,651 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.8, critique=While the diagnosis correctly identifies that there are no faults and is grounded in the context, it
+2026-06-20 11:45:11,418 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:11,419 [INFO] experiments.v2_1.engine: Evidence verification: 2/4 verified (faithfulness=0.50)
+2026-06-20 11:45:11,726 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:11,729 [INFO] experiments.v2_1.engine: Evaluator: overall=6.0, should_retry=True
+2026-06-20 11:45:11,729 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=6.0, critique=Evidence cited is partially verifiable; only the absence of warning/error events and metric anomalie
+2026-06-20 11:45:19,597 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:19,605 [INFO] experiments.v2_1.engine: Evidence verification: 2/3 verified (faithfulness=0.67)
+2026-06-20 11:45:22,043 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:22,048 [INFO] experiments.v2_1.engine: Evaluator: overall=7.0, should_retry=True
+2026-06-20 11:45:23,281 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:23,287 [INFO] experiments.shared.runner: System A: predicted=None Detected, confidence=0.90
+2026-06-20 11:45:23,287 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 11:45:34,069 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:34,074 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:45:36,797 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:36,800 [INFO] experiments.v2_1.engine: Evaluator: overall=7.8, should_retry=False
+2026-06-20 11:45:38,336 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:45:38,342 [INFO] experiments.shared.runner: System B: predicted=Deployment Configuration Issue, confidence=0.70
+2026-06-20 11:45:38,347 [INFO] experiments.shared.runner: CSV verified: F11 t3 A written (row 105)
+2026-06-20 11:45:38,349 [INFO] experiments.shared.runner: CSV verified: F11 t3 B written (row 106)
+2026-06-20 11:45:38,352 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t3_A_20260620_114538.json
+2026-06-20 11:45:38,367 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t3_B_20260620_114538.json
+2026-06-20 11:45:38,367 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 11:45:38,367 [INFO] scripts.stabilize.recovery: Recovering from F11 trial 3...
+2026-06-20 11:45:38,367 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 11:45:53,378 [ERROR] experiments.shared.runner: Recovery failed: Command '['ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=10', '-p', '22016', 'debian@211.62.97.71', 'sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok']' timed out after 15 seconds — manual intervention may be needed
+2026-06-20 11:45:53,381 [INFO] experiments.shared.runner: Trial complete: F11 t3 | A: None Detected (score=0.00) wrong | B: Deployment Configuration Issue (score=0.00) wrong
+2026-06-20 11:45:53,382 [INFO] experiment.v2_1: Progress: 3/5
+2026-06-20 11:45:53,382 [INFO] experiment.v2_1: Short cooldown (60s) + cluster stabilization check...
+2026-06-20 11:46:53,523 [INFO] experiments.shared.infra: [HEALTH] OK before F11 t3
+2026-06-20 11:46:53,615 [INFO] experiments.shared.infra: [HEALTH] OK before F11 t4
+2026-06-20 11:46:53,615 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:46:53,615 [INFO] experiments.shared.runner: Starting F11 trial 4
+2026-06-20 11:46:53,615 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:46:53,615 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 11:46:53,875 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 11:46:53,877 [INFO] scripts.fault_inject.injector: Injecting F11 trial 4: NetworkDelay on worker03
+2026-06-20 11:46:53,877 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: sudo tc qdisc replace dev vmbr0 root netem delay 300ms 100ms distribution normal; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 11:46:54,434 [INFO] scripts.fault_inject.injector: F11 injected: netem delay 300ms 100ms distribution normal on yms-proxmox-04 (vmbr0)
+2026-06-20 11:46:54,435 [INFO] experiments.shared.runner: Injection result: netem_delay
+2026-06-20 11:46:54,435 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 11:48:54,442 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 11:48:54,444 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 11:49:01,367 [INFO] src.collector: Signal collection complete
+2026-06-20 11:49:08,079 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F11
+2026-06-20 11:49:08,079 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 11:49:13,019 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:18,101 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:18,108 [INFO] experiments.v2_1.engine: Evaluator: overall=8.2, should_retry=True
+2026-06-20 11:49:18,108 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=8.2, critique=While the diagnosis accurately reflects the input context and confirms the cluster's health, it lack
+2026-06-20 11:49:25,704 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:28,638 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:28,645 [INFO] experiments.v2_1.engine: Evaluator: overall=7.0, should_retry=True
+2026-06-20 11:49:28,645 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=7.0, critique=The reasoning is mostly sound, especially in checking the status of nodes and pods. However, the con
+2026-06-20 11:49:36,595 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:39,135 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:39,138 [INFO] experiments.v2_1.engine: Evaluator: overall=7.5, should_retry=True
+2026-06-20 11:49:40,266 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:40,275 [INFO] experiments.shared.runner: System A: predicted=None Identified, confidence=0.50
+2026-06-20 11:49:40,275 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 11:49:48,599 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:48,604 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:49:51,208 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:49:51,214 [INFO] experiments.v2_1.engine: Evaluator: overall=7.8, should_retry=True
+2026-06-20 11:49:51,214 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.8, critique=The evidence regarding the configuration issue with 'emailservice' is accurately drawn from the inpu
+2026-06-20 11:50:02,190 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:50:02,199 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:50:04,701 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:50:04,706 [INFO] experiments.v2_1.engine: Evaluator: overall=7.5, should_retry=True
+2026-06-20 11:50:04,706 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=7.5, critique=The diagnosis accurately identifies the configuration issue with 'emailservice' and provides strong 
+2026-06-20 11:50:15,163 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:50:15,167 [INFO] experiments.v2_1.engine: Evidence verification: 1/1 verified (faithfulness=1.00)
+2026-06-20 11:50:17,531 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:50:17,537 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 11:50:19,071 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:50:19,080 [INFO] experiments.shared.runner: System B: predicted=Configuration Issue, confidence=0.90
+2026-06-20 11:50:19,084 [INFO] experiments.shared.runner: CSV verified: F11 t4 A written (row 107)
+2026-06-20 11:50:19,086 [INFO] experiments.shared.runner: CSV verified: F11 t4 B written (row 108)
+2026-06-20 11:50:19,088 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t4_A_20260620_115019.json
+2026-06-20 11:50:19,097 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t4_B_20260620_115019.json
+2026-06-20 11:50:19,097 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 11:50:19,097 [INFO] scripts.stabilize.recovery: Recovering from F11 trial 4...
+2026-06-20 11:50:19,097 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 11:50:22,473 [INFO] scripts.stabilize.recovery: F11 recovered: removed netem delay on yms-proxmox-04
+2026-06-20 11:50:22,590 [WARNING] scripts.fault_inject.base: kubectl stderr: error: unknown flag: --all
+See 'kubectl rollout restart --help' for usage.
+2026-06-20 11:50:22,590 [INFO] scripts.stabilize.recovery: Rollout restart all deployments: 
+2026-06-20 11:50:22,590 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-06-20 11:50:22,689 [INFO] scripts.stabilize.recovery: All deployments healthy, 14 pods running (0s)
+2026-06-20 11:50:23,038 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+2026-06-20 11:50:23,428 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+2026-06-20 11:50:23,833 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+2026-06-20 11:50:23,974 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+2026-06-20 11:50:24,413 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+2026-06-20 11:50:24,811 [INFO] scripts.stabilize.health_verify: Comprehensive health check PASSED (attempt 1)
+2026-06-20 11:50:24,812 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-06-20 11:50:24,812 [INFO] experiments.shared.runner: Trial complete: F11 t4 | A: None Identified (score=0.00) wrong | B: Configuration Issue (score=0.00) wrong
+2026-06-20 11:50:24,813 [INFO] experiment.v2_1: Progress: 4/5
+2026-06-20 11:50:24,813 [INFO] experiment.v2_1: Short cooldown (60s) + cluster stabilization check...
+2026-06-20 11:51:24,956 [INFO] experiments.shared.infra: [HEALTH] OK before F11 t4
+2026-06-20 11:51:25,057 [INFO] experiments.shared.infra: [HEALTH] OK before F11 t5
+2026-06-20 11:51:25,057 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:51:25,057 [INFO] experiments.shared.runner: Starting F11 trial 5
+2026-06-20 11:51:25,057 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:51:25,057 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 11:51:25,317 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 11:51:25,318 [INFO] scripts.fault_inject.injector: Injecting F11 trial 5: NetworkDelay on worker02
+2026-06-20 11:51:25,318 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: sudo tc qdisc replace dev vmbr0 root netem delay 5000ms; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 11:51:30,697 [INFO] scripts.fault_inject.injector: F11 injected: netem delay 5000ms on yms-proxmox-03 (vmbr0)
+2026-06-20 11:51:30,697 [INFO] experiments.shared.runner: Injection result: netem_delay
+2026-06-20 11:51:30,697 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 11:53:30,699 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 11:53:30,701 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 11:53:31,873 [INFO] src.collector: Signal collection complete
+2026-06-20 11:53:32,839 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F11
+2026-06-20 11:53:32,839 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 11:53:39,117 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:53:42,236 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:53:42,241 [INFO] experiments.v2_1.engine: Evaluator: overall=7.5, should_retry=True
+2026-06-20 11:53:42,242 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.5, critique=The diagnosis effectively points out that all pod statuses are 'Running' and nodes are 'Ready', whic
+2026-06-20 11:53:52,468 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:53:52,475 [INFO] experiments.v2_1.engine: Evidence verification: 2/3 verified (faithfulness=0.67)
+2026-06-20 11:53:55,350 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:53:55,361 [INFO] experiments.v2_1.engine: Evaluator: overall=7.0, should_retry=True
+2026-06-20 11:53:55,361 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=7.0, critique=While most evidence is accurately cited, the verification of 'All pods are Running.' is misleading s
+2026-06-20 11:54:02,829 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:54:05,378 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:54:05,381 [INFO] experiments.v2_1.engine: Evaluator: overall=6.0, should_retry=True
+2026-06-20 11:54:06,791 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:54:06,797 [INFO] experiments.shared.runner: System A: predicted=Potential intermittent failures, confidence=0.60
+2026-06-20 11:54:06,797 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 11:54:14,048 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:54:14,054 [INFO] experiments.v2_1.engine: Evidence verification: 1/1 verified (faithfulness=1.00)
+2026-06-20 11:54:16,308 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:54:16,313 [INFO] experiments.v2_1.engine: Evaluator: overall=7.5, should_retry=True
+2026-06-20 11:54:16,313 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.5, critique=The diagnosis correctly cites the issue with the emailservice configuration, which is supported by t
+2026-06-20 11:54:25,363 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:54:25,371 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:54:27,893 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:54:27,899 [INFO] experiments.v2_1.engine: Evaluator: overall=7.8, should_retry=False
+2026-06-20 11:54:29,193 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:54:29,197 [INFO] experiments.shared.runner: System B: predicted=Configuration Error, confidence=0.60
+2026-06-20 11:54:29,201 [INFO] experiments.shared.runner: CSV verified: F11 t5 A written (row 109)
+2026-06-20 11:54:29,203 [INFO] experiments.shared.runner: CSV verified: F11 t5 B written (row 110)
+2026-06-20 11:54:29,207 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t5_A_20260620_115429.json
+2026-06-20 11:54:29,218 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F11_t5_B_20260620_115429.json
+2026-06-20 11:54:29,218 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 11:54:29,218 [INFO] scripts.stabilize.recovery: Recovering from F11 trial 5...
+2026-06-20 11:54:29,218 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 11:54:44,227 [ERROR] experiments.shared.runner: Recovery failed: Command '['ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=10', '-p', '22017', 'debian@211.62.97.71', 'sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok']' timed out after 15 seconds — manual intervention may be needed
+2026-06-20 11:54:44,228 [INFO] experiments.shared.runner: Trial complete: F11 t5 | A: Potential intermittent failures (score=0.00) wrong | B: Configuration Error (score=0.00) wrong
+2026-06-20 11:54:44,229 [INFO] experiment.v2_1: Progress: 5/5
+2026-06-20 11:54:44,229 [INFO] experiment.v2_1: ============================================================
+2026-06-20 11:54:44,229 [INFO] experiment.v2_1: V2.1 experiment complete! 5/5 trials
+2026-06-20 11:54:44,229 [INFO] experiment.v2_1: Results: /Users/yumunsang/thesis-rca/results/experiment_results_v2_1.csv
+2026-06-20 11:54:45,604 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:54:45,604 [INFO] experiments.shared.infra: PREFLIGHT CHECK
+2026-06-20 11:54:45,604 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:54:45,654 [INFO] experiments.shared.infra: [OK] kubectl: 6 nodes reachable
+2026-06-20 11:54:45,698 [INFO] experiments.shared.infra: [OK] boutique: 14 pods running
+2026-06-20 11:54:45,720 [INFO] experiments.shared.infra: [OK] Prometheus (localhost:9090)
+2026-06-20 11:54:45,741 [INFO] experiments.shared.infra: [OK] Loki (localhost:3100)
+2026-06-20 11:54:45,741 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:54:45,741 [INFO] experiments.shared.infra: PREFLIGHT CHECK PASSED
+2026-06-20 11:54:45,741 [INFO] experiments.shared.infra: ============================================================
+2026-06-20 11:54:45,744 [INFO] experiment.v2_1: Resume: 55 trials already completed
+2026-06-20 11:54:45,744 [INFO] experiment.v2_1: Loaded ground truth: 60 entries
+2026-06-20 11:54:45,942 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-06-20 11:54:45,994 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+2026-06-20 11:54:47,501 [INFO] sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-06-20 11:54:49,809 [INFO] src.rag.retriever: KnowledgeRetriever loaded: 1274 chunks in collection
+2026-06-20 11:54:49,811 [INFO] experiment.v2_1: V2.1: StateValidator initialized
+2026-06-20 11:54:49,811 [INFO] experiment.v2_1: V2.1 experiment: 5 trials (['F12'] × [1, 2, 3, 4, 5])
+2026-06-20 11:54:49,811 [INFO] experiment.v2_1: Model: gpt-4o-mini (openai)
+2026-06-20 11:54:49,914 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t1
+2026-06-20 11:54:49,914 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:54:49,914 [INFO] experiments.shared.runner: Starting F12 trial 1
+2026-06-20 11:54:49,914 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:54:49,914 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 11:54:50,201 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 11:54:50,202 [INFO] scripts.fault_inject.injector: Injecting F12 trial 1: NetworkLoss on worker01
+2026-06-20 11:54:50,202 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: sudo tc qdisc replace dev vmbr0 root netem loss 10%; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 11:54:50,586 [INFO] scripts.fault_inject.injector: F12 injected: netem loss 10% on yms-proxmox-02 (vmbr0)
+2026-06-20 11:54:50,587 [INFO] experiments.shared.runner: Injection result: netem_loss
+2026-06-20 11:54:50,587 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 11:56:50,590 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 11:56:50,594 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 11:56:52,185 [INFO] src.collector: Signal collection complete
+2026-06-20 11:56:53,447 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+2026-06-20 11:56:53,476 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F12
+2026-06-20 11:56:53,476 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 11:56:58,649 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:01,061 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:01,069 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=True
+2026-06-20 11:57:01,069 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=8.0, critique=While the diagnosis correctly identifies that there are no faults detected in the Kubernetes cluster
+2026-06-20 11:57:07,693 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:09,767 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:09,771 [INFO] experiments.v2_1.engine: Evaluator: overall=8.8, should_retry=False
+2026-06-20 11:57:10,868 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:10,874 [INFO] experiments.shared.runner: System A: predicted=No issues detected, confidence=1.00
+2026-06-20 11:57:10,874 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 11:57:19,351 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:19,355 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 11:57:23,318 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:23,324 [INFO] experiments.v2_1.engine: Evaluator: overall=6.5, should_retry=True
+2026-06-20 11:57:23,324 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=6.5, critique=The evidence cited includes a service misconfiguration (emailservice) which does not explicitly conn
+2026-06-20 11:57:30,201 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:30,206 [INFO] experiments.v2_1.engine: Evidence verification: 1/1 verified (faithfulness=1.00)
+2026-06-20 11:57:32,595 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:32,600 [INFO] experiments.v2_1.engine: Evaluator: overall=6.8, should_retry=True
+2026-06-20 11:57:32,600 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=6.8, critique=The identification of a duplicate port in the emailservice is accurate and found in the input contex
+2026-06-20 11:57:38,913 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:38,922 [INFO] experiments.v2_1.engine: Evidence verification: 1/1 verified (faithfulness=1.00)
+2026-06-20 11:57:40,907 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:40,912 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 11:57:42,065 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 11:57:42,072 [INFO] experiments.shared.runner: System B: predicted=Service Misconfiguration, confidence=0.80
+2026-06-20 11:57:42,076 [INFO] experiments.shared.runner: CSV verified: F12 t1 A written (row 111)
+2026-06-20 11:57:42,079 [INFO] experiments.shared.runner: CSV verified: F12 t1 B written (row 112)
+2026-06-20 11:57:42,081 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t1_A_20260620_115742.json
+2026-06-20 11:57:42,095 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t1_B_20260620_115742.json
+2026-06-20 11:57:42,095 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 11:57:42,095 [INFO] scripts.stabilize.recovery: Recovering from F12 trial 1...
+2026-06-20 11:57:42,095 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 11:57:42,264 [INFO] scripts.stabilize.recovery: F12 recovered: removed netem loss on yms-proxmox-02
+2026-06-20 11:57:42,382 [WARNING] scripts.fault_inject.base: kubectl stderr: error: unknown flag: --all
+See 'kubectl rollout restart --help' for usage.
+2026-06-20 11:57:42,382 [INFO] scripts.stabilize.recovery: Rollout restart all deployments: 
+2026-06-20 11:57:42,382 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-06-20 11:57:42,486 [INFO] scripts.stabilize.recovery: All deployments healthy, 14 pods running (0s)
+2026-06-20 11:57:42,877 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+2026-06-20 11:57:43,017 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+2026-06-20 11:57:43,421 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+2026-06-20 11:57:43,792 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+2026-06-20 11:57:44,199 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+2026-06-20 11:57:44,615 [INFO] scripts.stabilize.health_verify: Comprehensive health check PASSED (attempt 1)
+2026-06-20 11:57:44,615 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-06-20 11:57:44,615 [INFO] experiments.shared.runner: Trial complete: F12 t1 | A: No issues detected (score=0.00) wrong | B: Service Misconfiguration (score=0.00) wrong
+2026-06-20 11:57:44,616 [INFO] experiment.v2_1: Progress: 1/5
+2026-06-20 11:57:44,616 [INFO] experiment.v2_1: Short cooldown (60s) + cluster stabilization check...
+2026-06-20 11:58:44,730 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t1
+2026-06-20 11:58:44,834 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t2
+2026-06-20 11:58:44,834 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:58:44,834 [INFO] experiments.shared.runner: Starting F12 trial 2
+2026-06-20 11:58:44,834 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 11:58:44,834 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 11:58:45,126 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 11:58:45,128 [INFO] scripts.fault_inject.injector: Injecting F12 trial 2: NetworkLoss on worker02
+2026-06-20 11:58:45,128 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: sudo tc qdisc replace dev vmbr0 root netem loss 30%; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 11:58:45,491 [INFO] scripts.fault_inject.injector: F12 injected: netem loss 30% on yms-proxmox-03 (vmbr0)
+2026-06-20 11:58:45,491 [INFO] experiments.shared.runner: Injection result: netem_loss
+2026-06-20 11:58:45,491 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 12:00:45,499 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 12:00:45,501 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 12:00:46,740 [INFO] src.collector: Signal collection complete
+2026-06-20 12:00:47,987 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F12
+2026-06-20 12:00:47,987 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 12:00:58,599 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:00:58,604 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:01:00,843 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:00,850 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 12:01:02,618 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:02,624 [INFO] experiments.shared.runner: System A: predicted=Network Delay, confidence=0.80
+2026-06-20 12:01:02,624 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 12:01:13,094 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:13,096 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:01:15,467 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:15,471 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=True
+2026-06-20 12:01:15,471 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=8.0, critique=The evidence from TCP retransmissions and error logs is well-cited and aligns with the input context
+2026-06-20 12:01:26,167 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:26,174 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:01:28,531 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:28,536 [INFO] experiments.v2_1.engine: Evaluator: overall=7.8, should_retry=True
+2026-06-20 12:01:28,536 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=7.8, critique=The evidence cited about TCP retransmissions and RedisTimeoutException is valid and matches the orig
+2026-06-20 12:01:39,394 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:39,400 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:01:41,249 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:41,255 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 12:01:42,771 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:01:42,777 [INFO] experiments.shared.runner: System B: predicted=Network Delay, confidence=0.80
+2026-06-20 12:01:42,780 [INFO] experiments.shared.runner: CSV verified: F12 t2 A written (row 113)
+2026-06-20 12:01:42,783 [INFO] experiments.shared.runner: CSV verified: F12 t2 B written (row 114)
+2026-06-20 12:01:42,785 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t2_A_20260620_120142.json
+2026-06-20 12:01:42,802 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t2_B_20260620_120142.json
+2026-06-20 12:01:42,802 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 12:01:42,802 [INFO] scripts.stabilize.recovery: Recovering from F12 trial 2...
+2026-06-20 12:01:42,802 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 12:01:43,607 [INFO] scripts.stabilize.recovery: F12 recovered: removed netem loss on yms-proxmox-03
+2026-06-20 12:01:43,746 [WARNING] scripts.fault_inject.base: kubectl stderr: error: unknown flag: --all
+See 'kubectl rollout restart --help' for usage.
+2026-06-20 12:01:43,746 [INFO] scripts.stabilize.recovery: Rollout restart all deployments: 
+2026-06-20 12:01:43,746 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-06-20 12:01:43,846 [INFO] scripts.stabilize.recovery: All deployments healthy, 14 pods running (0s)
+2026-06-20 12:01:44,243 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+2026-06-20 12:01:44,604 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+2026-06-20 12:01:44,768 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+2026-06-20 12:01:45,142 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+2026-06-20 12:01:45,549 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+2026-06-20 12:01:45,976 [INFO] scripts.stabilize.health_verify: Comprehensive health check PASSED (attempt 1)
+2026-06-20 12:01:45,976 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-06-20 12:01:45,976 [INFO] experiments.shared.runner: Trial complete: F12 t2 | A: Network Delay (score=0.10) wrong | B: Network Delay (score=0.50) correct
+2026-06-20 12:01:45,976 [INFO] experiment.v2_1: Progress: 2/5
+2026-06-20 12:01:45,976 [INFO] experiment.v2_1: Short cooldown (60s) + cluster stabilization check...
+2026-06-20 12:02:46,090 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t2
+2026-06-20 12:02:46,176 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t3
+2026-06-20 12:02:46,176 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 12:02:46,176 [INFO] experiments.shared.runner: Starting F12 trial 3
+2026-06-20 12:02:46,176 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 12:02:46,176 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 12:02:46,446 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 12:02:46,447 [INFO] scripts.fault_inject.injector: Injecting F12 trial 3: NetworkLoss on worker03
+2026-06-20 12:02:46,447 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: sudo tc qdisc replace dev vmbr0 root netem loss 50%; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 12:02:46,864 [INFO] scripts.fault_inject.injector: F12 injected: netem loss 50% on yms-proxmox-04 (vmbr0)
+2026-06-20 12:02:46,864 [INFO] experiments.shared.runner: Injection result: netem_loss
+2026-06-20 12:02:46,864 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 12:04:46,872 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 12:04:46,874 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 12:05:17,584 [ERROR] src.collector.loki: Loki query error: HTTPConnectionPool(host='localhost', port=3100): Read timed out. (read timeout=30) (query: {namespace="boutique"} |~ "(?i)(error|fatal|panic|exception|fail|crash|oom|killed|refused|timeout)")
+2026-06-20 12:05:34,113 [INFO] src.collector: Signal collection complete
+2026-06-20 12:06:06,150 [ERROR] src.collector.loki: Loki query error: HTTPConnectionPool(host='localhost', port=3100): Read timed out. (read timeout=30) (query: {job="kubernetes-events"} |~ "boutique" |~ "(?i)(warning|error|failed|backoff|oom|evict|unhealthy|kill)")
+2026-06-20 12:06:06,448 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F12
+2026-06-20 12:06:06,448 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 12:06:15,213 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:15,218 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:06:17,754 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:17,759 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 12:06:19,687 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:19,693 [INFO] experiments.shared.runner: System A: predicted=Network Delay, confidence=0.80
+2026-06-20 12:06:19,693 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 12:06:30,168 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:30,173 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:06:32,226 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:32,228 [INFO] experiments.v2_1.engine: Evaluator: overall=7.2, should_retry=True
+2026-06-20 12:06:32,228 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.2, critique=The diagnosis correctly identifies TCP retransmission metrics from the input context, but the reason
+2026-06-20 12:06:41,137 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:41,147 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:06:43,569 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:43,574 [INFO] experiments.v2_1.engine: Evaluator: overall=7.5, should_retry=True
+2026-06-20 12:06:43,574 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=7.5, critique=The evidence cited is mostly grounded in the input context, especially the TCP retransmission metric
+2026-06-20 12:06:54,481 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:54,484 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:06:56,791 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:56,792 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 12:06:58,872 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:06:58,876 [INFO] experiments.shared.runner: System B: predicted=Network Delay, confidence=0.75
+2026-06-20 12:06:58,880 [INFO] experiments.shared.runner: CSV verified: F12 t3 A written (row 115)
+2026-06-20 12:06:58,882 [INFO] experiments.shared.runner: CSV verified: F12 t3 B written (row 116)
+2026-06-20 12:06:58,884 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t3_A_20260620_120658.json
+2026-06-20 12:06:58,898 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t3_B_20260620_120658.json
+2026-06-20 12:06:58,898 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 12:06:58,898 [INFO] scripts.stabilize.recovery: Recovering from F12 trial 3...
+2026-06-20 12:06:58,898 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 12:07:01,974 [INFO] scripts.stabilize.recovery: F12 recovered: removed netem loss on yms-proxmox-04
+2026-06-20 12:07:02,121 [WARNING] scripts.fault_inject.base: kubectl stderr: error: unknown flag: --all
+See 'kubectl rollout restart --help' for usage.
+2026-06-20 12:07:02,121 [INFO] scripts.stabilize.recovery: Rollout restart all deployments: 
+2026-06-20 12:07:02,121 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-06-20 12:07:02,222 [INFO] scripts.stabilize.recovery: Stabilizing... deploys_ok=False, running_pods=14/12 (0s)
+2026-06-20 12:07:12,362 [INFO] scripts.stabilize.recovery: All deployments healthy, 14 pods running (10s)
+2026-06-20 12:07:12,729 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+2026-06-20 12:07:13,110 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+2026-06-20 12:07:13,495 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+2026-06-20 12:07:13,663 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+2026-06-20 12:07:14,096 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+2026-06-20 12:07:14,519 [WARNING] scripts.stabilize.health_verify: Health check attempt 1/3 failed: ['Node yms-proxmox-04 not Ready']
+2026-06-20 12:07:44,861 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+2026-06-20 12:07:45,212 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+2026-06-20 12:07:45,610 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+2026-06-20 12:07:45,773 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+2026-06-20 12:07:46,167 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+2026-06-20 12:07:46,593 [INFO] scripts.stabilize.health_verify: Comprehensive health check PASSED (attempt 2)
+2026-06-20 12:07:46,593 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-06-20 12:07:46,593 [INFO] experiments.shared.runner: Trial complete: F12 t3 | A: Network Delay (score=0.10) wrong | B: Network Delay (score=0.40) wrong
+2026-06-20 12:07:46,594 [INFO] experiment.v2_1: Progress: 3/5
+2026-06-20 12:07:46,594 [INFO] experiment.v2_1: Short cooldown (60s) + cluster stabilization check...
+2026-06-20 12:08:51,632 [WARNING] experiments.shared.infra: [HEALTH] Loki down before F12 t3 — restarting...
+2026-06-20 12:08:55,766 [INFO] experiments.shared.infra: Port-forward loki:3100 restarted successfully
+2026-06-20 12:08:55,843 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t3
+2026-06-20 12:08:55,935 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t4
+2026-06-20 12:08:55,935 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 12:08:55,935 [INFO] experiments.shared.runner: Starting F12 trial 4
+2026-06-20 12:08:55,935 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 12:08:55,935 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 12:08:56,205 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 12:08:56,207 [INFO] scripts.fault_inject.injector: Injecting F12 trial 4: NetworkLoss on worker01
+2026-06-20 12:08:56,207 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: sudo tc qdisc replace dev vmbr0 root netem loss 5% 25%; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 12:08:56,583 [INFO] scripts.fault_inject.injector: F12 injected: netem loss 5% 25% on yms-proxmox-02 (vmbr0)
+2026-06-20 12:08:56,584 [INFO] experiments.shared.runner: Injection result: netem_loss
+2026-06-20 12:08:56,584 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 12:10:56,586 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 12:10:56,587 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 12:10:57,953 [INFO] src.collector: Signal collection complete
+2026-06-20 12:10:59,013 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F12
+2026-06-20 12:10:59,013 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 12:11:09,469 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:09,478 [INFO] experiments.v2_1.engine: Evidence verification: 3/3 verified (faithfulness=1.00)
+2026-06-20 12:11:12,032 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:12,037 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=True
+2026-06-20 12:11:12,037 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=8.0, critique=The evidence cited regarding the 'NodeNotReady' condition is accurate and appears in the input conte
+2026-06-20 12:11:22,521 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:22,526 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:11:25,198 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:25,210 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 12:11:26,878 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:26,886 [INFO] experiments.shared.runner: System A: predicted=NodeNotReady, confidence=0.90
+2026-06-20 12:11:26,886 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 12:11:35,859 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:35,866 [INFO] experiments.v2_1.engine: Evidence verification: 3/3 verified (faithfulness=1.00)
+2026-06-20 12:11:38,596 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:38,602 [INFO] experiments.v2_1.engine: Evaluator: overall=7.5, should_retry=True
+2026-06-20 12:11:38,603 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.5, critique=While the cited evidence from the Kubernetes events is accurately pulled from the input context and 
+2026-06-20 12:11:49,448 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:49,452 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:11:52,058 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:52,066 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 12:11:53,614 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:11:53,619 [INFO] experiments.shared.runner: System B: predicted=Node Not Ready, confidence=0.80
+2026-06-20 12:11:53,624 [INFO] experiments.shared.runner: CSV verified: F12 t4 A written (row 117)
+2026-06-20 12:11:53,626 [INFO] experiments.shared.runner: CSV verified: F12 t4 B written (row 118)
+2026-06-20 12:11:53,629 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t4_A_20260620_121153.json
+2026-06-20 12:11:53,642 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t4_B_20260620_121153.json
+2026-06-20 12:11:53,642 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 12:11:53,642 [INFO] scripts.stabilize.recovery: Recovering from F12 trial 4...
+2026-06-20 12:11:53,643 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 12:11:53,798 [INFO] scripts.stabilize.recovery: F12 recovered: removed netem loss on yms-proxmox-02
+2026-06-20 12:11:53,939 [WARNING] scripts.fault_inject.base: kubectl stderr: error: unknown flag: --all
+See 'kubectl rollout restart --help' for usage.
+2026-06-20 12:11:53,939 [INFO] scripts.stabilize.recovery: Rollout restart all deployments: 
+2026-06-20 12:11:53,939 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+2026-06-20 12:11:54,039 [INFO] scripts.stabilize.recovery: All deployments healthy, 14 pods running (0s)
+2026-06-20 12:11:54,411 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+2026-06-20 12:11:54,546 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+2026-06-20 12:11:54,921 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+2026-06-20 12:11:55,300 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+2026-06-20 12:11:55,715 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+2026-06-20 12:11:56,130 [INFO] scripts.stabilize.health_verify: Comprehensive health check PASSED (attempt 1)
+2026-06-20 12:11:56,131 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-06-20 12:11:56,131 [INFO] experiments.shared.runner: Trial complete: F12 t4 | A: NodeNotReady (score=0.10) wrong | B: Node Not Ready (score=0.10) wrong
+2026-06-20 12:11:56,131 [INFO] experiment.v2_1: Progress: 4/5
+2026-06-20 12:11:56,131 [INFO] experiment.v2_1: Short cooldown (60s) + cluster stabilization check...
+2026-06-20 12:12:56,245 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t4
+2026-06-20 12:12:56,337 [INFO] experiments.shared.infra: [HEALTH] OK before F12 t5
+2026-06-20 12:12:56,338 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 12:12:56,338 [INFO] experiments.shared.runner: Starting F12 trial 5
+2026-06-20 12:12:56,338 [INFO] experiments.shared.runner: ============================================================
+2026-06-20 12:12:56,338 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-20 12:12:56,622 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-20 12:12:56,623 [INFO] scripts.fault_inject.injector: Injecting F12 trial 5: NetworkLoss on worker02
+2026-06-20 12:12:56,623 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: sudo tc qdisc replace dev vmbr0 root netem loss 80%; (sleep 300 && sudo tc qdisc del dev vmbr0 root) >/dev/null 2>&1 </dev/null &
+2026-06-20 12:12:57,029 [INFO] scripts.fault_inject.injector: F12 injected: netem loss 80% on yms-proxmox-03 (vmbr0)
+2026-06-20 12:12:57,030 [INFO] experiments.shared.runner: Injection result: netem_loss
+2026-06-20 12:12:57,030 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-20 12:14:57,040 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-20 12:14:57,043 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-20 12:14:58,303 [INFO] src.collector: Signal collection complete
+2026-06-20 12:14:59,337 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F12
+2026-06-20 12:14:59,337 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+2026-06-20 12:15:10,575 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:15:10,581 [INFO] experiments.v2_1.engine: Evidence verification: 2/2 verified (faithfulness=1.00)
+2026-06-20 12:15:13,086 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:15:13,091 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=True
+2026-06-20 12:15:13,091 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=8.0, critique=The evidence grounding is strong as all cited evidence matches the input context. The reasoning chai
+2026-06-20 12:15:27,023 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:15:27,028 [INFO] experiments.v2_1.engine: Evidence verification: 3/3 verified (faithfulness=1.00)
+2026-06-20 12:15:29,248 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:15:29,253 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 12:15:31,401 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:15:31,403 [INFO] experiments.shared.runner: System A: predicted=Node Not Ready, confidence=0.90
+2026-06-20 12:15:31,403 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-20 12:15:43,675 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:15:43,683 [INFO] experiments.v2_1.engine: Evidence verification: 3/3 verified (faithfulness=1.00)
+2026-06-20 12:15:45,901 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:15:45,910 [INFO] experiments.v2_1.engine: Evaluator: overall=7.5, should_retry=True
+2026-06-20 12:15:45,910 [INFO] experiments.v2_1.engine: Retry 1/2: eval_score=7.5, critique=No alternative hypotheses were considered, which could have included investigating network settings 
+2026-06-20 12:15:58,851 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:15:58,857 [INFO] experiments.v2_1.engine: Evidence verification: 3/3 verified (faithfulness=1.00)
+2026-06-20 12:16:01,609 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:16:01,616 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=True
+2026-06-20 12:16:01,616 [INFO] experiments.v2_1.engine: Retry 2/2: eval_score=8.0, critique=Most evidence cited can be found in the input context and is verifiable, which is strong. The reason
+2026-06-20 12:16:12,335 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:16:12,343 [INFO] experiments.v2_1.engine: Evidence verification: 3/3 verified (faithfulness=1.00)
+2026-06-20 12:16:14,721 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:16:14,740 [INFO] experiments.v2_1.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-20 12:16:16,431 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-20 12:16:16,438 [INFO] experiments.shared.runner: System B: predicted=Node Unavailability, confidence=0.80
+2026-06-20 12:16:16,443 [INFO] experiments.shared.runner: CSV verified: F12 t5 A written (row 119)
+2026-06-20 12:16:16,446 [INFO] experiments.shared.runner: CSV verified: F12 t5 B written (row 120)
+2026-06-20 12:16:16,449 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t5_A_20260620_121616.json
+2026-06-20 12:16:16,469 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v2_1/F12_t5_B_20260620_121616.json
+2026-06-20 12:16:16,469 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-20 12:16:16,469 [INFO] scripts.stabilize.recovery: Recovering from F12 trial 5...
+2026-06-20 12:16:16,469 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok
+2026-06-20 12:16:31,484 [ERROR] experiments.shared.runner: Recovery failed: Command '['ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=10', '-p', '22017', 'debian@211.62.97.71', 'sudo tc qdisc del dev vmbr0 root 2>/dev/null; echo ok']' timed out after 15 seconds — manual intervention may be needed
+2026-06-20 12:16:31,488 [INFO] experiments.shared.runner: Trial complete: F12 t5 | A: Node Not Ready (score=0.10) wrong | B: Node Unavailability (score=0.10) wrong
+2026-06-20 12:16:31,488 [INFO] experiment.v2_1: Progress: 5/5
+2026-06-20 12:16:31,489 [INFO] experiment.v2_1: ============================================================
+2026-06-20 12:16:31,489 [INFO] experiment.v2_1: V2.1 experiment complete! 5/5 trials
+2026-06-20 12:16:31,489 [INFO] experiment.v2_1: Results: /Users/yumunsang/thesis-rca/results/experiment_results_v2_1.csv

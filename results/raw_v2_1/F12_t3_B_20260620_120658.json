@@ -1,0 +1,886 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-mgsgc",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": [
+        {
+          "node": "172.25.100.7:9100",
+          "retrans_rate": 1.67
+        },
+        {
+          "node": "172.25.100.57:9100",
+          "retrans_rate": 4.56
+        }
+      ]
+    },
+    "logs": {
+      "pod_logs": [],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-mgsgc",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-9blb2: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-mgsgc: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-66ddcb6b4c-s8f6c: Running\npaymentservice-87ddfbcb4-jvvhf: Running\npaymentservice-87ddfbcb4-wqpsj: Running\nproductcatalogservice-5bc6ff7696-wcsbp: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\nNo warning/error events.\n\n## Metric Anomalies\nTCP retransmissions: 172.25.100.7:9100 rate=1.67/s, 172.25.100.57:9100 rate=4.56/s\n\n## Error Logs\nNo error logs found.\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:2f)\n- argocd: Ready (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: runbooks/rca-f12-networkloss.md | Score: 0.85]\n# Runbook: F12 - NetworkLoss Root Cause Analysis\n{namespace=\"boutique\"} |~ \"reset|broken pipe|EOF|retransmit\"\n```\n\n## Escalation\n- If `tc qdisc del` fails: check if loss rule is applied on a different interface (use `tc qdisc show` on all interfaces)\n- If retransmissions persist after netem removal: check physical NIC statistics (`ethtool -S <device> | grep -i error`)\n- If multiple nodes show packet loss simultaneously: check upstream switch port error counters\n- If packet loss is reproducible on all interfaces: check for kernel network stack issues (`/proc/net/snmp`)\n\n---\n[Source: runbooks/rca-f12-networkloss.md | Score: 0.83]\n# Runbook: F12 - NetworkLoss Root Cause Analysis\n\n## Trigger Conditions\nUse this runbook when services experience intermittent connection failures, TCP reset errors, broken pipe, or EOF errors, with elevated TCP retransmission rates. Applies when `tc netem` packet loss rules are injected on a node network interface.\n\n## Severity\n**High** — Packet loss causes intermittent failures that are difficult to reproduce, leading to unpredictable gRPC/HTTP errors, increased retry storms, and cascading instability.\n\n---\n[Source: runbooks/rca-f12-networkloss.md | Score: 0.80]\n# Runbook: F12 - NetworkLoss Root Cause Analysis\nss -s\n```\n\n## Resolution\n\n### Remove tc netem loss rule\n```bash\n\n# On the affected node (replace ens18 with actual interface)\nsudo tc qdisc del dev ens18 root\n\n# Verify the rule is removed\nsudo tc qdisc show dev ens18\n\n# Should show: qdisc noqueue 0: root refcnt 2\n```\n\n### Verify recovery\n```bash\n\n# TCP retransmission rate should drop to near-zero within 1-2 minutes\n\n---\n[Source: runbooks/rca-f12-networkloss.md | Score: 0.80]\n# Runbook: F12 - NetworkLoss Root Cause Analysis\nModerate |\n| `tc qdisc` | `netem loss X%` | `netem delay Xms` |\n\n### F12 vs F2 (CrashLoopBackOff)\n| Signal | F12 NetworkLoss | F2 CrashLoopBackOff |\n|--------|----------------|---------------------|\n| Pod status | All Running/Ready | CrashLoopBackOff, restarts > 0 |\n| Error scope | Network-level across node | Application-level, specific pod |\n| `tc qdisc` | netem loss visible | Clean |\n\n## Investigation Steps\n\n### Step 1: Check TCP retransmissions\n```promql\n\n---\n[Source: runbooks/rca-f12-networkloss.md | Score: 0.80]\n# Runbook: F12 - NetworkLoss Root Cause Analysis\n### F12 vs F11 (NetworkDelay)\n| Signal | F12 NetworkLoss | F11 NetworkDelay |\n|--------|----------------|-----------------|\n| Error type | `reset`, `broken pipe`, `EOF` (abrupt close) | `deadline exceeded`, `timeout` (slow response) |\n| Request outcome | Random subset of requests fail completely | All requests slow, eventual timeout |\n| p95 latency | May be elevated due to retransmit | Uniformly elevated |\n| TCP retransmissions | **Primary indicator** — high rate | Moderate |\n| `tc qdisc` | `netem loss X%` \n",
+  "rca_output": {
+    "fault_id": "F12",
+    "trial": 3,
+    "system": "B",
+    "identified_fault_type": "Network Delay",
+    "root_cause": "The root cause of the issue is likely related to underlying network instability indicated by elevated TCP retransmissions.",
+    "confidence": 0.75,
+    "affected_components": [
+      "network",
+      "services"
+    ],
+    "remediation": [
+      "Check for existing tc netem loss rules on nodes and remove if necessary",
+      "Verify network interface statistics and ensure there are no underlying network issues."
+    ],
+    "detail": "There are significant TCP retransmissions noted, which indicates potential network stability issues affecting service connectivity. The absence of relevant errors and warnings in logs complicates initial diagnosis, suggesting that the problem may lie in the network configuration or conditions impacting packet delivery.",
+    "reasoning": "In Step 1, I checked node health; all nodes are Ready with no adverse conditions. Moving to Step 2, I examined pod status, and all pods are Running with no reported issues. In Step 3, I investigated service connectivity and found no services with 0 endpoints, but there is a mention of the email service having an invalid configuration due to duplicate port names, which could lead to connectivity issues. There are TCP retransmissions observed in the metrics (1.67/s for 172.25.100.7:9100 and 4.56/s for 172.25.100.57:9100), indicating potential network issues. Step 4 showed that there are no network policy drops, but the TCP retransmission evidence aligns with symptoms of connection failure rather than a direct service endpoint issue. Step 5 confirmed no resource limits are exceeded, but the potential network issues suggested by TCP retransmissions are a concern. The primary focus is on the TCP retransmissions and their implications for network health as signaling connection issues, particularly as there are runbook references indicating elevated TCP retransmission rates significantly disrupt service reliability. Thus, the root cause points towards an underlying network instability likely linked to a tc netem configuration not shown in the evidence provided, leading to the TCP retransmissions seen.",
+    "root_cause_ko": "문제의 근본 원인은 높은 TCP 재전송으로 나타나는 네트워크 비정상으로 연결 불안정이 원인일 가능성이 높습니다.",
+    "remediation_ko": [
+      "노드의 기존 tc netem 손실 규칙 확인 후 필요한 경우 제거",
+      "네트워크 인터페이스 통계 검증 및 기본 네트워크 문제 없도록 확인."
+    ],
+    "detail_ko": "상당한 TCP 재전송이 기록되었으며, 이는 서비스 연결성에 영향을 미치는 잠재적인 네트워크 안정성 문제를 나타냅니다. 로그에서 관련 오류 및 경고가 없다는 것은 초기 진단을 복잡하게 하며, 문제가 네트워크 구성이나 패킷 전달에 영향을 미치는 조건에 있을 수 있음을 시사합니다.",
+    "evidence_chain": [
+      {
+        "type": "metric",
+        "source": "TCP retransmission metrics",
+        "content": "TCP retransmissions: 172.25.100.7:9100 rate=1.67/s, 172.25.100.57:9100 rate=4.56/s",
+        "supports": "Indicates potential network issues affecting connectivity and service reliability",
+        "verified": true,
+        "match_ratio": 0.86
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"",
+        "supports": "Suggests possible misconfiguration that could lead to connectivity problems",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Resource constraints causing instability.",
+        "confidence": 0.2,
+        "reason_rejected": "No evidence of CPU/memory resources being exceeded or pod failures, indicating that resource constraints are unlikely contributing factors."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The reasoning correctly identifies TCP retransmissions as a key indicator of network issues, which is supported by the metric evidence provided. However, while the evaluation of alternative hypotheses is appropriate, the exploration of additional potential causes, such as network misconfigurations beyond just the email service, could be improved. Additionally, although the recommendation of checking for tc netem configurations is pertinent, it may benefit from explicit verification steps regarding node network integrity.",
+    "retry_count": 2,
+    "correctness_score": 0.4,
+    "correctness_reasoning": "The diagnosis mentions network instability and packet delivery issues, which somewhat reflects the ground truth's focus on packet loss. However, it identifies 'network delay,' which is a different symptom and does not directly match the specified root cause of '50% packet loss.' Furthermore, the LLM does not specify the severity of the packet loss or directly identify it as the main issue, missing the mark on the exact root cause mechanism.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 10909,
+    "prompt_tokens": 6227,
+    "completion_tokens": 1080,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"In Step 1, I checked node health; all nodes are Ready with no adverse conditions. Moving to Step 2, I examined pod status, and all pods are Running with no reported issues. In Step 3, I investigated service connectivity and found no services with 0 endpoints, but there is a mention of the email service having an invalid configuration due to duplicate port names, which could lead to connectivity issues. There are TCP retransmissions observed in the metrics (1.67/s for 172.25.100.7:9100 and 4.56/s for 172.25.100.57:9100), indicating potential network issues. Step 4 showed that there are no network policy drops, but the TCP retransmission evidence aligns with symptoms of connection failure rather than a direct service endpoint issue. Step 5 confirmed no resource limits are exceeded, but the potential network issues suggested by TCP retransmissions are a concern. The primary focus is on the TCP retransmissions and their implications for network health as signaling connection issues, particularly as there are runbook references indicating elevated TCP retransmission rates significantly disrupt service reliability. Thus, the root cause points towards an underlying network instability likely linked to a tc netem configuration not shown in the evidence provided, leading to the TCP retransmissions seen.\",\n  \"identified_fault_type\": \"Network Delay\",\n  \"root_cause\": \"The root cause of the issue is likely related to underlying network instability indicated by elevated TCP retransmissions.\",\n  \"root_cause_ko\": \"문제의 근본 원인은 높은 TCP 재전송으로 나타나는 네트워크 비정상으로 연결 불안정이 원인일 가능성이 높습니다.\",\n  \"confidence\": 0.75,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"network\", \"services\"],\n  \"remediation\": [\"Check for existing tc netem loss rules on nodes and remove if necessary\", \"Verify network interface statistics and ensure there are no underlying network issues.\"],\n  \"remediation_ko\": [\"노드의 기존 tc netem 손실 규칙 확인 후 필요한 경우 제거\", \"네트워크 인터페이스 통계 검증 및 기본 네트워크 문제 없도록 확인.\"],\n  \"detail\": \"There are significant TCP retransmissions noted, which indicates potential network stability issues affecting service connectivity. The absence of relevant errors and warnings in logs complicates initial diagnosis, suggesting that the problem may lie in the network configuration or conditions impacting packet delivery.\",\n  \"detail_ko\": \"상당한 TCP 재전송이 기록되었으며, 이는 서비스 연결성에 영향을 미치는 잠재적인 네트워크 안정성 문제를 나타냅니다. 로그에서 관련 오류 및 경고가 없다는 것은 초기 진단을 복잡하게 하며, 문제가 네트워크 구성이나 패킷 전달에 영향을 미치는 조건에 있을 수 있음을 시사합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"metric\",\n      \"source\": \"TCP retransmission metrics\",\n      \"content\": \"TCP retransmissions: 172.25.100.7:9100 rate=1.67/s, 172.25.100.57:9100 rate=4.56/s\",\n      \"supports\": \"Indicates potential network issues affecting connectivity and service reliability\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"Service \\\"emailservice\\\" is invalid: spec.ports[1].name: Duplicate value: \\\"grpc\\\"\",\n      \"supports\": \"Suggests possible misconfiguration that could lead to connectivity problems\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Resource constraints causing instability.\",\n      \"confidence\": 0.2,\n      \"reason_rejected\": \"No evidence of CPU/memory resources being exceeded or pod failures, indicating that resource constraints are unlikely contributing factors.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "runbooks/rca-f12-networkloss.md",
+      "score": 0.8512136340141296
+    },
+    {
+      "source": "runbooks/rca-f12-networkloss.md",
+      "score": 0.8270640969276428
+    },
+    {
+      "source": "runbooks/rca-f12-networkloss.md",
+      "score": 0.8047661185264587
+    },
+    {
+      "source": "runbooks/rca-f12-networkloss.md",
+      "score": 0.8039811253547668
+    },
+    {
+      "source": "runbooks/rca-f12-networkloss.md",
+      "score": 0.8034167885780334
+    }
+  ]
+}
