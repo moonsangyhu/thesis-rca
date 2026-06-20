@@ -1,4 +1,4 @@
-"""v10 RCA engine: V8 logic identical (단일 변수=validator는 runner level)."""
+"""V2.1 RCA engine: V8 logic identical (단일 변수=validator는 runner level)."""
 import json
 import logging
 import time
@@ -12,8 +12,8 @@ from .config import MAX_TOKENS, MAX_RETRIES
 logger = logging.getLogger(__name__)
 
 
-class RCAEngineV10(BaseLLMClient):
-    """v10 re-baseline: V9 engine logic preserved on rebuilt cluster."""
+class RCAEngineV2_1(BaseLLMClient):
+    """V2.1 re-baseline: V9 engine logic preserved on rebuilt cluster."""
 
     def analyze(
         self,

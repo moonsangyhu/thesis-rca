@@ -2,6 +2,13 @@
 
 각 버전은 `experiments/v{N}/` 독립 모듈. 공유 인프라는 `experiments/shared/`.
 
+## 명명 규칙
+
+- **Try 1 (V1~V9)**: 최초 Proxmox nested 인프라 위 실험 시리즈. 연속 카운터.
+- **Try 2 (V2.x)**: 인프라 재구축(Debian 직접 K8s) 후 새로 시작한 시리즈. `V{try}.{seq}` 표기.
+  - **V2.1** = try 2의 첫 실험 (옛 V10에서 개명). 이후 V2.2, V2.3, ...
+  - 파일·모듈 식별자는 점을 못 쓰므로 `v2_1`로 표기(예: `experiments/v2_1/`, `experiment_results_v2_1.csv`). 표시명은 항상 **V2.1**.
+
 ## 본류 버전
 
 | 버전 | 핵심 변경 | 결과(A/B, ≥0.5) | 디렉토리 |
@@ -11,7 +18,7 @@
 | **v6** | SOP-Guided Prompt (단계별 진단 절차서) — 회귀, 실패 | 26% / 38% | `experiments/v6/` |
 | **v7** | V6 + Step 3 역추적 + 증거 다중성 규칙 + **F11/F12 네트워크 Fault 도입** | 22% / 38% | `experiments/v7/` |
 | **v8** | V7 + 확장 네트워크 메트릭 (gRPC latency, TCP retransmissions) — 가설 기각, 환경 오염 발견 | 25% / 35% | `experiments/v8/` |
-| **v10** | 클러스터 재구축 후 **re-baseline** + V9 Pre-Trial State Validator 탑재 (현재) | 42% / 50% | `experiments/v10/` |
+| **V2.1** (옛 v10) | **Try 2 시작** — 클러스터 재구축 후 re-baseline + V9 Pre-Trial State Validator 탑재 (현재) | 42% / 50% | `experiments/v2_1/` |
 
 ## 아카이브된 버전 (저유용 — `archive/` 로 이동, 2026-06-20)
 
@@ -22,7 +29,7 @@
 | ~~v1~~ | 장애 힌트 제공 + 단순 프롬프트 | 힌트 누설(B 84%) → 공정 비교 불가, 구 스키마 |
 | ~~v4~~ | System A retry 비활성화 (v3에서 -12.2pp 확인) | 곁가지 튜닝, 80행 부분 실행 |
 | ~~v5~~ | Symptom Extraction → Diagnosis 2단계 분리 | **미실행** (CSV 빈 파일) |
-| ~~v9~~ | Pre-Trial State Validator | **미실행** — validator 코드는 V10에 흡수됨. 단 계획·리뷰 문서는 `docs/plans/`에 유지(live 코드 설계 근거) |
+| ~~v9~~ | Pre-Trial State Validator | **미실행** — validator 코드는 V2.1(옛 V10)에 흡수됨. 단 계획·리뷰 문서는 `docs/plans/`에 유지(live 코드 설계 근거) |
 
 ## 실행 방법
 

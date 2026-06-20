@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-v10 re-baseline 실험 실행: V9 validator 유지 + 재구축 클러스터 baseline 재수집.
+V2.1 re-baseline 실험 실행: V9 validator 유지 + 재구축 클러스터 baseline 재수집.
 
 Usage:
-    python -m experiments.v10.run
-    python -m experiments.v10.run --fault F11 --trial 1
-    python -m experiments.v10.run --dry-run
+    python -m experiments.v2_1.run
+    python -m experiments.v2_1.run --fault F11 --trial 1
+    python -m experiments.v2_1.run --dry-run
 """
 import argparse
 import logging
@@ -28,7 +28,7 @@ from scripts.stabilize import Recovery
 from experiments.shared.csv_io import init_csv, get_completed_trials, load_ground_truth
 from experiments.shared.infra import preflight_check, health_check
 from experiments.shared.runner import TrialRunner, ALL_FAULTS, ALL_TRIALS
-from .engine import RCAEngineV10
+from .engine import RCAEngineV2_1
 from .config import RESULTS_CSV, RAW_DIR, GROUND_TRUTH_CSV, CSV_HEADERS, RESULTS_DIR
 
 logging.basicConfig(
@@ -36,14 +36,14 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler(RESULTS_DIR / "experiment_v10.log"),
+        logging.FileHandler(RESULTS_DIR / "experiment_v2_1.log"),
     ],
 )
-logger = logging.getLogger("experiment.v10")
+logger = logging.getLogger("experiment.v2_1")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="v10 re-baseline RCA experiment on rebuilt K8s lab")
+    parser = argparse.ArgumentParser(description="V2.1 re-baseline RCA experiment on rebuilt K8s lab")
     parser.add_argument("--fault", type=str, help="Specific fault type (e.g. F1)")
     parser.add_argument("--trial", type=int, help="Specific trial number (1-5)")
     parser.add_argument("--model", type=str, default="gpt-4o-mini")
@@ -56,7 +56,7 @@ def main():
 
     # 실험 종료 Slack 알림 (정상/비정상/예외 모두 포착)
     from experiments.shared import notify
-    notify.register(version="v10")
+    notify.register(version="v2.1")
 
     RESULTS_DIR.mkdir(exist_ok=True)
     RAW_DIR.mkdir(exist_ok=True)
@@ -89,12 +89,12 @@ def main():
         retriever = None
         validator = None  # dry-run skips validator (consistent with V9 dry-run semantics)
     else:
-        engine = RCAEngineV10(model=args.model, provider=args.provider)
+        engine = RCAEngineV2_1(model=args.model, provider=args.provider)
         retriever = KnowledgeRetriever()
-        # V10 단일 독립변수: Pre-Trial State Validator
+        # V2.1 단일 독립변수: Pre-Trial State Validator
         from scripts.stabilize.state_validator import StateValidator
         validator = StateValidator(ground_truth=ground_truth)
-        logger.info("V10: StateValidator initialized")
+        logger.info("V2.1: StateValidator initialized")
 
     runner = TrialRunner(
         engine=engine,
@@ -114,7 +114,7 @@ def main():
     total = len(faults) * len(trials)
     completed = 0
 
-    logger.info("v10 experiment: %d trials (%s × %s)", total, faults, trials)
+    logger.info("V2.1 experiment: %d trials (%s × %s)", total, faults, trials)
     logger.info("Model: %s (%s)", args.model, args.provider)
 
     for fault_id in faults:
@@ -173,7 +173,7 @@ def main():
                 logger.error("Cluster still unhealthy after fault transition — proceeding anyway")
 
     logger.info("=" * 60)
-    logger.info("v10 experiment complete! %d/%d trials", completed, total)
+    logger.info("V2.1 experiment complete! %d/%d trials", completed, total)
     logger.info("Results: %s", RESULTS_CSV)
 
 
