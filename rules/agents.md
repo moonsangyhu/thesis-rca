@@ -12,6 +12,7 @@
 | `@paper-writer` | 석사 논문 저술. `docs/papers/`, `docs/surveys/`를 1차 인용 소스로 | opus | (저술) 도메인 특화 |
 | `@experiment-planner` | 실험 가설 수립 wrapper. 이전 결과 분석 + Research 트랙 산출물 인용 (Experiment Step 1) | opus | `superpowers:brainstorming` |
 | `@experiment` | 실험 실행 wrapper. lab-tunnel → nohup → status → lab-restore 순서 | sonnet | `superpowers:executing-plans` |
+| `@results-critic` | **독립 비판 분석가**(Experiment Step 5). 대화 맥락 없는 fresh `general-purpose` sub-agent로 디스패치 — 오케스트레이터가 직접 안 씀(확증 편향 차단). 결과 검증 + 통계 + 위키/repo 선행연구 대비 비판 + 개선 가설 → `results/analysis_v{N}.md` | opus | `superpowers:verification-before-completion` + 독립 디스패치 |
 
 ## 흡수된 에이전트 (삭제됨)
 
@@ -42,7 +43,8 @@
 5. 도메인 wrapper(`@research-planner`, `@experiment-planner`, `@experiment`)는 superpowers 스킬 호출의 prompt 보조 역할.
 6. 단계 완료 시 사용자에게 요약 보고.
 7. **Experiment 트랙(보조 — V9 실행 대기)** 진입 시에만: 실험 전 `/lab-tunnel`(터널+preflight check) → 실험 후 `/lab-restore`(환경 정상화).
-8. 작업 마무리는 `superpowers:finishing-a-development-branch` → `/pr-merge`.
+8. **실험 종결 게이트(Step 5→6)**: 수집·복원 후 (5) `@results-critic`(독립 fresh sub-agent)로 비판 분석 → (6) 다음 실험 goal 문서 + 새 세션 프롬프트 + TickTick `ai-continue` 투두 생성. **이 3개가 다 나와야 실험 한 턴이 종료**된다. 오케스트레이터는 분석을 직접 쓰지 말고 반드시 독립 디스패치할 것.
+9. 작업 마무리는 `superpowers:finishing-a-development-branch` → `/pr-merge`.
 
 ## 공통 규칙
 
