@@ -1,8 +1,8 @@
-# V10 실험 진행 보고서 (re-baseline)
+# V2.1 실험 진행 보고서 (re-baseline · 옛 V10)
 
 > 작성: 2026-06-20 · 상태: **실행 완료(F1–F10) / F11–F12 주입 실패 / 미커밋·미분석**
-> 근거: `results/experiment_results_v10.csv`, `results/experiment_v10.log`, `experiments/v10/`, `.hermes/handoffs/2026-06-19-infra-rebuild-and-v10-rebaseline.md`
-> ⚠️ 본 문서는 **중간 진행 보고서**이며 정식 분석(`results/analysis_v10.md`)이 아니다. 통계 검정·가설 판정은 미수행.
+> 근거: `results/experiment_results_v2_1.csv`, `results/experiment_v2_1.log`, `experiments/v2_1/`, `.hermes/handoffs/2026-06-19-infra-rebuild-and-v10-rebaseline.md`
+> ⚠️ 본 문서는 **중간 진행 보고서**이며 정식 분석(`results/analysis_v2_1.md`)이 아니다. 통계 검정·가설 판정은 미수행.
 
 ---
 
@@ -10,7 +10,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 실험 정체성 | **V10 = re-baseline.** 재구축된 K8s 클러스터에서 baseline을 처음부터 다시 수집 |
+| 실험 정체성 | **V2.1 = re-baseline.** 재구축된 K8s 클러스터에서 baseline을 처음부터 다시 수집 |
 | 코드 베이스 | V9 프레임워크 유지 (System A/B, RAG, F1–F12, **V9 Pre-Trial State Validator 포함**) |
 | 변경된 것 | 데이터만 새 환경에서 재수집. RCA 로직·프롬프트·모델은 불변 |
 | 모델 | `gpt-4o-mini` 고정 (전 100행 동일) |
@@ -18,7 +18,7 @@
 | 유효 데이터 | **F1–F10만** (100 CSV 행 = 10 fault × 5 trial × 2 system) |
 | **F11/F12** | **10 trial 전량 주입 실패** (SSH 타임아웃) → CSV 행 0개 |
 | 정확도 (F1–F10) | System A **41.7%** (20/48) · System B **50.0%** (24/48), **B +8.3%p** |
-| Git 상태 | 전부 untracked (미커밋). plan_v10·analysis_v10 문서 없음 |
+| Git 상태 | 전부 untracked (미커밋). plan_v2_1·analysis_v2_1 문서 없음 |
 
 ---
 
@@ -32,13 +32,13 @@
 - 스택: k8s v1.31.14, containerd 1.7.24, Cilium 1.19.3(kube-proxy 대체), Flux GitOps + ArgoCD, Online Boutique 12개 서비스, kube-prometheus-stack + Loki + promtail
 - 재구축 PR #15 머지 완료, preflight GREEN(6/6 노드 Ready, boutique 12/12 Running) 실측
 
-환경이 근본적으로 바뀌었으므로 **V1~V9의 trial 데이터는 새 환경의 baseline으로 무효**. 사용자 결정 = "첫 실험부터 다시" → **V10(re-baseline)**.
+환경이 근본적으로 바뀌었으므로 **V1~V9의 trial 데이터는 새 환경의 baseline으로 무효**. 사용자 결정 = "첫 실험부터 다시" → **V2.1(re-baseline)**.
 
 ### 1-2. 무엇을 유지하고 무엇을 바꿨나
 - **유지(불변)**: fault 정의 F1–F12, System A/B 구성, RAG, 실행 하네스, **V9 Pre-Trial State Validator**, 모델 `gpt-4o-mini`
 - **변경**: trial 데이터만 새 클러스터에서 재수집. `scripts/fault_inject/config.py`의 워커 노드 접속 정보를 새 호스트(`debian@`, SSH 포트 22016~22020)로 갱신
 
-> 즉 V10은 새 가설을 검증하는 실험이 아니라, **깨끗한 새 환경에서 측정 기준선을 다시 세우는 실험**이다. (V9의 단일 독립변수였던 State Validator는 이미 코드에 통합된 채 함께 돌아간다.)
+> 즉 V2.1은 새 가설을 검증하는 실험이 아니라, **깨끗한 새 환경에서 측정 기준선을 다시 세우는 실험**이다. (V9의 단일 독립변수였던 State Validator는 이미 코드에 통합된 채 함께 돌아간다.)
 
 ---
 
@@ -56,7 +56,7 @@
 
 ## 3. 시나리오 — 12개 Fault Type × 5 trial × 2 system = 60 케이스(system별 60행)
 
-| ID | Fault | 대상 | 주입 방식 | 카테고리 | V10 결과 |
+| ID | Fault | 대상 | 주입 방식 | 카테고리 | V2.1 결과 |
 |---|---|---|---|---|---|
 | F1 | OOMKilled | cartservice 등 | 메모리 limit 축소 | service | ✅ 수집됨 |
 | F2 | CrashLoopBackOff | paymentservice | startup에 exit(1) 주입 | service | ✅ (1 trial validator-skip) |
@@ -73,7 +73,7 @@
 
 ---
 
-## 4. 독립 변수 — Pre-Trial State Validator (V9에서 통합, V10에도 탑재)
+## 4. 독립 변수 — Pre-Trial State Validator (V9에서 통합, V2.1에도 탑재)
 
 매 trial 주입 **직전** 클러스터 상태를 검사해 잔류 fault(stale ReplicaSet, 비정상 pod)를 자동 정정하는 모듈. SynergyRCA의 StateChecker 패턴(arxiv:2506.02490)을 K8s ReplicaSet 도메인에 단순화 적용.
 
@@ -151,11 +151,11 @@ Injection failed: ssh ... -p 2201[6-8] debian@211.62.97.71
 
 ## 8. 데이터 유효성과 한계
 
-1. **유효 범위 = F1–F10 한정.** 네트워크 장애(F11/F12)는 V8에 이어 V10에서도 측정 불가. re-baseline은 사실상 **10/12 fault만 완료**.
+1. **유효 범위 = F1–F10 한정.** 네트워크 장애(F11/F12)는 V8에 이어 V2.1에서도 측정 불가. re-baseline은 사실상 **10/12 fault만 완료**.
 2. **표본 = 48/시스템** (skip 4건 제외). 비열등성/우월성 검정의 분모로 사용 시 명시 필요.
 3. **통계 미검정**: +8.3%p는 raw 수치일 뿐. McNemar χ²·신뢰구간 미산출.
-4. **validator 효과 분리 불가**: V10은 validator를 끈 대조군이 없어, "환경이 깨끗해서 vs validator 덕분에"를 본 실험만으로 분리할 수 없음.
-5. **미커밋**: 결과·코드·raw가 모두 git untracked. 정식 `analysis_v10.md`·`experiment_plan_v10.md` 부재.
+4. **validator 효과 분리 불가**: V2.1은 validator를 끈 대조군이 없어, "환경이 깨끗해서 vs validator 덕분에"를 본 실험만으로 분리할 수 없음.
+5. **미커밋**: 결과·코드·raw가 모두 git untracked. 정식 `analysis_v2_1.md`·`experiment_plan_v2_1.md` 부재.
 
 ---
 
@@ -164,7 +164,7 @@ Injection failed: ssh ... -p 2201[6-8] debian@211.62.97.71
 | 우선순위 | 작업 |
 |---|---|
 | 1 | **F11/F12 SSH 주입 경로 수리** — 네트워크 워커 노드(22016~22018) 도달성·sudo·tc 확인 후 F11/F12만 재수집 |
-| 2 | F1–F10으로 **정식 통계 분석**(`analysis_v10.md`) — McNemar, 시스템별/카테고리별, eval 점수 분포 |
-| 3 | V10 결과·코드 **커밋 → PR**(PR-only 정책), `experiment_plan_v10.md` 사후 정식화 |
+| 2 | F1–F10으로 **정식 통계 분석**(`analysis_v2_1.md`) — McNemar, 시스템별/카테고리별, eval 점수 분포 |
+| 3 | V2.1 결과·코드 **커밋 → PR**(PR-only 정책), `experiment_plan_v2_1.md` 사후 정식화 |
 | 4 | F6/F8(둘 다 1/5) 저조 원인 진단 — 신호 부재인지 프롬프트 한계인지 |
 ```
