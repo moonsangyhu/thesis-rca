@@ -1,0 +1,810 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "NodeNotReady",
+          "message": "Node is not ready",
+          "object": "redis-cart-558f8d8d44-7wrgg",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T14:20:08Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/redis-cart-558f8d8d44-7wrgg: NodeNotReady - Node is not ready (count=1)\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: Ready (rev: main@sha1:2f)\n- argocd: Ready (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: runbooks/rca-f4-nodenotready.md | Score: 0.85]\n# Runbook: F4 - NodeNotReady Root Cause Analysis\n\n## Trigger Conditions\nUse this runbook when nodes show `NotReady` status in `kubectl get nodes`, when `KubeNodeNotReady` or `KubeNodeUnreachable` alerts fire, or when pods are stuck in `Pending` or `Terminating` state due to node issues.\n\n## Severity\n**Critical** — A NotReady node means all pods on that node are either evicted or unreachable. Service capacity is reduced and workloads may not reschedule if resources are tight.\n\n---\n[Source: runbooks/restore-after-node-failure.md | Score: 0.85]\n# Runbook: Node Failure Recovery\nerify it is cordoned\nkubectl get nodes | grep <failed-node-name>\n\n# STATUS should show: Ready,SchedulingDisabled  or  NotReady,SchedulingDisabled\n```\n\n### Phase 3: Diagnose the Root Cause\n\n```bash\n\n# Try to reach the node via SSH\nssh -J debian@211.62.97.71:22015 ktcloud@<node-ip>\n\n# If SSH works, check:\nsudo systemctl status kubelet\nsudo journalctl -u kubelet -n 100 --no-pager\nsudo systemctl status containerd\nfree -h && df -h /\n\n---\n[Source: debugging/node-notready.md | Score: 0.83]\n# Node NotReady Diagnosis\n7. **Node resource exhaustion**: Node is under extreme memory pressure and kubelet process itself got OOMKilled.\n\n8. **API server unreachable**: The API server is down or the VIP (172.25.20.200) is unreachable from the node.\n\n9. **Clock skew**: Node time is more than 5 minutes off from the rest of the cluster, causing TLS certificate validation failures.\n\n10. **Kernel panic or hardware failure**: The node has experienced a kernel panic or hardware failure. The OS may be running but in degraded state.\n\n---\n[Source: debugging/node-notready.md | Score: 0.82]\n# Node NotReady Diagnosis\nul failures as all pods on the affected node become unavailable.\n\n## Symptoms\n- `kubectl get nodes` shows STATUS `NotReady`\n- Pods on the node show status `NodeLost`, `Unknown`, or `Terminating` indefinitely\n- New pods are not scheduled to the node\n- Node shows taint `node.kubernetes.io/not-ready:NoSchedule` and `node.kubernetes.io/not-ready:NoExecute`\n- Monitoring shows no metrics from the node\n- SSH to node may succeed (node alive) but kubelet is unhealthy\n\n## Diagnostic Commands\n\n```bash\n\n---\n[Source: runbooks/rca-f4-nodenotready.md | Score: 0.82]\n# Runbook: F4 - NodeNotReady Root Cause Analysis\n) problems — check HAProxy/keepalived\n\n## Loki Queries\n\n```logql\n\n# Kubelet errors on the affected node\n{job=\"kubelet\", node=\"<node-name>\"} |= \"error\" or |= \"Error\"\n\n# Node condition change events\n{job=\"kubernetes-events\"} |= \"NodeNotReady\" or |= \"NodeHasSufficientMemory\"\n\n# Cilium agent errors on node\n{namespace=\"kube-system\", pod=~\"cilium.*\", node=\"<node-name>\"} |= \"error\"\n\n# OOM killer invocations (kernel logs via node exporter/journal)\n{job=\"node-syslog\"} |= \"Out of memory\" or |= \"oom_kill_process\"\n```\n",
+  "rca_output": {
+    "fault_id": "F4",
+    "trial": 3,
+    "system": "B",
+    "identified_fault_type": "NodeNotReady",
+    "root_cause": "The root cause is the 'NodeNotReady' status of the node hosting the redis-cart pod, potentially due to resource exhaustion or hardware issues.",
+    "confidence": 0.7,
+    "affected_components": [
+      "redis-cart pod"
+    ],
+    "remediation": [
+      "Investigate the node for potential resource exhaustion issues, kernel panic, or hardware failures.",
+      "Check logs and metrics for kubelet and containerd status on the node."
+    ],
+    "detail": "The redis-cart pod has reported a 'NodeNotReady' status, signaling that something is affecting the node's ability to host it. While the exact cause isn't determined, possibilities include resource exhaustion or hardware issues such as kernel panic. It's critical to check the kubelet and containerd service statuses, as well as logs for detailed errors that could elucidate the cause further.",
+    "reasoning": "Step 1: Checked Node Health. Found redis-cart pod with 'NodeNotReady' event. Noted this as a primary candidate for NODE-LEVEL fault as it indicates node accessibility issues for this pod. Step 2: Checked Pod Status. All other pods are in Running state, so no additional concerns found here. Step 3: Checked Service Connectivity. No services reported 0 endpoints, so did not find any service faults. Step 4: Checked Network health. No anomalies were found, which suggests connectivity issues are unlikely. Step 5: CPU throttling or resource limits were not assessed as no relevant metrics were provided. Final diagnosis led to 'NodeNotReady' due to potential underlying issues like resource exhaustion or hardware failures, but lacking metrics increases ambiguity of exact root cause requiring further investigation.",
+    "root_cause_ko": "레디스 카트 포드가 호스팅되는 노드의 '노드 준비 안 됨' 상태는 리소스 고갈 또는 하드웨어 문제 때문일 수 있습니다.",
+    "remediation_ko": [
+      "리소스 고갈 문제, 커널 패닉 또는 하드웨어 고장을 확인하기 위해 노드를 조사합니다.",
+      "노드의 kubelet 및 containerd 상태에 대한 로그와 메트릭을 확인합니다."
+    ],
+    "detail_ko": "레디스 카트 포드가 '노드 준비 안 됨' 상태를 보고했으며, 이는 노드가 포드를 호스팅할 수 있는 능력에 영향을 미치는 무언가가 있음을 나타냅니다. 정확한 원인은 확인되지 않았지만, 리소스 고갈 또는 커널 패닉과 같은 하드웨어 문제일 가능성이 있습니다. kubelet 및 containerd 서비스 상태와 함께 상세한 오류를 밝힐 수 있는 로그를 확인하는 것이 중요합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/redis-cart-558f8d8d44-7wrgg: NodeNotReady - Node is not ready (count=1)",
+        "supports": "Indicates a critical node-level issue affecting the redis-cart pod.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "runbook",
+        "source": "runbooks/rca-f4-nodenotready.md",
+        "content": "Node is under extreme memory pressure and kubelet process itself got OOMKilled.",
+        "supports": "Highlights potential causes of a node being in a 'NotReady' state.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The node may have experienced a kernel panic or hardware failure.",
+        "confidence": 0.4,
+        "reason_rejected": "Current logs do not indicate any hardware failure or kernel panic events."
+      }
+    ],
+    "confidence_2nd": 0.6,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 6.0,
+    "eval_overall_score": 7.5,
+    "eval_critique": "The diagnosis correctly identifies the NodeNotReady issue and accurately cites the Kubernetes event as evidence. However, the reasoning lacks robust exploration of why resource throttling wasn't assessed despite the 'NodeNotReady' status hinting at potential underlying issues. Alternatives, such as resource exhaustion or hardware failure, are outlined, but additional potential causes like API server unavailability or clock skew are not mentioned. Moreover, a confidence level of 0.7 seems a bit low given the evidence provided, which strengthens the diagnosis considerably. Pushing this to at least 0.8 to reflect a well-founded conclusion is recommended.",
+    "retry_count": 2,
+    "correctness_score": 0.5,
+    "correctness_reasoning": "The diagnosis identifies the fault category correctly as 'NodeNotReady' and mentions potential causes like resource exhaustion, which relates to the ground truth root cause. However, it does not specify that the root cause mechanism is due to 'extreme memory pressure' leading to 'kubelet becoming unresponsive' and doesn't mention the injection method or expected symptoms clearly, indicating it is partially correct but lacks specificity.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 9670,
+    "prompt_tokens": 6207,
+    "completion_tokens": 1094,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health. Found redis-cart pod with 'NodeNotReady' event. Noted this as a primary candidate for NODE-LEVEL fault as it indicates node accessibility issues for this pod. Step 2: Checked Pod Status. All other pods are in Running state, so no additional concerns found here. Step 3: Checked Service Connectivity. No services reported 0 endpoints, so did not find any service faults. Step 4: Checked Network health. No anomalies were found, which suggests connectivity issues are unlikely. Step 5: CPU throttling or resource limits were not assessed as no relevant metrics were provided. Final diagnosis led to 'NodeNotReady' due to potential underlying issues like resource exhaustion or hardware failures, but lacking metrics increases ambiguity of exact root cause requiring further investigation.\",\n  \"identified_fault_type\": \"NodeNotReady\",\n  \"root_cause\": \"The root cause is the 'NodeNotReady' status of the node hosting the redis-cart pod, potentially due to resource exhaustion or hardware issues.\",\n  \"root_cause_ko\": \"레디스 카트 포드가 호스팅되는 노드의 '노드 준비 안 됨' 상태는 리소스 고갈 또는 하드웨어 문제 때문일 수 있습니다.\",\n  \"confidence\": 0.7,\n  \"confidence_2nd\": 0.6,\n  \"affected_components\": [\"redis-cart pod\"],\n  \"remediation\": [\n    \"Investigate the node for potential resource exhaustion issues, kernel panic, or hardware failures.\",\n    \"Check logs and metrics for kubelet and containerd status on the node.\"\n  ],\n  \"remediation_ko\": [\n    \"리소스 고갈 문제, 커널 패닉 또는 하드웨어 고장을 확인하기 위해 노드를 조사합니다.\",\n    \"노드의 kubelet 및 containerd 상태에 대한 로그와 메트릭을 확인합니다.\"\n  ],\n  \"detail\": \"The redis-cart pod has reported a 'NodeNotReady' status, signaling that something is affecting the node's ability to host it. While the exact cause isn't determined, possibilities include resource exhaustion or hardware issues such as kernel panic. It's critical to check the kubelet and containerd service statuses, as well as logs for detailed errors that could elucidate the cause further.\",\n  \"detail_ko\": \"레디스 카트 포드가 '노드 준비 안 됨' 상태를 보고했으며, 이는 노드가 포드를 호스팅할 수 있는 능력에 영향을 미치는 무언가가 있음을 나타냅니다. 정확한 원인은 확인되지 않았지만, 리소스 고갈 또는 커널 패닉과 같은 하드웨어 문제일 가능성이 있습니다. kubelet 및 containerd 서비스 상태와 함께 상세한 오류를 밝힐 수 있는 로그를 확인하는 것이 중요합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/redis-cart-558f8d8d44-7wrgg: NodeNotReady - Node is not ready (count=1)\",\n      \"supports\": \"Indicates a critical node-level issue affecting the redis-cart pod.\"\n    },\n    {\n      \"type\": \"runbook\",\n      \"source\": \"runbooks/rca-f4-nodenotready.md\",\n      \"content\": \"Node is under extreme memory pressure and kubelet process itself got OOMKilled.\",\n      \"supports\": \"Highlights potential causes of a node being in a 'NotReady' state.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The node may have experienced a kernel panic or hardware failure.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"Current logs do not indicate any hardware failure or kernel panic events.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "runbooks/rca-f4-nodenotready.md",
+      "score": 0.8461640477180481
+    },
+    {
+      "source": "runbooks/restore-after-node-failure.md",
+      "score": 0.8457697927951813
+    },
+    {
+      "source": "debugging/node-notready.md",
+      "score": 0.8287472426891327
+    },
+    {
+      "source": "debugging/node-notready.md",
+      "score": 0.8226894736289978
+    },
+    {
+      "source": "runbooks/rca-f4-nodenotready.md",
+      "score": 0.8188484311103821
+    }
+  ]
+}

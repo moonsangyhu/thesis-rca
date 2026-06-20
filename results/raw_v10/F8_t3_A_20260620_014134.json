@@ -1,0 +1,814 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-66ddcb6b4c-2dfgp",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "paymentservice-66ddcb6b4c-2dfgp",
+          "container": "server",
+          "throttle_ratio": 0.138
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-66ddcb6b4c-2dfgp",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.4.242:50051\" within 1s: context deadline exceeded",
+          "object": "paymentservice-87ddfbcb4-xmhlc",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T16:38:17Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.5.39:50051\" within 1s: context deadline exceeded",
+          "object": "paymentservice-66ddcb6b4c-s8f6c",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T16:38:44Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.1.10:50051\" within 1s: context deadline exceeded",
+          "object": "paymentservice-66ddcb6b4c-2dfgp",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-06-19T16:39:17Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-9blb2: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-9f6sm: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-66ddcb6b4c-2dfgp: Running\npaymentservice-66ddcb6b4c-s8f6c: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-wcsbp: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/paymentservice-87ddfbcb4-xmhlc: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.4.242:50051\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/paymentservice-66ddcb6b4c-s8f6c: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.5.39:50051\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/paymentservice-66ddcb6b4c-2dfgp: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.1.10:50051\" within 1s: context deadline exceeded (count=2)\n\n## Metric Anomalies\nCPU throttled: paymentservice-66ddcb6b4c-2dfgp/server (14%)\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F8",
+    "trial": 3,
+    "system": "A",
+    "identified_fault_type": "Readiness Probe Failure",
+    "root_cause": "The paymentservice pods are failing readiness probes due to CPU throttling and possible resource constraints.",
+    "confidence": 0.8,
+    "affected_components": [
+      "paymentservice"
+    ],
+    "remediation": [
+      "Increase resource limits for the paymentservice pods to prevent CPU throttling.",
+      "Investigate whether the readiness probe settings are optimal."
+    ],
+    "detail": "The paymentservice pods are experiencing readiness probe failures due to timeouts when connecting to the service, likely caused by CPU throttling (14%). This suggests that the application may be under-provisioned in terms of resources, leading to performance issues that affect its ability to respond timely to health checks.",
+    "reasoning": "Step 1: Checked Node Health - All nodes are Ready, no DiskPressure, MemoryPressure, or PIDPressure conditions found. Step 2: Checked Pod Status - All pods are Running, but paymentservice pods are showing Readiness probe failures due to timeout (evidence: 'Unhealthy - Readiness probe failed: timeout: failed to connect'). This indicates a potential application or networking issue. Step 3: Checked Service Connectivity - No services reported with 0 endpoints, so we proceed. Step 4: Checked Network - No explicit network issues noted but considering the readiness probe failures, it's likely a network or application issue. Step 5: Checked Resource Limits - Noticed 14% CPU throttling on paymentservice-66ddcb6b4c-2dfgp, suggesting potential resource constraints. The combination of readiness probe failures and CPU throttling points towards application performance issues, possibly related to insufficient resources. The paymentservice pods are not meeting their readiness criteria likely due to these constraints. Final diagnosis indicates resource issues leading to application unavailability.",
+    "root_cause_ko": "paymentservice 파드가 CPU 제한으로 인해 준비 상태 검사를 실패합니다.",
+    "remediation_ko": [
+      "paymentservice 파드의 리소스 한도를 늘려 CPU 제한을 방지합니다.",
+      "준비 상태 검사 설정이 최적인지 조사합니다."
+    ],
+    "detail_ko": "paymentservice 파드는 서비스에 연결 시 응답 시간 초과로 인해 준비 상태 검사에 실패하고 있으며, 이는 CPU 제한(14%)으로 인한 것일 수 있습니다. 이는 리소스 관점에서 애플리케이션이 충분히 제공되지 않아 성능 문제가 발생하고 있음을 시사합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/paymentservice-66ddcb6b4c-2dfgp: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.1.10:50051\" within 1s: context deadline exceeded",
+        "supports": "Readiness probe failure indicating application unavailability.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "Metric Anomalies",
+        "content": "CPU throttled: paymentservice-66ddcb6b4c-2dfgp/server (14%)",
+        "supports": "CPU throttling suggesting resource limitations contributing to readyness probe failure.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Network connectivity issues affecting readiness probe responses.",
+        "confidence": 0.4,
+        "reason_rejected": "No direct evidence of network policy drops or connectivity issues were observed in metrics."
+      }
+    ],
+    "confidence_2nd": 0.7,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 10.0,
+    "eval_diagnostic_logic": 9.0,
+    "eval_differential_completeness": 8.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.75,
+    "eval_critique": "The evidence cited from Kubernetes events and metric anomalies are accurately found in the input context. The reasoning for linking readiness probe failures to CPU throttling is strong, with clear steps provided. Alternative hypotheses were considered and reasonably rejected. Confidence level of 0.8 is appropriate given the evidence supporting the diagnosis. However, it could further clarify what constitutes 'resource constraints' (e.g., CPU or memory limits) and provide more rationale around why the network hypothesis was deemed less likely. Adding specifics on the checks performed in service connectivity could enhance clarity.",
+    "retry_count": 0,
+    "correctness_score": 0.1,
+    "correctness_reasoning": "The diagnosis identifies a problem with the paymentservice pods, but it misattributes the root cause to readiness probe failures due to CPU throttling rather than the actual issue of the service not selecting the pods because the endpoints list is empty. Therefore, while there are surface-level symptoms mentioned, the core mechanism is incorrect.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 7926,
+    "prompt_tokens": 4388,
+    "completion_tokens": 1005,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health - All nodes are Ready, no DiskPressure, MemoryPressure, or PIDPressure conditions found. Step 2: Checked Pod Status - All pods are Running, but paymentservice pods are showing Readiness probe failures due to timeout (evidence: 'Unhealthy - Readiness probe failed: timeout: failed to connect'). This indicates a potential application or networking issue. Step 3: Checked Service Connectivity - No services reported with 0 endpoints, so we proceed. Step 4: Checked Network - No explicit network issues noted but considering the readiness probe failures, it's likely a network or application issue. Step 5: Checked Resource Limits - Noticed 14% CPU throttling on paymentservice-66ddcb6b4c-2dfgp, suggesting potential resource constraints. The combination of readiness probe failures and CPU throttling points towards application performance issues, possibly related to insufficient resources. The paymentservice pods are not meeting their readiness criteria likely due to these constraints. Final diagnosis indicates resource issues leading to application unavailability.\",\n  \"identified_fault_type\": \"Readiness Probe Failure\",\n  \"root_cause\": \"The paymentservice pods are failing readiness probes due to CPU throttling and possible resource constraints.\",\n  \"root_cause_ko\": \"paymentservice 파드가 CPU 제한으로 인해 준비 상태 검사를 실패합니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.7,\n  \"affected_components\": [\"paymentservice\"],\n  \"remediation\": [\"Increase resource limits for the paymentservice pods to prevent CPU throttling.\", \"Investigate whether the readiness probe settings are optimal.\"],\n  \"remediation_ko\": [\"paymentservice 파드의 리소스 한도를 늘려 CPU 제한을 방지합니다.\", \"준비 상태 검사 설정이 최적인지 조사합니다.\"],\n  \"detail\": \"The paymentservice pods are experiencing readiness probe failures due to timeouts when connecting to the service, likely caused by CPU throttling (14%). This suggests that the application may be under-provisioned in terms of resources, leading to performance issues that affect its ability to respond timely to health checks.\",\n  \"detail_ko\": \"paymentservice 파드는 서비스에 연결 시 응답 시간 초과로 인해 준비 상태 검사에 실패하고 있으며, 이는 CPU 제한(14%)으로 인한 것일 수 있습니다. 이는 리소스 관점에서 애플리케이션이 충분히 제공되지 않아 성능 문제가 발생하고 있음을 시사합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/paymentservice-66ddcb6b4c-2dfgp: Unhealthy - Readiness probe failed: timeout: failed to connect service \\\"10.244.1.10:50051\\\" within 1s: context deadline exceeded\",\n      \"supports\": \"Readiness probe failure indicating application unavailability.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"Metric Anomalies\",\n      \"content\": \"CPU throttled: paymentservice-66ddcb6b4c-2dfgp/server (14%)\",\n      \"supports\": \"CPU throttling suggesting resource limitations contributing to readyness probe failure.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Network connectivity issues affecting readiness probe responses.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No direct evidence of network policy drops or connectivity issues were observed in metrics.\"\n    }\n  ]\n}"
+}

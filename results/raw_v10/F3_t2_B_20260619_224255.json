@@ -1,0 +1,931 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "cartservice-6b68667d55-px59g",
+          "phase": "Pending"
+        },
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-4jc7d",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-6b68667d55-px59g",
+          "container": "cartservice",
+          "waiting_reason": "ErrImagePull"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "cartservice-6b68667d55-px59g",
+          "container": "server",
+          "throttle_ratio": 0.252
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-4jc7d",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-6b68667d55-px59g",
+          "phase": "Pending",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "cartservice",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "ImagePullBackOff"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "frontend-66ffb46b8-m22bp",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T13:36:19Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"frontend:v99.99.99\": failed to pull and unpack image \"docker.io/library/frontend:v99.99.99\": failed to resolve reference \"docker.io/library/frontend:v99.99.99\": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed",
+          "object": "frontend-66ffb46b8-m22bp",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T13:36:19Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "frontend-66ffb46b8-m22bp",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-06-19T13:36:46Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-6b68667d55-px59g",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T13:39:56Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "cartservice-6b68667d55-px59g",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T13:40:20Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 168.126.63.1:53: no such host",
+          "object": "cartservice-6b68667d55-px59g",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T13:40:20Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "cartservice-6b68667d55-px59g",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-06-19T13:40:49Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "cartservice-6b68667d55-px59g",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       ImagePullBackOff\n    Ready:          False\n    Restart Count:  0\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-5fln8 (ro)\n  server:\n    Container ID:   containerd://d9e28d443b0a68dba6b8de9449da5b92618a46b813981854d5394a8facde29da\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/cartservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/cartservice@sha256:85c4fee0ddb6eada076003abcbff17ac3daf8e18dde68c7bde03b15fc8e17417\n    Port:           7070/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Fri, 19 Jun 2026 22:39:39 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     300m\n      memory:  128Mi\n    Requests:\n      cpu:      200m\n      memory:   64Mi\n    Liveness:   grpc <pod>:7070  delay=15s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:7070  delay=15s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      REDIS_ADDR:  redis-cart:6379\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-5fln8 (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-5fln8:\n    Type:                    Projected (a volume that contains injected data from multiple sources)"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-4jc7d: Running\ncartservice-6b68667d55-px59g: Pending\n  container/cartservice: NOT READY (ImagePullBackOff) restarts=0\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/frontend-66ffb46b8-m22bp: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/frontend-66ffb46b8-m22bp: Failed - Failed to pull image \"frontend:v99.99.99\": failed to pull and unpack image \"docker.io/library/frontend:v99.99.99\": failed to resolve reference \"docker.io/library/frontend:v99.99.99\": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed (count=3)\n[Warning] Pod/frontend-66ffb46b8-m22bp: Failed - Error: ImagePullBackOff (count=6)\n[Warning] Pod/cartservice-6b68667d55-px59g: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-6b68667d55-px59g: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/cartservice-6b68667d55-px59g: Failed - Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 168.126.63.1:53: no such host (count=3)\n[Warning] Pod/cartservice-6b68667d55-px59g: Failed - Error: ImagePullBackOff (count=6)\n\n## Metric Anomalies\nCPU throttled: cartservice-6b68667d55-px59g/server (25%)\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: Ready (rev: main@sha1:2f)\n- argocd: Ready (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.79]\n# Pod ImagePullBackOff Diagnosis\n## Common Causes\n\n1. **Wrong image tag**: The specified tag does not exist in the registry. Common after a typo or when using a tag that was never pushed (e.g., `latest` when only versioned tags exist).\n\n2. **Wrong image name**: Repository or image name is misspelled or the full registry URL is missing for private registries.\n\n3. **Missing imagePullSecret**: Private registry requires authentication but no pull secret is configured on the pod or service account.\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.76]\n# Pod ImagePullBackOff Diagnosis\nfore deploying\n- Use admission webhooks to enforce image pull policy and registry allowlists\n- Monitor for `ErrImagePull` events with alerting\n\n---\n[Source: runbooks/rca-f3-imagepullbackoff.md | Score: 0.75]\n# Runbook: F3 - ImagePullBackOff Root Cause Analysis\nRegistry unreachable — use image mirror or cached image\n```bash\n\n# Update deployment to use a mirror registry\nkubectl patch deployment <deployment-name> -n <namespace> --type='json' \\\n  -p='[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/image\",\"value\":\"<mirror-registry>/<image>:<tag>\"}]'\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.75]\n# Pod ImagePullBackOff Diagnosis\n### Step 2: Create imagePullSecret for private registry\n```bash\n\n# Create secret from Docker credentials\nkubectl create secret docker-registry <secret-name> \\\n  --docker-server=<registry-server> \\\n  --docker-username=<username> \\\n  --docker-password=<password> \\\n  --docker-email=<email> \\\n  -n <namespace>\n\n---\n[Source: debugging/pod-imagepullbackoff.md | Score: 0.75]\n# Pod ImagePullBackOff Diagnosis\n\n## Overview\nImagePullBackOff (and its precursor ErrImagePull) occurs when Kubernetes cannot pull the container image from the registry. The kubelet attempts to pull the image and upon failure, enters a backoff state with increasing retry intervals. This can be caused by authentication failures, incorrect image names or tags, network connectivity issues, or registry unavailability.\n",
+  "rca_output": {
+    "fault_id": "F3",
+    "trial": 2,
+    "system": "B",
+    "identified_fault_type": "Image Pull Failure",
+    "root_cause": "The failure to pull images for the 'cartservice' pod is due to unresolved host for the private registry, indicating a possible network issue or missing secret.",
+    "confidence": 0.9,
+    "affected_components": [
+      "cartservice",
+      "frontend"
+    ],
+    "remediation": [
+      "Ensure that the imagePullSecret is correctly configured for private registry access.",
+      "Verify network connectivity to the private registry."
+    ],
+    "detail": "The 'cartservice' pod could not pull its image due to network resolution issues with the private registry, indicating a potential misconfiguration in ImagePullSecrets or DNS resolution failures. The 'frontend' pod also faced similar issues, indicating a broader problem with accessing specific images from the registry.",
+    "reasoning": "In Step 1, I checked Node Health and found all nodes are Ready. In Step 2, I checked Pod Status and found one pod 'cartservice-6b68667d55-px59g' in Pending state due to ImagePullBackOff and noted the termination message. In the events, both 'frontend' and 'cartservice' pods showed multiple ImagePullBackOff errors due to ErrImagePull. In Step 3, no service connectivity issues were indicated since all other pods are running. In Step 4, no network errors are noted. In Step 5, no resource limits were reached for the pods. Therefore, the ImagePullBackOff errors for both 'cartservice' and 'frontend' are significant problems. I identified that the cartservice's ImagePullBackOff is due to a resolution failure for a private registry, which could be related to a missing image pull secret or unreachable registry, and therefore this issue is the root cause.",
+    "root_cause_ko": "사설 레지스트리에 대한 호스트를 확인할 수 없어서 'cartservice' 포드의 이미지 풀 실패가 발생하여 네트워크 문제 또는 시크릿 누락 가능성을 나타냅니다.",
+    "remediation_ko": [
+      "사설 레지스트리 접근을 위한 imagePullSecret가 올바르게 구성되었는지 확인하십시오.",
+      "사설 레지스트리의 네트워크 연결을 확인하십시오."
+    ],
+    "detail_ko": "'cartservice' 포드는 사설 레지스트리에 대한 네트워크 해상도 문제로 이미지를 가져올 수 없었으며, 이는 ImagePullSecrets의 구성 오류 또는 DNS 해상도 실패 가능성을 나타냅니다. 'frontend' 포드 역시 유사한 문제에 직면해 있어 레지스트리에서 특정 이미지를 접근하는 데에 광범위한 문제가 있음을 나타냅니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Pod/cartservice-6b68667d55-px59g",
+        "content": "ErrImagePull: failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 168.126.63.1:53: no such host",
+        "supports": "Indicates that the pod could not resolve the registry address.",
+        "verified": true,
+        "match_ratio": 0.95
+      },
+      {
+        "type": "event",
+        "source": "Pod/frontend-66ffb46b8-m22bp",
+        "content": "ErrImagePull: failed to pull image \"frontend:v99.99.99\": failed to resolve reference \"docker.io/library/frontend:v99.99.99\": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed",
+        "supports": "Shows that the frontend pod also faced similar access issues with the registry.",
+        "verified": true,
+        "match_ratio": 0.96
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The images are tagged incorrectly or the registry URL is misspelled.",
+        "confidence": 0.4,
+        "reason_rejected": "The specific DNS resolution failure suggests a deeper connectivity or authentication problem rather than a simple typo."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 9.0,
+    "eval_differential_completeness": 8.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.5,
+    "eval_critique": "The diagnosis successfully identifies the root cause based on strong supporting evidence from the events and logs. All cited evidence appears in the input context, especially mentioning the ImagePullBackOff errors for both the 'cartservice' and 'frontend' pods. The reasoning is generally sound, logically connecting the DNS resolution failure to the root cause diagnosis. However, the alternative hypothesis could benefit from further elaboration on why other potential causes like incorrect image tags were not applicable. Confidence level feels appropriately high given the robust evidence but can be justified with a slightly clearer explanation of further validations performed.",
+    "retry_count": 0,
+    "correctness_score": 0.5,
+    "correctness_reasoning": "The diagnosis identifies a failure to pull images for the 'cartservice' pod, which relates to the root cause but introduces 'network resolution issues' that are not present in the ground truth. It indicates a potential misconfiguration in ImagePullSecrets, aligning with part of the root cause description, but does not specifically mention the missing authentication credentials. Hence, it captures a related symptom without identifying the true root cause mechanism fully.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 10970,
+    "prompt_tokens": 6316,
+    "completion_tokens": 1178,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"In Step 1, I checked Node Health and found all nodes are Ready. In Step 2, I checked Pod Status and found one pod 'cartservice-6b68667d55-px59g' in Pending state due to ImagePullBackOff and noted the termination message. In the events, both 'frontend' and 'cartservice' pods showed multiple ImagePullBackOff errors due to ErrImagePull. In Step 3, no service connectivity issues were indicated since all other pods are running. In Step 4, no network errors are noted. In Step 5, no resource limits were reached for the pods. Therefore, the ImagePullBackOff errors for both 'cartservice' and 'frontend' are significant problems. I identified that the cartservice's ImagePullBackOff is due to a resolution failure for a private registry, which could be related to a missing image pull secret or unreachable registry, and therefore this issue is the root cause.\",\n  \"identified_fault_type\": \"Image Pull Failure\",\n  \"root_cause\": \"The failure to pull images for the 'cartservice' pod is due to unresolved host for the private registry, indicating a possible network issue or missing secret.\",\n  \"root_cause_ko\": \"사설 레지스트리에 대한 호스트를 확인할 수 없어서 'cartservice' 포드의 이미지 풀 실패가 발생하여 네트워크 문제 또는 시크릿 누락 가능성을 나타냅니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"cartservice\", \"frontend\"],\n  \"remediation\": [\"Ensure that the imagePullSecret is correctly configured for private registry access.\", \"Verify network connectivity to the private registry.\"],\n  \"remediation_ko\": [\"사설 레지스트리 접근을 위한 imagePullSecret가 올바르게 구성되었는지 확인하십시오.\", \"사설 레지스트리의 네트워크 연결을 확인하십시오.\"],\n  \"detail\": \"The 'cartservice' pod could not pull its image due to network resolution issues with the private registry, indicating a potential misconfiguration in ImagePullSecrets or DNS resolution failures. The 'frontend' pod also faced similar issues, indicating a broader problem with accessing specific images from the registry.\",\n  \"detail_ko\": \"'cartservice' 포드는 사설 레지스트리에 대한 네트워크 해상도 문제로 이미지를 가져올 수 없었으며, 이는 ImagePullSecrets의 구성 오류 또는 DNS 해상도 실패 가능성을 나타냅니다. 'frontend' 포드 역시 유사한 문제에 직면해 있어 레지스트리에서 특정 이미지를 접근하는 데에 광범위한 문제가 있음을 나타냅니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Pod/cartservice-6b68667d55-px59g\",\n      \"content\": \"ErrImagePull: failed to pull and unpack image \\\"private.registry.io/boutique/cartservice:latest\\\": failed to resolve reference \\\"private.registry.io/boutique/cartservice:latest\\\": failed to do request: Head \\\"https://private.registry.io/v2/boutique/cartservice/manifests/latest\\\": dial tcp: lookup private.registry.io on 168.126.63.1:53: no such host\",\n      \"supports\": \"Indicates that the pod could not resolve the registry address.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Pod/frontend-66ffb46b8-m22bp\",\n      \"content\": \"ErrImagePull: failed to pull image \\\"frontend:v99.99.99\\\": failed to resolve reference \\\"docker.io/library/frontend:v99.99.99\\\": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed\",\n      \"supports\": \"Shows that the frontend pod also faced similar access issues with the registry.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The images are tagged incorrectly or the registry URL is misspelled.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"The specific DNS resolution failure suggests a deeper connectivity or authentication problem rather than a simple typo.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7944371998310089
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7608520090579987
+    },
+    {
+      "source": "runbooks/rca-f3-imagepullbackoff.md",
+      "score": 0.7543523013591766
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7540528178215027
+    },
+    {
+      "source": "debugging/pod-imagepullbackoff.md",
+      "score": 0.7517383396625519
+    }
+  ]
+}

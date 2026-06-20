@@ -1,0 +1,801 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\nNo warning/error events.\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: Ready (rev: main@sha1:2f)\n- argocd: Ready (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: runbooks/rca-f12-networkloss.md | Score: 0.81]\n# Runbook: F12 - NetworkLoss Root Cause Analysis\ne Running and Ready\n- No Cilium policy drops\n\n## Differentiation\n\n### F12 vs F6 (NetworkPolicy)\n| Signal | F12 NetworkLoss | F6 NetworkPolicy |\n|--------|----------------|-----------------|\n| Failure pattern | **Intermittent** — some requests succeed | **Complete block** — all requests fail |\n| Error type | `connection reset`, `broken pipe`, `EOF` | `connection refused`, policy DROPPED |\n| Cilium drops | **None** | Present |\n| TCP retransmissions | **Elevated** | Not elevated |\n| `tc qdisc show` | `netem loss X%` visible | No netem rules |\n\n---\n[Source: debugging/network-connectivity.md | Score: 0.80]\n# Network Connectivity Debugging\nCheck node interface MTU\n\n# SSH to node: ip link show | grep mtu\n\n# Update Cilium MTU config (requires Cilium restart)\nkubectl patch configmap -n kube-system cilium-config \\\n  -p '{\"data\": {\"mtu\": \"1450\"}}'\n\n# Restart Cilium to apply\nkubectl rollout restart ds/cilium -n kube-system\n```\n\n### Step 3: Debug NetworkPolicy drops via Hubble\n```bash\n\n# See network-policy-debug.md for detailed NetworkPolicy debugging\n\n---\n[Source: runbooks/restore-network-issue.md | Score: 0.79]\n# Runbook: Network Recovery (Cilium/CNI)\ne-system\", app=\"cilium\"} |= \"error\" or |= \"Error\" or |= \"failed\"\n\n# BPF related errors\n{namespace=\"kube-system\", app=\"cilium\"} |= \"BPF\" |= \"error\"\n\n# Connection tracking errors\n{namespace=\"kube-system\", app=\"cilium\"} |= \"CT\" or |= \"conntrack\"\n\n# MTU-related drops\n{namespace=\"kube-system\", app=\"cilium\"} |= \"MTU\" or |= \"fragmentation\"\n\n# Application-level network errors (result of CNI issue)\n{namespace=\"online-boutique\"} |= \"connection refused\" or |= \"i/o timeout\" or |= \"network unreachable\"\n```\n\n---\n[Source: runbooks/restore-network-issue.md | Score: 0.79]\n# Runbook: Network Recovery (Cilium/CNI)\nion refused\" or |= \"i/o timeout\" or |= \"network unreachable\"\n```\n\n## Prometheus Queries\n\n```promql\n\n# Cilium BPF policy drops\nrate(cilium_drop_count_total[5m])\n\n# Cilium BPF drops by reason\nsum by (reason) (rate(cilium_drop_count_total[5m]))\n\n# Cilium endpoint state (should all be \"ready\")\ncilium_endpoint_state{state!=\"ready\"}\n\n# Cilium policy enforcement\ncilium_policy_count\n\n# Network errors at node level\nrate(node_netstat_Tcp_InErrs[5m])\nrate(node_netstat_Tcp_RetransSegs[5m])\n\n---\n[Source: debugging/network-policy-debug.md | Score: 0.79]\n# NetworkPolicy Troubleshooting\n6. **Wrong port in policy**: Policy allows TCP port 80 but service is running on port 8080.\n\n7. **Policy blocks Cilium health checks**: Cilium's internal health check traffic is blocked, causing nodes to report as unhealthy.\n\n8. **CiliumNetworkPolicy conflict with Kubernetes NetworkPolicy**: Conflicting rules between standard Kubernetes NetworkPolicy and Cilium-specific CiliumNetworkPolicy.\n\n## Resolution Steps\n\n### Step 1: Add allow rule for missing traffic\n```bash\n",
+  "rca_output": {
+    "fault_id": "F6",
+    "trial": 1,
+    "system": "B",
+    "identified_fault_type": "Helm Install Failure",
+    "root_cause": "The Helm install failure is due to the error 'context deadline exceeded' stemming from a missing Git repository.",
+    "confidence": 0.8,
+    "affected_components": [
+      "argocd",
+      "gitops"
+    ],
+    "remediation": [
+      "Restore the missing Git repository to resolve Helm install failures.",
+      "Investigate the rate limiting issue for the Helm installation."
+    ],
+    "detail": "All nodes and pods are functioning as expected without any direct issues detected in the core Kubernetes components. The failure of the Helm release is linked to the absence of a Git repository, creating an external dependency failure. There are no indications of network issues, thus ruling out network policy blocks or connectivity problems as root causes.",
+    "reasoning": "I followed the SOP for fault diagnosis through the provided context. Step 1 revealed no node health issues, confirming all nodes are Ready. Step 2 showed all pods are in Running state and no termination reasons or waiting reasons were present, which suggests no direct pod-level issues. In Step 3, I checked for service connectivity; there were no 0 endpoints or mismatches detected, reinforcing the absence of service-related issues. In Step 4, all network metrics and logs indicated no abnormalities, specifically confirming no network issues or discrepancies. However, in Step 5, the GitOps status indicated a failing Helm release due to a client rate limiter error and a missing Git repo that could be contributing to the issue, leading me to diagnose a broader root cause linked to external dependencies rather than internal cluster issues. The lack of direct network anomalies was noted, reinforcing that while network could be suspected, evidence does not support it as a root cause in this situation.",
+    "root_cause_ko": "헬름 설치 실패는 누락된 Git 저장소에서 발생한 'context deadline exceeded' 오류 때문입니다.",
+    "remediation_ko": [
+      "헬름 설치 실패를 해결하기 위해 누락된 Git 저장소를 복원하십시오.",
+      "헬름 설치에 대한 속도 제한 문제를 조사하십시오."
+    ],
+    "detail_ko": "모든 노드와 포드는 예상대로 작동하며 기본 Kubernetes 구성 요소에 직접적인 문제가 없는 것으로 확인되었습니다. 헬름 릴리스의 실패는 Git 저장소의 부재와 연결되어 외부 종속성 실패를 초래합니다. 네트워크 이슈에 대한 징후가 없으므로 네트워크 정책 차단이나 연결 문제가 근본 원인으로 배제됩니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "GitOps Status",
+        "content": "NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded",
+        "supports": "This indicates a failure in the Helm installation process due to external factors.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Recent Git Changes",
+        "content": "Git repo not found at /tmp/thesis-rca-work",
+        "supports": "The absence of the Git repository is a critical contributing factor to the Helm release failure.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Transient network issues affecting Helm installation.",
+        "confidence": 0.2,
+        "reason_rejected": "No evidence of network drops or errors in logs and metrics indicates the network is functioning properly."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The diagnosis cites evidence correctly found in the input context. The reasoning is mostly sound, but could clarify a bit more on how the Git repo's absence specifically led to the Helm install failure. The alternative hypothesis is valid but could benefit from considering more potential issues like checking node resource availability or configuration mistakes in Helm. Overall, the confidence level reflects the situation well, but slight adjustments in reasoning and consideration of additional alternatives would improve it further.",
+    "retry_count": 2,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis does not relate to the root cause mechanism of the deny-all ingress policy blocking traffic. Instead, it incorrectly attributes the issue to a Helm install failure related to a missing Git repository, which is entirely off-topic and demonstrates a misunderstanding of the Kubernetes networking context.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 13633,
+    "prompt_tokens": 6120,
+    "completion_tokens": 981,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"I followed the SOP for fault diagnosis through the provided context. Step 1 revealed no node health issues, confirming all nodes are Ready. Step 2 showed all pods are in Running state and no termination reasons or waiting reasons were present, which suggests no direct pod-level issues. In Step 3, I checked for service connectivity; there were no 0 endpoints or mismatches detected, reinforcing the absence of service-related issues. In Step 4, all network metrics and logs indicated no abnormalities, specifically confirming no network issues or discrepancies. However, in Step 5, the GitOps status indicated a failing Helm release due to a client rate limiter error and a missing Git repo that could be contributing to the issue, leading me to diagnose a broader root cause linked to external dependencies rather than internal cluster issues. The lack of direct network anomalies was noted, reinforcing that while network could be suspected, evidence does not support it as a root cause in this situation.\",\n  \"identified_fault_type\": \"Helm Install Failure\",\n  \"root_cause\": \"The Helm install failure is due to the error 'context deadline exceeded' stemming from a missing Git repository.\",\n  \"root_cause_ko\": \"헬름 설치 실패는 누락된 Git 저장소에서 발생한 'context deadline exceeded' 오류 때문입니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"argocd\", \"gitops\"],\n  \"remediation\": [\"Restore the missing Git repository to resolve Helm install failures.\", \"Investigate the rate limiting issue for the Helm installation.\"],\n  \"remediation_ko\": [\"헬름 설치 실패를 해결하기 위해 누락된 Git 저장소를 복원하십시오.\", \"헬름 설치에 대한 속도 제한 문제를 조사하십시오.\"],\n  \"detail\": \"All nodes and pods are functioning as expected without any direct issues detected in the core Kubernetes components. The failure of the Helm release is linked to the absence of a Git repository, creating an external dependency failure. There are no indications of network issues, thus ruling out network policy blocks or connectivity problems as root causes.\",\n  \"detail_ko\": \"모든 노드와 포드는 예상대로 작동하며 기본 Kubernetes 구성 요소에 직접적인 문제가 없는 것으로 확인되었습니다. 헬름 릴리스의 실패는 Git 저장소의 부재와 연결되어 외부 종속성 실패를 초래합니다. 네트워크 이슈에 대한 징후가 없으므로 네트워크 정책 차단이나 연결 문제가 근본 원인으로 배제됩니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"GitOps Status\",\n      \"content\": \"NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\",\n      \"supports\": \"This indicates a failure in the Helm installation process due to external factors.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Recent Git Changes\",\n      \"content\": \"Git repo not found at /tmp/thesis-rca-work\",\n      \"supports\": \"The absence of the Git repository is a critical contributing factor to the Helm release failure.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Transient network issues affecting Helm installation.\",\n      \"confidence\": 0.2,\n      \"reason_rejected\": \"No evidence of network drops or errors in logs and metrics indicates the network is functioning properly.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "runbooks/rca-f12-networkloss.md",
+      "score": 0.808686763048172
+    },
+    {
+      "source": "debugging/network-connectivity.md",
+      "score": 0.798369824886322
+    },
+    {
+      "source": "runbooks/restore-network-issue.md",
+      "score": 0.7933649122714996
+    },
+    {
+      "source": "runbooks/restore-network-issue.md",
+      "score": 0.7892031371593475
+    },
+    {
+      "source": "debugging/network-policy-debug.md",
+      "score": 0.788491427898407
+    }
+  ]
+}

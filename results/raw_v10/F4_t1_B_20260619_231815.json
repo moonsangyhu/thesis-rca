@@ -1,0 +1,857 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [
+        {
+          "node": "yms-proxmox-02",
+          "condition": "Ready",
+          "status": "unhealthy"
+        }
+      ],
+      "endpoint_status": [
+        {
+          "endpoint": "paymentservice",
+          "available": 0
+        },
+        {
+          "endpoint": "checkoutservice",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "NodeNotReady",
+          "message": "Node is not ready",
+          "object": "paymentservice-87ddfbcb4-jvvhf",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T14:14:42Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "NodeNotReady",
+          "message": "Node is not ready",
+          "object": "checkoutservice-db56f59d-5fnsr",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T14:14:42Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "Unknown",
+          "issues": [],
+          "taints": [
+            "node.kubernetes.io/unschedulable",
+            "node.kubernetes.io/unreachable",
+            "node.cilium.io/agent-not-ready",
+            "node.kubernetes.io/unreachable"
+          ]
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "Unknown",
+            "message": "Reconciliation in progress",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/paymentservice-87ddfbcb4-jvvhf: NodeNotReady - Node is not ready (count=1)\n[Warning] Pod/checkoutservice-db56f59d-5fnsr: NodeNotReady - Node is not ready (count=1)\n\n## Metric Anomalies\nServices with 0 endpoints: paymentservice, checkoutservice\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: NOT READY (ready=Unknown) | taints: node.kubernetes.io/unschedulable, node.kubernetes.io/unreachable, node.cilium.io/agent-not-ready, node.kubernetes.io/unreachable\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: Ready (rev: main@sha1:2f)\n- argocd: NOT READY: Reconciliation in progress (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: runbooks/rca-f4-nodenotready.md | Score: 0.85]\n# Runbook: F4 - NodeNotReady Root Cause Analysis\n\n## Trigger Conditions\nUse this runbook when nodes show `NotReady` status in `kubectl get nodes`, when `KubeNodeNotReady` or `KubeNodeUnreachable` alerts fire, or when pods are stuck in `Pending` or `Terminating` state due to node issues.\n\n## Severity\n**Critical** — A NotReady node means all pods on that node are either evicted or unreachable. Service capacity is reduced and workloads may not reschedule if resources are tight.\n\n---\n[Source: runbooks/restore-after-node-failure.md | Score: 0.85]\n# Runbook: Node Failure Recovery\nerify it is cordoned\nkubectl get nodes | grep <failed-node-name>\n\n# STATUS should show: Ready,SchedulingDisabled  or  NotReady,SchedulingDisabled\n```\n\n### Phase 3: Diagnose the Root Cause\n\n```bash\n\n# Try to reach the node via SSH\nssh -J debian@211.62.97.71:22015 ktcloud@<node-ip>\n\n# If SSH works, check:\nsudo systemctl status kubelet\nsudo journalctl -u kubelet -n 100 --no-pager\nsudo systemctl status containerd\nfree -h && df -h /\n\n---\n[Source: debugging/node-notready.md | Score: 0.83]\n# Node NotReady Diagnosis\n7. **Node resource exhaustion**: Node is under extreme memory pressure and kubelet process itself got OOMKilled.\n\n8. **API server unreachable**: The API server is down or the VIP (172.25.20.200) is unreachable from the node.\n\n9. **Clock skew**: Node time is more than 5 minutes off from the rest of the cluster, causing TLS certificate validation failures.\n\n10. **Kernel panic or hardware failure**: The node has experienced a kernel panic or hardware failure. The OS may be running but in degraded state.\n\n---\n[Source: debugging/node-notready.md | Score: 0.82]\n# Node NotReady Diagnosis\nul failures as all pods on the affected node become unavailable.\n\n## Symptoms\n- `kubectl get nodes` shows STATUS `NotReady`\n- Pods on the node show status `NodeLost`, `Unknown`, or `Terminating` indefinitely\n- New pods are not scheduled to the node\n- Node shows taint `node.kubernetes.io/not-ready:NoSchedule` and `node.kubernetes.io/not-ready:NoExecute`\n- Monitoring shows no metrics from the node\n- SSH to node may succeed (node alive) but kubelet is unhealthy\n\n## Diagnostic Commands\n\n```bash\n\n---\n[Source: runbooks/rca-f4-nodenotready.md | Score: 0.82]\n# Runbook: F4 - NodeNotReady Root Cause Analysis\n) problems — check HAProxy/keepalived\n\n## Loki Queries\n\n```logql\n\n# Kubelet errors on the affected node\n{job=\"kubelet\", node=\"<node-name>\"} |= \"error\" or |= \"Error\"\n\n# Node condition change events\n{job=\"kubernetes-events\"} |= \"NodeNotReady\" or |= \"NodeHasSufficientMemory\"\n\n# Cilium agent errors on node\n{namespace=\"kube-system\", pod=~\"cilium.*\", node=\"<node-name>\"} |= \"error\"\n\n# OOM killer invocations (kernel logs via node exporter/journal)\n{job=\"node-syslog\"} |= \"Out of memory\" or |= \"oom_kill_process\"\n```\n",
+  "rca_output": {
+    "fault_id": "F4",
+    "trial": 1,
+    "system": "B",
+    "identified_fault_type": "Node NotReady",
+    "root_cause": "The node yms-proxmox-02 is NotReady, causing unavailability of pods on that node.",
+    "confidence": 0.9,
+    "affected_components": [
+      "yms-proxmox-02",
+      "paymentservice",
+      "checkoutservice"
+    ],
+    "remediation": [
+      "Investigate the health of node yms-proxmox-02 and resolve any underlying issues causing it to be NotReady.",
+      "Verify the kubelet and containerd services on the node for operational health."
+    ],
+    "detail": "The node yms-proxmox-02 is marked as NotReady, indicating it is unable to provide services to the cluster, causing the paymentservice and checkoutservice to have 0 endpoints. Resolving the health issues of this node will restore service endpoints and functionalities.",
+    "reasoning": "Step 1: Checked Node Health - Found yms-proxmox-02 is NOT READY with several conditions (unschedulable, unreachable, agent-not-ready). This is a NODE-LEVEL fault. Step 2: Checked Pod Status - All pods are Running, but noted that paymentservice and checkoutservice have 0 endpoints. This is symptomatic of the node fault, but no additional POD-LEVEL issues are confirmed here. Step 3: Checked Service Connectivity - Identified that paymentservice and checkoutservice have 0 endpoints, but this is likely resulting from the underlying node not being ready. Continued checking for additional issues. Step 4: Checked Network - No direct network issues found; focused on node-level problems instead. Step 5: Checked Resource Limits - Not applicable since node issues are already identified. Final diagnosis determined that the primary root cause is related to the node not being ready, which now impacts service availability and endpoint connectivity.",
+    "root_cause_ko": "yms-proxmox-02 노드가 준비되지 않아 해당 노드에서 실행 중인 파드의 사용 불가 원인입니다.",
+    "remediation_ko": [
+      "yms-proxmox-02 노드의 상태를 조사하고 NotReady 상태의 원인을 해결합니다.",
+      "노드에서 kubelet 및 containerd 서비스의 운영 상태를 확인합니다."
+    ],
+    "detail_ko": "yms-proxmox-02 노드는 NotReady로 표시되어 클러스터에 서비스를 제공할 수 없으며, 이로 인해 paymentservice 및 checkoutservice의 엔드포인트 수가 0입니다. 이 노드의 상태 문제를 해결하면 서비스 엔드포인트와 기능이 복원됩니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/paymentservice-87ddfbcb4-jvvhf: NodeNotReady - Node is not ready (count=1)",
+        "supports": "Indicates that the node is not ready, affecting pod availability.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/checkoutservice-db56f59d-5fnsr: NodeNotReady - Node is not ready (count=1)",
+        "supports": "Further evidence confirming that the node is not ready.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "status",
+        "source": "Node Status",
+        "content": "yms-proxmox-02: NOT READY (ready=Unknown) | taints: node.kubernetes.io/unschedulable, node.kubernetes.io/unreachable, node.cilium.io/agent-not-ready",
+        "supports": "Shows various conditions making the node unavailable, affecting all pods scheduled there.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "Metric Anomalies",
+        "content": "Services with 0 endpoints: paymentservice, checkoutservice",
+        "supports": "Indicates the direct effect of the node being NotReady on service endpoints.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Pod misconfiguration leading to service endpoint issues.",
+        "confidence": 0.2,
+        "reason_rejected": "The primary issue is clearly identified as a node not being ready, not the pod configuration."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 10.0,
+    "eval_diagnostic_logic": 9.0,
+    "eval_differential_completeness": 8.0,
+    "eval_confidence_calibration": 9.0,
+    "eval_overall_score": 9.0,
+    "eval_critique": "The diagnosis is strong and well-supported by the evidence presented in the input context. All cited evidence is verifiable from the original context. The reasoning chain logically connects the signs of the NodeNotReady condition to the conclusion of node-related issues affecting the services. The alternative hypothesis proposed was adequately addressed and rejected based on solid reasoning. The stated confidence level of 0.9 is appropriate given the robustness of the evidence and reasoning provided.",
+    "retry_count": 0,
+    "correctness_score": 0.5,
+    "correctness_reasoning": "The diagnosis identifies the fault category as 'Node NotReady', which aligns with the ground truth. However, it misses the specific context that the kubelet on worker01 stopped, leading to the nodes' unavailability. While it connects the issue to available services and endpoints, it does not explicitly mention the kubelet failure, making it partially correct but not completely accurate regarding the root cause mechanism.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 12788,
+    "prompt_tokens": 6287,
+    "completion_tokens": 1156,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health - Found yms-proxmox-02 is NOT READY with several conditions (unschedulable, unreachable, agent-not-ready). This is a NODE-LEVEL fault. Step 2: Checked Pod Status - All pods are Running, but noted that paymentservice and checkoutservice have 0 endpoints. This is symptomatic of the node fault, but no additional POD-LEVEL issues are confirmed here. Step 3: Checked Service Connectivity - Identified that paymentservice and checkoutservice have 0 endpoints, but this is likely resulting from the underlying node not being ready. Continued checking for additional issues. Step 4: Checked Network - No direct network issues found; focused on node-level problems instead. Step 5: Checked Resource Limits - Not applicable since node issues are already identified. Final diagnosis determined that the primary root cause is related to the node not being ready, which now impacts service availability and endpoint connectivity.\",\n  \"identified_fault_type\": \"Node NotReady\",\n  \"root_cause\": \"The node yms-proxmox-02 is NotReady, causing unavailability of pods on that node.\",\n  \"root_cause_ko\": \"yms-proxmox-02 노드가 준비되지 않아 해당 노드에서 실행 중인 파드의 사용 불가 원인입니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"yms-proxmox-02\", \"paymentservice\", \"checkoutservice\"],\n  \"remediation\": [\"Investigate the health of node yms-proxmox-02 and resolve any underlying issues causing it to be NotReady.\", \"Verify the kubelet and containerd services on the node for operational health.\"],\n  \"remediation_ko\": [\"yms-proxmox-02 노드의 상태를 조사하고 NotReady 상태의 원인을 해결합니다.\", \"노드에서 kubelet 및 containerd 서비스의 운영 상태를 확인합니다.\"],\n  \"detail\": \"The node yms-proxmox-02 is marked as NotReady, indicating it is unable to provide services to the cluster, causing the paymentservice and checkoutservice to have 0 endpoints. Resolving the health issues of this node will restore service endpoints and functionalities.\",\n  \"detail_ko\": \"yms-proxmox-02 노드는 NotReady로 표시되어 클러스터에 서비스를 제공할 수 없으며, 이로 인해 paymentservice 및 checkoutservice의 엔드포인트 수가 0입니다. 이 노드의 상태 문제를 해결하면 서비스 엔드포인트와 기능이 복원됩니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/paymentservice-87ddfbcb4-jvvhf: NodeNotReady - Node is not ready (count=1)\",\n      \"supports\": \"Indicates that the node is not ready, affecting pod availability.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/checkoutservice-db56f59d-5fnsr: NodeNotReady - Node is not ready (count=1)\",\n      \"supports\": \"Further evidence confirming that the node is not ready.\"\n    },\n    {\n      \"type\": \"status\",\n      \"source\": \"Node Status\",\n      \"content\": \"yms-proxmox-02: NOT READY (ready=Unknown) | taints: node.kubernetes.io/unschedulable, node.kubernetes.io/unreachable, node.cilium.io/agent-not-ready\",\n      \"supports\": \"Shows various conditions making the node unavailable, affecting all pods scheduled there.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"Metric Anomalies\",\n      \"content\": \"Services with 0 endpoints: paymentservice, checkoutservice\",\n      \"supports\": \"Indicates the direct effect of the node being NotReady on service endpoints.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Pod misconfiguration leading to service endpoint issues.\",\n      \"confidence\": 0.2,\n      \"reason_rejected\": \"The primary issue is clearly identified as a node not being ready, not the pod configuration.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "runbooks/rca-f4-nodenotready.md",
+      "score": 0.8461640477180481
+    },
+    {
+      "source": "runbooks/restore-after-node-failure.md",
+      "score": 0.8457697927951813
+    },
+    {
+      "source": "debugging/node-notready.md",
+      "score": 0.8287472426891327
+    },
+    {
+      "source": "debugging/node-notready.md",
+      "score": 0.8226894736289978
+    },
+    {
+      "source": "runbooks/rca-f4-nodenotready.md",
+      "score": 0.8188484311103821
+    }
+  ]
+}

@@ -7,12 +7,15 @@ KUBECTL = os.environ.get("KUBECTL", "kubectl")
 NAMESPACE = "boutique"
 GIT_REPO_PATH = "/tmp/thesis-rca-work"
 
-# SSH config for node-level operations (F4)
-SSH_JUMP = "debian@211.62.97.71:22015"
+# SSH config for node-level operations (F4/F11/F12).
+# Rebuilt direct K8s lab: each node is reached directly via host:port (no jump host).
+# Keys are the Kubernetes node names as reported by `kubectl get nodes`.
 WORKER_NODES = {
-    "worker01": {"ip": "172.25.20.111", "ssh_user": "ktcloud", "proxy": "k8s-jump"},
-    "worker02": {"ip": "172.25.20.112", "ssh_user": "ktcloud", "proxy": "k8s-jump"},
-    "worker03": {"ip": "172.25.20.113", "ssh_user": "ktcloud", "proxy": "k8s-jump"},
+    "yms-proxmox-02": {"host": "211.62.97.71", "port": 22016, "ssh_user": "debian"},
+    "yms-proxmox-03": {"host": "211.62.97.71", "port": 22017, "ssh_user": "debian"},
+    "yms-proxmox-04": {"host": "211.62.97.71", "port": 22018, "ssh_user": "debian"},
+    "yms-proxmox-05": {"host": "211.62.97.71", "port": 22019, "ssh_user": "debian"},
+    "yms-proxmox-06": {"host": "211.62.97.71", "port": 22020, "ssh_user": "debian"},
 }
 
 # Wait time after injection before signal collection (seconds)

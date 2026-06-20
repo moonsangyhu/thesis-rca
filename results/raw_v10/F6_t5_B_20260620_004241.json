@@ -1,0 +1,867 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "container": "server",
+          "line": "         --- End of inner exception stack trace ---"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "container": "server",
+          "line": "       ---> StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s). ConnectTimeout"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "container": "server",
+          "line": "      Error status code 'FailedPrecondition' with detail 'Can't access cart storage. StackExchange.Redis.RedisConnectionException: The message timed out in the backlog attempting to send because no connection became available (5000ms) - Last Connection Exception: It was not possible to connect to the redis server(s). ConnectTimeout, command=HMGET, timeout: 5000, inst: 0, qu: 4, qs: 0, aw: False, bw: CheckingForTimeout, last-in: 0, cur-in: 0, sync-ops: 2, async-ops: 15619, serverEndpoint: redis-cart:6379, conn-sec: n/a, aoc: 0, mc: 1/1/0, mgr: 10 of 10 available, clientName: cartservice-587f599787-6sm7q(SE.Redis-v2.7.27.49176), IOCP: (Busy=0,Free=1000,Min=1,Max=1000), WORKER: (Busy=1,Free=32766,Min=1,Max=32767), POOL: (Threads=3,QueuedItems=1,CompletedItems=216129,Timers=2), v: 2.7.27.49176 (Please take a look at this article for some common client-side issues that can cause timeouts: https://stackexchange.github.io/StackExchange.Redis/Timeouts)"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "container": "server",
+          "line": "       ---> StackExchange.Redis.RedisConnectionException: UnableToConnect on redis-cart:6379/Interactive, Idle/NotStarted, last: HMGET, origin: BeginConnectAsync, outstanding: 0, last-read: 5s ago, last-write: 5s ago, keep-alive: 60s, state: Connecting, mgr: 10 of 10 available, last-heartbeat: never, last-mbeat: 0s ago, global: 0s ago, v: 2.7.27.49176"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "container": "server",
+          "line": "      Error status code 'FailedPrecondition' with detail 'Can't access cart storage. System.Threading.Tasks.TaskCanceledException: A task was canceled."
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"tgilmore@example.org\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.330489167Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"rodriguezjohn@example.org\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.33051122Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"ryan57@example.org\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.330489469Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"weaverbrandon@example.net\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.330394588Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"gallen@example.org\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.33005315Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve cart: rpc error: code = FailedPrecondition desc = Can't access cart storage. StackExchange.Redis.RedisConnectionException: The message timed out in the backlog attempting to send because no connection became available (5000ms) - Last Connection Exception: It was not possible to connect to the redis server(s). ConnectTimeout, command=HMGET, timeout: 5000, inst: 0, qu: 1, qs: 0, aw: False, bw: CheckingForTimeout, rs: NotStarted, ws: Initializing, in: 0, last-in: 0, cur-in: 0, sync-ops: 2, async-ops: 15615, serverEndpoint: redis-cart:6379, conn-sec: n/a, aoc: 0, mc: 1/1/0, mgr: 10 of 10 available, clientName: cartservice-587f599787-6sm7q(SE.Redis-v2.7.27.49176), IOCP: (Busy=0,Free=1000,Min=1,Max=1000), WORKER: (Busy=0,Free=32767,Min=1,Max=32767), POOL: (Threads=3,QueuedItems=0,CompletedItems=216102,Timers=3), v: 2.7.27.49176 (Please take a look at this article for some common client-side issues that can cause timeouts: https://stackexchange.github.io/StackExchange.Redis/Timeouts)\\n ---\\u003e StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s). ConnectTimeout\\n   --- End of inner exception stack trace ---\\n   at Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.GetAndRefreshAsync(String key, Boolean getData, CancellationToken token)\\n   at Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.GetAsync(String key, CancellationToken token)\\n   at cartservice.cartstore.RedisCartStore.GetCartAsync(String userId) in /app/cartstore/RedisCartStore.cs:line 90\",\"http.req.id\":\"137027a9-9770-4f27-ae09-38b0f5126b11\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/66VCHSJNUP\",\"message\":\"request error\",\"session\":\"564a9e19-7799-4aa1-8028-3d385212f76c\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T15:41:10.037339102Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to add to cart: rpc error: code = FailedPrecondition desc = Can't access cart storage. StackExchange.Redis.RedisConnectionException: The message timed out in the backlog attempting to send because no connection became available (5000ms) - Last Connection Exception: It was not possible to connect to the redis server(s). ConnectTimeout, command=HMGET, timeout: 5000, inst: 0, qu: 3, qs: 0, aw: False, bw: CheckingForTimeout, last-in: 0, cur-in: 0, sync-ops: 2, async-ops: 15615, serverEndpoint: redis-cart:6379, conn-sec: n/a, aoc: 0, mc: 1/1/0, mgr: 10 of 10 available, clientName: cartservice-587f599787-6sm7q(SE.Redis-v2.7.27.49176), IOCP: (Busy=0,Free=1000,Min=1,Max=1000), WORKER: (Busy=2,Free=32765,Min=1,Max=32767), POOL: (Threads=3,QueuedItems=1,CompletedItems=216091,Timers=2), v: 2.7.27.49176 (Please take a look at this article for some common client-side issues that can cause timeouts: https://stackexchange.github.io/StackExchange.Redis/Timeouts)\\n ---\\u003e StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s). ConnectTimeout\\n   --- End of inner exception stack trace ---\\n   at Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.GetAndRefreshAsync(String key, Boolean getData, CancellationToken token)\\n   at Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.GetAsync(String key, CancellationToken token)\\n   at cartservice.cartstore.RedisCartStore.AddItemAsync(String userId, String productId, Int32 quantity) in /app/cartstore/RedisCartStore.cs:line 40\",\"http.req.id\":\"0e44170c-bb7f-4c8b-a960-b6fc12b8a390\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"7c8d90fb-ef07-4336-9a32-b300c518d8c6\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T15:41:09.03834959Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to complete the order: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"ac90d49c-010f-4b01-923f-aeb27a0e6c71\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart/checkout\",\"message\":\"request error\",\"session\":\"2de67e8d-3daf-4ab9-8a4e-5f38d7efd4a7\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T15:37:13.872440095Z\"}"
+        },
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\nNo warning/error events.\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[cartservice-587f599787-6sm7q] --- End of inner exception stack trace ---\n[cartservice-587f599787-6sm7q] ---> StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s). ConnectTimeout\n[cartservice-587f599787-6sm7q] Error status code 'FailedPrecondition' with detail 'Can't access cart storage. StackExchange.Redis.RedisConnectionException: The message timed out in the backlog attempting to send because no connection became available (5000ms) - Last Connection Exception: It was not possible to connect to the redi...\n[cartservice-587f599787-6sm7q] ---> StackExchange.Redis.RedisConnectionException: UnableToConnect on redis-cart:6379/Interactive, Idle/NotStarted, last: HMGET, origin: BeginConnectAsync, outstanding: 0, last-read: 5s ago, last-write: 5s ago, keep-alive: 60s, state: Connecting, mgr: 10 of 10 available, last-heartbeat: never, last-...\n[cartservice-587f599787-6sm7q] Error status code 'FailedPrecondition' with detail 'Can't access cart storage. System.Threading.Tasks.TaskCanceledException: A task was canceled.\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"tgilmore@example.org\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.330489167Z\"}\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"rodriguezjohn@example.org\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.33051122Z\"}\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"ryan57@example.org\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.330489469Z\"}\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"weaverbrandon@example.net\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.330394588Z\"}\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"gallen@example.org\\\": rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562-\\u003e10.98.94.87:5000: read: connection reset by peer\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:37:06.33005315Z\"}\n[frontend-5dd4466d85-m7ggl] {\"error\":\"could not retrieve cart: rpc error: code = FailedPrecondition desc = Can't access cart storage. StackExchange.Redis.RedisConnectionException: The message timed out in the backlog attempting to send because no connection became available (5000ms) - Last Connection Exception: It was not poss...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to add to cart: rpc error: code = FailedPrecondition desc = Can't access cart storage. StackExchange.Redis.RedisConnectionException: The message timed out in the backlog attempting to send because no connection became available (5000ms) - Last Connection Exception: It was not possib...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to complete the order: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"ac90d49c-010f-4b01-923f-aeb27a0e6c71\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart/checkout\",\"message\":\"request error\",\"session\":\"2de67e8d-3daf-4ab9-8a4e-5f38d7efd4a7\",\"severity\":\"error\",\"ti...\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: Ready (rev: main@sha1:2f)\n- argocd: Ready (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: runbooks/rca-f12-networkloss.md | Score: 0.81]\n# Runbook: F12 - NetworkLoss Root Cause Analysis\ne Running and Ready\n- No Cilium policy drops\n\n## Differentiation\n\n### F12 vs F6 (NetworkPolicy)\n| Signal | F12 NetworkLoss | F6 NetworkPolicy |\n|--------|----------------|-----------------|\n| Failure pattern | **Intermittent** — some requests succeed | **Complete block** — all requests fail |\n| Error type | `connection reset`, `broken pipe`, `EOF` | `connection refused`, policy DROPPED |\n| Cilium drops | **None** | Present |\n| TCP retransmissions | **Elevated** | Not elevated |\n| `tc qdisc show` | `netem loss X%` visible | No netem rules |\n\n---\n[Source: debugging/network-connectivity.md | Score: 0.80]\n# Network Connectivity Debugging\nCheck node interface MTU\n\n# SSH to node: ip link show | grep mtu\n\n# Update Cilium MTU config (requires Cilium restart)\nkubectl patch configmap -n kube-system cilium-config \\\n  -p '{\"data\": {\"mtu\": \"1450\"}}'\n\n# Restart Cilium to apply\nkubectl rollout restart ds/cilium -n kube-system\n```\n\n### Step 3: Debug NetworkPolicy drops via Hubble\n```bash\n\n# See network-policy-debug.md for detailed NetworkPolicy debugging\n\n---\n[Source: runbooks/restore-network-issue.md | Score: 0.79]\n# Runbook: Network Recovery (Cilium/CNI)\ne-system\", app=\"cilium\"} |= \"error\" or |= \"Error\" or |= \"failed\"\n\n# BPF related errors\n{namespace=\"kube-system\", app=\"cilium\"} |= \"BPF\" |= \"error\"\n\n# Connection tracking errors\n{namespace=\"kube-system\", app=\"cilium\"} |= \"CT\" or |= \"conntrack\"\n\n# MTU-related drops\n{namespace=\"kube-system\", app=\"cilium\"} |= \"MTU\" or |= \"fragmentation\"\n\n# Application-level network errors (result of CNI issue)\n{namespace=\"online-boutique\"} |= \"connection refused\" or |= \"i/o timeout\" or |= \"network unreachable\"\n```\n\n---\n[Source: runbooks/restore-network-issue.md | Score: 0.79]\n# Runbook: Network Recovery (Cilium/CNI)\nion refused\" or |= \"i/o timeout\" or |= \"network unreachable\"\n```\n\n## Prometheus Queries\n\n```promql\n\n# Cilium BPF policy drops\nrate(cilium_drop_count_total[5m])\n\n# Cilium BPF drops by reason\nsum by (reason) (rate(cilium_drop_count_total[5m]))\n\n# Cilium endpoint state (should all be \"ready\")\ncilium_endpoint_state{state!=\"ready\"}\n\n# Cilium policy enforcement\ncilium_policy_count\n\n# Network errors at node level\nrate(node_netstat_Tcp_InErrs[5m])\nrate(node_netstat_Tcp_RetransSegs[5m])\n\n---\n[Source: debugging/network-policy-debug.md | Score: 0.79]\n# NetworkPolicy Troubleshooting\n6. **Wrong port in policy**: Policy allows TCP port 80 but service is running on port 8080.\n\n7. **Policy blocks Cilium health checks**: Cilium's internal health check traffic is blocked, causing nodes to report as unhealthy.\n\n8. **CiliumNetworkPolicy conflict with Kubernetes NetworkPolicy**: Conflicting rules between standard Kubernetes NetworkPolicy and Cilium-specific CiliumNetworkPolicy.\n\n## Resolution Steps\n\n### Step 1: Add allow rule for missing traffic\n```bash\n",
+  "rca_output": {
+    "fault_id": "F6",
+    "trial": 5,
+    "system": "B",
+    "identified_fault_type": "Intermittent Network Connectivity",
+    "root_cause": "The root cause appears to be intermittent network connectivity issues affecting Redis access and the flow of requests between services.",
+    "confidence": 0.8,
+    "affected_components": [
+      "cartservice",
+      "checkoutservice",
+      "frontend"
+    ],
+    "remediation": [
+      "Investigate network connectivity and potential MTU misconfigurations.",
+      "Consider adjusting Cilium MTU configurations."
+    ],
+    "detail": "The logs from the cartservice indicate connectivity issues when accessing Redis, which could stem from intermittent network latency or incorrect MTU settings. These network issues may lead to connection reset errors, affecting application responsiveness. An in-depth investigation of network policies and MTU settings in Cilium is necessary to confirm and resolve the issues.",
+    "reasoning": "Step 1 - Node Health: All nodes are in Ready state with no conditions indicating issues. No candidate here. Step 2 - Pod Status: All pods are Running. However, the logs indicate errors related to Redis connections, suggesting potential issues with service connectivity. Moving to Step 3 - Service Connectivity: There are indications of connectivity issues, particularly with the 'cartservice' unable to connect to Redis. This points to potential network issues. Step 4 - Network: No Cilium policy drops detected, indicating it's not a NetworkPolicy fault as per the F12 and F6 comparisons. However, errors indicating 'connection reset' suggest intermittent network connectivity or potential MTU issues. Step 5 - Resource Limits: No resource limits indicate any CPU or memory issues. Therefore, the primary candidate is network connectivity issues, supported by logs stating connection errors with Redis and the checkoutservice's inability to reach its dependencies.",
+    "root_cause_ko": "근본 원인은 Redis 접근 및 서비스 간 요청 흐름에 영향을 미치는 간헐적인 네트워크 연결 문제로 보입니다.",
+    "remediation_ko": [
+      "네트워크 연결 및 잠재적인 MTU 구성 문제를 조사합니다.",
+      "Cilium MTU 구성을 조정하는 것을 고려합니다."
+    ],
+    "detail_ko": "cartservice의 로그는 Redis에 접근할 때 연결 문제를 나타내며, 이는 간헐적인 네트워크 지연 또는 잘못된 MTU 설정에서 비롯될 수 있습니다. 이러한 네트워크 문제는 응용 프로그램의 응답성에 영향을 미치는 연결 재설정 오류를 초래할 수 있습니다. 이러한 문제를 확인하고 해결하기 위해 Cilium의 네트워크 정책 및 MTU 설정에 대한 심도 있는 조사가 필요합니다.",
+    "evidence_chain": [
+      {
+        "type": "log",
+        "source": "cartservice-587f599787-6sm7q",
+        "content": "StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s). ConnectTimeout",
+        "supports": "Confirms connectivity issues between the cartservice and Redis.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "log",
+        "source": "checkoutservice-db56f59d-5fnsr",
+        "content": "rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562->10.98.94.87:5000: read: connection reset by peer",
+        "supports": "Indicates a network issue resulting in connection resets affecting the checkoutservice.",
+        "verified": true,
+        "match_ratio": 0.93
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "A misconfiguration in the Redis service that prevents access.",
+        "confidence": 0.4,
+        "reason_rejected": "No evidence of misconfiguration found, as pods are running without indications of configuration errors."
+      }
+    ],
+    "confidence_2nd": 0.7,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence cited from error logs in the diagnosis aligns well with the input signals, supporting an intermittent network connectivity issue. The logic connects the indicators in the logs back to a network issue logically. However, the alternative hypothesis regarding misconfiguration in the Redis service could be strengthened by exploring more details about potential misconfiguration rather than just stating 'no evidence found.' This could involve checking for specific connection settings or permissions that may not be captured within the basic pod status. The confidence of 0.8 is appropriate, considering the strength of the identified evidence but could warrant a slight increase if additional information on network diagnostics is available.",
+    "retry_count": 2,
+    "correctness_score": 0.5,
+    "correctness_reasoning": "The LLM diagnosed a related symptom by indicating connectivity issues affecting Redis access, but it did not specifically identify the root cause as a NetworkPolicy blocking access to Redis. The diagnosis captures the impact of the issue but lacks the specific mechanism of the NetworkPolicy being the direct cause of the problem.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 9545,
+    "prompt_tokens": 8221,
+    "completion_tokens": 1057,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1 - Node Health: All nodes are in Ready state with no conditions indicating issues. No candidate here. Step 2 - Pod Status: All pods are Running. However, the logs indicate errors related to Redis connections, suggesting potential issues with service connectivity. Moving to Step 3 - Service Connectivity: There are indications of connectivity issues, particularly with the 'cartservice' unable to connect to Redis. This points to potential network issues. Step 4 - Network: No Cilium policy drops detected, indicating it's not a NetworkPolicy fault as per the F12 and F6 comparisons. However, errors indicating 'connection reset' suggest intermittent network connectivity or potential MTU issues. Step 5 - Resource Limits: No resource limits indicate any CPU or memory issues. Therefore, the primary candidate is network connectivity issues, supported by logs stating connection errors with Redis and the checkoutservice's inability to reach its dependencies.\",\n  \"identified_fault_type\": \"Intermittent Network Connectivity\",\n  \"root_cause\": \"The root cause appears to be intermittent network connectivity issues affecting Redis access and the flow of requests between services.\",\n  \"root_cause_ko\": \"근본 원인은 Redis 접근 및 서비스 간 요청 흐름에 영향을 미치는 간헐적인 네트워크 연결 문제로 보입니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.7,\n  \"affected_components\": [\"cartservice\", \"checkoutservice\", \"frontend\"],\n  \"remediation\": [\"Investigate network connectivity and potential MTU misconfigurations.\", \"Consider adjusting Cilium MTU configurations.\"],\n  \"remediation_ko\": [\"네트워크 연결 및 잠재적인 MTU 구성 문제를 조사합니다.\", \"Cilium MTU 구성을 조정하는 것을 고려합니다.\"],\n  \"detail\": \"The logs from the cartservice indicate connectivity issues when accessing Redis, which could stem from intermittent network latency or incorrect MTU settings. These network issues may lead to connection reset errors, affecting application responsiveness. An in-depth investigation of network policies and MTU settings in Cilium is necessary to confirm and resolve the issues.\",\n  \"detail_ko\": \"cartservice의 로그는 Redis에 접근할 때 연결 문제를 나타내며, 이는 간헐적인 네트워크 지연 또는 잘못된 MTU 설정에서 비롯될 수 있습니다. 이러한 네트워크 문제는 응용 프로그램의 응답성에 영향을 미치는 연결 재설정 오류를 초래할 수 있습니다. 이러한 문제를 확인하고 해결하기 위해 Cilium의 네트워크 정책 및 MTU 설정에 대한 심도 있는 조사가 필요합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"log\",\n      \"source\": \"cartservice-587f599787-6sm7q\",\n      \"content\": \"StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s). ConnectTimeout\",\n      \"supports\": \"Confirms connectivity issues between the cartservice and Redis.\"\n    },\n    {\n      \"type\": \"log\",\n      \"source\": \"checkoutservice-db56f59d-5fnsr\",\n      \"content\": \"rpc error: code = Unavailable desc = error reading from server: read tcp 10.244.4.219:60562->10.98.94.87:5000: read: connection reset by peer\",\n      \"supports\": \"Indicates a network issue resulting in connection resets affecting the checkoutservice.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"A misconfiguration in the Redis service that prevents access.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No evidence of misconfiguration found, as pods are running without indications of configuration errors.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "runbooks/rca-f12-networkloss.md",
+      "score": 0.808686763048172
+    },
+    {
+      "source": "debugging/network-connectivity.md",
+      "score": 0.798369824886322
+    },
+    {
+      "source": "runbooks/restore-network-issue.md",
+      "score": 0.7933649122714996
+    },
+    {
+      "source": "runbooks/restore-network-issue.md",
+      "score": 0.7892031371593475
+    },
+    {
+      "source": "debugging/network-policy-debug.md",
+      "score": 0.788491427898407
+    }
+  ]
+}

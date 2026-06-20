@@ -1,0 +1,845 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "frontend",
+          "available": 0
+        },
+        {
+          "endpoint": "frontend-external",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [
+        {
+          "resource": "requests.memory",
+          "usage_ratio": 11.188
+        }
+      ],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-qh7qm\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:38Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-f95qg\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:38Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-v8g2x\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:38Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-rk6c6\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:38Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-wl2hc\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=13, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:38Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-br74l\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:38Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-spgxh\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:38Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-vj972\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:38Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "Error creating: pods \"frontend-5dd4466d85-jwjln\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=13, limited: pods=5",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:34:39Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedCreate",
+          "message": "(combined from similar events): Error creating: pods \"frontend-5dd4466d85-tbhz4\" is forbidden: exceeded quota: fault-quota-cpu, requested: requests.cpu=100m, used: requests.cpu=1670m, limited: requests.cpu=100m",
+          "object": "frontend-5dd4466d85",
+          "kind": "ReplicaSet",
+          "count": 21,
+          "lastTimestamp": "2026-06-19T17:40:01Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-9blb2: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-66ddcb6b4c-s8f6c: Running\npaymentservice-87ddfbcb4-jvvhf: Running\npaymentservice-87ddfbcb4-wqpsj: Running\nproductcatalogservice-5bc6ff7696-wcsbp: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-qh7qm\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-f95qg\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-v8g2x\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-rk6c6\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-wl2hc\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=13, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-br74l\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-spgxh\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-vj972\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - Error creating: pods \"frontend-5dd4466d85-jwjln\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=13, limited: pods=5 (count=1)\n[Warning] ReplicaSet/frontend-5dd4466d85: FailedCreate - (combined from similar events): Error creating: pods \"frontend-5dd4466d85-tbhz4\" is forbidden: exceeded quota: fault-quota-cpu, requested: requests.cpu=100m, used: requests.cpu=1670m, limited: requests.cpu=100m (count=21)\n\n## Metric Anomalies\nServices with 0 endpoints: frontend, frontend-external\nQuota near limit (>90%): requests.memory (1119%)\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F10",
+    "trial": 3,
+    "system": "A",
+    "identified_fault_type": "ResourceQuota Violation",
+    "root_cause": "Resource quota exceeded for pods and CPU requests, preventing creation of new pods.",
+    "confidence": 0.8,
+    "affected_components": [
+      "frontend service",
+      "ReplicaSet/frontend"
+    ],
+    "remediation": [
+      "Increase the resource quota for the fault-quota in the relevant namespace.",
+      "Scale down other services to free up resources."
+    ],
+    "detail": "The analysis shows that the frontend service cannot create new pods due to exceeding defined resource quotas for both pods and CPU requests. This is evidenced by the Warning events indicating failed pod creations. To resolve this, the resource limits need reassessment, and potentially, the deployment configuration could also be adjusted to ensure resource availability.",
+    "reasoning": "Step 1 was checked, and all nodes are Ready, so no NODE-LEVEL fault was found. Step 2 revealed that all pods are in Running state, but there are Warning events from ReplicaSet indicating failed pod creations due to exceeding resource quotas. This points towards a scheduling constraint issue. Step 3 indicated services frontend and frontend-external have 0 endpoints, suggesting potential Service configuration issues. However, the underlying cause appears to be the exceeded quota, which led to these failures. Proceeding to Step 4 found no abnormal signs in network connectivity. In Step 5, the requests.memory quota is reported to be above 90%, indicating resource exhaustion. Hence, the primary candidates point to ResourceQuota violations and a scheduling fault for the frontend service's inability to create new pods.",
+    "root_cause_ko": "새로운 포드 생성을 방지하는 포드 및 CPU 요청에 대한 리소스 쿼터 초과.",
+    "remediation_ko": [
+      "관련 네임스페이스의 fault-quota에 대한 리소스 쿼터를 늘리십시오.",
+      "자원을 확보하기 위해 다른 서비스의 규모를 줄이십시오."
+    ],
+    "detail_ko": "분석은 frontend 서비스가 포드와 CPU 요청에 대한 정의된 리소스 쿼터를 초과하여 새 포드를 생성할 수 없음을 보여줍니다. 이는 포드 생성 실패를 나타내는 경고 이벤트에 의해 입증됩니다. 이를 해결하기 위해 리소스 한계를 재평가하고 배포 구성을 조정하여 리소스 가용성을 보장해야 합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "Error creating: pods \"frontend-5dd4466d85-qh7qm\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5",
+        "supports": "This indicates a failure to create pods due to exceeding quota.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "Metric Anomalies",
+        "content": "Quota near limit (>90%): requests.memory (1119%)",
+        "supports": "Indicates resource exhaustion on memory which correlates with the warning events.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Node network issue causing 0 endpoints for frontend services.",
+        "confidence": 0.2,
+        "reason_rejected": "No evidence of network connectivity problems or policy drops observed in the logs or metrics."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence cited is largely verifiable, but could benefit from a clearer explanation of the implications of 0 endpoints for frontend services in relation to resource quota. Although an alternative hypothesis was provided, it could have included more context on the significance of the 0 endpoints issue, as this could suggest misconfigurations beyond just resource quotas. While the confidence is generally appropriate, the reasoning could be tightened to clarify how the warnings impact the overall assessment of the state of the cluster. Consider exploring additional alternatives beyond just network issues, such as potential misconfigurations in resource allocation for services.",
+    "retry_count": 0,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The diagnosis identifies a ResourceQuota violation and correctly notes that pods cannot be created due to exceeding resource limits. However, it inaccurately mentions CPU requests in addition to memory, while the ground truth specifically points out a memory limit issue. Thus, it matches the fault category but lacks specificity regarding the resource type.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 8467,
+    "prompt_tokens": 5317,
+    "completion_tokens": 989,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1 was checked, and all nodes are Ready, so no NODE-LEVEL fault was found. Step 2 revealed that all pods are in Running state, but there are Warning events from ReplicaSet indicating failed pod creations due to exceeding resource quotas. This points towards a scheduling constraint issue. Step 3 indicated services frontend and frontend-external have 0 endpoints, suggesting potential Service configuration issues. However, the underlying cause appears to be the exceeded quota, which led to these failures. Proceeding to Step 4 found no abnormal signs in network connectivity. In Step 5, the requests.memory quota is reported to be above 90%, indicating resource exhaustion. Hence, the primary candidates point to ResourceQuota violations and a scheduling fault for the frontend service's inability to create new pods.\",\n  \"identified_fault_type\": \"ResourceQuota Violation\",\n  \"root_cause\": \"Resource quota exceeded for pods and CPU requests, preventing creation of new pods.\",\n  \"root_cause_ko\": \"새로운 포드 생성을 방지하는 포드 및 CPU 요청에 대한 리소스 쿼터 초과.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"frontend service\", \"ReplicaSet/frontend\"],\n  \"remediation\": [\"Increase the resource quota for the fault-quota in the relevant namespace.\", \"Scale down other services to free up resources.\"],\n  \"remediation_ko\": [\"관련 네임스페이스의 fault-quota에 대한 리소스 쿼터를 늘리십시오.\", \"자원을 확보하기 위해 다른 서비스의 규모를 줄이십시오.\"],\n  \"detail\": \"The analysis shows that the frontend service cannot create new pods due to exceeding defined resource quotas for both pods and CPU requests. This is evidenced by the Warning events indicating failed pod creations. To resolve this, the resource limits need reassessment, and potentially, the deployment configuration could also be adjusted to ensure resource availability.\",\n  \"detail_ko\": \"분석은 frontend 서비스가 포드와 CPU 요청에 대한 정의된 리소스 쿼터를 초과하여 새 포드를 생성할 수 없음을 보여줍니다. 이는 포드 생성 실패를 나타내는 경고 이벤트에 의해 입증됩니다. 이를 해결하기 위해 리소스 한계를 재평가하고 배포 구성을 조정하여 리소스 가용성을 보장해야 합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"Error creating: pods \\\"frontend-5dd4466d85-qh7qm\\\" is forbidden: exceeded quota: fault-quota, requested: pods=1, used: pods=14, limited: pods=5\",\n      \"supports\": \"This indicates a failure to create pods due to exceeding quota.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"Metric Anomalies\",\n      \"content\": \"Quota near limit (>90%): requests.memory (1119%)\",\n      \"supports\": \"Indicates resource exhaustion on memory which correlates with the warning events.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Node network issue causing 0 endpoints for frontend services.\",\n      \"confidence\": 0.2,\n      \"reason_rejected\": \"No evidence of network connectivity problems or policy drops observed in the logs or metrics.\"\n    }\n  ]\n}"
+}

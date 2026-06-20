@@ -1,0 +1,934 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "checkoutservice-57f865cf78-2hhp8",
+          "phase": "Pending"
+        },
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-58b955bbdd-rktkc",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "cartservice-59c8956cd9-76cz9",
+          "container": "server",
+          "throttle_ratio": 0.113
+        },
+        {
+          "pod": "cartservice-9c5658cf-7nv7t",
+          "container": "server",
+          "throttle_ratio": 0.121
+        },
+        {
+          "pod": "cartservice-58b955bbdd-rktkc",
+          "container": "",
+          "throttle_ratio": 0.357
+        },
+        {
+          "pod": "cartservice-58b955bbdd-rktkc",
+          "container": "server",
+          "throttle_ratio": 0.315
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"941c867e-b580-43a4-ae7c-88587f3e4a28\",\"http.req.method\":\"GET\",\"http.req.path\":\"/\",\"message\":\"request error\",\"session\":\"7c8d90fb-ef07-4336-9a32-b300c518d8c6\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T13:53:31.837521643Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"148a8061-1586-42ef-945e-d7dd743200d7\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart/checkout\",\"message\":\"request error\",\"session\":\"7e7afb56-aa2a-48be-b82b-ccbd5135a161\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T13:53:31.794958068Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"e5a98950-c5d6-43ed-a41e-2fc404b76389\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"7e7afb56-aa2a-48be-b82b-ccbd5135a161\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T13:53:31.791327154Z\"}"
+        },
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-58b955bbdd-rktkc",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "checkoutservice-57f865cf78-2hhp8",
+          "phase": "Pending",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "checkoutservice",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "InvalidImageName"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-59c8956cd9-76cz9",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T13:47:16Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "cartservice-59c8956cd9-76cz9",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T13:47:36Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 168.126.63.1:53: no such host",
+          "object": "cartservice-59c8956cd9-76cz9",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T13:47:36Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "cartservice-59c8956cd9-76cz9",
+          "kind": "Pod",
+          "count": 5,
+          "lastTimestamp": "2026-06-19T13:48:03Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-9c5658cf-7nv7t",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T13:48:51Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-9c5658cf-7nv7t",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T13:48:51Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ErrImagePull",
+          "object": "cartservice-9c5658cf-7nv7t",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T13:49:14Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 168.126.63.1:53: no such host",
+          "object": "cartservice-9c5658cf-7nv7t",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T13:49:14Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: ImagePullBackOff",
+          "object": "cartservice-9c5658cf-7nv7t",
+          "kind": "Pod",
+          "count": 5,
+          "lastTimestamp": "2026-06-19T13:49:25Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-58b955bbdd-rktkc",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T13:52:14Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-58b955bbdd-rktkc",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T13:52:14Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-587f599787-v9lsp",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T13:52:31Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-587f599787-v9lsp",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T13:52:31Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: InvalidImageName",
+          "object": "checkoutservice-57f865cf78-2hhp8",
+          "kind": "Pod",
+          "count": 9,
+          "lastTimestamp": "2026-06-19T13:54:11Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "InspectFailed",
+          "message": "Failed to apply default image tag \"checkoutservice@sha256:000000000000000000000000000000\": couldn't parse image name \"checkoutservice@sha256:000000000000000000000000000000\": invalid reference format",
+          "object": "checkoutservice-57f865cf78-2hhp8",
+          "kind": "Pod",
+          "count": 9,
+          "lastTimestamp": "2026-06-19T13:54:11Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "checkoutservice-57f865cf78-2hhp8",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       InvalidImageName\n    Ready:          False\n    Restart Count:  0\n    Environment:    <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-r9bfd (ro)\n  server:\n    Container ID:   containerd://abf6fa68f9b25d9ed9bd3c501a003df9e69d68cc3ed4b6e9759418f651d6355a\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/checkoutservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/checkoutservice@sha256:403f4056479bcf2d36a865bf037ba2de0f84a60408519cee1b80e705e99f622a\n    Port:           5050/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Fri, 19 Jun 2026 22:52:58 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:5050  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:5050  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:                          5050\n      PRODUCT_CATALOG_SERVICE_ADDR:  productcatalogservice:3550\n      SHIPPING_SERVICE_ADDR:         shippingservice:50051\n      PAYMENT_SERVICE_ADDR:          paymentservice:50051\n      EMAIL_SERVICE_ADDR:            emailservice:5000\n      CURRENCY_SERVICE_ADDR:         currencyservice:7000\n      CART_SERVICE_ADDR:             cartservice:7070\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-r9bfd (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True "
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-58b955bbdd-rktkc: Running\ncheckoutservice-57f865cf78-2hhp8: Pending\n  container/checkoutservice: NOT READY (InvalidImageName) restarts=0\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/cartservice-59c8956cd9-76cz9: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-59c8956cd9-76cz9: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/cartservice-59c8956cd9-76cz9: Failed - Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 168.126.63.1:53: no such host (count=3)\n[Warning] Pod/cartservice-59c8956cd9-76cz9: Failed - Error: ImagePullBackOff (count=5)\n[Warning] Pod/cartservice-9c5658cf-7nv7t: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-9c5658cf-7nv7t: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-9c5658cf-7nv7t: Failed - Error: ErrImagePull (count=3)\n[Warning] Pod/cartservice-9c5658cf-7nv7t: Failed - Failed to pull image \"private.registry.io/boutique/cartservice:latest\": failed to pull and unpack image \"private.registry.io/boutique/cartservice:latest\": failed to resolve reference \"private.registry.io/boutique/cartservice:latest\": failed to do request: Head \"https://private.registry.io/v2/boutique/cartservice/manifests/latest\": dial tcp: lookup private.registry.io on 168.126.63.1:53: no such host (count=3)\n[Warning] Pod/cartservice-9c5658cf-7nv7t: Failed - Error: ImagePullBackOff (count=5)\n[Warning] Pod/cartservice-58b955bbdd-rktkc: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-58b955bbdd-rktkc: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-587f599787-v9lsp: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-587f599787-v9lsp: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/checkoutservice-57f865cf78-2hhp8: Failed - Error: InvalidImageName (count=9)\n[Warning] Pod/checkoutservice-57f865cf78-2hhp8: InspectFailed - Failed to apply default image tag \"checkoutservice@sha256:000000000000000000000000000000\": couldn't parse image name \"checkoutservice@sha256:000000000000000000000000000000\": invalid reference format (count=9)\n\n## Metric Anomalies\nCPU throttled: cartservice-59c8956cd9-76cz9/server (11%), cartservice-9c5658cf-7nv7t/server (12%), cartservice-58b955bbdd-rktkc/ (36%), cartservice-58b955bbdd-rktkc/server (32%)\n\n## Error Logs\n[frontend-5dd4466d85-m7ggl] {\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"941c867e-b580-43a4-ae7c-88587f3e4a28\",\"http.req.method\":\"GET\",\"http.req.path\":\"/\",\"messag...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req....\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"e5a98950-c5d6-43ed-a41e-2fc404b76389\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"mes...\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F3",
+    "trial": 4,
+    "system": "A",
+    "identified_fault_type": "Invalid Image Name and Image Pull Failure",
+    "root_cause": "The root cause is the checkoutservice pod has an invalid image name preventing it from starting.",
+    "confidence": 0.8,
+    "affected_components": [
+      "checkoutservice",
+      "cartservice"
+    ],
+    "remediation": [
+      "Verify the image name and tag for checkoutservice and rectify.",
+      "Troubleshoot and rectify the private registry connectivity issues."
+    ],
+    "detail": "The checkoutservice pod cannot start due to an 'InvalidImageName' error, which suggests the image name format is incorrect. Additionally, the cartservice pods are experiencing 'ImagePullBackOff' errors due to image accessibility issues from the private registry. This leads to application service connectivity issues as indicated by frontend logs.",
+    "reasoning": "Step 1: Checked Node Health - all nodes are Ready. Step 2: Checked Pod Status - checkoutservice is Pending with InvalidImageName, cartservice has multiple ImagePullBackOff and readiness probe failures. Noted as primary candidate. Step 3: Checked Service Connectivity - there are no service endpoint issues. Step 4: Checked Network - identified connection issues in logs indicating the frontend cannot connect to cartservice. Step 5: Checked Resource Limits - CPU throttling observed on cartservice pods. Diagnosis: checkoutservice fails due to InvalidImageName, and cartservice fails due to ImagePullBackOff and connectivity issues.",
+    "root_cause_ko": "근본 원인은 checkoutservice 포드가 시작을 방해하는 유효하지 않은 이미지 이름입니다.",
+    "remediation_ko": [
+      "checkoutservice의 이미지 이름과 태그를 확인하고 수정하십시오.",
+      "비공식 레지스트리 연결 문제를 조사하고 수정하십시오."
+    ],
+    "detail_ko": "checkoutservice 포드는 'InvalidImageName' 오류로 인해 시작할 수 없으며, 이는 이미지 이름 형식이 잘못되었음을 나타냅니다. 추가로, cartservice 포드는 비공식 레지스트리에서 이미지 접근 문제로 인해 'ImagePullBackOff' 오류를 경험하고 있습니다. 이는 프론트엔드 로그에서 나타나는 애플리케이션 서비스 연결 문제로 이어집니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/checkoutservice-57f865cf78-2hhp8: Failed - Error: InvalidImageName (count=9)",
+        "supports": "Checkoutservice is in a pending state due to InvalidImageName error.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/cartservice-58b955bbdd-rktkc: Failed - Error: ErrImagePull (count=3)",
+        "supports": "Indicates cartservice pods are failing to pull the image from private registry, contributing to service access issues.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "log",
+        "source": "frontend-5dd4466d85-m7ggl",
+        "content": "{\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"e5a98950-c5d6-43ed-a41e-2fc404b76389\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"mes...",
+        "supports": "Frontend is unable to connect to cartservice, caused by deployment issues.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The error might be due to a temporary network issue rather than an image configuration.",
+        "confidence": 0.4,
+        "reason_rejected": "Evidence points to consistent InvalidImageName and ImagePullBackOff as root problems."
+      }
+    ],
+    "confidence_2nd": 0.6,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "Overall, the RCA diagnosis is accurate and well-founded. However, the reasoning step linking the connection errors logged in the frontend to the cartservice could be made clearer. A more specific explanation of how the InvalidImageName and ImagePullBackOff directly affect service connectivity would strengthen the case. Also, while the alternative hypothesis is mentioned, it could benefit from a stronger rebuttal detailing more reasons why network issue is unlikely beyond just the observed image errors without mentioning potential transient network problems that might occur independently of the services' staging and image pull issues.",
+    "retry_count": 0,
+    "correctness_score": 0.1,
+    "correctness_reasoning": "The diagnosis mentions an issue with the checkoutservice pod not starting due to an invalid image name, which touches on a surface-level symptom. However, it does not identify the specific root cause of the issue being a manifest digest mismatch or relate it accurately to the ImagePullBackOff state. It also introduces unrelated errors from the cartservice, which detracts from the accuracy of the diagnosis.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 11056,
+    "prompt_tokens": 6328,
+    "completion_tokens": 1119,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health - all nodes are Ready. Step 2: Checked Pod Status - checkoutservice is Pending with InvalidImageName, cartservice has multiple ImagePullBackOff and readiness probe failures. Noted as primary candidate. Step 3: Checked Service Connectivity - there are no service endpoint issues. Step 4: Checked Network - identified connection issues in logs indicating the frontend cannot connect to cartservice. Step 5: Checked Resource Limits - CPU throttling observed on cartservice pods. Diagnosis: checkoutservice fails due to InvalidImageName, and cartservice fails due to ImagePullBackOff and connectivity issues.\",\n  \"identified_fault_type\": \"Invalid Image Name and Image Pull Failure\",\n  \"root_cause\": \"The root cause is the checkoutservice pod has an invalid image name preventing it from starting.\",\n  \"root_cause_ko\": \"근본 원인은 checkoutservice 포드가 시작을 방해하는 유효하지 않은 이미지 이름입니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.6,\n  \"affected_components\": [\"checkoutservice\", \"cartservice\"],\n  \"remediation\": [\"Verify the image name and tag for checkoutservice and rectify.\", \"Troubleshoot and rectify the private registry connectivity issues.\"],\n  \"remediation_ko\": [\"checkoutservice의 이미지 이름과 태그를 확인하고 수정하십시오.\", \"비공식 레지스트리 연결 문제를 조사하고 수정하십시오.\"],\n  \"detail\": \"The checkoutservice pod cannot start due to an 'InvalidImageName' error, which suggests the image name format is incorrect. Additionally, the cartservice pods are experiencing 'ImagePullBackOff' errors due to image accessibility issues from the private registry. This leads to application service connectivity issues as indicated by frontend logs.\",\n  \"detail_ko\": \"checkoutservice 포드는 'InvalidImageName' 오류로 인해 시작할 수 없으며, 이는 이미지 이름 형식이 잘못되었음을 나타냅니다. 추가로, cartservice 포드는 비공식 레지스트리에서 이미지 접근 문제로 인해 'ImagePullBackOff' 오류를 경험하고 있습니다. 이는 프론트엔드 로그에서 나타나는 애플리케이션 서비스 연결 문제로 이어집니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/checkoutservice-57f865cf78-2hhp8: Failed - Error: InvalidImageName (count=9)\",\n      \"supports\": \"Checkoutservice is in a pending state due to InvalidImageName error.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/cartservice-58b955bbdd-rktkc: Failed - Error: ErrImagePull (count=3)\",\n      \"supports\": \"Indicates cartservice pods are failing to pull the image from private registry, contributing to service access issues.\"\n    },\n    {\n      \"type\": \"log\",\n      \"source\": \"frontend-5dd4466d85-m7ggl\",\n      \"content\": \"{\\\"error\\\":\\\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\\\\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\\\\\"\\\",\\\"http.req.id\\\":\\\"e5a98950-c5d6-43ed-a41e-2fc404b76389\\\",\\\"http.req.method\\\":\\\"POST\\\",\\\"http.req.path\\\":\\\"/cart\\\",\\\"mes...\",\n      \"supports\": \"Frontend is unable to connect to cartservice, caused by deployment issues.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The error might be due to a temporary network issue rather than an image configuration.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"Evidence points to consistent InvalidImageName and ImagePullBackOff as root problems.\"\n    }\n  ]\n}"
+}
