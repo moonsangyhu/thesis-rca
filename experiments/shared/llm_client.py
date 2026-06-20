@@ -32,8 +32,15 @@ class BaseLLMClient:
         prompt: str,
         system_prompt: str,
         max_tokens: int,
+        temperature: float | None = None,
+        seed: int | None = None,
     ) -> tuple[str, dict]:
-        """Call LLM and return (response_text, token_counts)."""
+        """Call LLM and return (response_text, token_counts).
+
+        temperature/seed are backward-compatible optional args: when None, they
+        are NOT passed to the API (v2_1 behavior unchanged). Only the openai
+        provider forwards them as kwargs when not None.
+        """
         if self.provider == "anthropic":
             import anthropic
             response = self._client.messages.create(
@@ -50,6 +57,11 @@ class BaseLLMClient:
             return text, tokens
 
         elif self.provider == "openai":
+            extra = {}
+            if temperature is not None:
+                extra["temperature"] = temperature
+            if seed is not None:
+                extra["seed"] = seed
             response = self._client.chat.completions.create(
                 model=self.model,
                 messages=[
@@ -58,6 +70,7 @@ class BaseLLMClient:
                 ],
                 max_tokens=max_tokens,
                 response_format={"type": "json_object"},
+                **extra,
             )
             text = response.choices[0].message.content
             tokens = {
