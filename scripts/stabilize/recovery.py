@@ -306,7 +306,7 @@ class Recovery:
     def _recover_f11_network_delay(self, trial: int, ctx: dict) -> dict:
         """Remove tc netem delay rules."""
         node_name = ctx.get("node", next(iter(WORKER_NODES)))
-        iface = ctx.get("interface", "ens18")
+        iface = ctx.get("interface", "vmbr0")  # 재구축 랩 노드망 인터페이스(옛 ens18 → vmbr0)
         output = ssh_node(node_name, f"sudo tc qdisc del dev {iface} root 2>/dev/null; echo ok", timeout=15)
         logger.info("F11 recovered: removed netem delay on %s", node_name)
         return {"action": "remove_netem_delay", "node": node_name, "output": output}
@@ -316,7 +316,7 @@ class Recovery:
     def _recover_f12_network_loss(self, trial: int, ctx: dict) -> dict:
         """Remove tc netem loss rules."""
         node_name = ctx.get("node", next(iter(WORKER_NODES)))
-        iface = ctx.get("interface", "ens18")
+        iface = ctx.get("interface", "vmbr0")  # 재구축 랩 노드망 인터페이스(옛 ens18 → vmbr0)
         output = ssh_node(node_name, f"sudo tc qdisc del dev {iface} root 2>/dev/null; echo ok", timeout=15)
         logger.info("F12 recovered: removed netem loss on %s", node_name)
         return {"action": "remove_netem_loss", "node": node_name, "output": output}

@@ -662,7 +662,10 @@ class FaultInjector:
 
     # ── F11: Network Delay ─────────────────────────────────────────
 
-    NETEM_IFACE = "ens18"
+    # 재구축 직접 K8s 랩의 노드망 인터페이스. 옛 nested 환경의 ens18은 존재하지 않으며,
+    # 새 호스트에서 K8s 노드망(172.25.100.0/24)은 vmbr0에 바인딩된다(docs/lab-environment.md).
+    # 관리 SSH는 ens7(172.25.20.x)로 들어오므로 vmbr0 netem이 주입용 SSH 세션을 끊지 않는다.
+    NETEM_IFACE = "vmbr0"
 
     def _inject_f11_network_delay(self, target: str, trial: int, gt: dict) -> dict:
         """Inject network delay via tc netem on worker node."""
@@ -676,11 +679,12 @@ class FaultInjector:
         node_name, netem_params = delay_configs.get(trial, ("yms-proxmox-02", "delay 500ms"))
         iface = self.NETEM_IFACE
 
-        # Apply netem with safety timeout (auto-remove after 5 minutes)
+        # Apply netem with safety timeout (auto-remove after 5 minutes).
+        # 백그라운드 서브셸의 stdin/stdout/stderr를 /dev/null로 끊어야 SSH가 즉시 반환된다
+        # (안 끊으면 ssh가 채널 EOF를 기다리며 hang → 과거 F11/F12 전량 15초 타임아웃의 원인).
         command = (
-            f"sudo tc qdisc add dev {iface} root netem {netem_params} 2>/dev/null || "
-            f"sudo tc qdisc change dev {iface} root netem {netem_params}; "
-            f"(sleep 300 && sudo tc qdisc del dev {iface} root 2>/dev/null) &"
+            f"sudo tc qdisc replace dev {iface} root netem {netem_params}; "
+            f"(sleep 300 && sudo tc qdisc del dev {iface} root) >/dev/null 2>&1 </dev/null &"
         )
         output = ssh_node(node_name, command, timeout=15)
         logger.info("F11 injected: netem %s on %s (%s)", netem_params, node_name, iface)
@@ -707,10 +711,10 @@ class FaultInjector:
         node_name, netem_params = loss_configs.get(trial, ("yms-proxmox-02", "loss 10%"))
         iface = self.NETEM_IFACE
 
+        # F11과 동일: vmbr0 대상 + 백그라운드 fd 차단으로 SSH 즉시 반환.
         command = (
-            f"sudo tc qdisc add dev {iface} root netem {netem_params} 2>/dev/null || "
-            f"sudo tc qdisc change dev {iface} root netem {netem_params}; "
-            f"(sleep 300 && sudo tc qdisc del dev {iface} root 2>/dev/null) &"
+            f"sudo tc qdisc replace dev {iface} root netem {netem_params}; "
+            f"(sleep 300 && sudo tc qdisc del dev {iface} root) >/dev/null 2>&1 </dev/null &"
         )
         output = ssh_node(node_name, command, timeout=15)
         logger.info("F12 injected: netem %s on %s (%s)", netem_params, node_name, iface)
