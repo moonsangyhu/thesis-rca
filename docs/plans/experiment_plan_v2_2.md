@@ -1,112 +1,121 @@
-# 실험 계획서 V2.2 — 측정 신뢰성 + 처치 분해
+# 실험 계획서 V2.2 — 측정 신뢰성 + 처치 분해 (rev2, 비평 반영)
 
-> 작성: 2026-06-20 (Step 1 brainstorming 산출물, 기본 경로 override)
-> 입력: results/analysis_v2_1.md(V2.1 독립 비판), docs/surveys/deep_analysis_v2_2.md(Step 0.5)
-> 설계 확정(사용자 승인): **5-arm · 생성 k=5 · 동일 gpt-4o-mini judge(m=3) · F1–F12 전체**
+> 작성: 2026-06-20 (Step 1 brainstorming) · 개정: Step 2 plan critique(review_v2_2.md) + 사전 검정력 반영
+> 입력: results/analysis_v2_1.md, docs/surveys/deep_analysis_v2_2.md, docs/plans/review_v2_2.md
+> 설계 확정(사용자 승인): **5-arm · 생성 k=3 · 동일 gpt-4o-mini judge(m=3, blinded) · F1–F12 · 추정 중심 프레이밍**
 > 모델 `gpt-4o-mini` 고정. 개선은 프레임워크 레벨에서만.
 
-## 1. 가설
+## 0. 프레이밍 — 추정 중심 (검정력 반영, 사용자 결정)
 
-> **H:** GitOps 컨텍스트와 RAG 런북은 각각, 그리고 컨텍스트 길이 효과와 분리해 측정했을 때 LLM RCA 정확도를 높이며, 그 결론은 채점 임계값·샘플링 노이즈에 robust하다.
+사전 검정력(review_v2_2.md §1): C4 vs C1 power=0.20(trial=5), **C4 vs C5(내용>길이) power=0.09** — 유의성 승리는 구조적으로 불가. 병목은 측정노이즈(k)가 아니라 표본수(trial).
 
-V2.1은 "B(GitOps∪RAG) > A"를 방향만 지지(McNemar p=0.267)하고 ① 채점 임계 0.5 인공물(0.6에서 역전), ② 묶음 처치+토큰 +38% 길이 교락, ③ 채점 비결정성, ④ 단일 측정으로 미입증. V2.2는 가설 재검증 전에 **측정·설계 자체**를 고친다.
+→ **V2.2 기여를 "유의성 입증"이 아니라 "편향 없는 robust 측정 + 효과 분리 추정 + 정직한 검정력 보고"로 재정의.** 1차 지표 = **효과크기(Cohen's h) + 신뢰구간(Newcombe CI) + GLMM 계수**. 유의성(McNemar/GLMM p)은 **보조·robustness**로 보고하되 성공 게이트로 쓰지 않는다. 절대 정확도·임계 sweep·arm 분해를 정확히 추정해 "GitOps·RAG·길이 효과의 크기와 방향"을 CI와 함께 제시하는 것이 목표.
+
+## 1. 가설 (추정형)
+
+> **H(추정):** A 대비 GitOps·RAG 처치의 정확도 효과크기를 길이 효과와 분리해 추정하면, 그 점추정·CI가 (a) 양의 방향이고 (b) placebo(길이만) 효과를 초과하는지를 측정한다. 결론은 채점 임계값·샘플링 노이즈에 robust해야 한다.
+
+V2.1은 "B(GitOps∪RAG)>A"를 방향만 지지(p=0.267)하고 ① 임계 0.5 인공물(0.6 역전), ② 묶음+토큰 +38% 길이 교락, ③ 채점 비결정성, ④ 단일 측정으로 미입증. V2.2는 측정·설계 자체를 고쳐 **효과를 정직하게 추정**한다.
 
 ## 2. 독립변수 — 5-arm 처치 구조 (P2)
 
-(fault,trial)당 **fault injection·신호 수집은 1회**. 5개 arm이 그 **동일 신호**를 받아 컨텍스트만 다르게 구성한다(arm은 cluster cooldown을 늘리지 않고 LLM 호출만 늘림).
+(fault,trial)당 fault injection·신호 수집 1회, 5 arm이 **동일 신호** 공유(arm은 cooldown 불변, LLM 호출만 증가).
 
-| arm 코드 | 컨텍스트 구성 | 역할 |
+| arm | 컨텍스트 | 역할 |
 |---|---|---|
-| `C1_A` | observability only (kubectl + Prometheus + Loki) | baseline |
-| `C2_gitops` | A + GitOps(FluxCD status + git diff) | GitOps main effect |
-| `C3_rag` | A + RAG 런북 retrieval | RAG main effect |
-| `C4_both` | A + GitOps + RAG (= 기존 System B) | full / interaction |
-| `C5_placebo` | A + **C4와 토큰 수 matched된 무관 filler 텍스트** | 길이 교락 통제 |
+| `C1_A` | observability only (kubectl+Prom+Loki) | baseline |
+| `C2_gitops` | A + GitOps 블록 | GitOps main effect |
+| `C3_rag` | A + RAG 런북 블록 | RAG main effect |
+| `C4_both` | A + GitOps + RAG (=기존 B) | full/interaction |
+| `C5_placebo` | A + **무의미 보일러플레이트(C4 추가분과 토큰 매칭)** | 길이 교락 통제 |
 
-**2×2 factorial 분해 (GitOps × RAG):**
-- GitOps main = (C2+C4) − (C1+C3)
-- RAG main = (C3+C4) − (C1+C2)
-- interaction = (C4−C2) − (C3−C1)
+### 2-1. 길이 직교화 (P0-A — 비평 치명결함 수정)
+placebo가 C4 총길이만 통제하면 main effect 안의 길이차(C2≠C3)가 남는다. → **GitOps 블록·RAG 블록을 동일 토큰 예산 `T_block`으로 pad/truncate** 해 C2·C3의 추가 길이를 같게 맞춘다. C5 placebo는 `2·T_block`(=C4 추가분)을 무의미 텍스트로 채운다. 모든 arm 동일 위치/순서 삽입(Lost in the Middle 통제).
 
-**판정 게이트(핵심):** `C4 > C5 > C1`이 통계적으로 유의해야 "GitOps+RAG **내용**의 순기여"를 주장한다. C5(placebo)도 C1보다 오르면 개선의 일부/전부는 **토큰 증가 효과**(Power of Noise, arXiv:2401.14887).
+### 2-2. placebo 설계 (P1 — 신호 누출 차단)
+filler = **무의미 보일러플레이트/셔플된 자연어**(다른 fault의 실제 GitOps diff 금지 — 라벨 공간 오염 방지). 토큰만 `2·T_block` 매칭, 의미 신호 0.
 
-**Confound 통제:**
-- RAG 런북이 GitOps 정보를 중복 회수하지 않게 두 소스 분리(main effect 상호 마스킹 방지).
-- placebo filler = 다른 fault의 GitOps diff/셔플 로그 등 **주제 인접하나 해당 장애와 무관**한 텍스트, C4와 토큰 수 ±5% 매칭.
-- 컨텍스트 삽입 위치 통제(Lost in the Middle, arXiv:2307.03172) — 모든 arm 동일 위치/순서.
+### 2-3. 분해·게이트 (추정형)
+- GitOps main = (C2+C4)−(C1+C3), RAG main = (C3+C4)−(C1+C2), interaction = (C4−C2)−(C3−C1).
+- **판정(추정 게이트):** GLMM 계수로 ① GitOps 또는 RAG 주효과 점추정>0 (CI 보고), ② **both 대비 placebo 추가효과(C4−C5) 점추정>0** 이면 "내용의 순기여 방향 지지". 유의성은 보조 표기.
+- **Confound 통제:** RAG 런북↔GitOps 정보 중복을 Jaccard로 정량화(§3-5), 임계 초과 시 런북 재작성.
 
 ## 3. 측정 robustness (P1)
 
-### 3-1. 생성 — self-consistency k=5
-- 각 arm을 `temperature=0.7`로 **k=5회 샘플**.
-- 다수결 단위 = `identified_fault_type`(이산 라벨) 최빈값. 동률 시 첫 샘플 우선(결정적 tie-break).
-- 5샘플 각각의 `identified_fault_type`·`correctness_score`·`confidence`를 raw JSON에 보존(분포 분석용).
-- 근거: Self-Consistency(arXiv:2203.11171, T=0.7), RCAgent(arXiv:2310.16340, RCA 도메인 k≈20 saturation이나 k=5에서 대부분 이득).
+### 3-1. 생성 — self-consistency k=3
+- 각 arm을 `temperature=0.7`로 **k=3 샘플**. (검정력상 k는 병목 아님 → k=3로 비용 절감, 측정노이즈는 대부분 완화.)
+- 다수결 단위 = `identified_fault_type` 최빈값. 동률 시 첫 샘플(결정적 tie-break).
+- 3샘플 각각의 라벨·score·confidence를 raw JSON 보존(분포 분석).
 
-### 3-2. 채점 — judge 다수결 m=3
-- 동일 `gpt-4o-mini` judge, `temperature≈0 + seed 고정 + reference rubric(ground_truth 제공)`.
-- **m=3회 호출 다수결**로 채점 비결정성(V2.1 결함 #3: 동일 답 0.1/0.5 갈림) 완화.
-- 근거: temp=0도 비결정 잔존(arXiv:2503.09347) → 다수결 필수. reference-guided(arXiv:2306.05685, 실패율 70→15%).
+### 3-2. 대표 correctness_score (P0-B 수정)
+- 다수결 라벨에 속한 샘플들의 **correctness_score 중앙값**을 대표값으로 채택. CSV 별도 컬럼(`rep_correctness_score`)에 기록. 임계 sweep의 입력 = 이 대표값.
 
-### 3-3. 점수 보존 + 임계 sweep
-- `correctness_score`를 **이진화하지 않고 원점수 보존**(arm×k 분포 전부 CSV/raw 기록).
-- correct/incorrect 이진화는 **사후**에 **임계 0.5/0.6/0.7 sweep**으로 산출, 분석에 3개 전부 병기.
-- 근거: V2.1 결함 #2 — 결론이 0.5 임계에 의존, 0.6에서 역전.
+### 3-3. 채점 — judge 다수결 m=3 + blinding (P0-I 수정)
+- 동일 `gpt-4o-mini` judge, `temperature=0 + seed 고정 + reference rubric(ground_truth 제공)`.
+- **judge blinding:** 채점 입력에서 **arm 식별·출처 단서 제거**(진단 라벨+근거만 전달, 어느 arm/컨텍스트에서 나왔는지 숨김) — self-preference·동방향 편향 완화.
+- **m=3 다수결**, 채점 tie-break = score 중앙값(P1-D, 결정적). `system_fingerprint` 로깅(seed 무효 사후 식별).
 
-## 4. 통계 분석 (Step 5에서 독립 분석가가 수행)
+### 3-4. 점수 보존 + 임계 sweep
+- correctness 원점수·분포 전부 보존, 이진화는 사후. **primary 임계 = 0.5 사전 등록**, 0.6/0.7은 보정 없는 robustness check로 분리 보고(다중성 폭발 방지).
 
-반복측정(5 trials/fault)을 60 독립건으로 McNemar에 넣으면 거짓 정밀도 → 올바른 절차:
-1. **1차:** fault당 정확률 집계(12 item) 후 arm 쌍 비교 — **exact binomial McNemar**(discordant b+c 작음) + **Cohen's h** 효과크기 + **Newcombe hybrid score CI**.
-2. **다중 arm:** **Cochran's Q** omnibus → 유의 시 **post-hoc McNemar + Bonferroni 보정**.
-3. **임계 sweep(0.5/0.6/0.7)** 결과를 모든 비교에 병기.
-4. **보조:** GLMM(fault random effect)로 반복측정 정석 확인.
-5. 검정력 부족 시 "비유의 ≠ 효과 없음" 명시. 경계값(b+c<25, Cohen band)은 휴리스틱임을 주석.
+### 3-5. 저품질 trial 플래그 + 중복 점검 (P1-C, P1-E)
+- 신호 수집 단계에서 **저품질 플래그**(Loki timeout/빈 로그/recovery 잔류) 기록 → 분석에서 포함/제외 sensitivity 양쪽 보고.
+- RAG 런북↔GitOps 컨텍스트 **토큰 Jaccard** dry-run 출력. 임계(예: 0.3) 초과 시 런북 재작성.
+
+## 4. 통계 분석 (Step 5 독립 분석가)
+
+1. **1차 = GLMM** (P0-G): `correct ~ GitOps * RAG + (1|fault)` (binomial). GitOps·RAG·interaction 계수와 CI 직접 추정. placebo는 `length` 항/별도 대비(C4−C5)로.
+2. **효과크기·CI 1차 승격** (P2): 모든 arm 쌍에 **Cohen's h + Newcombe hybrid score CI**를 점추정과 함께.
+3. **보조 유의성:** fault 집계(12 item) exact binomial McNemar, 다중 arm은 Cochran Q → post-hoc(Bonferroni). **검정력 사전 보고(§review_v2_2 §1) 병기, "비유의 ≠ 효과 없음" 명시.**
+4. **임계 sweep(0.5 primary / 0.6·0.7 robustness)** 전부 병기.
+5. **fault별 효과 forest plot**(P1) 필수 산출 — F4식 단일 fault 편중 노출.
+6. 경계값(b+c<25, Cohen band)은 휴리스틱 주석.
 
 ## 5. 구현 설계 (experiments/v2_2/, v2_1 파생)
 
 | 파일 | 변경 |
 |---|---|
-| `experiments/shared/llm_client.py` | `call_llm()`에 `temperature`·`seed` 인자 추가; `judge_correctness()` → `judge_correctness_voted(m=3)` 다수결, 원점수 리스트 반환 |
-| `experiments/shared/runner.py` | trial 내부: 신호수집 1회 → **5-arm 루프** × **생성 k=5 루프**; arm별 컨텍스트 빌드·집계 |
-| `src/processor/context_builder.py` | arm 토글(`C1_A`/`C2_gitops`/`C3_rag`/`C4_both`/`C5_placebo`); **placebo filler 생성기**(토큰 매칭) |
-| `experiments/v2_2/config.py` | CSV에 `arm`, `gen_samples_json`(k=5 분포), `correctness_scores_json`(m=3), `correct@0.5/0.6/0.7` 컬럼 |
-| `experiments/v2_2/run.py` | v2_1 파생, version=v2_2, arm/k/m CLI 인자 |
-| `experiments/v2_2/analyze_v2_2.py` (신규) | §4 통계(McNemar·Cohen's h·Newcombe CI·Cochran Q·임계 sweep·factorial 분해) |
+| `experiments/shared/llm_client.py` | `call_llm()`에 `temperature`·`seed` 인자; `judge_correctness_voted(m=3, blinded)` 다수결·중앙값 tie-break·fingerprint 반환 |
+| `experiments/shared/runner.py` | 신호수집 1회 → **5-arm 루프 × 생성 k=3 루프**; 다수결 라벨+대표score 집계; 저품질 플래그 |
+| `src/processor/context_builder.py` | arm 토글(C1~C5) + **블록 토큰 동일화(T_block pad/truncate)** + placebo 보일러플레이트 생성기 + Jaccard 중복 계산 |
+| `experiments/v2_2/config.py` | CSV에 `arm`, `gen_samples_json`(k=3), `correctness_scores_json`(m=3), `rep_correctness_score`, `correct@0.5/0.6/0.7`, `low_quality_flag`, `system_fingerprint`, `gitops_rag_jaccard` |
+| `experiments/v2_2/run.py` | v2_1 파생, version=v2_2, arm/k/m CLI |
+| `experiments/v2_2/analyze_v2_2.py` (신규) | §4 통계(GLMM·Cohen's h·Newcombe CI·McNemar·Cochran Q·임계 sweep·factorial 분해·forest plot) |
 
-**검증:** `--dry-run`(실 클러스터 미접속, mock 신호)으로 5-arm × k=5 × m=3 루프·CSV 스키마·집계 로직 end-to-end 확인 후에만 실 수집.
+**검증:** `--dry-run`(mock 신호)으로 5-arm×k=3×m=3 루프·CSV 스키마·집계·길이직교화·Jaccard·blinding end-to-end 확인 후에만 실 수집.
 
 ## 6. 종속변수·기록
+- **1차:** arm별 정확도 점추정 + CI(임계 0.5/0.6/0.7), GLMM 계수, Cohen's h.
+- **부:** 생성 다수결 일치율(k=3), judge 다수결 일치율(m=3), confidence 보정, latency·토큰, low_quality 비율, Jaccard.
+- CSV `results/experiment_results_v2_2.csv`, raw `results/raw_v2_2/`(arm별 3샘플+3채점 분포 보존).
 
-- **주 종속변수:** arm별 정확도(임계 0.5/0.6/0.7 각각), fault별/카테고리별.
-- **부 종속변수:** 생성 다수결 일치율(k=5 내 합의도), judge 다수결 일치율(m=3), confidence 보정, latency·토큰.
-- CSV: `results/experiment_results_v2_2.csv`, raw: `results/raw_v2_2/`(arm별 5샘플+3채점 분포 보존).
+## 7. 규모·실행
+- 12 fault × 5 trial × 5 arm × (k=3 생성 + m=3 채점) ≈ **5·60·7.5 ≈ 2,250 LLM 호출**. 직렬 ~12h(cooldown ~6h 고정 포함). arm/샘플 독립 → 병렬화로 LLM wall-clock 단축.
+- Step 4: `/lab-tunnel` → `nohup` → `/experiment-status`(~10분 보고) → `/lab-restore`.
+- ⚠️ 전제: `OPENAI_API_KEY` 설정(현재 미설정), 랩 터널 GREEN(2026-06-19 Preflight 달성).
 
-## 7. 규모·실행 절차
+## 8. 외적 타당성 — 결론 일반화 범위 (P2-F, 사전 선언)
+단일 클러스터(KT Cloud Debian 6노드, Cilium)·단일 앱(Online Boutique)·단일 모델(gpt-4o-mini)·GitOps/RAG **구현 1종**·trial=5에 한정. 다른 런북 품질·다른 GitOps 도구·다른 토폴로지로 일반화 불가. trial=5는 fault별 정확률을 6단계로 양자화 → 점추정보다 효과크기·CI를 1차 해석.
 
-- 규모: 12 fault × 5 trial × 5 arm × (k=5 생성 + m=3 채점) ≈ **2,850 LLM 호출**. 직렬 ~14h(cooldown ~6h 포함). arm/샘플 독립 → LLM 호출 병렬화로 단축.
-- Step 4: `/lab-tunnel` → `nohup` 실행 → `/experiment-status` 모니터(~10분 간격 보고) → `/lab-restore`.
-- ⚠️ **전제조건:** `OPENAI_API_KEY` 설정(현재 미설정), 랩 터널 GREEN(Preflight는 2026-06-19 달성).
+## 9. 가드레일·격리
+- 모델 `gpt-4o-mini` 고정. 개선은 프레임워크(반복·ablation·채점) 레벨만.
+- 기존 CSV/raw/ground_truth 불변. `experiments/v2_2/`·`results/*_v2_2.*` 격리.
+- main 직접 커밋·push·force·--no-verify·--admin 금지. feature `exp/v2_2-measurement-ablation` → 한글 PR → rebase 머지.
 
-## 8. 가드레일·격리
-
-- 모델 `gpt-4o-mini` 고정. 개선은 프레임워크(반복·ablation·채점) 레벨에서만.
-- 기존 결과 CSV/raw/ground_truth 수정·삭제 금지. `experiments/v2_2/`·`results/*_v2_2.*`로 격리.
-- main 직접 커밋·push·force·--no-verify·--admin 금지. feature 브랜치 `exp/v2_2-measurement-ablation` → 한글 PR → rebase 머지.
-
-## 9. Definition of Done
-
-1. P1 하네스(k=5 생성 + m=3 채점 다수결 + seed 고정 + 임계 sweep) 구현·--dry-run 검증.
-2. P2 5-arm(C1~C5) 구현·수집.
-3. 독립 비판 분석가(fresh sub-agent)가 `results/analysis_v2_2.md` 작성(§4 통계 + arm 분해 + 선행연구 인용 비판 + 개선 가설).
+## 10. Definition of Done
+1. P1 하네스(k=3 생성 + m=3 blinded 채점 다수결 + seed/fingerprint + 대표score + 임계 sweep + 저품질 플래그) 구현·--dry-run 검증.
+2. P2 5-arm(C1~C5, 블록 토큰 직교화 + placebo 보일러플레이트 + Jaccard) 구현·수집.
+3. 독립 비판 분석가가 `results/analysis_v2_2.md` 작성(GLMM·효과크기·CI 1차 + arm 분해 + forest plot + 선행연구 인용 비판 + 개선 가설).
 4. 부트스트랩: `docs/plans/next_experiment_goal_v2_3.md` + 새 세션 [GOAL] + TickTick ai-continue 투두.
 5. feature 브랜치 → 한글 PR → rebase 머지.
 
-## 10. 리스크
-
+## 11. 리스크
 | 리스크 | 완화 |
 |---|---|
-| LLM 호출 4~7배 → 비용·시간 | arm/샘플 독립 병렬화; k=3 fallback |
-| arm당 trial=5 → interaction 검정력 약함 | 결과에 검정력 명시, Cohen's h 병기 |
-| RAG↔GitOps 정보 중복 → main effect 마스킹 | 소스 분리, 중복 점검 |
-| placebo filler가 우연히 유의미 신호 포함 | 무관성 수동 검수, 토큰만 매칭 |
-| judge 다수결도 인플레이션 잔존 | 임계 sweep로 score 분포 노출, eval 점수는 품질근거로 미사용 |
+| 검정력 부족 → 유의성 미달 | 추정 중심 프레이밍, 효과크기·CI 1차, 검정력 사전 보고 |
+| factorial 내 길이 교락 | 블록 토큰 직교화(T_block), placebo 2·T_block 매칭 |
+| judge 동방향 편향·self-preference | blinding + 임계 sweep로 score 분포 노출 |
+| RAG↔GitOps 중복 마스킹 | Jaccard 정량화, 임계 초과 시 런북 재작성 |
+| 저품질 trial 신호 결손 | 플래그 + 포함/제외 sensitivity |
+| placebo 우연 신호 | 무의미 보일러플레이트(실제 diff 금지) |
+| seed best-effort 무효 | fingerprint 로깅 + 다수결 |
