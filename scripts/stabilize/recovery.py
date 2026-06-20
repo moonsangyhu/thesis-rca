@@ -10,7 +10,7 @@ from scripts.fault_inject.base import (
     kubectl, kubectl_apply, kubectl_delete, kubectl_patch,
     kubectl_get_json, ssh_node,
 )
-from scripts.fault_inject.config import NAMESPACE
+from scripts.fault_inject.config import NAMESPACE, WORKER_NODES
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +189,7 @@ class Recovery:
 
     def _recover_f4(self, trial: int, ctx: dict) -> dict:
         """Restore node health."""
-        node = ctx.get("node", "worker01")
+        node = ctx.get("node", next(iter(WORKER_NODES)))
         recovery_commands = {
             1: [
                 "sudo systemctl start kubelet",
@@ -305,7 +305,7 @@ class Recovery:
 
     def _recover_f11_network_delay(self, trial: int, ctx: dict) -> dict:
         """Remove tc netem delay rules."""
-        node_name = ctx.get("node", "worker01")
+        node_name = ctx.get("node", next(iter(WORKER_NODES)))
         iface = ctx.get("interface", "ens18")
         output = ssh_node(node_name, f"sudo tc qdisc del dev {iface} root 2>/dev/null; echo ok", timeout=15)
         logger.info("F11 recovered: removed netem delay on %s", node_name)
@@ -315,7 +315,7 @@ class Recovery:
 
     def _recover_f12_network_loss(self, trial: int, ctx: dict) -> dict:
         """Remove tc netem loss rules."""
-        node_name = ctx.get("node", "worker01")
+        node_name = ctx.get("node", next(iter(WORKER_NODES)))
         iface = ctx.get("interface", "ens18")
         output = ssh_node(node_name, f"sudo tc qdisc del dev {iface} root 2>/dev/null; echo ok", timeout=15)
         logger.info("F12 recovered: removed netem loss on %s", node_name)

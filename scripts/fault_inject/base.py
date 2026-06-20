@@ -104,7 +104,11 @@ def kubectl_get_json(resource: str, name: str = "", namespace: str = NAMESPACE) 
 
 
 def ssh_node(node_name: str, command: str, timeout: int = 30) -> str:
-    """SSH to a worker node and run a command."""
+    """SSH to a worker node and run a command.
+
+    Rebuilt direct K8s lab: nodes are reached directly via host:port. A jump host
+    is only used when the node explicitly declares one (``jump``/``proxy`` key).
+    """
     from .config import WORKER_NODES
     node = WORKER_NODES.get(node_name)
     if not node:
@@ -114,8 +118,13 @@ def ssh_node(node_name: str, command: str, timeout: int = 30) -> str:
         "ssh",
         "-o", "StrictHostKeyChecking=no",
         "-o", "ConnectTimeout=10",
-        "-J", f"debian@211.62.97.71:22015",
-        f"{node['ssh_user']}@{node['ip']}",
+        "-p", str(node["port"]),
+    ]
+    jump = node.get("jump") or node.get("proxy")
+    if jump:
+        ssh_cmd += ["-J", jump]
+    ssh_cmd += [
+        f"{node['ssh_user']}@{node['host']}",
         command,
     ]
     logger.info("SSH to %s: %s", node_name, command)

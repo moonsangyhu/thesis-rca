@@ -2,18 +2,20 @@
 # SSH tunnel to K8s lab cluster via Proxmox jump host
 # Usage: ./scripts/tunnel.sh [start|stop|status]
 #
+# 2026-06: nested Proxmox 폐기 → KT Cloud Debian 호스트(yms-proxmox-01)에 K8s master 직접 설치.
+#          따라서 master API = 점프 호스트(22015) 자신의 localhost:6443.
 # Tunnels:
-#   localhost:6443  -> K8s API (via SSH to Proxmox -> 192.168.100.201:6443)
+#   localhost:6443  -> K8s API (SSH -L to master host's 127.0.0.1:6443)
 #   localhost:9090  -> Prometheus (kubectl port-forward)
 #   localhost:3100  -> Loki (kubectl port-forward)
 
 set -euo pipefail
 
 JUMP_HOST="211.62.97.71"
-JUMP_PORT="22015"
+JUMP_PORT="22015"            # yms-proxmox-01 = K8s master
 JUMP_USER="debian"
 JUMP_KEY="/Users/yumunsang/Documents/yms-classic-key.pem"
-K8S_MASTER="192.168.100.201"
+K8S_MASTER="127.0.0.1"       # master API는 점프 호스트 로컬 (nested VM 아님)
 
 export KUBECONFIG="${HOME}/.kube/config-k8s-lab"
 
@@ -43,7 +45,7 @@ start_tunnel() {
 
     # 3) kubectl port-forward for Loki
     echo "[3/3] Loki port-forward (localhost:3100)..."
-    kubectl port-forward -n monitoring pod/loki-0 3100:3100 > /tmp/pf-loki.log 2>&1 &
+    kubectl port-forward -n monitoring svc/loki 3100:3100 > /tmp/pf-loki.log 2>&1 &
 
     sleep 5
     echo ""

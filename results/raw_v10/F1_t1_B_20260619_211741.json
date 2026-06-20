@@ -1,0 +1,990 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-vx5dk",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-6gl6k",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-bvsk7",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-slnzq",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-g54lf",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-2q92z",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "container": "server",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "container": "server",
+          "terminated_reason": "OOMKilled"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "container": "server",
+          "restarts": 1
+        }
+      ],
+      "oom_events": [
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "container": "server"
+        }
+      ],
+      "cpu_throttling": [
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "container": "",
+          "throttle_ratio": 0.501
+        },
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "container": "server",
+          "throttle_ratio": 0.373
+        }
+      ],
+      "memory_usage": [
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "container": "server",
+          "memory_usage_ratio": 0.919
+        }
+      ],
+      "node_status": [],
+      "endpoint_status": [
+        {
+          "endpoint": "cartservice",
+          "available": 0
+        }
+      ],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        },
+        {
+          "pod": "frontend-5dd4466d85-6gl6k",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"9c418bb9-d5a5-4252-b133-f92df6ff29c8\",\"http.req.method\":\"GET\",\"http.req.path\":\"/\",\"message\":\"request error\",\"session\":\"ba6e7f6b-e321-4bb9-8b9b-be6b2f1e216e\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T12:16:29.93618119Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-6gl6k",
+          "container": "server",
+          "line": "{\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"ae874630-7f47-4f6e-b218-c9785f0dbb65\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"4b2292f4-7e41-40e5-9d4a-06085255392e\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T12:16:23.742625798Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-6gl6k",
+          "container": "server",
+          "line": "{\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"7ad23186-1f2f-49b8-8a84-b39e8e423030\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart/checkout\",\"message\":\"request error\",\"session\":\"7e7afb56-aa2a-48be-b82b-ccbd5135a161\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T12:16:14.247165781Z\"}"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-c4bb94ff4-cn6dx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": false,
+              "restartCount": 2,
+              "state": [
+                "running"
+              ],
+              "lastTerminatedReason": "OOMKilled"
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-slnzq",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-2q92z",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-g54lf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-6gl6k",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-bvsk7",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-vx5dk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container server in pod cartservice-c4bb94ff4-5w96n_boutique(3d79f80d-8736-4777-b286-91fa39651deb)",
+          "object": "cartservice-c4bb94ff4-5w96n",
+          "kind": "Pod",
+          "count": 7,
+          "lastTimestamp": "2026-06-19T12:08:04Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-587f599787-46pt4",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:09:18Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-587f599787-46pt4",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:09:18Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-c4bb94ff4-r4sb6",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-06-19T12:10:01Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-c4bb94ff4-r4sb6",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-06-19T12:10:01Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.5.184:7070\" within 1s: context deadline exceeded",
+          "object": "cartservice-c4bb94ff4-r4sb6",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:10:31Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.244.5.184:7070\" within 1s: context deadline exceeded",
+          "object": "cartservice-c4bb94ff4-r4sb6",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:10:31Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container server in pod cartservice-c4bb94ff4-r4sb6_boutique(775a23b1-6249-4a38-b176-4b49b16c8612)",
+          "object": "cartservice-c4bb94ff4-r4sb6",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:10:31Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-587f599787-8mz4j",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:11:33Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-587f599787-8mz4j",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:11:33Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-c4bb94ff4-cn6dx",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-06-19T12:15:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-c4bb94ff4-cn6dx",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-06-19T12:15:09Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container server in pod cartservice-c4bb94ff4-cn6dx_boutique(4f9b1b3a-6a1c-4022-bf29-cc7b8a3c6dde)",
+          "object": "cartservice-c4bb94ff4-cn6dx",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T12:15:38Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 0,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "cartservice-c4bb94ff4-cn6dx",
+          "describe_excerpt": "    Host Port:      0/TCP\n    State:          Running\n      Started:      Fri, 19 Jun 2026 21:15:51 +0900\n    Last State:     Terminated\n      Reason:       OOMKilled\n      Exit Code:    137\n      Started:      Fri, 19 Jun 2026 21:14:50 +0900\n      Finished:     Fri, 19 Jun 2026 21:15:36 +0900\n    Ready:          False\n    Restart Count:  2\n    Limits:\n      cpu:     300m\n      memory:  32Mi\n    Requests:\n      cpu:      200m\n      memory:   32Mi\n    Liveness:   grpc <pod>:7070  delay=15s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:7070  delay=15s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      REDIS_ADDR:  redis-cart:6379\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-5rm4b (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-5rm4b:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-c4bb94ff4-cn6dx: Running\n  container/server: NOT READY restarts=2\n    last terminated: OOMKilled (exit code ?)\ncheckoutservice-db56f59d-slnzq: Running\ncurrencyservice-75b89545f4-2q92z: Running\nemailservice-5b6d8449d8-g54lf: Running\nfrontend-5dd4466d85-6gl6k: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-bvsk7: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-vx5dk: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/cartservice-c4bb94ff4-5w96n: BackOff - Back-off restarting failed container server in pod cartservice-c4bb94ff4-5w96n_boutique(3d79f80d-8736-4777-b286-91fa39651deb) (count=7)\n[Warning] Pod/cartservice-587f599787-46pt4: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-587f599787-46pt4: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-c4bb94ff4-r4sb6: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=2)\n[Warning] Pod/cartservice-c4bb94ff4-r4sb6: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=2)\n[Warning] Pod/cartservice-c4bb94ff4-r4sb6: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.5.184:7070\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/cartservice-c4bb94ff4-r4sb6: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.5.184:7070\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/cartservice-c4bb94ff4-r4sb6: BackOff - Back-off restarting failed container server in pod cartservice-c4bb94ff4-r4sb6_boutique(775a23b1-6249-4a38-b176-4b49b16c8612) (count=1)\n[Warning] Pod/cartservice-587f599787-8mz4j: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-587f599787-8mz4j: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-c4bb94ff4-cn6dx: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=2)\n[Warning] Pod/cartservice-c4bb94ff4-cn6dx: Unhealthy - Liveness probe failed: timeout: health rpc did not complete within 1s (count=2)\n[Warning] Pod/cartservice-c4bb94ff4-cn6dx: BackOff - Back-off restarting failed container server in pod cartservice-c4bb94ff4-cn6dx_boutique(4f9b1b3a-6a1c-4022-bf29-cc7b8a3c6dde) (count=3)\n\n## Metric Anomalies\nOOMKilled containers: cartservice-c4bb94ff4-cn6dx/server\nCPU throttled: cartservice-c4bb94ff4-cn6dx/ (50%), cartservice-c4bb94ff4-cn6dx/server (37%)\nHigh memory usage (>80% limit): cartservice-c4bb94ff4-cn6dx/server (92%)\nServices with 0 endpoints: cartservice\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n[frontend-5dd4466d85-6gl6k] {\"error\":\"could not retrieve cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"9c418bb9-d5a5-4252-b133-f92df6ff29c8\",\"http.req.method\":\"GET\",\"http.req.path\":\"/\",\"messag...\n[frontend-5dd4466d85-6gl6k] {\"error\":\"failed to add to cart: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req.id\":\"ae874630-7f47-4f6e-b218-c9785f0dbb65\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"mes...\n[frontend-5dd4466d85-6gl6k] {\"error\":\"failed to complete the order: rpc error: code = Internal desc = cart failure: failed to get user cart during checkout: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.99.211.213:7070: connect: operation not permitted\\\"\",\"http.req....\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: Ready (rev: main@sha1:2f)\n- argocd: Ready (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/pod-oomkilled.md | Score: 0.87]\n# Pod OOMKilled Diagnosis\n\n## Overview\nOOMKilled (Out of Memory Killed) occurs when a container exceeds its configured memory limit. The Linux kernel OOM killer terminates the process with SIGKILL (exit code 137). This is distinct from node-level OOM events. Kubernetes enforces memory limits using cgroup memory limits, and when a container hits this limit, the kernel immediately terminates the process without a graceful shutdown.\n\n---\n[Source: debugging/memory-pressure.md | Score: 0.85]\n# Debugging Memory Pressure (Node and Pod Level)\node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100\n\n# Container working set memory (what OOM killer looks at)\ncontainer_memory_working_set_bytes{namespace=\"boutique\"}\n\n# Container RSS (resident set size - actual physical memory)\ncontainer_memory_rss{namespace=\"boutique\"}\n\n# Memory usage vs limit ratio (alert when > 80%)\ncontainer_memory_working_set_bytes{namespace=\"boutique\"}\n  / container_spec_memory_limit_bytes{namespace=\"boutique\"} * 100\n\n---\n[Source: runbooks/rca-f1-oomkilled.md | Score: 0.84]\n# Runbook: F1 - OOMKilled Root Cause Analysis\n\n## Trigger Conditions\nUse this runbook when containers are being killed with `OOMKilled` reason, pods are in `CrashLoopBackOff` after OOM events, or Prometheus alerts fire for memory saturation (e.g., `KubePodOOMKilled`, `ContainerMemoryNearLimit`).\n\n## Severity\n**Critical** — OOMKill cascades can take down entire service chains. In Online Boutique, a killed `cartservice` will cause `frontend` to return 500s.\n\n---\n[Source: debugging/pod-crashloopbackoff.md | Score: 0.84]\n# Pod CrashLoopBackOff Diagnosis\n## Common Causes\n\n1. **Application startup failure**: The application exits immediately due to missing configuration, failed database connections, or initialization errors. Check logs for connection refused, missing env vars, or panic messages.\n\n2. **OOMKilled (Exit 137)**: The container exceeded its memory limit and was killed by the kernel OOM killer. Memory limit is too low or there is a memory leak.\n\n---\n[Source: debugging/pod-oomkilled.md | Score: 0.81]\n# Pod OOMKilled Diagnosis\notations:\n    summary: \"Pod {{ $labels.pod }} memory near limit\"\n\n# Alert: OOMKill detected\n- alert: PodOOMKilled\n  expr: |\n    increase(kube_pod_container_status_last_terminated_reason{reason=\"OOMKilled\"}[1h]) > 0\n  labels:\n    severity: critical\n```\n\n## Related Issues\n- `pod-crashloopbackoff.md` - CrashLoopBackOff often caused by OOMKilled\n- `memory-pressure.md` - Node-level memory pressure\n- `node-pressure.md` - Node MemoryPressure condition\n- `pod-evicted.md` - Pods evicted due to memory pressure\n",
+  "rca_output": {
+    "fault_id": "F1",
+    "trial": 1,
+    "system": "B",
+    "identified_fault_type": "OOM Kill",
+    "root_cause": "The root cause is container memory exhaustion leading to OOMKilled status in the cartservice pod.",
+    "confidence": 0.9,
+    "affected_components": [
+      "cartservice"
+    ],
+    "remediation": [
+      "Increase the memory limit for the cartservice container.",
+      "Review the application's memory usage patterns to identify potential optimizations."
+    ],
+    "detail": "The cartservice pod is experiencing OOMKilled events indicating that it is exceeding its memory limits leading to repeated restarts which trigger failure states in readiness and liveness probes. The container has been reported to use up to 92% of its memory limit. These events can create cascading failures across dependent services like frontend and loadgenerator, showing connection errors.",
+    "reasoning": "Step 1: Checked Node Health - All nodes are Ready, no DiskPressure, MemoryPressure, or PIDPressure. Step 2: Checked Pod Status - The pod cartservice-c4bb94ff4-cn6dx has a container in the Not Ready state with termination reason OOMKilled. Additionally, the pod is experiencing issues like BackOff and readiness/liveness probe failures. Therefore, I note this as a primary candidate. Step 3: Checked Service Connectivity - The cartservice is showing 0 endpoints, indicating connectivity issues. However, this may be symptomatic of the pod issues identified earlier. In Step 4, checked Network for cilium policy drops or connection refused errors; errors in the logs indicate connectivity issues. Although services showed 0 endpoints, there is clear evidence of pod-level issues leading to this state. Finally, Step 5 checked Resource Limits - cartservice is above the memory limit causing OOMKilled conditions. One issue compounds the other. The OOMKilled of the container linked to high memory usage is the root cause.",
+    "root_cause_ko": "근본 원인은 cartservice 팟의 OOMKilled 상태로 이어진 컨테이너 메모리 고갈입니다.",
+    "remediation_ko": [
+      "cartservice 컨테이너의 메모리 제한을 늘리세요.",
+      "응용 프로그램의 메모리 사용 패턴을 검토하여 최적화 가능성을 찾으세요."
+    ],
+    "detail_ko": "cartservice 팟은 메모리 한도를 초과하여 OOMKilled 이벤트를 경험하며 이로 인해 준비 상태 및 생존 상태 확인에서 오류가 발생하여 반복적인 재시작이 발생합니다. 이 컨테이너는 메모리 한도의 92%까지 사용할 수 있는 것으로 보고되었습니다. 이러한 이벤트는 프론트엔드 및 로드 제너레이터와 같은 종속 서비스에 연쇄 실패를 일으킬 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "metric",
+        "source": "Pod Status Metrics",
+        "content": "cartservice-c4bb94ff4-cn6dx/server OOMKilled",
+        "supports": "Indicates the cartonservice container is being killed due to memory exhaustion.",
+        "verified": true,
+        "match_ratio": 0.75
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/cartservice-c4bb94ff4-cn6dx: BackOff - Back-off restarting failed container server",
+        "supports": "The pod is in a CrashLoopBackOff due to OOMKilled status.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "metric",
+        "source": "Pod Resource Usage",
+        "content": "cartservice-c4bb94ff4-cn6dx/server (92%)",
+        "supports": "High memory usage corroborates OOMKilled incidents.",
+        "verified": true,
+        "match_ratio": 0.75
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Resource limits not enforced correctly or misconfigured container specs.",
+        "confidence": 0.3,
+        "reason_rejected": "Evidence strongly supports OOMKilled as the primary issue leading to cascading effects."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence presented aligns well with the input context, specifically regarding the OOMKilled status and the high memory usage metrics. However, alternative hypotheses could be more thoroughly explored. While one alternative related to resource limits is mentioned, other potential issues such as application-level errors could be acknowledged. The confidence level is appropriate given the strong correlation to the observed OOMKilled events and resource metrics. Considering a wider range of alternatives could enhance the depth of the analysis.",
+    "retry_count": 0,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The LLM diagnosis identifies that the container memory exhaustion leads to OOMKilled status, which is correct in addressing the fault category and mechanism. However, it misses the specific limit details (32Mi) mentioned in the ground truth and implies higher memory usage (92% of its limit) without confirming the exact configured limit. Overall, it captures the essence of the issue but lacks precise specifics.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 11032,
+    "prompt_tokens": 7859,
+    "completion_tokens": 1098,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health - All nodes are Ready, no DiskPressure, MemoryPressure, or PIDPressure. Step 2: Checked Pod Status - The pod cartservice-c4bb94ff4-cn6dx has a container in the Not Ready state with termination reason OOMKilled. Additionally, the pod is experiencing issues like BackOff and readiness/liveness probe failures. Therefore, I note this as a primary candidate. Step 3: Checked Service Connectivity - The cartservice is showing 0 endpoints, indicating connectivity issues. However, this may be symptomatic of the pod issues identified earlier. In Step 4, checked Network for cilium policy drops or connection refused errors; errors in the logs indicate connectivity issues. Although services showed 0 endpoints, there is clear evidence of pod-level issues leading to this state. Finally, Step 5 checked Resource Limits - cartservice is above the memory limit causing OOMKilled conditions. One issue compounds the other. The OOMKilled of the container linked to high memory usage is the root cause.\",\n  \"identified_fault_type\": \"OOM Kill\",\n  \"root_cause\": \"The root cause is container memory exhaustion leading to OOMKilled status in the cartservice pod.\",\n  \"root_cause_ko\": \"근본 원인은 cartservice 팟의 OOMKilled 상태로 이어진 컨테이너 메모리 고갈입니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"cartservice\"],\n  \"remediation\": [\n    \"Increase the memory limit for the cartservice container.\",\n    \"Review the application's memory usage patterns to identify potential optimizations.\"\n  ],\n  \"remediation_ko\": [\n    \"cartservice 컨테이너의 메모리 제한을 늘리세요.\",\n    \"응용 프로그램의 메모리 사용 패턴을 검토하여 최적화 가능성을 찾으세요.\"\n  ],\n  \"detail\": \"The cartservice pod is experiencing OOMKilled events indicating that it is exceeding its memory limits leading to repeated restarts which trigger failure states in readiness and liveness probes. The container has been reported to use up to 92% of its memory limit. These events can create cascading failures across dependent services like frontend and loadgenerator, showing connection errors.\",\n  \"detail_ko\": \"cartservice 팟은 메모리 한도를 초과하여 OOMKilled 이벤트를 경험하며 이로 인해 준비 상태 및 생존 상태 확인에서 오류가 발생하여 반복적인 재시작이 발생합니다. 이 컨테이너는 메모리 한도의 92%까지 사용할 수 있는 것으로 보고되었습니다. 이러한 이벤트는 프론트엔드 및 로드 제너레이터와 같은 종속 서비스에 연쇄 실패를 일으킬 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"metric\",\n      \"source\": \"Pod Status Metrics\",\n      \"content\": \"cartservice-c4bb94ff4-cn6dx/server OOMKilled\",\n      \"supports\": \"Indicates the cartonservice container is being killed due to memory exhaustion.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/cartservice-c4bb94ff4-cn6dx: BackOff - Back-off restarting failed container server\",\n      \"supports\": \"The pod is in a CrashLoopBackOff due to OOMKilled status.\"\n    },\n    {\n      \"type\": \"metric\",\n      \"source\": \"Pod Resource Usage\",\n      \"content\": \"cartservice-c4bb94ff4-cn6dx/server (92%)\",\n      \"supports\": \"High memory usage corroborates OOMKilled incidents.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Resource limits not enforced correctly or misconfigured container specs.\",\n      \"confidence\": 0.3,\n      \"reason_rejected\": \"Evidence strongly supports OOMKilled as the primary issue leading to cascading effects.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/pod-oomkilled.md",
+      "score": 0.8686744272708893
+    },
+    {
+      "source": "debugging/memory-pressure.md",
+      "score": 0.8531698882579803
+    },
+    {
+      "source": "runbooks/rca-f1-oomkilled.md",
+      "score": 0.8421438932418823
+    },
+    {
+      "source": "debugging/pod-crashloopbackoff.md",
+      "score": 0.8389761447906494
+    },
+    {
+      "source": "debugging/pod-oomkilled.md",
+      "score": 0.8081227540969849
+    }
+  ]
+}

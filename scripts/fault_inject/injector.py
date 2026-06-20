@@ -186,13 +186,13 @@ class FaultInjector:
     def _inject_f4_node_notready(self, target: str, trial: int, gt: dict) -> dict:
         """Make a worker node NotReady via SSH."""
         node_actions = {
-            1: ("worker01", "sudo systemctl stop kubelet"),
-            2: ("worker02", "sudo iptables -A OUTPUT -p tcp --dport 6443 -j DROP"),
-            3: ("worker03", "sudo stress-ng --vm 2 --vm-bytes 90% --timeout 300s &"),
-            4: ("worker01", "sudo fallocate -l $(($(df --output=avail / | tail -1) * 95 / 100))k /tmp/diskfill"),
-            5: ("worker02", "sudo systemctl stop containerd"),
+            1: ("yms-proxmox-02", "sudo systemctl stop kubelet"),
+            2: ("yms-proxmox-03", "sudo iptables -A OUTPUT -p tcp --dport 6443 -j DROP"),
+            3: ("yms-proxmox-04", "sudo stress-ng --vm 2 --vm-bytes 90% --timeout 300s &"),
+            4: ("yms-proxmox-02", "sudo fallocate -l $(($(df --output=avail / | tail -1) * 95 / 100))k /tmp/diskfill"),
+            5: ("yms-proxmox-03", "sudo systemctl stop containerd"),
         }
-        node_name, command = node_actions.get(trial, ("worker01", "sudo systemctl stop kubelet"))
+        node_name, command = node_actions.get(trial, ("yms-proxmox-02", "sudo systemctl stop kubelet"))
 
         # Cordon node first for trial 1
         if trial == 1:
@@ -667,13 +667,13 @@ class FaultInjector:
     def _inject_f11_network_delay(self, target: str, trial: int, gt: dict) -> dict:
         """Inject network delay via tc netem on worker node."""
         delay_configs = {
-            1: ("worker01", "delay 500ms"),
-            2: ("worker02", "delay 1000ms 200ms"),
-            3: ("worker01", "delay 2000ms"),
-            4: ("worker03", "delay 300ms 100ms distribution normal"),
-            5: ("worker02", "delay 5000ms"),
+            1: ("yms-proxmox-02", "delay 500ms"),
+            2: ("yms-proxmox-03", "delay 1000ms 200ms"),
+            3: ("yms-proxmox-02", "delay 2000ms"),
+            4: ("yms-proxmox-04", "delay 300ms 100ms distribution normal"),
+            5: ("yms-proxmox-03", "delay 5000ms"),
         }
-        node_name, netem_params = delay_configs.get(trial, ("worker01", "delay 500ms"))
+        node_name, netem_params = delay_configs.get(trial, ("yms-proxmox-02", "delay 500ms"))
         iface = self.NETEM_IFACE
 
         # Apply netem with safety timeout (auto-remove after 5 minutes)
@@ -698,13 +698,13 @@ class FaultInjector:
     def _inject_f12_network_loss(self, target: str, trial: int, gt: dict) -> dict:
         """Inject packet loss via tc netem on worker node."""
         loss_configs = {
-            1: ("worker01", "loss 10%"),
-            2: ("worker02", "loss 30%"),
-            3: ("worker03", "loss 50%"),
-            4: ("worker01", "loss 5% 25%"),
-            5: ("worker02", "loss 80%"),
+            1: ("yms-proxmox-02", "loss 10%"),
+            2: ("yms-proxmox-03", "loss 30%"),
+            3: ("yms-proxmox-04", "loss 50%"),
+            4: ("yms-proxmox-02", "loss 5% 25%"),
+            5: ("yms-proxmox-03", "loss 80%"),
         }
-        node_name, netem_params = loss_configs.get(trial, ("worker01", "loss 10%"))
+        node_name, netem_params = loss_configs.get(trial, ("yms-proxmox-02", "loss 10%"))
         iface = self.NETEM_IFACE
 
         command = (

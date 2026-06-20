@@ -1,0 +1,679 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\nNo warning/error events.\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F6",
+    "trial": 1,
+    "system": "A",
+    "identified_fault_type": "No Fault Detected",
+    "root_cause": "The Kubernetes cluster is currently healthy with no detected faults across nodes, pods, or services.",
+    "confidence": 1.0,
+    "affected_components": [],
+    "remediation": [
+      "Maintain regular monitoring of node and pod states.",
+      "Implement alerts for any future anomalies."
+    ],
+    "detail": "All checks in the diagnosis indicate a healthy state of the Kubernetes cluster with no anomalies. However, it is critical to have monitoring in place to detect any intermittent issues that could arise unexpectedly. Future monitoring strategies should include alerting for node health changes and application performance metrics to anticipate potential risks.",
+    "reasoning": "I checked the node health in Step 1 and found all nodes are in 'Ready' state with no pressure conditions, so I did not identify NODE-LEVEL faults. In Step 2, all pods are in 'Running' state with no errors or warnings, so I moved past this step as well. In Step 3, there are no service connectivity issues, confirmed by the absence of mismatches or 0 endpoints. Step 4 revealed no network issues, as there were no policy drops or connection errors. Finally, Step 5 showed no resource limitations or violations. Thus, based on all steps, the analysis indicates a healthy cluster with no current issues, but I also considered alternative hypotheses related to potential intermittent problems or future risks and noted the importance of proactive monitoring.",
+    "root_cause_ko": "현 Kubernetes 클러스터는 노드, 팟 또는 서비스에서 감지된 결함 없이 현재 건강한 상태입니다.",
+    "remediation_ko": [
+      "노드 및 팟 상태에 대한 정기 모니터링을 유지하십시오.",
+      "향후 이상 징후에 대한 알림을 구현하십시오."
+    ],
+    "detail_ko": "진단의 모든 점검은 Kubernetes 클러스터의 건강한 상태를 나타냅니다. 그러나 예기치 않게 발생할 수 있는 간헐적인 문제를 감지하기 위해 모니터링이 중요합니다. 향후 모니터링 전략에는 노드 상태 변화 및 애플리케이션 성능 메트릭에 대한 경고가 포함되어야 하여 잠재적 위험을 예측할 수 있어야 합니다.",
+    "evidence_chain": [],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Intermittent issues could arise in the future due to load spikes or network fluctuations.",
+        "confidence": 0.5,
+        "reason_rejected": "Current metrics indicate a normal operating status with no immediate issues."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 0.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 9.0,
+    "eval_differential_completeness": 8.0,
+    "eval_confidence_calibration": 9.0,
+    "eval_overall_score": 8.75,
+    "eval_critique": "Overall, the diagnosis appropriately captures the current state of the Kubernetes cluster. However, it may benefit from a more detailed explanation on how alternative hypotheses were ruled out, specifically concerning any existing monitoring practices that could mitigate intermittent issues, despite the current healthy state. Clarifying this would enhance the robustness of the differential completeness assessment.",
+    "retry_count": 1,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The LLM diagnosis indicates that there are no faults detected and describes the cluster as healthy, which contradicts the ground truth that identifies a deny-all ingress policy as the root cause affecting service communication. There is no match in root cause mechanism or symptom identification.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 6171,
+    "prompt_tokens": 3891,
+    "completion_tokens": 763,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"I checked the node health in Step 1 and found all nodes are in 'Ready' state with no pressure conditions, so I did not identify NODE-LEVEL faults. In Step 2, all pods are in 'Running' state with no errors or warnings, so I moved past this step as well. In Step 3, there are no service connectivity issues, confirmed by the absence of mismatches or 0 endpoints. Step 4 revealed no network issues, as there were no policy drops or connection errors. Finally, Step 5 showed no resource limitations or violations. Thus, based on all steps, the analysis indicates a healthy cluster with no current issues, but I also considered alternative hypotheses related to potential intermittent problems or future risks and noted the importance of proactive monitoring.\",\n  \"identified_fault_type\": \"No Fault Detected\",\n  \"root_cause\": \"The Kubernetes cluster is currently healthy with no detected faults across nodes, pods, or services.\",\n  \"root_cause_ko\": \"현 Kubernetes 클러스터는 노드, 팟 또는 서비스에서 감지된 결함 없이 현재 건강한 상태입니다.\",\n  \"confidence\": 1.0,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [],\n  \"remediation\": [\"Maintain regular monitoring of node and pod states.\", \"Implement alerts for any future anomalies.\"],\n  \"remediation_ko\": [\"노드 및 팟 상태에 대한 정기 모니터링을 유지하십시오.\", \"향후 이상 징후에 대한 알림을 구현하십시오.\"],\n  \"detail\": \"All checks in the diagnosis indicate a healthy state of the Kubernetes cluster with no anomalies. However, it is critical to have monitoring in place to detect any intermittent issues that could arise unexpectedly. Future monitoring strategies should include alerting for node health changes and application performance metrics to anticipate potential risks.\",\n  \"detail_ko\": \"진단의 모든 점검은 Kubernetes 클러스터의 건강한 상태를 나타냅니다. 그러나 예기치 않게 발생할 수 있는 간헐적인 문제를 감지하기 위해 모니터링이 중요합니다. 향후 모니터링 전략에는 노드 상태 변화 및 애플리케이션 성능 메트릭에 대한 경고가 포함되어야 하여 잠재적 위험을 예측할 수 있어야 합니다.\",\n  \"evidence_chain\": [],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Intermittent issues could arise in the future due to load spikes or network fluctuations.\",\n      \"confidence\": 0.5,\n      \"reason_rejected\": \"Current metrics indicate a normal operating status with no immediate issues.\"\n    }\n  ]\n}"
+}

@@ -1,0 +1,892 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dbb4cbb7c-lzns5",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dbb4cbb7c-lzns5",
+          "container": "frontend",
+          "waiting_reason": "CrashLoopBackOff"
+        },
+        {
+          "pod": "frontend-5dbb4cbb7c-lzns5",
+          "container": "frontend",
+          "terminated_reason": "Error"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "frontend-5dbb4cbb7c-lzns5",
+          "container": "frontend",
+          "restarts": 3
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "cartservice-7bd45cd9dc-zn9jw",
+          "container": "server",
+          "throttle_ratio": 0.225
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "frontend-5dbb4cbb7c-lzns5",
+          "container": "frontend",
+          "line": "panic: environment variable \"CART_SERVICE_ADDR\" not set"
+        },
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dbb4cbb7c-lzns5",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "frontend",
+              "ready": false,
+              "restartCount": 3,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "Error"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: health rpc did not complete within 1s",
+          "object": "cartservice-7bd45cd9dc-zn9jw",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:03:28Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: secret \"redis-cart-secret-nonexistent\" not found",
+          "object": "cartservice-7bd45cd9dc-zn9jw",
+          "kind": "Pod",
+          "count": 10,
+          "lastTimestamp": "2026-06-19T17:04:37Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container frontend in pod frontend-5dbb4cbb7c-lzns5_boutique(c6501a00-bfcd-45ca-a490-82df718a5e23)",
+          "object": "frontend-5dbb4cbb7c-lzns5",
+          "kind": "Pod",
+          "count": 8,
+          "lastTimestamp": "2026-06-19T17:08:07Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "frontend-5dbb4cbb7c-lzns5",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    2\n      Started:      Sat, 20 Jun 2026 02:07:39 +0900\n      Finished:     Sat, 20 Jun 2026 02:07:39 +0900\n    Ready:          False\n    Restart Count:  3\n    Environment:\n      PRODUCT_CATALOG_SERVICE_ADDR:  productcatalogservice:9999\n      CURRENCY_SERVICE_ADDR:         currencyservice:9999\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-lq2vh (ro)\n  server:\n    Container ID:   containerd://c1fc85141e597b2c3c07269fceb44b45c7e7a78943271db2372072f45b4bb35c\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/frontend:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/frontend@sha256:50ca57c513de1ef22a97b6ef76989a73878d4a3873f85b5314bfc207853d5475\n    Port:           8080/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Sat, 20 Jun 2026 02:06:50 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   http-get http://:8080/_healthz delay=10s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  http-get http://:8080/_healthz delay=10s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:                             8080\n      PRODUCT_CATALOG_SERVICE_ADDR:     productcatalogservice:3550\n      CURRENCY_SERVICE_ADDR:            currencyservice:7000\n      CART_SERVICE_ADDR:                cartservice:7070\n      RECOMMENDATION_SERVICE_ADDR:      recommendationservice:8080\n      SHIPPING_SERVICE_ADDR:            shippingservice:50051"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-9blb2: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dbb4cbb7c-lzns5: Running\n  container/frontend: NOT READY (CrashLoopBackOff) restarts=3\n    last terminated: Error (exit code ?)\nfrontend-5dd4466d85-9f6sm: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-66ddcb6b4c-s8f6c: Running\npaymentservice-87ddfbcb4-jvvhf: Running\npaymentservice-87ddfbcb4-wqpsj: Running\nproductcatalogservice-5bc6ff7696-wcsbp: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/cartservice-7bd45cd9dc-zn9jw: Unhealthy - Readiness probe failed: timeout: health rpc did not complete within 1s (count=1)\n[Warning] Pod/cartservice-7bd45cd9dc-zn9jw: Failed - Error: secret \"redis-cart-secret-nonexistent\" not found (count=10)\n[Warning] Pod/frontend-5dbb4cbb7c-lzns5: BackOff - Back-off restarting failed container frontend in pod frontend-5dbb4cbb7c-lzns5_boutique(c6501a00-bfcd-45ca-a490-82df718a5e23) (count=8)\n\n## Metric Anomalies\nCPU throttled: cartservice-7bd45cd9dc-zn9jw/server (22%)\n\n## Error Logs\n[frontend-5dbb4cbb7c-lzns5] panic: environment variable \"CART_SERVICE_ADDR\" not set\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F9",
+    "trial": 2,
+    "system": "A",
+    "identified_fault_type": "Configuration Error (Missing Environment Variable)",
+    "root_cause": "The frontend pod is crashing due to a missing environment variable 'CART_SERVICE_ADDR'.",
+    "confidence": 0.8,
+    "affected_components": [
+      "frontend",
+      "cartservice"
+    ],
+    "remediation": [
+      "Set the environment variable 'CART_SERVICE_ADDR' for the frontend pod.",
+      "Ensure that the secret 'redis-cart-secret-nonexistent' exists for the cartservice pod."
+    ],
+    "detail": "The frontend pod is failing due to the absence of the environment variable needed for its initialization, leading to a CrashLoopBackOff state. This indicates a misconfiguration that needs to be corrected. Additionally, the cartservice's readiness probe failure is also related to the missing secret, which may affect service functionality.",
+    "reasoning": "I started by checking the node health, and all nodes are in Ready state, so I proceeded to Step 2. In Step 2, I found that the frontend pod is in a CrashLoopBackOff state due to a panic error regarding a missing environment variable, which indicates a configuration issue. There is also a readiness probe failure for the cartservice pod due to a missing secret (`redis-cart-secret-nonexistent`). Both of these issues are candidates for further investigation. I continued to Step 3, but I did not find any services with 0 endpoints. Therefore, I proceeded to Step 4, where I did not find any network policy drops or other network-related issues. Finally, in Step 5, I noted moderate CPU throttling for the cartservice pod. The primary candidate for root cause is the missing environment variable in the frontend pod, which affects its readiness and stability, leading to its CrashLoopBackOff state. The pod also has a high restart count, further confirming instability. This points to an application configuration error as the root cause.",
+    "root_cause_ko": "프론트엔드 파드가 환경 변수 'CART_SERVICE_ADDR'가 없어서 크래시가 발생합니다.",
+    "remediation_ko": [
+      "프론트엔드 파드를 위해 'CART_SERVICE_ADDR' 환경 변수를 설정합니다.",
+      "'redis-cart-secret-nonexistent' 비밀이 카트 서비스 파드에 존재하는지 확인합니다."
+    ],
+    "detail_ko": "프론트엔드 파드는 초기화에 필요한 환경 변수가 없어 실패하고 있으며, 이로 인해 CrashLoopBackOff 상태입니다. 이는 설정이 잘못되었음을 나타내며 수정이 필요합니다. 또한, 카트 서비스의 준비 상태 프로브 실패도 비밀이 없어서 발생하며, 서비스 기능에 영향을 미칠 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/frontend-5dbb4cbb7c-lzns5: BackOff - Back-off restarting failed container frontend in pod frontend-5dbb4cbb7c-lzns5_boutique(c6501a00-bfcd-45ca-a490-82df718a5e23) (count=8)",
+        "supports": "The frontend pod is facing repeated crashes indicative of an environmental or configuration issue.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "log",
+        "source": "Error Logs",
+        "content": "[frontend-5dbb4cbb7c-lzns5] panic: environment variable 'CART_SERVICE_ADDR' not set",
+        "supports": "Direct evidence of a missing environment variable causing the crash.",
+        "verified": true,
+        "match_ratio": 0.86
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The crash in frontend pod is due to a resource limit issue.",
+        "confidence": 0.3,
+        "reason_rejected": "There are no indications of memory or CPU hitting resource limits; the primary evidence points to a configuration issue."
+      }
+    ],
+    "confidence_2nd": 0.6,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence grounding is strong and directly matches the input context. The reasoning line is mostly sound; however, it could be strengthened by explicitly mentioning the readiness probe failure for the frontend pod as additional validation. The alternative hypothesis considered could have been more comprehensive, such as addressing potential issues like a misconfiguration in service dependencies rather than only resource limits. Overall, confidence level is appropriate, but further clarification on how multiple issues could interrelate would enhance the analysis.",
+    "retry_count": 0,
+    "correctness_score": 0.5,
+    "correctness_reasoning": "The diagnosis partially identifies an issue related to misconfiguration but does not accurately characterize the specific problem of connecting to the wrong backend port. While the mention of a missing environment variable indicates a configuration error, it does not match the ground truth's specific details about connecting to the wrong port and resulting runtime errors.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 10286,
+    "prompt_tokens": 4566,
+    "completion_tokens": 1079,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"I started by checking the node health, and all nodes are in Ready state, so I proceeded to Step 2. In Step 2, I found that the frontend pod is in a CrashLoopBackOff state due to a panic error regarding a missing environment variable, which indicates a configuration issue. There is also a readiness probe failure for the cartservice pod due to a missing secret (`redis-cart-secret-nonexistent`). Both of these issues are candidates for further investigation. I continued to Step 3, but I did not find any services with 0 endpoints. Therefore, I proceeded to Step 4, where I did not find any network policy drops or other network-related issues. Finally, in Step 5, I noted moderate CPU throttling for the cartservice pod. The primary candidate for root cause is the missing environment variable in the frontend pod, which affects its readiness and stability, leading to its CrashLoopBackOff state. The pod also has a high restart count, further confirming instability. This points to an application configuration error as the root cause.\",\n  \"identified_fault_type\": \"Configuration Error (Missing Environment Variable)\",\n  \"root_cause\": \"The frontend pod is crashing due to a missing environment variable 'CART_SERVICE_ADDR'.\",\n  \"root_cause_ko\": \"프론트엔드 파드가 환경 변수 'CART_SERVICE_ADDR'가 없어서 크래시가 발생합니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.6,\n  \"affected_components\": [\"frontend\", \"cartservice\"],\n  \"remediation\": [\n    \"Set the environment variable 'CART_SERVICE_ADDR' for the frontend pod.\",\n    \"Ensure that the secret 'redis-cart-secret-nonexistent' exists for the cartservice pod.\"\n  ],\n  \"remediation_ko\": [\n    \"프론트엔드 파드를 위해 'CART_SERVICE_ADDR' 환경 변수를 설정합니다.\",\n    \"'redis-cart-secret-nonexistent' 비밀이 카트 서비스 파드에 존재하는지 확인합니다.\"\n  ],\n  \"detail\": \"The frontend pod is failing due to the absence of the environment variable needed for its initialization, leading to a CrashLoopBackOff state. This indicates a misconfiguration that needs to be corrected. Additionally, the cartservice's readiness probe failure is also related to the missing secret, which may affect service functionality.\",\n  \"detail_ko\": \"프론트엔드 파드는 초기화에 필요한 환경 변수가 없어 실패하고 있으며, 이로 인해 CrashLoopBackOff 상태입니다. 이는 설정이 잘못되었음을 나타내며 수정이 필요합니다. 또한, 카트 서비스의 준비 상태 프로브 실패도 비밀이 없어서 발생하며, 서비스 기능에 영향을 미칠 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/frontend-5dbb4cbb7c-lzns5: BackOff - Back-off restarting failed container frontend in pod frontend-5dbb4cbb7c-lzns5_boutique(c6501a00-bfcd-45ca-a490-82df718a5e23) (count=8)\",\n      \"supports\": \"The frontend pod is facing repeated crashes indicative of an environmental or configuration issue.\"\n    },\n    {\n      \"type\": \"log\",\n      \"source\": \"Error Logs\",\n      \"content\": \"[frontend-5dbb4cbb7c-lzns5] panic: environment variable 'CART_SERVICE_ADDR' not set\",\n      \"supports\": \"Direct evidence of a missing environment variable causing the crash.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The crash in frontend pod is due to a resource limit issue.\",\n      \"confidence\": 0.3,\n      \"reason_rejected\": \"There are no indications of memory or CPU hitting resource limits; the primary evidence points to a configuration issue.\"\n    }\n  ]\n}"
+}

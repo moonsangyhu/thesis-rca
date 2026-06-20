@@ -1,0 +1,26 @@
+{
+  "skipped": true,
+  "validator_status": "skipped",
+  "validator_findings": [
+    {
+      "kind": "stale_rs",
+      "name": "shippingservice-794c54cb89",
+      "deployment": "shippingservice",
+      "detail": "replicas=1, latest=shippingservice-68c4dcd859"
+    },
+    {
+      "kind": "abnormal_pod",
+      "name": "shippingservice-68c4dcd859-x9cbv",
+      "deployment": "shippingservice",
+      "detail": "phase=Running, reasons=CrashLoopBackOff, max_restarts=4"
+    },
+    {
+      "kind": "abnormal_pod",
+      "name": "shippingservice-794c54cb89-v6btz",
+      "deployment": "shippingservice",
+      "detail": "phase=Running, reasons=CrashLoopBackOff, max_restarts=5"
+    }
+  ],
+  "correction_attempts": "2",
+  "error": ""
+}

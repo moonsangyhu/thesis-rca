@@ -1,0 +1,839 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-vx5dk",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-2q92z",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-4jc7d",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "container": "",
+          "throttle_ratio": 0.156
+        },
+        {
+          "pod": "currencyservice-8587655ff4-4pfnw",
+          "container": "server",
+          "throttle_ratio": 0.735
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"wesleypowell@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:56.760884048Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"saustin@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:47.474329165Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"mray@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:34.409580097Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"echandler@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:29.472724605Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"martinjerry@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:21.707877541Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"jbird@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:17.10912846Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"williamsjennifer@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:02.238646945Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"heidi01@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:57:58.883655699Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"katherine36@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:57:47.669882818Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"ryanbrown@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:57:42.518670091Z\"}"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "container": "server",
+          "line": "{\"message\":\"failed to send order confirmation to \\\"kpena@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:57:36.275334729Z\"}"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-4jc7d",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-2q92z",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-vx5dk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container paymentservice in pod paymentservice-5dd776d9f4-65k2z_boutique(01a98e7d-27ff-4c64-8e4e-b9d977fdd8b0)",
+          "object": "paymentservice-5dd776d9f4-65k2z",
+          "kind": "Pod",
+          "count": 7,
+          "lastTimestamp": "2026-06-19T12:52:55Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.244.5.79:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5dd96ff45d-hdpvh",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:55:23Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.5.79:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5dd96ff45d-hdpvh",
+          "kind": "Pod",
+          "count": 5,
+          "lastTimestamp": "2026-06-19T12:55:24Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container emailservice in pod emailservice-5dd96ff45d-hdpvh_boutique(d255d390-17b9-47fd-bd85-681b9884f6c8)",
+          "object": "emailservice-5dd96ff45d-hdpvh",
+          "kind": "Pod",
+          "count": 5,
+          "lastTimestamp": "2026-06-19T12:55:53Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.244.1.20:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5b6d8449d8-gbvwx",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T12:58:31Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.1.20:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-5b6d8449d8-gbvwx",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T12:58:31Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.5.204:7000\" within 1s: context deadline exceeded",
+          "object": "currencyservice-8587655ff4-4pfnw",
+          "kind": "Pod",
+          "count": 2,
+          "lastTimestamp": "2026-06-19T12:59:32Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container currencyservice in pod currencyservice-8587655ff4-4pfnw_boutique(35ca6191-53c7-4b2b-be47-375b7f9a49a0)",
+          "object": "currencyservice-8587655ff4-4pfnw",
+          "kind": "Pod",
+          "count": 4,
+          "lastTimestamp": "2026-06-19T12:59:57Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-4jc7d: Running\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-2q92z: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-vx5dk: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/paymentservice-5dd776d9f4-65k2z: BackOff - Back-off restarting failed container paymentservice in pod paymentservice-5dd776d9f4-65k2z_boutique(01a98e7d-27ff-4c64-8e4e-b9d977fdd8b0) (count=7)\n[Warning] Pod/emailservice-5dd96ff45d-hdpvh: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.5.79:8080\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/emailservice-5dd96ff45d-hdpvh: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.5.79:8080\" within 1s: context deadline exceeded (count=5)\n[Warning] Pod/emailservice-5dd96ff45d-hdpvh: BackOff - Back-off restarting failed container emailservice in pod emailservice-5dd96ff45d-hdpvh_boutique(d255d390-17b9-47fd-bd85-681b9884f6c8) (count=5)\n[Warning] Pod/emailservice-5b6d8449d8-gbvwx: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.1.20:8080\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/emailservice-5b6d8449d8-gbvwx: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.1.20:8080\" within 1s: context deadline exceeded (count=3)\n[Warning] Pod/currencyservice-8587655ff4-4pfnw: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.5.204:7000\" within 1s: context deadline exceeded (count=2)\n[Warning] Pod/currencyservice-8587655ff4-4pfnw: BackOff - Back-off restarting failed container currencyservice in pod currencyservice-8587655ff4-4pfnw_boutique(35ca6191-53c7-4b2b-be47-375b7f9a49a0) (count=4)\n\n## Metric Anomalies\nCPU throttled: emailservice-5b6d8449d8-gbvwx/ (16%), currencyservice-8587655ff4-4pfnw/server (74%)\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"wesleypowell@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:56.76088404...\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"saustin@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:47.474329165Z\"}\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"mray@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:34.409580097Z\"}\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"echandler@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:29.472724605Z\"...\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"martinjerry@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:21.707877541...\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"jbird@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:17.10912846Z\"}\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"williamsjennifer@example.net\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:58:02.2386...\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"heidi01@example.org\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:57:58.883655699Z\"}\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"katherine36@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:57:47.669882818...\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"ryanbrown@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:57:42.518670091Z\"...\n[checkoutservice-db56f59d-5fnsr] {\"message\":\"failed to send order confirmation to \\\"kpena@example.com\\\": rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T12:57:36.275334729Z\"}\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F2",
+    "trial": 3,
+    "system": "A",
+    "identified_fault_type": "Service Connectivity Issue",
+    "root_cause": "The primary root cause is a network connectivity issue affecting multiple services, leading to failed liveness and readiness probes.",
+    "confidence": 0.8,
+    "affected_components": [
+      "emailservice",
+      "currencyservice",
+      "checkoutservice"
+    ],
+    "remediation": [
+      "Investigate network policies and connectivity between services, especially focusing on the logs of checkoutservice for root causes of the connection errors.",
+      "Evaluate the resource limits and requests for the affected pods to ensure CPU and memory allocations are sufficient."
+    ],
+    "detail": "The analysis reveals that multiple services are experiencing connectivity failures, which is compounded by probe timeouts. The combination of unhealthy state in emailservice and currencyservice, along with connection errors logged by checkoutservice show a potentially misconfigured network policy or service issue that needs immediate attention. Additionally, resource throttling may be impacting the performance of these services.",
+    "reasoning": "Step 1: Checked node health and all nodes are Ready; no pressure conditions found. Proceeded to Step 2. Step 2: Pod status shows several 'Unhealthy' events related to liveness and readiness probes for emailservice and currencyservice, along with BackOff events for paymentservice, indicating potential application issues or misconfigurations. Multiple probes failing suggests a connectivity or resource issue. Step 3: No endpoint mismatches or zero endpoints were identified. Step 4: Logs indicate connection errors, specifically for checkoutservice which fails to connect to an address—suggesting a network-related issue. This is corroborated by the timeout errors in the probe results indicating that the pods could not connect to the services they depend on. Step 5: Notices of CPU throttling could indicate resource issues for emailservice and currencyservice, but does not directly correlate with the probe failures. The evidence chain supports the network connectivity issue being the root cause of the service failures due to the inability to connect during the probe checks, and the application errors exacerbate the situation.",
+    "root_cause_ko": "주요 근본 원인은 여러 서비스에 영향을 미치는 네트워크 연결 문제로, 이는 생명 및 준비 탐침 실패로 이어집니다.",
+    "remediation_ko": [
+      "서비스 간의 네트워크 정책 및 연결 문제를 조사하고, 특히 checkoutservice의 로그를 통해 연결 오류의 근본 원인을 파악합니다.",
+      "영향을 받는 파드의 CPU 및 메모리 할당이 충분한지 확인하기 위해 리소스 한도 및 요청을 평가합니다."
+    ],
+    "detail_ko": "분석 결과 여러 서비스에서 연결 실패가 발생하고 있으며, 이는 탐침 시간 초과로 인해 악화됩니다. emailservice와 currencyservice의 비정상적인 상태가 확인되고 checkoutservice에 기록된 연결 오류가 서비스 문제 또는 네트워크 정책 구성 오류의 가능성을 시사합니다. 또한, 리소스 제한으로 인해 이러한 서비스의 성능에 영향을 미칠 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/emailservice-5dd96ff45d-hdpvh: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.1.20:8080\" within 1s: context deadline exceeded (count=1)",
+        "supports": "Indicates connectivity issues leading to probe failures.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "log",
+        "source": "checkoutservice logs",
+        "content": "{\"message\":\"failed to send order confirmation to ...: connection error: desc = \\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\"\",\"severity\":\"warning\"}",
+        "supports": "Shows a clear connection error when the service attempts to communicate with another service.",
+        "verified": true,
+        "match_ratio": 0.89
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Resource exhaustion may be causing degraded performance of services.",
+        "confidence": 0.5,
+        "reason_rejected": "While there is CPU throttling observed, it does not directly explain network connectivity failures evident in the liveness probe errors."
+      }
+    ],
+    "confidence_2nd": 0.7,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence is largely accurate and well-cited from the input context, particularly in relation to the liveness probe failures and connection errors. The logical steps are sound, but there could be a clearer connection made between the CPU throttling and overall performance degradation, which impacts the service. The alternative hypothesis of resource exhaustion was raised but could benefit from more thorough exploration. Overall, the confidence level is appropriate but could be tempered slightly given the potential role of resource constraints.",
+    "retry_count": 1,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis is completely off target as it identifies a service connectivity issue rather than the unhandled exception causing the currencyservice to crash during initialization. There is no mention of CrashLoopBackOff or the related symptoms, which indicates a fundamental misunderstanding of the actual root cause.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 15879,
+    "prompt_tokens": 7452,
+    "completion_tokens": 1129,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health and all nodes are Ready; no pressure conditions found. Proceeded to Step 2. Step 2: Pod status shows several 'Unhealthy' events related to liveness and readiness probes for emailservice and currencyservice, along with BackOff events for paymentservice, indicating potential application issues or misconfigurations. Multiple probes failing suggests a connectivity or resource issue. Step 3: No endpoint mismatches or zero endpoints were identified. Step 4: Logs indicate connection errors, specifically for checkoutservice which fails to connect to an address—suggesting a network-related issue. This is corroborated by the timeout errors in the probe results indicating that the pods could not connect to the services they depend on. Step 5: Notices of CPU throttling could indicate resource issues for emailservice and currencyservice, but does not directly correlate with the probe failures. The evidence chain supports the network connectivity issue being the root cause of the service failures due to the inability to connect during the probe checks, and the application errors exacerbate the situation.\",\n  \"identified_fault_type\": \"Service Connectivity Issue\",\n  \"root_cause\": \"The primary root cause is a network connectivity issue affecting multiple services, leading to failed liveness and readiness probes.\",\n  \"root_cause_ko\": \"주요 근본 원인은 여러 서비스에 영향을 미치는 네트워크 연결 문제로, 이는 생명 및 준비 탐침 실패로 이어집니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.7,\n  \"affected_components\": [\"emailservice\", \"currencyservice\", \"checkoutservice\"],\n  \"remediation\": [\"Investigate network policies and connectivity between services, especially focusing on the logs of checkoutservice for root causes of the connection errors.\", \"Evaluate the resource limits and requests for the affected pods to ensure CPU and memory allocations are sufficient.\"],\n  \"remediation_ko\": [\"서비스 간의 네트워크 정책 및 연결 문제를 조사하고, 특히 checkoutservice의 로그를 통해 연결 오류의 근본 원인을 파악합니다.\", \"영향을 받는 파드의 CPU 및 메모리 할당이 충분한지 확인하기 위해 리소스 한도 및 요청을 평가합니다.\"],\n  \"detail\": \"The analysis reveals that multiple services are experiencing connectivity failures, which is compounded by probe timeouts. The combination of unhealthy state in emailservice and currencyservice, along with connection errors logged by checkoutservice show a potentially misconfigured network policy or service issue that needs immediate attention. Additionally, resource throttling may be impacting the performance of these services.\",\n  \"detail_ko\": \"분석 결과 여러 서비스에서 연결 실패가 발생하고 있으며, 이는 탐침 시간 초과로 인해 악화됩니다. emailservice와 currencyservice의 비정상적인 상태가 확인되고 checkoutservice에 기록된 연결 오류가 서비스 문제 또는 네트워크 정책 구성 오류의 가능성을 시사합니다. 또한, 리소스 제한으로 인해 이러한 서비스의 성능에 영향을 미칠 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/emailservice-5dd96ff45d-hdpvh: Unhealthy - Liveness probe failed: timeout: failed to connect service \\\"10.244.1.20:8080\\\" within 1s: context deadline exceeded (count=1)\",\n      \"supports\": \"Indicates connectivity issues leading to probe failures.\"\n    },\n    {\n      \"type\": \"log\",\n      \"source\": \"checkoutservice logs\",\n      \"content\": \"{\\\"message\\\":\\\"failed to send order confirmation to ...: connection error: desc = \\\\\\\"transport: Error while dialing: dial tcp 10.98.94.87:5000: connect: operation not permitted\\\\\\\"\\\",\\\"severity\\\":\\\"warning\\\"}\",\n      \"supports\": \"Shows a clear connection error when the service attempts to communicate with another service.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Resource exhaustion may be causing degraded performance of services.\",\n      \"confidence\": 0.5,\n      \"reason_rejected\": \"While there is CPU throttling observed, it does not directly explain network connectivity failures evident in the liveness probe errors.\"\n    }\n  ]\n}"
+}

@@ -19,7 +19,7 @@
 
 | 파일 | 역할 |
 |------|------|
-| `config.py` | KUBECONFIG, SSH 접속 정보 (worker01~03), 장애별 대기 시간 (F1: 120s ~ F6: 60s) |
+| `config.py` | KUBECONFIG, SSH 접속 정보 (yms-proxmox-02~06), 장애별 대기 시간 (F1: 120s ~ F6: 60s) |
 | `base.py` | kubectl/SSH/git 헬퍼 함수 (kubectl_apply, kubectl_patch, ssh_node, git_commit_and_push) |
 | `injector.py` | `FaultInjector` 클래스: F1~F10 × 5 trial 전체 구현 |
 

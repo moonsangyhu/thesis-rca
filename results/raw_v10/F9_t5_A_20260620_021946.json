@@ -1,0 +1,894 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-7d6f7b9c6d-p8g2r",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-7d6f7b9c6d-p8g2r",
+          "container": "emailservice",
+          "waiting_reason": "CrashLoopBackOff"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "emailservice-7d6f7b9c6d-p8g2r",
+          "container": "emailservice",
+          "restarts": 3
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-7d6f7b9c6d-p8g2r",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "emailservice",
+              "ready": false,
+              "restartCount": 3,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CrashLoopBackOff",
+              "lastTerminatedReason": "StartError"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "FailedMount",
+          "message": "MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found",
+          "object": "paymentservice-7db7df47b9-f8p7m",
+          "kind": "Pod",
+          "count": 9,
+          "lastTimestamp": "2026-06-19T17:11:36Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad",
+          "object": "checkoutservice-58689597fb-px7nw",
+          "kind": "Pod",
+          "count": 11,
+          "lastTimestamp": "2026-06-19T17:15:41Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.244.1.215:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-7d6f7b9c6d-p8g2r",
+          "kind": "Pod",
+          "count": 1,
+          "lastTimestamp": "2026-06-19T17:17:16Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.1.215:8080\" within 1s: context deadline exceeded",
+          "object": "emailservice-7d6f7b9c6d-p8g2r",
+          "kind": "Pod",
+          "count": 4,
+          "lastTimestamp": "2026-06-19T17:17:16Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container emailservice in pod emailservice-7d6f7b9c6d-p8g2r_boutique(5710726d-089b-44c1-a9d3-c369de21119d)",
+          "object": "emailservice-7d6f7b9c6d-p8g2r",
+          "kind": "Pod",
+          "count": 5,
+          "lastTimestamp": "2026-06-19T17:17:48Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: invalid environment variable \"DISABLE_TRACING\": value contains nul byte (\\x00): unknown",
+          "object": "emailservice-7d6f7b9c6d-p8g2r",
+          "kind": "Pod",
+          "count": 4,
+          "lastTimestamp": "2026-06-19T17:18:03Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "emailservice-7d6f7b9c6d-p8g2r",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       StartError\n      Message:      failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: invalid environment variable \"DISABLE_TRACING\": value contains nul byte (\\x00): unknown\n      Exit Code:    128\n      Started:      Thu, 01 Jan 1970 09:00:00 +0900\n      Finished:     Sat, 20 Jun 2026 02:18:03 +0900\n    Ready:          False\n    Restart Count:  3\n    Environment:\n      DISABLE_TRACING:  corrupt_value_\u0000\u0001\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-8h62q (ro)\n  server:\n    Container ID:   containerd://d35be85d803b917b8afdd15135680b28e7b745af49ea364c3704d66cea3e8df2\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/emailservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/emailservice@sha256:c6de94237cad0708ec674085a54a52d9856be37d9bf2d6ec2ddfe7b725d02bb2\n    Port:           8080/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Sat, 20 Jun 2026 02:17:11 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Readiness:  grpc <pod>:8080  delay=0s timeout=1s period=5s #success=1 #failure=3\n    Environment:\n      PORT:              8080\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-8h62q (ro)\nConditions:\n  Type                        Status"
+        }
+      ]
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-9blb2: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nemailservice-7d6f7b9c6d-p8g2r: Running\n  container/emailservice: NOT READY (CrashLoopBackOff) restarts=3\n    last terminated: StartError (exit code ?)\nfrontend-5dd4466d85-9f6sm: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-66ddcb6b4c-s8f6c: Running\npaymentservice-87ddfbcb4-jvvhf: Running\npaymentservice-87ddfbcb4-wqpsj: Running\nproductcatalogservice-5bc6ff7696-wcsbp: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/paymentservice-7db7df47b9-f8p7m: FailedMount - MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found (count=9)\n[Warning] Pod/checkoutservice-58689597fb-px7nw: Failed - Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=11)\n[Warning] Pod/emailservice-7d6f7b9c6d-p8g2r: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.1.215:8080\" within 1s: context deadline exceeded (count=1)\n[Warning] Pod/emailservice-7d6f7b9c6d-p8g2r: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.1.215:8080\" within 1s: context deadline exceeded (count=4)\n[Warning] Pod/emailservice-7d6f7b9c6d-p8g2r: BackOff - Back-off restarting failed container emailservice in pod emailservice-7d6f7b9c6d-p8g2r_boutique(5710726d-089b-44c1-a9d3-c369de21119d) (count=5)\n[Warning] Pod/emailservice-7d6f7b9c6d-p8g2r: Failed - Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: invalid environment variable \"DISABLE_TRACING\": value contains nul byte (\\x00): unknown (count=4)\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F9",
+    "trial": 5,
+    "system": "A",
+    "identified_fault_type": "Pod Configuration Error",
+    "root_cause": "Invalid environment variable in emailservice caused the CrashLoopBackOff.",
+    "confidence": 0.9,
+    "affected_components": [
+      "emailservice"
+    ],
+    "remediation": [
+      "Review and correct the environment variable in the emailservice configuration.",
+      "Redeploy the emailservice pod."
+    ],
+    "detail": "The emailservice pod failed to start due to an invalid environment variable containing a nul byte, leading to repeated crashes. This issue requires correcting the variable definition and redeploying the service.",
+    "reasoning": "Step 1: Checked Node Health - All nodes are Ready with no pressure conditions. Proceeded to Step 2. Step 2: Checked Pod Status - The emailservice pod is in CrashLoopBackOff. The logs indicate a failure due to an invalid environment variable with a nul byte. This is noted as a primary candidate for Pod-level fault. Proceeded to Step 3. Step 3: Checked Service Connectivity - All services seem to have endpoints. Proceeded to Step 4. Step 4: Checked Network - No network issues reported. Proceeded to Step 5. Step 5: Checked Resource Limits - No resource issues detected. Final diagnosis indicates a misconfiguration in the emailservice pod due to the invalid environment variable.",
+    "root_cause_ko": "emailservice의 잘못된 환경 변수로 인해 CrashLoopBackOff가 발생했습니다.",
+    "remediation_ko": [
+      "emailservice 구성에서 환경 변수를 검토하고 수정하세요.",
+      "emailservice 포드를 다시 배포하세요."
+    ],
+    "detail_ko": "emailservice 포드는 널 바이트가 포함된 잘못된 환경 변수로 인해 시작에 실패하여 반복적으로 충돌했습니다. 이 문제를 해결하려면 변수 정의를 수정하고 서비스를 재배포해야 합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: invalid environment variable 'DISABLE_TRACING': value contains nul byte (\u0000): unknown",
+        "supports": "indicates the cause of the CrashLoopBackOff for the emailservice pod",
+        "verified": true,
+        "match_ratio": 0.94
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Failure due to missing ConfigMap or Secret.",
+        "confidence": 0.3,
+        "reason_rejected": "The events indicate the specific issue is related to an invalid environment variable, not a missing resource."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The RCA diagnosis accurately cites the invalid environment variable from the input context which is critical to identifying the CrashLoopBackOff issue. However, while an alternative hypothesis is presented, it could have elaborated on why other potential causes (like the unsuccessful health checks) were not implicated as contributing factors in this particular case. Additionally, a slight adjustment in the confidence level could reflect the nature of the issue being more specific, perhaps scoring lower than 0.9 due to the potential impact of other related warnings.",
+    "retry_count": 0,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis describes an invalid environment variable as the cause of the CrashLoopBackOff, which is a different root cause mechanism compared to reading a corrupted Secret value. Since the mechanisms are entirely different, the diagnosis does not match the ground truth.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 9351,
+    "prompt_tokens": 4724,
+    "completion_tokens": 808,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked Node Health - All nodes are Ready with no pressure conditions. Proceeded to Step 2. Step 2: Checked Pod Status - The emailservice pod is in CrashLoopBackOff. The logs indicate a failure due to an invalid environment variable with a nul byte. This is noted as a primary candidate for Pod-level fault. Proceeded to Step 3. Step 3: Checked Service Connectivity - All services seem to have endpoints. Proceeded to Step 4. Step 4: Checked Network - No network issues reported. Proceeded to Step 5. Step 5: Checked Resource Limits - No resource issues detected. Final diagnosis indicates a misconfiguration in the emailservice pod due to the invalid environment variable.\",\n  \"identified_fault_type\": \"Pod Configuration Error\",\n  \"root_cause\": \"Invalid environment variable in emailservice caused the CrashLoopBackOff.\",\n  \"root_cause_ko\": \"emailservice의 잘못된 환경 변수로 인해 CrashLoopBackOff가 발생했습니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"emailservice\"],\n  \"remediation\": [\"Review and correct the environment variable in the emailservice configuration.\", \"Redeploy the emailservice pod.\"],\n  \"remediation_ko\": [\"emailservice 구성에서 환경 변수를 검토하고 수정하세요.\", \"emailservice 포드를 다시 배포하세요.\"],\n  \"detail\": \"The emailservice pod failed to start due to an invalid environment variable containing a nul byte, leading to repeated crashes. This issue requires correcting the variable definition and redeploying the service.\",\n  \"detail_ko\": \"emailservice 포드는 널 바이트가 포함된 잘못된 환경 변수로 인해 시작에 실패하여 반복적으로 충돌했습니다. 이 문제를 해결하려면 변수 정의를 수정하고 서비스를 재배포해야 합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: invalid environment variable 'DISABLE_TRACING': value contains nul byte (\\u0000): unknown\",\n      \"supports\": \"indicates the cause of the CrashLoopBackOff for the emailservice pod\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Failure due to missing ConfigMap or Secret.\",\n      \"confidence\": 0.3,\n      \"reason_rejected\": \"The events indicate the specific issue is related to an invalid environment variable, not a missing resource.\"\n    }\n  ]\n}"
+}

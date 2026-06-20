@@ -1,0 +1,164 @@
+2026-06-19 21:14:59,836 [INFO] experiments.shared.infra: ============================================================
+2026-06-19 21:14:59,837 [INFO] experiments.shared.infra: PREFLIGHT CHECK
+2026-06-19 21:14:59,837 [INFO] experiments.shared.infra: ============================================================
+2026-06-19 21:14:59,919 [INFO] experiments.shared.infra: [OK] kubectl: 6 nodes reachable
+2026-06-19 21:14:59,979 [INFO] experiments.shared.infra: [OK] boutique: 12 pods running
+2026-06-19 21:15:00,003 [INFO] experiments.shared.infra: [OK] Prometheus (localhost:9090)
+2026-06-19 21:15:00,018 [INFO] experiments.shared.infra: [OK] Loki (localhost:3100)
+2026-06-19 21:15:00,019 [INFO] experiments.shared.infra: ============================================================
+2026-06-19 21:15:00,019 [INFO] experiments.shared.infra: PREFLIGHT CHECK PASSED
+2026-06-19 21:15:00,019 [INFO] experiments.shared.infra: ============================================================
+2026-06-19 21:15:00,019 [INFO] experiment.v10: Loaded ground truth: 60 entries
+2026-06-19 21:15:00,315 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-06-19 21:15:00,381 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+2026-06-19 21:15:03,463 [INFO] sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-06-19 21:15:06,066 [INFO] src.rag.retriever: KnowledgeRetriever loaded: 1274 chunks in collection
+2026-06-19 21:15:06,070 [INFO] experiment.v10: V10: StateValidator initialized
+2026-06-19 21:15:06,070 [INFO] experiment.v10: v10 experiment: 1 trials (['F1'] × [1])
+2026-06-19 21:15:06,070 [INFO] experiment.v10: Model: gpt-4o-mini (openai)
+2026-06-19 21:15:06,197 [INFO] experiments.shared.infra: [HEALTH] OK before F1 t1
+2026-06-19 21:15:06,197 [INFO] experiments.shared.runner: ============================================================
+2026-06-19 21:15:06,197 [INFO] experiments.shared.runner: Starting F1 trial 1
+2026-06-19 21:15:06,197 [INFO] experiments.shared.runner: ============================================================
+2026-06-19 21:15:06,197 [INFO] experiments.shared.runner: Validating pre-trial cluster state...
+2026-06-19 21:15:06,466 [INFO] experiments.shared.runner: Validator: status=clean, findings=0 (none), attempts=0, elapsed=0.3s
+2026-06-19 21:15:06,467 [INFO] scripts.fault_inject.injector: Injecting F1 trial 1: OOMKilled on cartservice
+2026-06-19 21:15:06,575 [INFO] scripts.fault_inject.injector: F1 injected: cartservice memory limit → 32Mi
+2026-06-19 21:15:06,575 [INFO] experiments.shared.runner: Injection result: patch_memory_limit
+2026-06-19 21:15:06,575 [INFO] experiments.shared.runner: Waiting 120s for symptoms to manifest...
+2026-06-19 21:17:06,652 [INFO] experiments.shared.runner: Collecting signals...
+2026-06-19 21:17:06,655 [INFO] src.collector: Collecting signals (window=5m)...
+2026-06-19 21:17:08,011 [INFO] src.collector: Signal collection complete
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.38it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.37it/s]
+2026-06-19 21:17:09,214 [ERROR] chromadb.telemetry.product.posthog: Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+2026-06-19 21:17:09,261 [INFO] experiments.shared.runner: RAG retrieved 5 docs for F1
+2026-06-19 21:17:09,261 [INFO] experiments.shared.runner: Running RCA System A (observability only)...
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:17:22,303 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 21:17:22,324 [INFO] experiments.v10.engine: Evidence verification: 3/3 verified (faithfulness=1.00)
+2026-06-19 21:17:24,939 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 21:17:24,941 [INFO] experiments.v10.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-19 21:17:26,439 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 21:17:26,446 [INFO] experiments.shared.runner: System A: predicted=OOM Kill, confidence=0.80
+2026-06-19 21:17:26,446 [INFO] experiments.shared.runner: Running RCA System B (+ GitOps + RAG)...
+2026-06-19 21:17:37,475 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 21:17:37,481 [INFO] experiments.v10.engine: Evidence verification: 3/3 verified (faithfulness=1.00)
+2026-06-19 21:17:39,785 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 21:17:39,794 [INFO] experiments.v10.engine: Evaluator: overall=8.0, should_retry=False
+2026-06-19 21:17:41,220 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 21:17:41,228 [INFO] experiments.shared.runner: System B: predicted=OOM Kill, confidence=0.90
+2026-06-19 21:17:41,230 [INFO] experiments.shared.runner: CSV verified: F1 t1 A written (row 1)
+2026-06-19 21:17:41,230 [INFO] experiments.shared.runner: CSV verified: F1 t1 B written (row 2)
+2026-06-19 21:17:41,235 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v10/F1_t1_A_20260619_211741.json
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 83.66it/s]
+2026-06-19 21:17:41,257 [INFO] experiments.shared.csv_io: Raw data saved: /Users/yumunsang/thesis-rca/results/raw_v10/F1_t1_B_20260619_211741.json
+2026-06-19 21:17:41,257 [INFO] experiments.shared.runner: Recovering from fault...
+2026-06-19 21:17:41,257 [INFO] scripts.stabilize.recovery: Recovering from F1 trial 1...
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:18:11,896 [WARNING] scripts.fault_inject.base: kubectl stderr: error: unknown flag: --all
+See 'kubectl rollout restart --help' for usage.
+2026-06-19 21:18:11,896 [INFO] scripts.stabilize.recovery: Rollout restart all deployments: 
+2026-06-19 21:18:11,896 [INFO] scripts.stabilize.recovery: Waiting for boutique pods to stabilize...
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:18:12,004 [INFO] scripts.stabilize.recovery: All deployments healthy, 13 pods running (0s)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:18:12,420 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-02: df / --output=pcent | tail -1
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:18:12,781 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-03: df / --output=pcent | tail -1
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:18:13,175 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-04: df / --output=pcent | tail -1
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:18:13,575 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-05: df / --output=pcent | tail -1
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:18:14,012 [INFO] scripts.fault_inject.base: SSH to yms-proxmox-06: df / --output=pcent | tail -1
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-19 21:18:14,430 [INFO] scripts.stabilize.health_verify: Comprehensive health check PASSED (attempt 1)
+2026-06-19 21:18:14,430 [INFO] experiments.shared.runner: Recovery complete — cluster stabilized
+2026-06-19 21:18:14,431 [INFO] experiments.shared.runner: Trial complete: F1 t1 | A: OOM Kill (score=0.75) correct | B: OOM Kill (score=0.75) correct
+2026-06-19 21:18:14,432 [INFO] experiment.v10: Progress: 1/1
+2026-06-19 21:18:14,432 [INFO] experiment.v10: ============================================================
+2026-06-19 21:18:14,433 [INFO] experiment.v10: v10 experiment complete! 1/1 trials
+2026-06-19 21:18:14,433 [INFO] experiment.v10: Results: /Users/yumunsang/thesis-rca/results/experiment_results_v10.csv
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)

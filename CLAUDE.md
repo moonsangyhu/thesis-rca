@@ -104,6 +104,7 @@ superpowers 기본 산출물 경로(`docs/superpowers/specs/`, `docs/superpowers
 
 - **agents.md** — 에이전트 목록, 흡수처 매핑, 오케스트레이션 규칙
 - **research-pipeline.md** — Research 트랙 R-1~R-5 파이프라인 *(현재 본류)*
+- **paper-idea-to-experiment.md** — 하루 논문/오디오에서 건진 아이디어를 실험 후보 카드로 보존하고 승격하는 Intake 파이프라인
 - **experiment-pipeline.md** — 실험 7-Step 파이프라인 *(보조 트랙 — V9 실행 대기)*
 - **data-safety.md** — 모델 고정, 데이터 불변, 실험 격리 *(메인 워크트리에서 톤 약화 예정)*
 - **lab-workflow.md** — 스킬 카탈로그, Lab 환경 *(메인 워크트리에서 superpowers 통합 갱신 예정)*

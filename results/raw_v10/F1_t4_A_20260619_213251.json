@@ -1,0 +1,727 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-vx5dk",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-6gl6k",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-g54lf",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-2q92z",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-4jc7d",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-bldzm",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        },
+        {
+          "pod": "frontend-5dd4466d85-6gl6k",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve product: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.107.38.147:3550: i/o timeout\\\"\",\"http.req.id\":\"d852fea6-cf4b-4a6d-aa98-88595af00c38\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"4b2292f4-7e41-40e5-9d4a-06085255392e\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T12:30:51.735669394Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-6gl6k",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve products: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.107.38.147:3550: i/o timeout\\\"\",\"http.req.id\":\"49b82648-95ae-4192-bfcc-25f5ab4640b1\",\"http.req.method\":\"GET\",\"http.req.path\":\"/\",\"message\":\"request error\",\"session\":\"7c8d90fb-ef07-4336-9a32-b300c518d8c6\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T12:30:51.733294664Z\"}"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-4jc7d",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-2q92z",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-g54lf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-6gl6k",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-bldzm",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-vx5dk",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.244.1.3:8080\" within 1s: context deadline exceeded",
+          "object": "recommendationservice-678cb455cc-v9t5t",
+          "kind": "Pod",
+          "count": 3,
+          "lastTimestamp": "2026-06-19T12:22:15Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.1.3:8080\" within 1s: context deadline exceeded",
+          "object": "recommendationservice-678cb455cc-v9t5t",
+          "kind": "Pod",
+          "count": 10,
+          "lastTimestamp": "2026-06-19T12:22:16Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-4jc7d: Running\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-2q92z: Running\nemailservice-5b6d8449d8-g54lf: Running\nfrontend-5dd4466d85-6gl6k: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-bldzm: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-vx5dk: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/recommendationservice-678cb455cc-v9t5t: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.1.3:8080\" within 1s: context deadline exceeded (count=3)\n[Warning] Pod/recommendationservice-678cb455cc-v9t5t: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.1.3:8080\" within 1s: context deadline exceeded (count=10)\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n[frontend-5dd4466d85-6gl6k] {\"error\":\"could not retrieve product: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.107.38.147:3550: i/o timeout\\\"\",\"http.req.id\":\"d852fea6-cf4b-4a6d-aa98-88595af00c38\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request e...\n[frontend-5dd4466d85-6gl6k] {\"error\":\"could not retrieve products: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.107.38.147:3550: i/o timeout\\\"\",\"http.req.id\":\"49b82648-95ae-4192-bfcc-25f5ab4640b1\",\"http.req.method\":\"GET\",\"http.req.path\":\"/\",\"message\":\"request error...\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F1",
+    "trial": 4,
+    "system": "A",
+    "identified_fault_type": "Service Connectivity Failure",
+    "root_cause": "The recommendationservice is failing liveness and readiness probes due to network connectivity issues.",
+    "confidence": 0.8,
+    "affected_components": [
+      "recommendationservice"
+    ],
+    "remediation": [
+      "Investigate the network connectivity between recommendationservice and its dependencies.",
+      "Check if there are any NetworkPolicies that may be affecting connectivity."
+    ],
+    "detail": "The recommendationservice is reporting probe failures due to a timeout accessing service endpoints. This correlates with connection errors captured in the error logs of the frontend service, indicating a potential network issue impeding service communication. It’s important to inspect the network status to confirm connectivity and check for any NetworkPolicies that may be interfering.",
+    "reasoning": "Step 1: Checked node health; all nodes are Ready. Step 2: Checked pod status; all pods are Running, but the recommendationservice is unhealthy due to liveness and readiness probe failures. Step 3: No services showed 0 endpoints or endpoint mismatches. Step 4: Checked the network; found connection errors indicating potential network issues. Step 5: No resource limits or violations detected. The primary candidate relates to the recommendationservice experiencing probe failures due to network connectivity issues, supported by error logs indicating i/o timeout when connecting to services.",
+    "root_cause_ko": "추천 서비스가 네트워크 연결 문제로 생명 및 준비 프로브에서 실패하고 있습니다.",
+    "remediation_ko": [
+      "추천 서비스와 해당 종속성 간의 네트워크 연결 문제를 조사하십시오.",
+      "연결성에 영향을 줄 수 있는 네트워크 정책이 있는지 확인하십시오."
+    ],
+    "detail_ko": "추천 서비스는 서비스 엔드포인트에 접근하느라 타임아웃이 발생하여 프로브 실패를 보고하고 있습니다. 이는 프론트엔드 서비스의 오류 로그에서 캡처된 연결 오류와 연관되어 있으며, 서비스 간 통신을 방해하는 네트워크 문제의 가능성을 나타냅니다. 네트워크 상태를 점검하여 연결성을 확인하고, 간섭할 수 있는 네트워크 정책이 있는지 확인하는 것이 중요합니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/recommendationservice-678cb455cc-v9t5t: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.1.3:8080\" within 1s: context deadline exceeded (count=3)",
+        "supports": "Indicates that the recommendationservice is unable to connect to the specified service endpoint during both liveness and readiness probes.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "log",
+        "source": "Error Logs",
+        "content": "[frontend-5dd4466d85-6gl6k] {\"error\":\"could not retrieve product: rpc error: code = Unavailable desc = connection error: desc = \\\"transport: Error while dialing: dial tcp 10.107.38.147:3550: i/o timeout\\\"\",\"http.req.id\":\"d852fea6-cf4b-4a6d-aa98-88595af00c38\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request e...",
+        "supports": "Further indicates that frontend service is experiencing i/o timeouts when connecting to other services, supporting the hypothesis of widespread networking issues.",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "The recommendationservice itself may be misconfigured, causing it to time out.",
+        "confidence": 0.4,
+        "reason_rejected": "No misconfiguration messages present; the failures align with network connectivity issues."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The evidence for both liveness/readiness probe failures and error logs are accurately drawn from the input context. However, while the alternative hypothesis regarding misconfiguration was addressed, it would have been stronger to mention other potential causes such as transient network issues or service overload. The reasoning chain is generally logical but could clarify how the i/o timeout in the frontend logs connects back to the recommendationservice issues specifically. Overall, confidence is well-calibrated given the strength of evidence, but fully ruling out some conditions would enhance the robustness of the diagnosis.",
+    "retry_count": 0,
+    "correctness_score": 0.0,
+    "correctness_reasoning": "The diagnosis focuses on network connectivity issues and service probe failures, which are unrelated to the actual root cause of a memory limitation issue leading to OOMKilled.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 9526,
+    "prompt_tokens": 4650,
+    "completion_tokens": 1042,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health; all nodes are Ready. Step 2: Checked pod status; all pods are Running, but the recommendationservice is unhealthy due to liveness and readiness probe failures. Step 3: No services showed 0 endpoints or endpoint mismatches. Step 4: Checked the network; found connection errors indicating potential network issues. Step 5: No resource limits or violations detected. The primary candidate relates to the recommendationservice experiencing probe failures due to network connectivity issues, supported by error logs indicating i/o timeout when connecting to services.\",\n  \"identified_fault_type\": \"Service Connectivity Failure\",\n  \"root_cause\": \"The recommendationservice is failing liveness and readiness probes due to network connectivity issues.\",\n  \"root_cause_ko\": \"추천 서비스가 네트워크 연결 문제로 생명 및 준비 프로브에서 실패하고 있습니다.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"recommendationservice\"],\n  \"remediation\": [\"Investigate the network connectivity between recommendationservice and its dependencies.\", \"Check if there are any NetworkPolicies that may be affecting connectivity.\"],\n  \"remediation_ko\": [\"추천 서비스와 해당 종속성 간의 네트워크 연결 문제를 조사하십시오.\", \"연결성에 영향을 줄 수 있는 네트워크 정책이 있는지 확인하십시오.\"],\n  \"detail\": \"The recommendationservice is reporting probe failures due to a timeout accessing service endpoints. This correlates with connection errors captured in the error logs of the frontend service, indicating a potential network issue impeding service communication. It’s important to inspect the network status to confirm connectivity and check for any NetworkPolicies that may be interfering.\",\n  \"detail_ko\": \"추천 서비스는 서비스 엔드포인트에 접근하느라 타임아웃이 발생하여 프로브 실패를 보고하고 있습니다. 이는 프론트엔드 서비스의 오류 로그에서 캡처된 연결 오류와 연관되어 있으며, 서비스 간 통신을 방해하는 네트워크 문제의 가능성을 나타냅니다. 네트워크 상태를 점검하여 연결성을 확인하고, 간섭할 수 있는 네트워크 정책이 있는지 확인하는 것이 중요합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/recommendationservice-678cb455cc-v9t5t: Unhealthy - Liveness probe failed: timeout: failed to connect service \\\"10.244.1.3:8080\\\" within 1s: context deadline exceeded (count=3)\",\n      \"supports\": \"Indicates that the recommendationservice is unable to connect to the specified service endpoint during both liveness and readiness probes.\"\n    },\n    {\n      \"type\": \"log\",\n      \"source\": \"Error Logs\",\n      \"content\": \"[frontend-5dd4466d85-6gl6k] {\\\"error\\\":\\\"could not retrieve product: rpc error: code = Unavailable desc = connection error: desc = \\\\\\\"transport: Error while dialing: dial tcp 10.107.38.147:3550: i/o timeout\\\\\\\"\\\",\\\"http.req.id\\\":\\\"d852fea6-cf4b-4a6d-aa98-88595af00c38\\\",\\\"http.req.method\\\":\\\"POST\\\",\\\"http.req.path\\\":\\\"/cart\\\",\\\"message\\\":\\\"request e...\",\n      \"supports\": \"Further indicates that frontend service is experiencing i/o timeouts when connecting to other services, supporting the hypothesis of widespread networking issues.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"The recommendationservice itself may be misconfigured, causing it to time out.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No misconfiguration messages present; the failures align with network connectivity issues.\"\n    }\n  ]\n}"
+}

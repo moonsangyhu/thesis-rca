@@ -1,0 +1,808 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"could not retrieve cart: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"9c2e3316-e9f6-4cc6-9de3-d88a33959e67\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"request error\",\"session\":\"2316142b-4659-4469-a858-3eb2f185e2c6\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T15:32:42.966934566Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to add to cart: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"9455dae4-b460-4d75-9daa-c3fc340ebf94\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"38325b56-1218-4c32-a76f-5ceed948c837\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T15:32:19.562924212Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get shipping quote: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"eee76046-efed-4138-b4c8-7fd1a72de7ac\",\"http.req.method\":\"GET\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"49f4121e-b652-414b-94d1-0cf8628b99d8\",\"severity\":\"error\",\"timestamp\":\"2026-06-19T15:31:27.479240466Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"cb74cd3d-d50c-4f3a-97c9-1c7343bbcdcd\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"failed to retrieve ads\",\"session\":\"2316142b-4659-4469-a858-3eb2f185e2c6\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:38.106977772Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"cb74cd3d-d50c-4f3a-97c9-1c7343bbcdcd\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"failed to get product recommendations\",\"session\":\"2316142b-4659-4469-a858-3eb2f185e2c6\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:38.106894885Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"eee76046-efed-4138-b4c8-7fd1a72de7ac\",\"http.req.method\":\"GET\",\"http.req.path\":\"/cart\",\"message\":\"failed to get product recommendations\",\"session\":\"49f4121e-b652-414b-94d1-0cf8628b99d8\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:27.479155768Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"9b8818c6-566e-46eb-b08a-921cb82342d6\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"failed to retrieve ads\",\"session\":\"564a9e19-7799-4aa1-8028-3d385212f76c\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:25.480356452Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"9b8818c6-566e-46eb-b08a-921cb82342d6\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"failed to get product recommendations\",\"session\":\"564a9e19-7799-4aa1-8028-3d385212f76c\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:25.480229112Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"5e4eb183-50e1-4cff-bfef-4551e9f3af16\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/LS4PSXUNUM\",\"message\":\"failed to retrieve ads\",\"session\":\"ba6e7f6b-e321-4bb9-8b9b-be6b2f1e216e\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:23.793230395Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"5e4eb183-50e1-4cff-bfef-4551e9f3af16\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/LS4PSXUNUM\",\"message\":\"failed to get product recommendations\",\"session\":\"ba6e7f6b-e321-4bb9-8b9b-be6b2f1e216e\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:23.793123765Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"5c9b6e2b-8719-4b56-b7b9-3a3674550a79\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"failed to retrieve ads\",\"session\":\"4b2292f4-7e41-40e5-9d4a-06085255392e\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:23.392550555Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"5c9b6e2b-8719-4b56-b7b9-3a3674550a79\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"failed to get product recommendations\",\"session\":\"4b2292f4-7e41-40e5-9d4a-06085255392e\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:23.392449193Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"0793cb4a-9713-4cff-8390-0019af94a818\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"failed to retrieve ads\",\"session\":\"7e7afb56-aa2a-48be-b82b-ccbd5135a161\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:23.102421845Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"0793cb4a-9713-4cff-8390-0019af94a818\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"failed to get product recommendations\",\"session\":\"7e7afb56-aa2a-48be-b82b-ccbd5135a161\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:23.10226797Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"6f644f2d-b70c-453b-8939-462b35851657\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/66VCHSJNUP\",\"message\":\"failed to retrieve ads\",\"session\":\"0fc5cbed-2492-4f8d-8131-2f2efb60b301\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:20.08539271Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"6f644f2d-b70c-453b-8939-462b35851657\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/66VCHSJNUP\",\"message\":\"failed to get product recommendations\",\"session\":\"0fc5cbed-2492-4f8d-8131-2f2efb60b301\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:20.085280933Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"52ab0e2d-428f-4dd0-82cf-2e92f00bc353\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/L9ECAV7KIM\",\"message\":\"failed to retrieve ads\",\"session\":\"38325b56-1218-4c32-a76f-5ceed948c837\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:19.558533891Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"52ab0e2d-428f-4dd0-82cf-2e92f00bc353\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/L9ECAV7KIM\",\"message\":\"failed to get product recommendations\",\"session\":\"38325b56-1218-4c32-a76f-5ceed948c837\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:19.558444378Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"fd9d8521-f07b-4b32-9df7-bb60188204b0\",\"http.req.method\":\"GET\",\"http.req.path\":\"/cart\",\"message\":\"failed to get product recommendations\",\"session\":\"2de67e8d-3daf-4ab9-8a4e-5f38d7efd4a7\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:19.257502191Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"36b5efb1-e53b-45af-a3c9-1331101d1149\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/LS4PSXUNUM\",\"message\":\"failed to retrieve ads\",\"session\":\"7c8d90fb-ef07-4336-9a32-b300c518d8c6\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:17.7249628Z\"}"
+        },
+        {
+          "pod": "frontend-5dd4466d85-m7ggl",
+          "container": "server",
+          "line": "{\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"36b5efb1-e53b-45af-a3c9-1331101d1149\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/LS4PSXUNUM\",\"message\":\"failed to get product recommendations\",\"session\":\"7c8d90fb-ef07-4336-9a32-b300c518d8c6\",\"severity\":\"warning\",\"timestamp\":\"2026-06-19T15:31:17.724827188Z\"}"
+        },
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-5fnsr",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-m7ggl",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-c9sls",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": []
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-5fnsr: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-m7ggl: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-c9sls: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\nNo warning/error events.\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[frontend-5dd4466d85-m7ggl] {\"error\":\"could not retrieve cart: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"9c2e3316-e9f6-4cc6-9de3-d88a33959e67\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"request error\",\"session\":\"2316142b-4659-4469-a858-3eb2f185e2c6\",\"severity\":\"error\",\"tim...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to add to cart: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"9455dae4-b460-4d75-9daa-c3fc340ebf94\",\"http.req.method\":\"POST\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"38325b56-1218-4c32-a76f-5ceed948c837\",\"severity\":\"error\",\"timestamp\":\"2026-0...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get shipping quote: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"eee76046-efed-4138-b4c8-7fd1a72de7ac\",\"http.req.method\":\"GET\",\"http.req.path\":\"/cart\",\"message\":\"request error\",\"session\":\"49f4121e-b652-414b-94d1-0cf8628b99d8\",\"severity\":\"error\",\"timestamp\":\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"cb74cd3d-d50c-4f3a-97c9-1c7343bbcdcd\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"failed to retrieve ads\",\"session\":\"2316142b-4659-4469-a858-3eb2f185e2c6\",\"severity\":\"warning\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"cb74cd3d-d50c-4f3a-97c9-1c7343bbcdcd\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"failed to get product recommendations\",\"session\":\"2316142b-4659-4469-a858-3eb2f185e2c6\",\"severity\":\"warning\",\"ti...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"eee76046-efed-4138-b4c8-7fd1a72de7ac\",\"http.req.method\":\"GET\",\"http.req.path\":\"/cart\",\"message\":\"failed to get product recommendations\",\"session\":\"49f4121e-b652-414b-94d1-0cf8628b99d8\",\"severity\":\"warning\",\"timestamp\":\"2026...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"9b8818c6-566e-46eb-b08a-921cb82342d6\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"failed to retrieve ads\",\"session\":\"564a9e19-7799-4aa1-8028-3d385212f76c\",\"severity\":\"warning\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"9b8818c6-566e-46eb-b08a-921cb82342d6\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"failed to get product recommendations\",\"session\":\"564a9e19-7799-4aa1-8028-3d385212f76c\",\"severity\":\"warning\",\"ti...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"5e4eb183-50e1-4cff-bfef-4551e9f3af16\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/LS4PSXUNUM\",\"message\":\"failed to retrieve ads\",\"session\":\"ba6e7f6b-e321-4bb9-8b9b-be6b2f1e216e\",\"severity\":\"warning\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"5e4eb183-50e1-4cff-bfef-4551e9f3af16\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/LS4PSXUNUM\",\"message\":\"failed to get product recommendations\",\"session\":\"ba6e7f6b-e321-4bb9-8b9b-be6b2f1e216e\",\"severity\":\"warning\",\"ti...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"5c9b6e2b-8719-4b56-b7b9-3a3674550a79\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"failed to retrieve ads\",\"session\":\"4b2292f4-7e41-40e5-9d4a-06085255392e\",\"severity\":\"warning\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"5c9b6e2b-8719-4b56-b7b9-3a3674550a79\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/0PUK6V6EV0\",\"message\":\"failed to get product recommendations\",\"session\":\"4b2292f4-7e41-40e5-9d4a-06085255392e\",\"severity\":\"warning\",\"ti...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"0793cb4a-9713-4cff-8390-0019af94a818\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"failed to retrieve ads\",\"session\":\"7e7afb56-aa2a-48be-b82b-ccbd5135a161\",\"severity\":\"warning\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"0793cb4a-9713-4cff-8390-0019af94a818\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/2ZYFJ3GM2N\",\"message\":\"failed to get product recommendations\",\"session\":\"7e7afb56-aa2a-48be-b82b-ccbd5135a161\",\"severity\":\"warning\",\"ti...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"6f644f2d-b70c-453b-8939-462b35851657\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/66VCHSJNUP\",\"message\":\"failed to retrieve ads\",\"session\":\"0fc5cbed-2492-4f8d-8131-2f2efb60b301\",\"severity\":\"warning\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"6f644f2d-b70c-453b-8939-462b35851657\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/66VCHSJNUP\",\"message\":\"failed to get product recommendations\",\"session\":\"0fc5cbed-2492-4f8d-8131-2f2efb60b301\",\"severity\":\"warning\",\"ti...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"52ab0e2d-428f-4dd0-82cf-2e92f00bc353\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/L9ECAV7KIM\",\"message\":\"failed to retrieve ads\",\"session\":\"38325b56-1218-4c32-a76f-5ceed948c837\",\"severity\":\"warning\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"52ab0e2d-428f-4dd0-82cf-2e92f00bc353\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/L9ECAV7KIM\",\"message\":\"failed to get product recommendations\",\"session\":\"38325b56-1218-4c32-a76f-5ceed948c837\",\"severity\":\"warning\",\"ti...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"fd9d8521-f07b-4b32-9df7-bb60188204b0\",\"http.req.method\":\"GET\",\"http.req.path\":\"/cart\",\"message\":\"failed to get product recommendations\",\"session\":\"2de67e8d-3daf-4ab9-8a4e-5f38d7efd4a7\",\"severity\":\"warning\",\"timestamp\":\"2026...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"failed to get ads: rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"36b5efb1-e53b-45af-a3c9-1331101d1149\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/LS4PSXUNUM\",\"message\":\"failed to retrieve ads\",\"session\":\"7c8d90fb-ef07-4336-9a32-b300c518d8c6\",\"severity\":\"warning\"...\n[frontend-5dd4466d85-m7ggl] {\"error\":\"rpc error: code = Canceled desc = context canceled\",\"http.req.id\":\"36b5efb1-e53b-45af-a3c9-1331101d1149\",\"http.req.method\":\"GET\",\"http.req.path\":\"/product/LS4PSXUNUM\",\"message\":\"failed to get product recommendations\",\"session\":\"7c8d90fb-ef07-4336-9a32-b300c518d8c6\",\"severity\":\"warning\",\"ti...\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready",
+  "rca_output": {
+    "fault_id": "F6",
+    "trial": 3,
+    "system": "A",
+    "identified_fault_type": "Network Delay",
+    "root_cause": "Network connectivity issues leading to canceled RPC calls in the frontend service.",
+    "confidence": 0.8,
+    "affected_components": [
+      "frontend"
+    ],
+    "remediation": [
+      "Investigate network connectivity between frontend and dependent services.",
+      "Monitor latency metrics for the service interactions."
+    ],
+    "detail": "The frontend service is experiencing multiple canceled RPC calls, which indicate that requests to dependent services are timing out or being aborted. This typically points to underlying network delays or issues in communication between services. Since all nodes and pods appear healthy, focusing on network connectivity and potential latencies will be critical to resolving this issue.",
+    "reasoning": "I checked the Node Health first and found all nodes are in Ready state, so I proceeded to Step 2. In Step 2, I noted that all pods are in Running state which confirms they are healthy. Moving to Step 3, I found no services indicating 0 endpoints, allowing me to progress to Step 4. There, I observed repeated RPC cancellation errors in the frontend service logs, indicating requests were being aborted, which can often stem from network issues, high latency, or resource limitations. These errors align with the need to diagnose potential networking delays leading to RPC cancellations. Moving to Step 5, no resource limits violations were noted, however, high latency or networking issues may be implied due to the error logs referencing context cancellations. Given the absence of other evident root causes, I'm diagnosing a network connectivity issue as the root cause. The canceled RPC calls further suggest potential communication breakdowns with upstream services or high response latencies which might not have crossed threshold alarms yet, indicating a subtle degradation rather than outright failure.",
+    "root_cause_ko": "프론트엔드 서비스에서 RPC 호출이 취소되는 네트워크 연결 문제.",
+    "remediation_ko": [
+      "프론트엔드와 의존 서비스 간의 네트워크 연결 문제를 조사합니다.",
+      "서비스 상호작용의 지연 메트릭을 모니터링합니다."
+    ],
+    "detail_ko": "프론트엔드 서비스에서 여러 요청된 RPC 호출이 취소되고 있으며, 이는 의존 서비스에 대한 요청이 타임아웃되거나 중단되고 있음을 나타냅니다. 이는 일반적으로 서비스 간의 네트워크 지연 또는 통신 문제를 시사합니다. 모든 노드 및 파드가 건강한 것으로 보이므로 네트워크 연결 및 잠재적인 지연에 초점을 맞추는 것이 문제 해결에 중요합니다.",
+    "evidence_chain": [
+      {
+        "type": "log",
+        "source": "frontend error logs",
+        "content": "rpc error: code = Canceled desc = context canceled",
+        "supports": "Indicates that RPC calls are being canceled, likely due to network or system resource issues",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "log",
+        "source": "frontend error logs",
+        "content": "could not retrieve cart: rpc error: code = Canceled desc = context canceled",
+        "supports": "Further indicates a recurring issue with RPC calls being aborted, supporting the diagnosis of network problems",
+        "verified": true,
+        "match_ratio": 1.0
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Client-side configuration errors or overloads impacting service responses.",
+        "confidence": 0.4,
+        "reason_rejected": "No evidence from client logs or metrics indicating configuration problems or overloads."
+      },
+      {
+        "hypothesis": "Resource limits on dependent services might be causing delays in processing requests.",
+        "confidence": 0.5,
+        "reason_rejected": "No resource violation metrics were observed across services, suggesting resources are sufficient."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 8.0,
+    "eval_confidence_calibration": 7.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The diagnosis reasonably identifies network issues based on the RPC cancellation errors from the frontend service logs. The reasoning progresses logically from node health checks to pod statuses and finally to the RPC errors, grounding the diagnosis in observable evidence. The two suggested alternative hypotheses are relevant and are effectively ruled out. However, the confidence level of 0.8 may be slightly overestimated given there are no more specific indications (like actual network metrics) that confirm the root cause, merely assumptions based on observed errors which may also stem from other issues. To improve, it might be beneficial to consider the absence of direct evidence regarding network latency or congestion, which could support or refine the diagnosis further.",
+    "retry_count": 1,
+    "correctness_score": 0.3,
+    "correctness_reasoning": "The LLM diagnosis identifies a network-related issue affecting communication between services, which aligns with the fault category. However, it inaccurately describes the specific root cause mechanism by focusing on network delay rather than the specific NetworkPolicy blocking the egress from checkoutservice to paymentservice. The mention of RPC calls and network delays does not accurately reflect the direct cause of the checkoutservice's failure to reach paymentservice.",
+    "correct": 0,
+    "model": "gpt-4o-mini",
+    "latency_ms": 9272,
+    "prompt_tokens": 9099,
+    "completion_tokens": 1092,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"I checked the Node Health first and found all nodes are in Ready state, so I proceeded to Step 2. In Step 2, I noted that all pods are in Running state which confirms they are healthy. Moving to Step 3, I found no services indicating 0 endpoints, allowing me to progress to Step 4. There, I observed repeated RPC cancellation errors in the frontend service logs, indicating requests were being aborted, which can often stem from network issues, high latency, or resource limitations. These errors align with the need to diagnose potential networking delays leading to RPC cancellations. Moving to Step 5, no resource limits violations were noted, however, high latency or networking issues may be implied due to the error logs referencing context cancellations. Given the absence of other evident root causes, I'm diagnosing a network connectivity issue as the root cause. The canceled RPC calls further suggest potential communication breakdowns with upstream services or high response latencies which might not have crossed threshold alarms yet, indicating a subtle degradation rather than outright failure.\",\n  \"identified_fault_type\": \"Network Delay\",\n  \"root_cause\": \"Network connectivity issues leading to canceled RPC calls in the frontend service.\",\n  \"root_cause_ko\": \"프론트엔드 서비스에서 RPC 호출이 취소되는 네트워크 연결 문제.\",\n  \"confidence\": 0.8,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"frontend\"],\n  \"remediation\": [\"Investigate network connectivity between frontend and dependent services.\", \"Monitor latency metrics for the service interactions.\"],\n  \"remediation_ko\": [\"프론트엔드와 의존 서비스 간의 네트워크 연결 문제를 조사합니다.\", \"서비스 상호작용의 지연 메트릭을 모니터링합니다.\"],\n  \"detail\": \"The frontend service is experiencing multiple canceled RPC calls, which indicate that requests to dependent services are timing out or being aborted. This typically points to underlying network delays or issues in communication between services. Since all nodes and pods appear healthy, focusing on network connectivity and potential latencies will be critical to resolving this issue.\",\n  \"detail_ko\": \"프론트엔드 서비스에서 여러 요청된 RPC 호출이 취소되고 있으며, 이는 의존 서비스에 대한 요청이 타임아웃되거나 중단되고 있음을 나타냅니다. 이는 일반적으로 서비스 간의 네트워크 지연 또는 통신 문제를 시사합니다. 모든 노드 및 파드가 건강한 것으로 보이므로 네트워크 연결 및 잠재적인 지연에 초점을 맞추는 것이 문제 해결에 중요합니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"log\",\n      \"source\": \"frontend error logs\",\n      \"content\": \"rpc error: code = Canceled desc = context canceled\",\n      \"supports\": \"Indicates that RPC calls are being canceled, likely due to network or system resource issues\"\n    },\n    {\n      \"type\": \"log\",\n      \"source\": \"frontend error logs\",\n      \"content\": \"could not retrieve cart: rpc error: code = Canceled desc = context canceled\",\n      \"supports\": \"Further indicates a recurring issue with RPC calls being aborted, supporting the diagnosis of network problems\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Client-side configuration errors or overloads impacting service responses.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"No evidence from client logs or metrics indicating configuration problems or overloads.\"\n    },\n    {\n      \"hypothesis\": \"Resource limits on dependent services might be causing delays in processing requests.\",\n      \"confidence\": 0.5,\n      \"reason_rejected\": \"No resource violation metrics were observed across services, suggesting resources are sufficient.\"\n    }\n  ]\n}"
+}

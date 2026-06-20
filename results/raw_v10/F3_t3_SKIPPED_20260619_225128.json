@@ -1,0 +1,26 @@
+{
+  "skipped": true,
+  "validator_status": "skipped",
+  "validator_findings": [
+    {
+      "kind": "stale_rs",
+      "name": "cartservice-59c8956cd9",
+      "deployment": "cartservice",
+      "detail": "replicas=1, latest=cartservice-9c5658cf"
+    },
+    {
+      "kind": "abnormal_pod",
+      "name": "cartservice-59c8956cd9-76cz9",
+      "deployment": "cartservice",
+      "detail": "phase=Pending, reasons=ImagePullBackOff, max_restarts=0"
+    },
+    {
+      "kind": "abnormal_pod",
+      "name": "cartservice-9c5658cf-7nv7t",
+      "deployment": "cartservice",
+      "detail": "phase=Pending, reasons=ErrImagePull, max_restarts=0"
+    }
+  ],
+  "correction_attempts": "2",
+  "error": ""
+}

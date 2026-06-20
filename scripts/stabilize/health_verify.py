@@ -4,6 +4,7 @@ import logging
 import time
 
 from scripts.fault_inject.base import kubectl, ssh_node
+from scripts.fault_inject.config import WORKER_NODES
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +156,7 @@ def _check_endpoints() -> list[str]:
 def _check_disk_usage() -> list[str]:
     """Check 6: Disk usage < threshold on all workers."""
     issues = []
-    for node_name in ("worker01", "worker02", "worker03"):
+    for node_name in WORKER_NODES:
         try:
             raw = ssh_node(node_name, "df / --output=pcent | tail -1", timeout=15)
             pct = int(raw.strip().replace("%", ""))

@@ -1,0 +1,907 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-6996488d56-gchrf",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-6996488d56-gchrf",
+          "container": "server",
+          "terminated_reason": "Error"
+        }
+      ],
+      "container_restarts": [
+        {
+          "pod": "currencyservice-6996488d56-gchrf",
+          "container": "server",
+          "restarts": 3
+        }
+      ],
+      "oom_events": [],
+      "cpu_throttling": [
+        {
+          "pod": "adservice-d56b5f98b-8dmcj",
+          "container": "",
+          "throttle_ratio": 0.992
+        },
+        {
+          "pod": "currencyservice-6996488d56-gchrf",
+          "container": "",
+          "throttle_ratio": 0.913
+        }
+      ],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-6996488d56-gchrf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": false,
+              "restartCount": 3,
+              "state": [
+                "running"
+              ],
+              "lastTerminatedReason": "Error"
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.244.4.156:9555\" within 1s: context deadline exceeded",
+          "object": "adservice-d56b5f98b-8dmcj",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-06-19T16:12:39Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.4.156:9555\" within 1s: context deadline exceeded",
+          "object": "adservice-d56b5f98b-8dmcj",
+          "kind": "Pod",
+          "count": 8,
+          "lastTimestamp": "2026-06-19T16:12:40Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: timeout: failed to connect service \"10.244.1.119:7000\" within 1s: context deadline exceeded",
+          "object": "currencyservice-6996488d56-gchrf",
+          "kind": "Pod",
+          "count": 11,
+          "lastTimestamp": "2026-06-19T16:15:37Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Unhealthy",
+          "message": "Liveness probe failed: timeout: failed to connect service \"10.244.1.119:7000\" within 1s: context deadline exceeded",
+          "object": "currencyservice-6996488d56-gchrf",
+          "kind": "Pod",
+          "count": 6,
+          "lastTimestamp": "2026-06-19T16:15:47Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "currencyservice-6996488d56-gchrf",
+          "describe_excerpt": "    Host Port:      0/TCP (grpc)\n    State:          Running\n      Started:      Sat, 20 Jun 2026 01:16:24 +0900\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    137\n      Started:      Sat, 20 Jun 2026 01:15:54 +0900\n      Finished:     Sat, 20 Jun 2026 01:16:22 +0900\n    Ready:          False\n    Restart Count:  3\n    Limits:\n      cpu:     5m\n      memory:  128Mi\n    Requests:\n      cpu:      5m\n      memory:   64Mi\n    Liveness:   grpc <pod>:7000  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:7000  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:              7000\n      DISABLE_PROFILER:  1\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-rt9dj (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-rt9dj:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s"
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-db56f59d-9blb2: Running\ncurrencyservice-6996488d56-gchrf: Running\n  container/server: NOT READY restarts=3\n    last terminated: Error (exit code ?)\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-9f6sm: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-87ddfbcb4-jvvhf: Running\nproductcatalogservice-5bc6ff7696-wcsbp: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/adservice-d56b5f98b-8dmcj: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.4.156:9555\" within 1s: context deadline exceeded (count=6)\n[Warning] Pod/adservice-d56b5f98b-8dmcj: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.4.156:9555\" within 1s: context deadline exceeded (count=8)\n[Warning] Pod/currencyservice-6996488d56-gchrf: Unhealthy - Readiness probe failed: timeout: failed to connect service \"10.244.1.119:7000\" within 1s: context deadline exceeded (count=11)\n[Warning] Pod/currencyservice-6996488d56-gchrf: Unhealthy - Liveness probe failed: timeout: failed to connect service \"10.244.1.119:7000\" within 1s: context deadline exceeded (count=6)\n\n## Metric Anomalies\nCPU throttled: adservice-d56b5f98b-8dmcj/ (99%), currencyservice-6996488d56-gchrf/ (91%)\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: Ready (rev: main@sha1:2f)\n- argocd: Ready (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: runbooks/rca-f7-cputhrottle.md | Score: 0.86]\n# Runbook: F7 - CPU Throttle Root Cause Analysis\nte.spec.containers[] | {name: .name, resources: .resources}'\n```\n\n### Step 4: Understand CPU limits vs requests ratio\nKubernetes CPU throttling is driven by CFS (Completely Fair Scheduler) quotas:\n- **Requests**: Used for scheduling (guaranteed CPU)\n- **Limits**: Enforced via CFS quotas — even if node has free CPU, a container is throttled when it hits its limit\n\n**Dangerous patterns:**\n- `limits.cpu` = `requests.cpu` (no burst headroom)\n- Very low `limits.cpu` (e.g., `100m`) with bursty workloads\n- `limits.cpu` not set (unlimited — but can cause noisy neighbor issues)\n\n---\n[Source: runbooks/prometheus-alerting-runbook.md | Score: 0.86]\n# F7: CPU Throttle  \n    - alert: ThesisCPUThrottleHigh\n      expr: |\n        rate(container_cpu_cfs_throttled_periods_total{namespace=\"online-boutique\", container!=\"\"}[5m])\n        / rate(container_cpu_cfs_periods_total{namespace=\"online-boutique\", container!=\"\"}[5m]) > 0.5\n      for: 5m\n      labels:\n        severity: warning\n        fault_type: F7\n      annotations:\n        summary: \"CPU throttle >50% for {{ \\$labels.container }} in {{ \\$labels.pod }}\"\n        runbook_url: \"docs/runbooks/rca-f7-cputhrott\n\n---\n[Source: debugging/cpu-throttling.md | Score: 0.85]\n# CPU Throttling Detection and Resolution\n## Overview\nCPU throttling occurs when a container's CPU usage exceeds its configured CPU limit. Unlike memory limits (which cause OOMKill), CPU limits use cgroup CPU quota to restrict CPU time without killing the process. The Linux kernel forces the container to pause when it has used its allocated CPU quota for the period (typically 100ms). Throttling causes increased latency and degraded throughput but does not crash the pod. It is often invisible without proper metrics, making it a stealthy performance \n\n---\n[Source: debugging/cpu-throttling.md | Score: 0.84]\n# CPU Throttling Detection and Resolution\nabels.pod }} is CPU throttled {{ $value | humanizePercentage }}\"\n\n# Alert: Severe CPU throttling above 75%\n- alert: ContainerCPUSevereThrottling\n  expr: |\n    rate(container_cpu_cfs_throttled_seconds_total{container!=\"\"}[5m])\n    / rate(container_cpu_cfs_periods_total{container!=\"\"}[5m]) > 0.75\n  for: 2m\n  labels:\n    severity: critical\n```\n\n## cgroup v2 Differences\n\n```bash\n\n# In newer kernels/distros using cgroup v2:\n\n# Path changes from /sys/fs/cgroup/cpu/ to /sys/fs/cgroup/\n\n# cpu.stat file contains:\n\n---\n[Source: runbooks/rca-f7-cputhrottle.md | Score: 0.83]\n# Runbook: F7 - CPU Throttle Root Cause Analysis\nu_cfs_periods_total{namespace=\"<namespace>\", container!=\"\"}[5m])\n\n# Top 10 most throttled containers\ntopk(10,\n  rate(container_cpu_cfs_throttled_periods_total{namespace=\"<namespace>\"}[5m])\n  / rate(container_cpu_cfs_periods_total{namespace=\"<namespace>\"}[5m])\n)\n\n# CPU usage vs limit\nsum by (pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"<namespace>\"}[5m]))\n  / sum by (pod, container) (kube_pod_container_resource_limits{resource=\"cpu\", namespace=\"<namespace>\"})\n",
+  "rca_output": {
+    "fault_id": "F7",
+    "trial": 5,
+    "system": "B",
+    "identified_fault_type": "CPU Throttling",
+    "root_cause": "The root cause is CPU throttling of pods due to restrictive CPU limits configurations.",
+    "confidence": 0.9,
+    "affected_components": [
+      "currencyservice",
+      "adservice"
+    ],
+    "remediation": [
+      "Increase CPU limits for the affected pods.",
+      "Monitor resource usage and adjust limits accordingly."
+    ],
+    "detail": "The currencyservice pod is experiencing readiness probe failures likely due to high CPU throttling. Both currencyservice and adservice are throttling above 90%, significantly impacting their performance and causing them to become unhealthy. Adjusting CPU limits and monitoring resource utilization can help alleviate this issue.",
+    "reasoning": "Step 1 - Node Health: All nodes are Ready, therefore no node-level fault. Step 2 - Pod Status: currencyservice-6996488d56-gchrf pod is not ready and has restarted 3 times; it shows readiness probe failures, indicating possible issues. No OOMKilled signals are present for this pod. Step 3 - Service Connectivity: No services showing 0 endpoints, moving to Step 4. Step 4 - Network: No network connectivity issues indicated. Step 5 - Resource Limits: CPU throttling is above 50% for both adservice-d56b5f98b-8dmcj and currencyservice-6996488d56-gchrf, indicating significant CPU exhaustion at the application layer. The primary candidate for root cause is CPU throttling leading to pod readiness failures and high restart rates. Therefore, root cause is CPU throttle due to configuration or workload patterns causing degradation.",
+    "root_cause_ko": "제한된 CPU 한계 구성으로 인해 발생한 파드의 CPU 스로틀링이 근본 원인입니다.",
+    "remediation_ko": [
+      "영향을 받는 파드의 CPU 한계를 증가시키십시오.",
+      "자원 사용량을 모니터링하고 한계를 적절히 조정하십시오."
+    ],
+    "detail_ko": "currencyservice 파드는 높은 CPU 스로틀링으로 인해 준비 프로브 실패를 경험하고 있습니다. currencyservice와 adservice 모두 90% 이상 스로틀링되고 있어 성능에 심각한 영향을 미치고 있으며 건강하지 않게 됩니다. CPU 한계를 조정하고 자원 사용량을 모니터링하면 이 문제를 완화하는 데 도움이 될 수 있습니다.",
+    "evidence_chain": [
+      {
+        "type": "metric",
+        "source": "CPU throttling metrics",
+        "content": "CPU throttled: adservice-d56b5f98b-8dmcj/ (99%), currencyservice-6996488d56-gchrf/ (91%)",
+        "supports": "Indicates severe CPU throttling causing pods to be unhealthy.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "[Warning] Pod/currencyservice-6996488d56-gchrf: Unhealthy - Readiness probe failed: timeout: failed to connect service '10.244.1.119:7000' within 1s: context deadline exceeded (count=11)",
+        "supports": "Confirms that the currencyservice pod is unhealthy due to readiness probe failures.",
+        "verified": true,
+        "match_ratio": 0.94
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Resource limits for CPU are not configured properly.",
+        "confidence": 0.4,
+        "reason_rejected": "The metrics show that the CPU is throttled rather than being completely exhausted."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 8.0,
+    "eval_overall_score": 8.0,
+    "eval_critique": "The diagnosis accurately cites specific evidence in the input context regarding CPU throttling and readiness probe failures. However, while it mentions an alternative hypothesis regarding resource limits not being configured properly, it could expand on potential other alternatives that could affect pod readiness, such as application behavior or resource saturation from traffic demands. The confidence stated (0.9) is appropriate given the evidence of CPU throttling but could be further substantiated by discussing other potential contributing factors.",
+    "retry_count": 0,
+    "correctness_score": 0.75,
+    "correctness_reasoning": "The diagnosis correctly identifies CPU throttling as the root cause. However, it lacks specific details about which service is affected (currencyservice) and does not mention the impact of currency conversion on price display latency, which are key elements in the ground truth description.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 8705,
+    "prompt_tokens": 6593,
+    "completion_tokens": 993,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1 - Node Health: All nodes are Ready, therefore no node-level fault. Step 2 - Pod Status: currencyservice-6996488d56-gchrf pod is not ready and has restarted 3 times; it shows readiness probe failures, indicating possible issues. No OOMKilled signals are present for this pod. Step 3 - Service Connectivity: No services showing 0 endpoints, moving to Step 4. Step 4 - Network: No network connectivity issues indicated. Step 5 - Resource Limits: CPU throttling is above 50% for both adservice-d56b5f98b-8dmcj and currencyservice-6996488d56-gchrf, indicating significant CPU exhaustion at the application layer. The primary candidate for root cause is CPU throttling leading to pod readiness failures and high restart rates. Therefore, root cause is CPU throttle due to configuration or workload patterns causing degradation.\",\n  \"identified_fault_type\": \"CPU Throttling\",\n  \"root_cause\": \"The root cause is CPU throttling of pods due to restrictive CPU limits configurations.\",\n  \"root_cause_ko\": \"제한된 CPU 한계 구성으로 인해 발생한 파드의 CPU 스로틀링이 근본 원인입니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"currencyservice\", \"adservice\"],\n  \"remediation\": [\"Increase CPU limits for the affected pods.\", \"Monitor resource usage and adjust limits accordingly.\"],\n  \"remediation_ko\": [\"영향을 받는 파드의 CPU 한계를 증가시키십시오.\", \"자원 사용량을 모니터링하고 한계를 적절히 조정하십시오.\"],\n  \"detail\": \"The currencyservice pod is experiencing readiness probe failures likely due to high CPU throttling. Both currencyservice and adservice are throttling above 90%, significantly impacting their performance and causing them to become unhealthy. Adjusting CPU limits and monitoring resource utilization can help alleviate this issue.\",\n  \"detail_ko\": \"currencyservice 파드는 높은 CPU 스로틀링으로 인해 준비 프로브 실패를 경험하고 있습니다. currencyservice와 adservice 모두 90% 이상 스로틀링되고 있어 성능에 심각한 영향을 미치고 있으며 건강하지 않게 됩니다. CPU 한계를 조정하고 자원 사용량을 모니터링하면 이 문제를 완화하는 데 도움이 될 수 있습니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"metric\",\n      \"source\": \"CPU throttling metrics\",\n      \"content\": \"CPU throttled: adservice-d56b5f98b-8dmcj/ (99%), currencyservice-6996488d56-gchrf/ (91%)\",\n      \"supports\": \"Indicates severe CPU throttling causing pods to be unhealthy.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"[Warning] Pod/currencyservice-6996488d56-gchrf: Unhealthy - Readiness probe failed: timeout: failed to connect service '10.244.1.119:7000' within 1s: context deadline exceeded (count=11)\",\n      \"supports\": \"Confirms that the currencyservice pod is unhealthy due to readiness probe failures.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Resource limits for CPU are not configured properly.\",\n      \"confidence\": 0.4,\n      \"reason_rejected\": \"The metrics show that the CPU is throttled rather than being completely exhausted.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "runbooks/rca-f7-cputhrottle.md",
+      "score": 0.8635191917419434
+    },
+    {
+      "source": "runbooks/prometheus-alerting-runbook.md",
+      "score": 0.8579504489898682
+    },
+    {
+      "source": "debugging/cpu-throttling.md",
+      "score": 0.8543159365653992
+    },
+    {
+      "source": "debugging/cpu-throttling.md",
+      "score": 0.8449613749980927
+    },
+    {
+      "source": "runbooks/rca-f7-cputhrottle.md",
+      "score": 0.8261458575725555
+    }
+  ]
+}

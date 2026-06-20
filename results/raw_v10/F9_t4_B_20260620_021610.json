@@ -1,0 +1,971 @@
+{
+  "signals": {
+    "metrics": {
+      "pod_status": [
+        {
+          "pod": "checkoutservice-58689597fb-px7nw",
+          "phase": "Pending"
+        },
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running"
+        },
+        {
+          "pod": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running"
+        },
+        {
+          "pod": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running"
+        },
+        {
+          "pod": "adservice-f6595788d-4qfd9",
+          "phase": "Running"
+        },
+        {
+          "pod": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running"
+        },
+        {
+          "pod": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running"
+        },
+        {
+          "pod": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running"
+        },
+        {
+          "pod": "cartservice-587f599787-6sm7q",
+          "phase": "Running"
+        },
+        {
+          "pod": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running"
+        },
+        {
+          "pod": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running"
+        },
+        {
+          "pod": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running"
+        },
+        {
+          "pod": "checkoutservice-58689597fb-px7nw",
+          "container": "checkoutservice",
+          "waiting_reason": "CreateContainerConfigError"
+        }
+      ],
+      "container_restarts": [],
+      "oom_events": [],
+      "cpu_throttling": [],
+      "memory_usage": [],
+      "node_status": [],
+      "endpoint_status": [],
+      "pvc_status": [],
+      "resource_quota": [],
+      "network_drops": [],
+      "request_latency": [],
+      "grpc_errors": [],
+      "network_errors": [],
+      "tcp_retransmissions": []
+    },
+    "logs": {
+      "pod_logs": [
+        {
+          "pod": "loadgenerator-86977b998-jdsx6",
+          "container": "main",
+          "line": "Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s"
+        }
+      ],
+      "k8s_events": []
+    },
+    "kubectl": {
+      "pods": [
+        {
+          "name": "adservice-f6595788d-4qfd9",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "cartservice-587f599787-6sm7q",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "checkoutservice-58689597fb-px7nw",
+          "phase": "Pending",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "checkoutservice",
+              "ready": false,
+              "restartCount": 0,
+              "state": [
+                "waiting"
+              ],
+              "waitingReason": "CreateContainerConfigError"
+            },
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "checkoutservice-db56f59d-9blb2",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "currencyservice-75b89545f4-7htlf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "emailservice-5b6d8449d8-gbvwx",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "frontend-5dd4466d85-9f6sm",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "loadgenerator-86977b998-jdsx6",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "main",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-04"
+        },
+        {
+          "name": "paymentservice-66ddcb6b4c-s8f6c",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-jvvhf",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-02"
+        },
+        {
+          "name": "paymentservice-87ddfbcb4-wqpsj",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "productcatalogservice-5bc6ff7696-wcsbp",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "recommendationservice-66496d6596-c6ktg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-06"
+        },
+        {
+          "name": "redis-cart-558f8d8d44-7wrgg",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "redis",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-03"
+        },
+        {
+          "name": "shippingservice-87f74dfbd-sbp8m",
+          "phase": "Running",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "server",
+              "ready": true,
+              "restartCount": 0,
+              "state": [
+                "running"
+              ]
+            }
+          ],
+          "nodeName": "yms-proxmox-05"
+        }
+      ],
+      "events": [
+        {
+          "type": "Warning",
+          "reason": "BackOff",
+          "message": "Back-off restarting failed container frontend in pod frontend-5dbb4cbb7c-lzns5_boutique(c6501a00-bfcd-45ca-a490-82df718a5e23)",
+          "object": "frontend-5dbb4cbb7c-lzns5",
+          "kind": "Pod",
+          "count": 8,
+          "lastTimestamp": "2026-06-19T17:08:07Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "FailedMount",
+          "message": "MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found",
+          "object": "paymentservice-7db7df47b9-f8p7m",
+          "kind": "Pod",
+          "count": 9,
+          "lastTimestamp": "2026-06-19T17:11:36Z"
+        },
+        {
+          "type": "Warning",
+          "reason": "Failed",
+          "message": "Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad",
+          "object": "checkoutservice-58689597fb-px7nw",
+          "kind": "Pod",
+          "count": 10,
+          "lastTimestamp": "2026-06-19T17:15:28Z"
+        }
+      ],
+      "services": [
+        {
+          "name": "adservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "cartservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "checkoutservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 1
+        },
+        {
+          "name": "currencyservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "emailservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "frontend-external",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "paymentservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "productcatalogservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "recommendationservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "redis-cart",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        },
+        {
+          "name": "shippingservice",
+          "ready_endpoints": 1,
+          "not_ready_endpoints": 0
+        }
+      ],
+      "nodes": [
+        {
+          "name": "yms-proxmox-01",
+          "ready": "True",
+          "issues": [],
+          "taints": [
+            "node-role.kubernetes.io/control-plane"
+          ]
+        },
+        {
+          "name": "yms-proxmox-02",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-03",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-04",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-05",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        },
+        {
+          "name": "yms-proxmox-06",
+          "ready": "True",
+          "issues": [],
+          "taints": []
+        }
+      ],
+      "describe_unhealthy": [
+        {
+          "pod": "checkoutservice-58689597fb-px7nw",
+          "describe_excerpt": "    Host Port:      <none>\n    State:          Waiting\n      Reason:       CreateContainerConfigError\n    Ready:          False\n    Restart Count:  0\n    Environment:\n      CHECKOUT_WRONG_KEY:  <set to the key 'API_KEY' in secret 'checkout-secret-bad'>  Optional: false\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jvsk4 (ro)\n  server:\n    Container ID:   containerd://4b5555860d29466f3ca38a6cf3368188dc6ee42f6e45b5ebd07ce769b48dcde8\n    Image:          us-central1-docker.pkg.dev/google-samples/microservices-demo/checkoutservice:v0.10.5\n    Image ID:       us-central1-docker.pkg.dev/google-samples/microservices-demo/checkoutservice@sha256:403f4056479bcf2d36a865bf037ba2de0f84a60408519cee1b80e705e99f622a\n    Port:           5050/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Sat, 20 Jun 2026 02:14:06 +0900\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:      100m\n      memory:   64Mi\n    Liveness:   grpc <pod>:5050  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Readiness:  grpc <pod>:5050  delay=0s timeout=1s period=10s #success=1 #failure=3\n    Environment:\n      PORT:                          5050\n      PRODUCT_CATALOG_SERVICE_ADDR:  productcatalogservice:3550\n      SHIPPING_SERVICE_ADDR:         shippingservice:50051\n      PAYMENT_SERVICE_ADDR:          paymentservice:50051\n      EMAIL_SERVICE_ADDR:            emailservice:5000\n      CURRENCY_SERVICE_ADDR:         currencyservice:7000\n      CART_SERVICE_ADDR:             cartservice:7070\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jvsk4 (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True "
+        }
+      ]
+    },
+    "gitops": {
+      "flux": {
+        "kustomizations": [
+          {
+            "name": "app",
+            "ready": "False",
+            "message": "Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "argocd",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "flux-system",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "infrastructure",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          },
+          {
+            "name": "monitoring",
+            "ready": "True",
+            "message": "Applied revision: main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastAttempted": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3"
+          }
+        ],
+        "helmreleases": [
+          {
+            "name": "argocd",
+            "namespace": "argocd",
+            "ready": "False",
+            "message": "Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded"
+          },
+          {
+            "name": "kube-prometheus-stack",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/kube-prometheus-stack.v1 with chart kube-prometheus-stack@65.8.1"
+          },
+          {
+            "name": "loki",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm upgrade succeeded for release monitoring/loki.v2 with chart loki@6.55.0"
+          },
+          {
+            "name": "promtail",
+            "namespace": "monitoring",
+            "ready": "True",
+            "message": "Helm install succeeded for release monitoring/promtail.v1 with chart promtail@6.17.1"
+          }
+        ],
+        "gitrepositories": [
+          {
+            "name": "flux-system",
+            "revision": "main@sha1:2f5cf514caf5ebb20ecab4999dc0aacac1db57f3",
+            "lastUpdate": "2026-06-19T10:49:21Z"
+          }
+        ]
+      },
+      "argocd": {
+        "applications": []
+      },
+      "git_history": {
+        "error": "Git repo not found at /tmp/thesis-rca-work"
+      }
+    }
+  },
+  "context": "## Pod Status\nadservice-f6595788d-4qfd9: Running\ncartservice-587f599787-6sm7q: Running\ncheckoutservice-58689597fb-px7nw: Pending\n  container/checkoutservice: NOT READY (CreateContainerConfigError) restarts=0\ncheckoutservice-db56f59d-9blb2: Running\ncurrencyservice-75b89545f4-7htlf: Running\nemailservice-5b6d8449d8-gbvwx: Running\nfrontend-5dd4466d85-9f6sm: Running\nloadgenerator-86977b998-jdsx6: Running\npaymentservice-66ddcb6b4c-s8f6c: Running\npaymentservice-87ddfbcb4-jvvhf: Running\npaymentservice-87ddfbcb4-wqpsj: Running\nproductcatalogservice-5bc6ff7696-wcsbp: Running\nrecommendationservice-66496d6596-c6ktg: Running\nredis-cart-558f8d8d44-7wrgg: Running\nshippingservice-87f74dfbd-sbp8m: Running\n\n## Kubernetes Events (Warning/Error)\n[Warning] Pod/frontend-5dbb4cbb7c-lzns5: BackOff - Back-off restarting failed container frontend in pod frontend-5dbb4cbb7c-lzns5_boutique(c6501a00-bfcd-45ca-a490-82df718a5e23) (count=8)\n[Warning] Pod/paymentservice-7db7df47b9-f8p7m: FailedMount - MountVolume.SetUp failed for volume \"config-vol\" : configmap \"paymentservice-config-nonexistent\" not found (count=9)\n[Warning] Pod/checkoutservice-58689597fb-px7nw: Failed - Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)\n\n## Metric Anomalies\nNo metric anomalies detected.\n\n## Error Logs\n[loadgenerator-86977b998-jdsx6] Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n\n## Node Status\nyms-proxmox-01: Ready | taints: node-role.kubernetes.io/control-plane\nyms-proxmox-02: Ready\nyms-proxmox-03: Ready\nyms-proxmox-04: Ready\nyms-proxmox-05: Ready\nyms-proxmox-06: Ready\n\n## GitOps Status (FluxCD/ArgoCD)\n### FluxCD Kustomizations\n- app: NOT READY: Service/boutique/emailservice dry-run failed (Invalid): Service \"emailservice\" is invalid: spec.ports[1].name: Duplicate value: \"grpc\"\n (rev: main@sha1:2f)\n- argocd: Ready (rev: main@sha1:2f)\n- flux-system: Ready (rev: main@sha1:2f)\n- infrastructure: Ready (rev: main@sha1:2f)\n- monitoring: Ready (rev: main@sha1:2f)\n### FluxCD HelmReleases\n- argocd/argocd: NOT READY: Helm install failed for release argocd/argocd with chart argo-cd@7.9.1: client rate limiter Wait returned an error: context deadline exceeded\n- monitoring/kube-prometheus-stack: Ready\n- monitoring/loki: Ready\n- monitoring/promtail: Ready\n\n## Recent Git Changes\nGit repo not found at /tmp/thesis-rca-work\n\n## Knowledge Base (RAG Retrieved)\n[Source: debugging/secret-configmap-issues.md | Score: 0.81]\n# Debugging Secret and ConfigMap Issues\nas application startup failures or runtime configuration errors.\n\n## Symptoms\n- Pod stuck in `CreateContainerConfigError` status\n- Events: `Error: configmap \"X\" not found` or `Error: secret \"X\" not found`\n- Events: `couldn't find key Y in ConfigMap/Secret`\n- Application logs showing missing or empty configuration values\n- Application behavior not changing after ConfigMap/Secret update\n\n## Diagnostic Commands\n\n```bash\n\n---\n[Source: debugging/pod-crashloopbackoff.md | Score: 0.79]\n# Pod CrashLoopBackOff Diagnosis\n3. **Missing ConfigMap or Secret**: Application cannot start because a referenced ConfigMap key or Secret does not exist. Exit code typically 1 with error about missing env var or file.\n\n4. **Liveness probe killing healthy container**: The liveness probe timeout or threshold is too aggressive. The container starts fine but is killed before it's ready to serve. Common during slow startup.\n\n---\n[Source: debugging/secret-configmap-issues.md | Score: 0.79]\n# Debugging Secret and ConfigMap Issues\npassword123\" | base64     # WRONG: includes trailing newline\n```\n\n### 4. Env var injection with wrong reference type\nUsing `configMapKeyRef` when it should be `secretKeyRef`, or vice versa.\n```yaml\nenv:\n- name: DB_PASSWORD\n  valueFrom:\n    secretKeyRef:       # not configMapKeyRef\n      name: db-credentials\n      key: password\n```\n\n---\n[Source: debugging/secret-configmap-issues.md | Score: 0.78]\n# Debugging Secret and ConfigMap Issues\n\n## Overview\nSecrets and ConfigMaps are the primary mechanisms for injecting configuration into pods. Issues range from missing resources, wrong keys, encoding problems, to stale mounted data. These often manifest as application startup failures or runtime configuration errors.\n\n---\n[Source: debugging/secret-configmap-issues.md | Score: 0.77]\n# Debugging Secret and ConfigMap Issues\nrestart)\n- Immutable ConfigMaps/Secrets cannot be updated at all\n\n### 6. Optional reference not set\nIf a ConfigMap/Secret may not exist, set `optional: true`:\n```yaml\nenvFrom:\n- configMapRef:\n    name: optional-config\n    optional: true\n```\n\n## Resolution Steps\n\n### Missing ConfigMap/Secret\n```bash\n\n# Create the missing resource\nkubectl create configmap app-config -n boutique --from-file=config.yaml\nkubectl create secret generic db-creds -n boutique --from-literal=password=mypass\n",
+  "rca_output": {
+    "fault_id": "F9",
+    "trial": 4,
+    "system": "B",
+    "identified_fault_type": "Missing Secret or ConfigMap",
+    "root_cause": "The root cause is a missing key in a Secret required by the checkout service.",
+    "confidence": 0.9,
+    "affected_components": [
+      "checkoutservice",
+      "paymentservice"
+    ],
+    "remediation": [
+      "Create the missing secret 'checkout-secret-bad' with required keys.",
+      "Ensure configMaps and secrets are updated correctly in the application."
+    ],
+    "detail": "The checkoutservice pod is failing to start due to a missing Secret key needed for its configuration. Additionally, the paymentservice is facing issues due to a missing ConfigMap. Creating the required secrets and ensuring proper references will resolve these issues.",
+    "reasoning": "Step 1: Checked node health; all nodes are in Ready state. Proceeded to Step 2. Step 2: Found pods with not Running/Ready state; checkoutservice is in Pending due to CreateContainerConfigError for missing secret key. This indicates a possible primary candidate for the fault as missing configuration. Proceeding to Step 3. Step 3: No services reported 0 endpoints. Proceeded to Step 4. Step 4: No network issues detected. Proceeded to Step 5. Step 5: No resource limits or Quota violations found. From Step 2, the CreateContainerConfigError for checkoutservice indicates a configuration issue, specifically the secret missing, which is confirmed by events stating couldn't find key API_KEY in the checkout-secret-bad. This leads to the conclusion that the root cause is tied to the missing configuration for the checkoutservice.",
+    "root_cause_ko": "근본 원인은 체크아웃 서비스에 필요한 Secret의 키가 누락된 것입니다.",
+    "remediation_ko": [
+      "필요한 키가 포함된 누락된 비밀 'checkout-secret-bad'을 생성하십시오.",
+      "애플리케이션에서 ConfigMap과 Secret이 올바르게 업데이트되었는지 확인하십시오."
+    ],
+    "detail_ko": "체크아웃 서비스 포드는 구성에 필요한 Secret 키가 누락되어 시작할 수 없습니다. 또한 결제 서비스는 누락된 ConfigMap으로 인해 문제가 있습니다. 필요한 비밀을 생성하고 적절한 참조를 보장하면 이러한 문제가 해결됩니다.",
+    "evidence_chain": [
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)",
+        "supports": "This indicates that the checkoutservice cannot start due to a missing Secret key.",
+        "verified": true,
+        "match_ratio": 1.0
+      },
+      {
+        "type": "event",
+        "source": "Kubernetes Events",
+        "content": "FailedMount - MountVolume.SetUp failed for volume 'config-vol' : configmap 'paymentservice-config-nonexistent' not found (count=9)",
+        "supports": "This underscores another missing resource issue that may impact service functionality.",
+        "verified": true,
+        "match_ratio": 0.82
+      }
+    ],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Pod configuration issue unrelated to missing secrets.",
+        "confidence": 0.3,
+        "reason_rejected": "Specific evidence indicates missing keys in Secrets are the primary problem."
+      }
+    ],
+    "confidence_2nd": 0.0,
+    "faithfulness_score": 1.0,
+    "eval_evidence_grounding": 9.0,
+    "eval_diagnostic_logic": 8.0,
+    "eval_differential_completeness": 7.0,
+    "eval_confidence_calibration": 9.0,
+    "eval_overall_score": 8.25,
+    "eval_critique": "The diagnosis accurately cites the missing key in the Secret for the checkout service, as confirmed by the input context. However, alternative hypotheses could be further explored, such as potential issues with resource limits or configuration, even though the evidence strongly points to a missing Secret. The evidence chain is robust but could benefit from discussing the broader implications of the FailedMount event. The confidence level of 0.9 is appropriate given the clear evidence of a missing Secret impacting the checkout service.",
+    "retry_count": 0,
+    "correctness_score": 0.5,
+    "correctness_reasoning": "The diagnosis identifies a related issue regarding missing secrets but does not specify the correct key name that caused the authentication failure. It also incorrectly states that the checkoutservice pod is failing to start, while the symptom described is that the pod is running but is experiencing operational failure due to a key lookup failure.",
+    "correct": 1,
+    "model": "gpt-4o-mini",
+    "latency_ms": 7809,
+    "prompt_tokens": 5974,
+    "completion_tokens": 930,
+    "error": ""
+  },
+  "raw_response": "{\n  \"reasoning\": \"Step 1: Checked node health; all nodes are in Ready state. Proceeded to Step 2. Step 2: Found pods with not Running/Ready state; checkoutservice is in Pending due to CreateContainerConfigError for missing secret key. This indicates a possible primary candidate for the fault as missing configuration. Proceeding to Step 3. Step 3: No services reported 0 endpoints. Proceeded to Step 4. Step 4: No network issues detected. Proceeded to Step 5. Step 5: No resource limits or Quota violations found. From Step 2, the CreateContainerConfigError for checkoutservice indicates a configuration issue, specifically the secret missing, which is confirmed by events stating couldn't find key API_KEY in the checkout-secret-bad. This leads to the conclusion that the root cause is tied to the missing configuration for the checkoutservice.\",\n  \"identified_fault_type\": \"Missing Secret or ConfigMap\",\n  \"root_cause\": \"The root cause is a missing key in a Secret required by the checkout service.\",\n  \"root_cause_ko\": \"근본 원인은 체크아웃 서비스에 필요한 Secret의 키가 누락된 것입니다.\",\n  \"confidence\": 0.9,\n  \"confidence_2nd\": 0.0,\n  \"affected_components\": [\"checkoutservice\", \"paymentservice\"],\n  \"remediation\": [\"Create the missing secret 'checkout-secret-bad' with required keys.\", \"Ensure configMaps and secrets are updated correctly in the application.\"],\n  \"remediation_ko\": [\"필요한 키가 포함된 누락된 비밀 'checkout-secret-bad'을 생성하십시오.\", \"애플리케이션에서 ConfigMap과 Secret이 올바르게 업데이트되었는지 확인하십시오.\"],\n  \"detail\": \"The checkoutservice pod is failing to start due to a missing Secret key needed for its configuration. Additionally, the paymentservice is facing issues due to a missing ConfigMap. Creating the required secrets and ensuring proper references will resolve these issues.\",\n  \"detail_ko\": \"체크아웃 서비스 포드는 구성에 필요한 Secret 키가 누락되어 시작할 수 없습니다. 또한 결제 서비스는 누락된 ConfigMap으로 인해 문제가 있습니다. 필요한 비밀을 생성하고 적절한 참조를 보장하면 이러한 문제가 해결됩니다.\",\n  \"evidence_chain\": [\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"Error: couldn't find key API_KEY in Secret boutique/checkout-secret-bad (count=10)\",\n      \"supports\": \"This indicates that the checkoutservice cannot start due to a missing Secret key.\"\n    },\n    {\n      \"type\": \"event\",\n      \"source\": \"Kubernetes Events\",\n      \"content\": \"FailedMount - MountVolume.SetUp failed for volume 'config-vol' : configmap 'paymentservice-config-nonexistent' not found (count=9)\",\n      \"supports\": \"This underscores another missing resource issue that may impact service functionality.\"\n    }\n  ],\n  \"alternative_hypotheses\": [\n    {\n      \"hypothesis\": \"Pod configuration issue unrelated to missing secrets.\",\n      \"confidence\": 0.3,\n      \"reason_rejected\": \"Specific evidence indicates missing keys in Secrets are the primary problem.\"\n    }\n  ]\n}",
+  "rag_docs": [
+    {
+      "source": "debugging/secret-configmap-issues.md",
+      "score": 0.8105934858322144
+    },
+    {
+      "source": "debugging/pod-crashloopbackoff.md",
+      "score": 0.7921541333198547
+    },
+    {
+      "source": "debugging/secret-configmap-issues.md",
+      "score": 0.7919168770313263
+    },
+    {
+      "source": "debugging/secret-configmap-issues.md",
+      "score": 0.7835807800292969
+    },
+    {
+      "source": "debugging/secret-configmap-issues.md",
+      "score": 0.7745046019554138
+    }
+  ]
+}
