@@ -4,7 +4,7 @@
 
 ## 에이전트 목록 (`.claude/agents/`)
 
-현재 본류는 **Research 트랙**(`rules/research-pipeline.md`). Experiment 트랙은 보조(V9 실행 대기).
+기본 진입점은 **Research 트랙**(`rules/research-pipeline.md`). Experiment 트랙의 현재 버전과 재개 지점은 `docs/research-charter.md`에서 확인한다.
 
 | 에이전트 | 역할 | 모델 | superpowers 매핑 |
 |---------|------|------|------------------|

@@ -2,7 +2,7 @@
 
 사용자가 "논문 조사", "선행연구 조사", "자료조사" 등 자료조사를 지시하면 **반드시 아래 R-1~R-5를 순서대로** 실행한다. 이 트랙은 superpowers-first 원칙을 그대로 따르며, 각 단계는 superpowers 스킬 또는 도메인 스킬의 task 단위다.
 
-이 레포의 **현재 본류 트랙**이다. Experiment 트랙(`rules/experiment-pipeline.md`)은 보조이며 V9 실행 대기 상태다.
+이 레포의 기본 진입 트랙이다. Experiment 트랙의 현재 버전과 재개 지점은 `docs/research-charter.md`를 단일 정본으로 사용한다.
 
 ## 파이프라인
 

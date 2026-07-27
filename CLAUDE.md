@@ -11,7 +11,7 @@ GitOps 컨텍스트(FluxCD/ArgoCD) 추가 시 LLM 기반 장애 원인 분석 �
 
 문서·프롬프트는 한국어, 코드·변수명은 영어.
 
-> 🎯 **현재 포커스 = Research 트랙(선행연구 자료조사).** 실험 실행은 V9(Pre-Trial State Validator) 코드 완료 후 **보류 중**이다. 새 작업은 기본적으로 Research 트랙으로 진입하며, Experiment 트랙은 보조 트랙으로 유지된다(자산·스킬·훅 모두 보존).
+> 🎯 현재 연구질문·완료 실험·다음 실험은 `docs/research-charter.md`를 단일 정본으로 사용한다. 새 작업은 기본적으로 Research 트랙으로 진입하며, 사용자가 명시적으로 실험 재개를 지시할 때만 Experiment 트랙을 사용한다.
 
 ## Superpowers First
 
@@ -28,7 +28,7 @@ GitOps 컨텍스트(FluxCD/ArgoCD) 추가 시 LLM 기반 장애 원인 분석 �
 
 ## Tracks
 
-이 레포는 두 개의 워크플로우(트랙)를 운영한다. **현재 본류는 Research 트랙**, Experiment 트랙은 보조(V9 실행 대기)다.
+이 레포는 두 개의 워크플로우(트랙)를 운영한다. 기본 진입점은 Research 트랙이며, Experiment 트랙의 현재 버전과 재개 지점은 `docs/research-charter.md`에서 확인한다.
 
 ### Research Track — 선행 연구 자료조사 사이클 (현재 본류)
 
@@ -95,7 +95,8 @@ superpowers 기본 산출물 경로(`docs/superpowers/specs/`, `docs/superpowers
 
 ## References
 
-- 실험 버전 히스토리 (v1–v8): `docs/experiment-versions.md`
+- 연구질문·기여·현재 체크포인트: `docs/research-charter.md`
+- 실험 버전 히스토리: `docs/experiment-versions.md`
 - 실험 환경·설정: `docs/lab-environment.md`
 
 ## Rules

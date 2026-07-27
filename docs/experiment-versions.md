@@ -18,7 +18,16 @@
 | **v6** | SOP-Guided Prompt (단계별 진단 절차서) — 회귀, 실패 | 26% / 38% | `experiments/v6/` |
 | **v7** | V6 + Step 3 역추적 + 증거 다중성 규칙 + **F11/F12 네트워크 Fault 도입** | 22% / 38% | `experiments/v7/` |
 | **v8** | V7 + 확장 네트워크 메트릭 (gRPC latency, TCP retransmissions) — 가설 기각, 환경 오염 발견 | 25% / 35% | `experiments/v8/` |
-| **V2.1** (옛 v10) | **Try 2 시작** — 클러스터 재구축 후 re-baseline + V9 Pre-Trial State Validator 탑재 (현재) | 42% / 50% | `experiments/v2_1/` |
+| **V2.1** (옛 v10) | **Try 2 시작** — 클러스터 재구축 후 re-baseline + V9 Pre-Trial State Validator 탑재 | 34.5% / 43.1% (`≥0.5` 재분석) | `experiments/v2_1/` |
+| **V2.2** | 5-arm 처치 분해 + 길이 placebo + 반복 생성·blinded 다수결 채점·임계 sweep | C1 31.7% / GitOps 36.7% / RAG 65.0% / Both 60.0% / Placebo 36.7% (`≥0.5`) | `experiments/v2_2/` |
+
+## 현재 체크포인트
+
+- **최신 완료:** V2.2
+- **핵심 판정:** RAG 우위는 관찰됐으나 75%의 자기 런북 회수로 retrieval leakage 가능성이 높다. GitOps는 placebo와 동률이지만 fault 비연동·경로 오류로 신호가 손상돼 효과 판정을 보류한다.
+- **다음 실험:** V2.3 — blind retrieval, retrieval 내용 ablation, fault-linked GitOps 신호, 동일 캠페인 재수집
+- **재개 문서:** [`plans/next_experiment_goal_v2_3.md`](plans/next_experiment_goal_v2_3.md)
+- **연구 정본:** [`research-charter.md`](research-charter.md)
 
 ## 아카이브된 버전 (저유용 — `archive/` 로 이동, 2026-06-20)
 
