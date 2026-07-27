@@ -1,101 +1,46 @@
-# GitOps 컨텍스트 기반 Kubernetes 근본 원인 분석 (RCA)
+# GitOps-aware LLM Kubernetes RCA
 
-> **논문 주제**: Kubernetes 클러스터 장애에 대한 LLM 기반 근본 원인 분석에서 GitOps 컨텍스트 통합의 효과 평가
+GitOps-managed Kubernetes에서 LLM 기반 근본 원인 분석(RCA)에 제공되는 Runtime·GitOps·RAG 컨텍스트의 기여를 분해하고, 성능 향상이 evidence leakage·측정 비결정성·실험 오염에서 비롯됐는지 감사하는 석사논문 실험 플랫폼이다.
 
-## 연구 목적
+## 현재 상태
 
-기존 Kubernetes RCA(Root Cause Analysis)는 런타임 관측 데이터(메트릭, 로그, 이벤트)에만 의존한다. 본 연구는 LLM 기반 RCA에 **GitOps 컨텍스트**(배포 이력, 매니페스트 diff, FluxCD/ArgoCD 재조정 상태)를 결합하면 관측 데이터만 사용하는 접근법 대비 진단 정확도가 유의미하게 향상되는지 검증한다.
+- 최신 완료 실험: **V2.2**
+- 다음 실험: **V2.3 — RAG 검색 누출 통제, GitOps 신호 정상화, 동일 캠페인 재수집**
+- 모델: `gpt-4o-mini` 고정
+- 평가 범위: Kubernetes fault F1–F12 × trial 5
 
-### 연구 질문
+현재 연구질문과 주장 범위는 [`docs/research-charter.md`](docs/research-charter.md)를 단일 정본으로 사용한다.
 
-| ID | 질문 |
-|----|------|
-| **RQ1** | GitOps 컨텍스트(FluxCD/ArgoCD 상태, 매니페스트 diff)를 결합하면 LLM 기반 RCA 정확도가 관측 데이터만 사용하는 방식 대비 향상되는가? |
-| **RQ2** | GitOps 신호(배포 이력, drift 감지, 재조정 상태) 중 RCA 성능에 가장 크게 기여하는 요소는 무엇인가? |
+## 먼저 읽을 문서
 
-### 실험 설계
-
-**System A (기준선)**: LLM + Prometheus 메트릭 + Loki 로그 + kubectl 이벤트
-**System B (제안)**: System A + FluxCD 재조정 상태 + ArgoCD 동기화 상태 + Git 커밋 diff + RAG 지식베이스
-
-10가지 장애 유형(F1~F10)을 각 5회씩 총 50건 주입하여 두 시스템을 평가하며, Wilcoxon signed-rank test로 통계적 유의성을 검증한다.
-
-## 장애 유형 (F1~F10)
-
-| ID | 이름 | 설명 |
-|----|------|------|
-| F1 | OOMKilled | 컨테이너 메모리 limit 초과, OOM killer에 의한 종료 |
-| F2 | CrashLoopBackOff | 애플리케이션 반복 크래시 및 재시작 |
-| F3 | ImagePullBackOff | 컨테이너 이미지 레지스트리 풀 실패 |
-| F4 | NodeNotReady | 노드 장애 또는 네트워크 파티션 |
-| F5 | PVCPending | 스토리지 프로비저닝 실패 |
-| F6 | NetworkPolicy | 네트워크 정책에 의한 통신 차단 |
-| F7 | CPUThrottle | CPU 리소스 경합 및 쓰로틀링 |
-| F8 | ServiceEndpoint | 서비스 셀렉터 미스매치 |
-| F9 | SecretConfigMap | 시크릿/컨피그맵 누락 또는 오류 |
-| F10 | ResourceQuota | 네임스페이스 리소스 쿼터 초과 |
-
-## 클러스터 환경
-
-- **Kubernetes** v1.29.15 (kubeadm, 마스터 3대 + 워커 3대)
-- **CNI**: Cilium 1.15.6 (VXLAN, MTU 1450)
-- **GitOps**: FluxCD v2.3.0 + ArgoCD v7.9.1 (듀얼 GitOps)
-- **모니터링**: kube-prometheus-stack v65.8.1 + Loki v6.55.0 + Promtail v6.17.1
-- **스토리지**: local-path-provisioner v0.0.28
-- **대상 애플리케이션**: Google Online Boutique (마이크로서비스 데모)
+| 목적 | 문서 |
+|---|---|
+| 연구질문·기여·주장 경계 | [`docs/research-charter.md`](docs/research-charter.md) |
+| 실험 버전과 결과 색인 | [`docs/experiment-versions.md`](docs/experiment-versions.md) |
+| 최신 완료 실험 분석 | [`results/analysis_v2_2.md`](results/analysis_v2_2.md) |
+| 다음 실험 재개 | [`docs/plans/next_experiment_goal_v2_3.md`](docs/plans/next_experiment_goal_v2_3.md) |
+| 실험 파이프라인 | [`rules/experiment-pipeline.md`](rules/experiment-pipeline.md) |
+| 데이터 보호 규칙 | [`rules/data-safety.md`](rules/data-safety.md) |
 
 ## 저장소 구조
 
-```
-.
-├── README.md
-├── docs/                    # RAG 지식베이스 (65건)
-│   ├── debugging/           # K8s 장애 디버깅 가이드 (20건)
-│   ├── runbooks/            # 장애별 RCA 런북 (20건)
-│   └── known-issues/        # 클러스터 기존 이슈 및 해결 사례 (25건)
-├── k8s/                     # Kubernetes 매니페스트 (GitOps 관리)
-│   ├── flux/                # FluxCD 부트스트랩 및 Kustomization CR
-│   ├── infrastructure/      # StorageClass 등 클러스터 레벨 리소스
-│   ├── monitoring/          # Prometheus, Loki, Promtail HelmRelease
-│   ├── argocd/              # ArgoCD HelmRelease (듀얼 GitOps)
-│   └── app/                 # Online Boutique 배포 (예정)
-├── src/                     # 파이프라인 소스코드
-│   ├── collector/           # Prometheus/Loki 데이터 수집
-│   ├── processor/           # 특징 추출 및 전처리
-│   ├── llm/                 # LLM 기반 RCA 추론
-│   └── rag/                 # ChromaDB RAG 파이프라인
-├── scripts/                 # 실험 자동화 (예정)
-│   ├── fault_inject/        # 장애 주입 스크립트
-│   ├── stabilize/           # 주입 후 안정화
-│   └── evaluate/            # 평가 및 채점
-├── results/                 # 실험 결과
-│   └── ground_truth.csv     # 50건 레이블 (F1-F10 × 5회)
-├── configs/                 # 파이프라인 설정
-└── requirements.txt         # Python 의존성
+```text
+docs/
+  research-charter.md      연구 정본
+  experiment-versions.md   실험 버전 색인
+  plans/                   실험 계획·리뷰·다음 goal
+  papers/                  논문별 선행연구 분석
+  surveys/                 조사 범위·종합 서베이·심층 분석
+experiments/               버전별 실행 모듈
+results/                   불변 원시 결과와 버전별 분석
+paper/chapters/            논문 원고
+rules/                     연구·실험·데이터 안전 규칙
 ```
 
-## 실험 워크플로우
+## 정본 원칙
 
-```
-1. 사전 점검    → 클러스터, 모니터링, GitOps 상태 확인
-2. RAG 구축     → 65건 문서 → ChromaDB 인제스트 (1,243 chunks)
-3. Ground Truth → 50건 레이블 정의 (F1-F10 × 5회)
-4. 앱 배포      → Online Boutique (FluxCD HelmRelease)
-5. 장애 주입    → F1-F10, System A/B 비교
-6. 절삭 실험    → AB-1~AB-5 (GitOps 신호별 기여도 분석)
-7. 통계 분석    → Wilcoxon signed-rank test
-```
-
-## 빠른 시작
-
-```bash
-# RAG 지식베이스 인제스트
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python -m src.rag.ingest --reset
-
-# 클러스터 접속 (SSH 터널 필요)
-ssh -N -f k8s-lab-tunnel
-export KUBECONFIG=~/.kube/config-k8s-lab
-kubectl get nodes
-```
+- 실험 계획·코드·결과·분석·원고와 현재 진행 상태는 이 저장소에서만 관리한다.
+- 외부 업무위키는 프로젝트 링크와 다른 업무에도 재사용되는 개념만 보유한다.
+- 실험 수치의 근거는 `results/analysis_*.md`와 원시 결과로 추적한다.
+- 완료된 원시 CSV·JSON과 ground truth는 수정하거나 삭제하지 않는다.
+- 모든 변경은 feature branch와 PR을 거친다.
