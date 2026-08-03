@@ -80,6 +80,20 @@ sandbox를 우회하는 `process/spawn`에서도 signer environment, signer 파�
 socket 접근이 차단됐다.
 
 검증 코드와 운영 전 남은 조건은
-`docs/plans/hermes_codex_signer_isolation.md`를 기준으로 한다. 아직 Hermes launcher에
-wrapper/environment scrub/method allowlist를 구현하지 않았으므로 live 승인 경계는
-활성화하지 않는다.
+`docs/plans/hermes_codex_signer_isolation.md`를 기준으로 한다. 이 결정 시점에는 Hermes
+launcher 구현이 없었으며, 아래 후속 checkpoint에서 구현 상태를 갱신했다.
+
+## 2026-08-03 Hermes launcher 구현
+
+Hermes branch `feat/codex-app-server-outer-sandbox`, commit `c18c2919c`에서 다음 generic
+경계를 구현했다.
+
+- `security.codex_app_server.outer_sandbox_profile` opt-in 설정
+- strict spawn environment allowlist
+- app-server 전체를 감싸는 `codex sandbox --permission-profile` launcher
+- `process/spawn`, `thread/shellCommand` 요청 차단
+- 잘못된 설정의 fail-closed 처리
+
+실제 공개 canary E2E까지 통과했지만 profile의 운영 경로·network allowlist를 아직
+설정하지 않았고 Slack metadata 전용 command handler도 미구현이다. 따라서 live 승인
+경계는 계속 비활성 상태다.
