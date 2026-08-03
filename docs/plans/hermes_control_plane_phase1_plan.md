@@ -41,3 +41,13 @@ core 단위시험과 signed Unix socket IPC 검증을 통과했다. Slack event 
 Hermes plugin API 조사 결과는 `docs/plans/hermes_control_plane_adapter_contract.md`에
 기록했다. 다음 checkpoint는 signer 격리 방식을 결정하고 Codex app-server가 signer와
 Controller socket에 접근할 수 없는지 negative test로 입증하는 것이다.
+
+## checkpoint 결과 — signer 격리
+
+Codex app-server 전체를 외부 macOS Seatbelt permission profile로 감싸는 canary 검증을
+추가했다. `command/exec`와 명시적 sandbox escape hatch인 `process/spawn` 양쪽에서 signer
+environment는 제거되고 signer 파일 및 Controller socket 접근은 거부됐다.
+
+상세 증거는 `docs/plans/hermes_codex_signer_isolation.md`에 기록했다. 다음 checkpoint는
+Hermes launcher에 wrapper, environment allowlist, app-server method allowlist를 구현하고
+read-only 자연어 경로를 연결하는 것이다. 운영 설치와 live Runner 연결은 계속 보류한다.
