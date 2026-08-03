@@ -51,3 +51,14 @@ environment는 제거되고 signer 파일 및 Controller socket 접근은 거부
 상세 증거는 `docs/plans/hermes_codex_signer_isolation.md`에 기록했다. 다음 checkpoint는
 Hermes launcher에 wrapper, environment allowlist, app-server method allowlist를 구현하고
 read-only 자연어 경로를 연결하는 것이다. 운영 설치와 live Runner 연결은 계속 보류한다.
+
+## checkpoint 결과 — Hermes launcher
+
+Hermes feature branch `feat/codex-app-server-outer-sandbox`의 `c18c2919c`에서 wrapper,
+strict environment allowlist, escape-method deny를 구현했고 관련 테스트 259개와 실제
+canary E2E를 통과했다.
+
+다음 checkpoint는 운영값을 넣지 않은 profile template과 startup preflight를 확정한 뒤,
+Slack request metadata가 agent loop를 거치지 않고 signer로 전달되는 전용 command
+adapter를 구현하는 것이다. 실제 profile 설치·Gateway 재시작은 별도 운영 승인 전까지
+수행하지 않는다.

@@ -81,9 +81,28 @@ macOS Seatbelt는 중첩 적용 시 `sandbox_apply: Operation not permitted`로 
 
 ## 남은 범위
 
-- 실제 Hermes app-server launcher의 environment scrub 및 method allowlist 구현
+- ~~실제 Hermes app-server launcher의 environment scrub 및 method allowlist 구현~~
+  - Hermes branch: `feat/codex-app-server-outer-sandbox`
+  - checkpoint commit: `c18c2919c`
 - OpenAI 인증/API 최소 network allowlist 확인
 - LaunchAgent 재기동·재부팅 후 경계 유지 검증
 - 실제 signer daemon과 Controller를 사용한 end-to-end 검증
+- Slack adapter의 request identity/user/channel metadata 전용 command 경로 구현
+
+## Hermes 구현 증거
+
+Hermes source에 opt-in `security.codex_app_server` 설정을 추가했다.
+
+- `outer_sandbox_profile`: app-server 전체를 감쌀 Codex permission profile
+- `environment_allowlist`: bootstrap environment 외에 명시적으로 상속할 이름
+- `process/spawn`, `thread/shellCommand`: wire client에서 항상 거부
+- 잘못된 보안 설정: unwrapped 실행으로 강등하지 않고 fail closed
+- 외부 sandbox가 활성화된 경우: macOS 중첩 Seatbelt를 피하기 위해 내부 app-server
+  sandbox를 끄고 외부 OS profile을 authoritative boundary로 사용
+
+Hermes 저장소의 관련 테스트 259개가 통과했다. 실제
+`CodexAppServerClient → codex sandbox → app-server → command/exec` 경로에서도 공개 canary
+environment는 `absent`, signer 파일과 Controller socket은 `denied`였고 escape method는
+client에서 거부됐다.
 
 운영 프로세스·Slack manifest·launchd·cluster는 이번 단계에서 변경하지 않았다.
