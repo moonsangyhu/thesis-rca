@@ -37,6 +37,7 @@
 
 ## 다음 checkpoint
 
-core 단위시험 통과 뒤 Slack event context 전달 방식과 Hermes plugin API를 분리 검토한다.
-현재 Hermes plugin slash handler는 raw args 중심이므로 `event_id`, user, channel,
-thread binding을 보존하는 adapter/handler 경계를 먼저 입증해야 한다.
+core 단위시험과 signed Unix socket IPC 검증을 통과했다. Slack event context 전달 방식과
+Hermes plugin API 조사 결과는 `docs/plans/hermes_control_plane_adapter_contract.md`에
+기록했다. 다음 checkpoint는 signer 격리 방식을 결정하고 Codex app-server가 signer와
+Controller socket에 접근할 수 없는지 negative test로 입증하는 것이다.

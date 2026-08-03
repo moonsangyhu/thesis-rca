@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
+import threading
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -10,7 +12,10 @@ from pathlib import Path
 from control_plane.controller import ApprovalRequest, CampaignController, ControlPlaneConfig
 from control_plane.errors import InvalidTransition, LockOwnershipError, ManifestValidationError
 from control_plane.global_lock import GlobalCampaignLock
+from control_plane.commands import ThesisCommandRouter
+from control_plane.ipc import ControllerEndpoint, UnixControllerServer, send_command
 from control_plane.manifest import CampaignManifest
+from control_plane.protocol import CommandEnvelope, EnvelopeSigner
 from control_plane.state import CampaignState, CampaignStore, TRANSITIONS
 from control_plane.watchdog import WatchdogInspector
 
@@ -31,6 +36,31 @@ def manifest(campaign_id: str = "v2.3-c01", fault: str = "F1") -> dict:
         "expected_raw_files": 5,
         "thread_ts": "1234567890.123456",
     }
+
+
+def signed_envelope(
+    signer: EnvelopeSigner,
+    args: str,
+    *,
+    request_id: str = "Req-1",
+    user_id: str = "U-allowed",
+    channel_id: str = "C-allowed",
+    thread_ts: str = "1234567890.123456",
+    received_at: str | None = None,
+) -> CommandEnvelope:
+    return signer.sign(
+        CommandEnvelope(
+            version=1,
+            request_id=request_id,
+            platform="slack",
+            user_id=user_id,
+            channel_id=channel_id,
+            thread_ts=thread_ts,
+            command="thesis",
+            args=args,
+            received_at=received_at or datetime.now(timezone.utc).isoformat(),
+        )
+    )
 
 
 class ManifestTests(unittest.TestCase):
@@ -268,6 +298,161 @@ class LockAndWatchdogTests(unittest.TestCase):
                 heartbeat_timeout=timedelta(minutes=3),
             ).inspect(now=now)
             self.assertEqual(finding.status, "healthy")
+
+
+class CommandProtocolTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.controller = CampaignController(
+            self.root,
+            ControlPlaneConfig(allowed_user_id="U-allowed", allowed_channel_id="C-allowed"),
+        )
+        self.signer = EnvelopeSigner(b"test-envelope-key-material-32-bytes-minimum")
+        self.endpoint = ControllerEndpoint(ThesisCommandRouter(self.controller), self.signer)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_signed_approve_and_status_route_without_agent_loop(self):
+        ready = self.controller.register_manifest(manifest())
+        approved = self.endpoint.handle(
+            signed_envelope(
+                self.signer,
+                f"approve v2.3-c01 {ready['manifest_sha256']}",
+            ).to_dict()
+        )
+        self.assertEqual(approved["status"], "approved")
+        status = self.endpoint.handle(
+            signed_envelope(
+                self.signer,
+                "status v2.3-c01",
+                request_id="Req-status",
+                thread_ts="",
+            ).to_dict()
+        )
+        self.assertEqual(status["state"], "APPROVED")
+        audit = (self.root / "commands.jsonl").read_text().splitlines()
+        self.assertEqual([json.loads(line)["subcommand"] for line in audit], ["approve", "status"])
+        self.assertEqual((self.root / "commands.jsonl").stat().st_mode & 0o777, 0o600)
+
+    def test_native_slash_resolves_registered_campaign_thread(self):
+        ready = self.controller.register_manifest(manifest())
+        approved = self.endpoint.handle(
+            signed_envelope(
+                self.signer,
+                f"approve v2.3-c01 {ready['manifest_sha256']}",
+                thread_ts="",
+            ).to_dict()
+        )
+        self.assertEqual(approved["status"], "approved")
+
+    def test_tampered_and_expired_envelopes_are_rejected(self):
+        envelope = signed_envelope(self.signer, "status")
+        tampered = envelope.to_dict()
+        tampered["args"] = "approve forged deadbeef"
+        self.assertEqual(
+            self.endpoint.handle(tampered)["reason"],
+            "invalid_envelope_signature",
+        )
+        expired = signed_envelope(
+            self.signer,
+            "status",
+            request_id="Req-old",
+            received_at=(datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat(),
+        )
+        self.assertEqual(self.endpoint.handle(expired.to_dict())["reason"], "envelope expired")
+
+    def test_stop_before_running_releases_lock(self):
+        ready = self.controller.register_manifest(manifest())
+        approved = self.endpoint.handle(
+            signed_envelope(
+                self.signer,
+                f"approve v2.3-c01 {ready['manifest_sha256']}",
+                request_id="Req-approve",
+            ).to_dict()
+        )
+        self.assertEqual(approved["status"], "approved")
+        stopped = self.endpoint.handle(
+            signed_envelope(
+                self.signer,
+                "stop v2.3-c01",
+                request_id="Req-stop",
+            ).to_dict()
+        )
+        self.assertEqual(stopped["status"], "stopped")
+        self.assertEqual(stopped["state"], "SAFE_STOPPED")
+        self.assertFalse(self.controller.global_lock.path.exists())
+
+    def test_running_stop_only_requests_stopping_and_keeps_lock(self):
+        ready = self.controller.register_manifest(manifest())
+        self.controller.approve(
+            ApprovalRequest(
+                "Req-approve", "U-allowed", "C-allowed", "v2.3-c01",
+                ready["manifest_sha256"], "1234567890.123456",
+            )
+        )
+        self.controller.campaigns.transition(
+            "v2.3-c01", CampaignState.PREFLIGHT, actor="test", reason="test"
+        )
+        self.controller.campaigns.transition(
+            "v2.3-c01", CampaignState.RUNNING, actor="test", reason="test"
+        )
+        stopped = self.endpoint.handle(
+            signed_envelope(
+                self.signer,
+                "stop v2.3-c01",
+                request_id="Req-stop-running",
+            ).to_dict()
+        )
+        self.assertEqual(stopped["state"], "STOPPING")
+        self.assertTrue(self.controller.global_lock.path.exists())
+
+    def test_stop_replays_from_journal_after_event_db_gap(self):
+        self.controller.register_manifest(manifest())
+        self.controller.campaigns.transition(
+            "v2.3-c01",
+            CampaignState.SAFE_STOPPED,
+            actor="slack_command",
+            reason="simulated_crash_before_event_db_commit",
+            event_id="Req-stop-gap",
+        )
+        replay = self.endpoint.handle(
+            signed_envelope(
+                self.signer,
+                "stop v2.3-c01",
+                request_id="Req-stop-gap",
+            ).to_dict()
+        )
+        self.assertEqual(replay["status"], "stopped")
+        duplicate = self.endpoint.handle(
+            signed_envelope(
+                self.signer,
+                "stop v2.3-c01",
+                request_id="Req-stop-gap",
+            ).to_dict()
+        )
+        self.assertTrue(duplicate["duplicate"])
+
+    def test_unix_socket_round_trip_checks_peer_uid(self):
+        server = UnixControllerServer(
+            self.root / "controller.sock",
+            self.endpoint,
+            allowed_peer_uids={os.getuid()},
+        )
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            response = send_command(
+                self.root / "controller.sock",
+                signed_envelope(self.signer, "status", thread_ts=""),
+            )
+            self.assertEqual(response, {"active_campaign": None, "status": "ok"})
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+        self.assertFalse((self.root / "controller.sock").exists())
 
 
 if __name__ == "__main__":
