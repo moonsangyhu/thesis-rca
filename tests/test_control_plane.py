@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import tempfile
 import threading
 import unittest
@@ -14,6 +15,7 @@ from control_plane.errors import InvalidTransition, LockOwnershipError, Manifest
 from control_plane.global_lock import GlobalCampaignLock
 from control_plane.commands import ThesisCommandRouter
 from control_plane.ipc import ControllerEndpoint, UnixControllerServer, send_command
+from control_plane.isolation import probe_isolation, reject_out_of_sandbox_method
 from control_plane.manifest import CampaignManifest
 from control_plane.protocol import CommandEnvelope, EnvelopeSigner
 from control_plane.state import CampaignState, CampaignStore, TRANSITIONS
@@ -298,6 +300,52 @@ class LockAndWatchdogTests(unittest.TestCase):
                 heartbeat_timeout=timedelta(minutes=3),
             ).inspect(now=now)
             self.assertEqual(finding.status, "healthy")
+
+
+class IsolationBoundaryTests(unittest.TestCase):
+    def test_probe_reports_access_without_exposing_values(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            signer_path = root / "signer.canary"
+            socket_path = root / "controller.sock"
+            signer_path.write_text("must-not-appear-in-output")
+            listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            listener.bind(str(socket_path))
+            listener.listen(1)
+            name = "THESIS_TEST_SIGNER_CANARY"
+            previous = os.environ.get(name)
+            os.environ[name] = "must-not-appear-in-output"
+            try:
+                result = probe_isolation(
+                    environment_name=name,
+                    signer_path=signer_path,
+                    socket_path=socket_path,
+                )
+            finally:
+                listener.close()
+                if previous is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = previous
+            self.assertEqual(result.environment, "present")
+            self.assertEqual(result.signer_file, "accessible")
+            self.assertEqual(result.controller_socket, "accessible")
+            self.assertFalse(result.isolated)
+            self.assertNotIn("must-not-appear", json.dumps(result.public_dict()))
+
+    def test_probe_rejects_untrusted_environment_name(self):
+        with self.assertRaises(ValueError):
+            probe_isolation(
+                environment_name="BAD-NAME",
+                signer_path=Path("unused"),
+                socket_path=Path("unused"),
+            )
+
+    def test_out_of_sandbox_app_server_methods_are_rejected(self):
+        for method in ("process/spawn", "thread/shellCommand"):
+            with self.subTest(method=method), self.assertRaises(ValueError):
+                reject_out_of_sandbox_method(method)
+        reject_out_of_sandbox_method("command/exec")
 
 
 class CommandProtocolTests(unittest.TestCase):

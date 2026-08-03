@@ -6,6 +6,17 @@
 
 이 스크립트들은 **재현 가능한 실험**을 보장한다 — 50건의 모든 시행에서 동일한 절차, 타이밍, 데이터 수집 프로토콜을 따른다.
 
+## Hermes/Codex control-plane isolation
+
+공개 canary만 사용해 Codex app-server의 signer environment·파일·Controller socket 접근
+차단을 검증한다.
+
+```bash
+python3 scripts/verify_codex_isolation.py
+```
+
+운영 설정을 수정하지 않으며 임시 `CODEX_HOME`과 Unix socket은 실행 종료 시 제거한다.
+
 ## 구조
 
 | 디렉토리/파일 | 상태 | 설명 |

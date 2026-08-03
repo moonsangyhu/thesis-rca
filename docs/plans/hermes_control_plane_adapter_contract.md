@@ -71,3 +71,15 @@ handler는 이 metadata로 signed envelope를 만들고 Controller Unix socket�
 
 이 조건이 확정되기 전에는 `/thesis approve`를 Slack manifest에 등록하거나 live Runner와
 연결하지 않는다.
+
+## 2026-08-03 격리 결정
+
+canary negative test를 통해 Codex app-server 프로세스 전체를 외부 macOS Seatbelt
+permission profile로 감싸는 방식을 선택했다. 일반 `command/exec`뿐 아니라 Codex 내부
+sandbox를 우회하는 `process/spawn`에서도 signer environment, signer 파일, Controller
+socket 접근이 차단됐다.
+
+검증 코드와 운영 전 남은 조건은
+`docs/plans/hermes_codex_signer_isolation.md`를 기준으로 한다. 아직 Hermes launcher에
+wrapper/environment scrub/method allowlist를 구현하지 않았으므로 live 승인 경계는
+활성화하지 않는다.
