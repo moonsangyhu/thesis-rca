@@ -54,8 +54,11 @@ class Recovery:
         result = recoverer(trial, injection_result)
         # Clean up failed/evicted pods before waiting
         self._cleanup_failed_pods()
-        # Restart all deployments to flush any stale network state (netem residuals, env changes)
-        self._restart_all_deployments()
+        # Only node-level network faults need a namespace-wide restart to flush
+        # stale netem state. Restarting every deployment after resource faults
+        # creates unrelated rollout state and can hide an incomplete restore.
+        if fault_id in {"F11", "F12"}:
+            self._restart_all_deployments()
         # Wait for pods to stabilize
         self._wait_for_healthy()
         # Verify all service endpoints have at least one ready address
@@ -135,8 +138,16 @@ class Recovery:
     def _restart_all_deployments(self):
         """Rollout restart all deployments to flush stale network state (e.g., tc netem residuals)."""
         try:
-            output = kubectl("rollout", "restart", "deployment", "--all", namespace=NAMESPACE)
-            logger.info("Rollout restart all deployments: %s", (output or "").strip())
+            deployments = kubectl("get", "deployments", "-o", "name", namespace=NAMESPACE)
+            for deployment in deployments.splitlines():
+                if deployment.strip():
+                    output = kubectl(
+                        "rollout", "restart", deployment.strip(), namespace=NAMESPACE
+                    )
+                    logger.info(
+                        "Rollout restart %s: %s",
+                        deployment.strip(), (output or "").strip(),
+                    )
         except Exception as e:
             logger.warning("Failed to rollout restart deployments: %s", e)
 
@@ -253,11 +264,52 @@ class Recovery:
         return {"action": "delete_network_policy", "name": name}
 
     def _recover_f7(self, trial: int, ctx: dict) -> dict:
-        """Remove CPU limit patch."""
+        """Restore the exact pre-injection CPU resources and verify desired state."""
         target = ctx.get("target_service", "")
-        kubectl("rollout", "undo", f"deployment/{target}")
+        container = ctx.get("container_name", "")
+        original_limit = ctx.get("original_cpu_limit", "")
+        original_request = ctx.get("original_cpu_request", "")
+        if not all((target, container, original_limit, original_request)):
+            raise RuntimeError("F7 recovery receipt is incomplete")
+        kubectl(
+            "set", "resources", "deployment", target,
+            f"--containers={container}",
+            f"--limits=cpu={original_limit}",
+            f"--requests=cpu={original_request}",
+        )
         kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
-        return {"action": "rollout_undo", "target": target}
+        deployment = kubectl_get_json("deployment", target)
+        metadata = deployment.get("metadata", {})
+        spec = deployment.get("spec", {})
+        status = deployment.get("status", {})
+        current = next(
+            (
+                item for item in spec.get("template", {}).get("spec", {}).get("containers", [])
+                if item.get("name") == container
+            ),
+            None,
+        )
+        resources = (current or {}).get("resources", {})
+        replicas = spec.get("replicas", 0)
+        restored = all((
+            current is not None,
+            resources.get("limits", {}).get("cpu") == original_limit,
+            resources.get("requests", {}).get("cpu") == original_request,
+            status.get("observedGeneration") == metadata.get("generation"),
+            status.get("updatedReplicas", 0) == replicas,
+            status.get("readyReplicas", 0) == replicas,
+            status.get("availableReplicas", 0) == replicas,
+        ))
+        if not restored:
+            raise RuntimeError("F7 desired CPU state was not fully restored")
+        return {
+            "action": "restore_cpu_resources",
+            "target": target,
+            "container_name": container,
+            "cpu_limit": original_limit,
+            "cpu_request": original_request,
+            "desired_state_verified": True,
+        }
 
     def _recover_f8(self, trial: int, ctx: dict) -> dict:
         """Fix service configuration."""
@@ -296,9 +348,6 @@ class Recovery:
         elif trial == 5:
             kubectl_delete("limitrange", "fault-limitrange")
 
-        # Restart any stuck deployments
-        time.sleep(5)
-        kubectl("rollout", "restart", "deployment", "--all", namespace=NAMESPACE)
         return {"action": "delete_quota", "trial": trial}
 
     # ── F11: Network Delay ──────────────────────────────────────

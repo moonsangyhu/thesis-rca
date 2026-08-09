@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 2건
-- 심각(실험 무효화): 0건
+- 총 이슈: 3건
+- 심각(실험 무효화): 1건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 0건
 
@@ -34,4 +34,21 @@
   ```text
   ModuleNotFoundError: No module named 'yaml'
   RuntimeError: ChromaDB not found at /Users/yumunsang/thesis-rca-v2-3-terra/data/chromadb.
+  ```
+
+### [ISS-003] F7 5m rollout 교락과 recovery false-GREEN
+
+- **카테고리**: injection / recovery
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-pilot-20260809-2145`의 F7 trial 5 pilot 전체. post-injection validator에서 중단되어 결과 0행이며 primary dataset에 포함할 수 없음.
+- **발생 빈도**: 1회
+- **관찰한 사실**: currencyservice desired CPU를 5m로 변경한 뒤 새 pod가 120초 동안 Ready가 되지 못하고 4회 재시작했다. old 200m pod만 Ready인 상태라 post-injection validator가 `post-injection live CPU state does not match injector receipt`로 Copilot 호출 전에 차단했다. attempt/charged/pilot ledger와 result는 모두 0개다. recovery는 잘못된 `kubectl rollout restart deployment --all` 오류를 출력했고, campaign event에 `recovery_green`을 기록했지만 실제 Deployment desired CPU는 5m로 남아 있었다.
+- **근본 원인**: F7 t5의 5m 처치가 currencyservice readiness와 양립하지 않아 CPU throttling 이외의 rollout/재시작 교락을 만들었다. recovery는 주입 전 CPU 값을 receipt에 보존하지 않고 revision-based undo와 일반 pod health만 사용해, old 정상 pod가 Ready이면 desired-state 잔류를 놓쳤다. Kubernetes 현재 CLI에는 `rollout restart ... --all` flag도 없다.
+- **현재 영향**: 수동으로 `deployment/currencyservice`를 정상 revision으로 undo해 desired limit/request 200m/100m, generation=observed, updated/ready/available=1을 확인했다. Boutique 12/12 deployment, 6/6 node Ready, Disk/MemoryPressure False, Flux 5/5 Ready, Prometheus/Loki Ready, residual/Failed pod 0, disk 25–43%로 복구 완료했다. Copilot/AIC 사용은 0이다.
+- **수정 방안**: runner가 injector의 target container와 원래 CPU limit/request를 mutation 전에 캡처해 fsync event로 봉인하고, 그 context를 recovery state로 먼저 보유한 뒤에만 주입한다. 따라서 API가 apply 직후 timeout을 내도 원래 상태가 남는다. F7 recovery는 revision undo 대신 해당 값을 명시적으로 복원하고 generation·updated·ready·available·resource exact match가 모두 맞아야 통과한다. namespace-wide restart는 F11/F12에만 제한하고 실제 deployment 목록을 순회하며 F10의 미지원 restart는 제거한다. F7 t5의 5m 처치 자체는 유효한 Ready 상태를 만들지 못했으므로 자동 재시도하지 않고 별도 pilot target/limit 방법론 결정을 거친다.
+- **관련 로그**:
+  ```text
+  kubectl stderr: error: timed out waiting for the condition
+  kubectl stderr: error: unknown flag: --all
+  experiments.v2_3.live_runner.PilotError: post-injection live CPU state does not match injector receipt
   ```

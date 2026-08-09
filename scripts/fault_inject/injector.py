@@ -51,7 +51,9 @@ class FaultInjector:
             "F12": self._inject_f12_network_loss,
         }
 
-    def inject(self, fault_id: str, trial: int) -> dict:
+    def inject(
+        self, fault_id: str, trial: int, recovery_context: Optional[dict] = None
+    ) -> dict:
         """
         Inject a fault based on ground truth definition.
 
@@ -71,12 +73,46 @@ class FaultInjector:
         if not injector:
             raise ValueError(f"No injector for {fault_id}")
 
-        result = injector(target, trial, gt)
+        if fault_id == "F7":
+            result = injector(target, trial, gt, recovery_context)
+        else:
+            result = injector(target, trial, gt)
         result["fault_id"] = fault_id
         result["trial"] = trial
         result["target_service"] = target
         result["wait_seconds"] = INJECTION_WAIT.get(fault_id, 120)
         return result
+
+    def prepare_recovery_context(self, fault_id: str, trial: int) -> dict:
+        """Capture reversible pre-state before a V2.3 mutation is attempted."""
+        if fault_id != "F7":
+            raise ValueError("durable recovery context is currently defined only for F7")
+        gt = load_trial(fault_id, trial)
+        target = gt["target_service"]
+        original = kubectl_get_json("deployment", target)
+        containers = (
+            original.get("spec", {}).get("template", {}).get("spec", {})
+            .get("containers", [])
+        )
+        matched = next(
+            (container for container in containers if container.get("name") == target),
+            containers[0] if len(containers) == 1 else None,
+        )
+        if not matched:
+            raise RuntimeError(f"F7 target container not found: {target}")
+        resources = matched.get("resources", {})
+        original_limit = resources.get("limits", {}).get("cpu")
+        original_request = resources.get("requests", {}).get("cpu")
+        if not original_limit or not original_request:
+            raise RuntimeError(f"F7 original CPU resources are incomplete: {target}")
+        return {
+            "fault_id": fault_id,
+            "trial": trial,
+            "target_service": target,
+            "container_name": matched["name"],
+            "original_cpu_limit": original_limit,
+            "original_cpu_request": original_request,
+        }
 
     # ── F1: OOMKilled ──────────────────────────────────────────────
 
@@ -380,7 +416,13 @@ class FaultInjector:
 
     # ── F7: CPUThrottle ────────────────────────────────────────────
 
-    def _inject_f7_cpu_throttle(self, target: str, trial: int, gt: dict) -> dict:
+    def _inject_f7_cpu_throttle(
+        self,
+        target: str,
+        trial: int,
+        gt: dict,
+        recovery_context: Optional[dict] = None,
+    ) -> dict:
         """Set very low CPU limit."""
         cpu_limits = {
             1: "10m",   # frontend
@@ -391,13 +433,30 @@ class FaultInjector:
         }
         limit = cpu_limits.get(trial, "10m")
 
+        recovery_context = recovery_context or self.prepare_recovery_context("F7", trial)
+        if (
+            recovery_context.get("fault_id") != "F7"
+            or recovery_context.get("trial") != trial
+            or recovery_context.get("target_service") != target
+            or not recovery_context.get("container_name")
+            or not recovery_context.get("original_cpu_limit")
+            or not recovery_context.get("original_cpu_request")
+        ):
+            raise RuntimeError("F7 recovery context identity is invalid")
+
         result = kubectl(
             "set", "resources", "deployment", target,
+            f"--containers={recovery_context['container_name']}",
             f"--limits=cpu={limit}", f"--requests=cpu={limit}",
         )
         logger.info("F7 injected: %s CPU limit → %s", target, limit)
 
-        return {"action": "patch_cpu_limit", "cpu_limit": limit, "kubectl_output": result}
+        return {
+            **recovery_context,
+            "action": "patch_cpu_limit",
+            "cpu_limit": limit,
+            "kubectl_output": result,
+        }
 
     # ── F8: ServiceEndpoint ────────────────────────────────────────
 

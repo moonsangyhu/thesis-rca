@@ -68,11 +68,22 @@ class FakeInjector:
         self.error = error
         self.calls = []
 
-    def inject(self, fault_id, trial):
+    def prepare_recovery_context(self, fault_id, trial):
+        return {
+            "fault_id": fault_id,
+            "trial": trial,
+            "target_service": "frontend",
+            "container_name": "server",
+            "original_cpu_limit": "200m",
+            "original_cpu_request": "100m",
+        }
+
+    def inject(self, fault_id, trial, recovery_context=None):
         self.calls.append((fault_id, trial))
         if self.error:
             raise self.error
         return {
+            **(recovery_context or {}),
             "fault_id": fault_id, "trial": trial, "target_service": "frontend",
             "action": "patch_cpu_limit", "cpu_limit": "10m", "wait_seconds": 0,
         }
@@ -173,7 +184,11 @@ class LiveRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "partial injection"):
             runner.run("F7", 5, GROUND_TRUTH)
         self.assertEqual(len(recovery.calls), 1)
-        self.assertEqual(recovery.calls[0][2], {})
+        self.assertEqual(recovery.calls[0][2]["original_cpu_limit"], "200m")
+        events = [event for event, _ in runner.store.events]
+        self.assertLess(
+            events.index("recovery_receipt_sealed"), events.index("injection_started")
+        )
 
     def test_run_revalidates_authorization_before_injection(self):
         runner, _ = self.make_runner()
@@ -302,6 +317,103 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertGreater(
             len(result.procedure.provenance["query_removed_spans"]), 0
         )
+
+    def test_f7_injector_captures_exact_pre_injection_cpu_resources(self):
+        from scripts.fault_inject.injector import FaultInjector
+
+        deployment = {
+            "spec": {"template": {"spec": {"containers": [{
+                "name": "server",
+                "resources": {
+                    "limits": {"cpu": "200m"},
+                    "requests": {"cpu": "100m"},
+                },
+            }]}}}
+        }
+        with patch(
+            "scripts.fault_inject.injector.kubectl_get_json", return_value=deployment
+        ), patch("scripts.fault_inject.injector.kubectl", return_value="updated"):
+            injector = FaultInjector()
+            recovery_context = injector.prepare_recovery_context("F7", 5)
+            result = injector._inject_f7_cpu_throttle(
+                "currencyservice", 5, {}, recovery_context
+            )
+        self.assertEqual(result["container_name"], "server")
+        self.assertEqual(result["original_cpu_limit"], "200m")
+        self.assertEqual(result["original_cpu_request"], "100m")
+        self.assertEqual(result["cpu_limit"], "5m")
+
+    def test_f7_partial_mutation_error_keeps_pre_state_for_recovery(self):
+        recovery = FakeRecovery()
+        injector = FakeInjector(error=TimeoutError("applied then timed out"))
+        runner, _ = self.make_runner(injector=injector, recovery=recovery)
+        with self.assertRaisesRegex(TimeoutError, "applied then timed out"):
+            runner.run("F7", 5, GROUND_TRUTH)
+        receipt = recovery.calls[0][2]
+        self.assertEqual(receipt["container_name"], "server")
+        self.assertEqual(receipt["original_cpu_limit"], "200m")
+        self.assertEqual(receipt["original_cpu_request"], "100m")
+
+    def test_f7_recovery_requires_exact_desired_cpu_and_rollout_state(self):
+        from scripts.stabilize.recovery import Recovery
+
+        restored = {
+            "metadata": {"generation": 21},
+            "spec": {
+                "replicas": 1,
+                "template": {"spec": {"containers": [{
+                    "name": "server",
+                    "resources": {
+                        "limits": {"cpu": "200m"},
+                        "requests": {"cpu": "100m"},
+                    },
+                }]}},
+            },
+            "status": {
+                "observedGeneration": 21,
+                "updatedReplicas": 1,
+                "readyReplicas": 1,
+                "availableReplicas": 1,
+            },
+        }
+        receipt = {
+            "target_service": "currencyservice",
+            "container_name": "server",
+            "original_cpu_limit": "200m",
+            "original_cpu_request": "100m",
+        }
+        with patch("scripts.stabilize.recovery.kubectl") as kubectl_mock, patch(
+            "scripts.stabilize.recovery.kubectl_get_json", return_value=restored
+        ):
+            result = Recovery()._recover_f7(5, receipt)
+        self.assertTrue(result["desired_state_verified"])
+        self.assertEqual(result["cpu_limit"], "200m")
+        self.assertIn("--containers=server", kubectl_mock.call_args_list[0].args)
+
+        stale = dict(restored)
+        stale["spec"] = dict(restored["spec"])
+        stale["spec"]["template"] = {"spec": {"containers": [{
+            "name": "server",
+            "resources": {
+                "limits": {"cpu": "5m"}, "requests": {"cpu": "5m"}
+            },
+        }]}}
+        with patch("scripts.stabilize.recovery.kubectl"), patch(
+            "scripts.stabilize.recovery.kubectl_get_json", return_value=stale
+        ):
+            with self.assertRaisesRegex(RuntimeError, "not fully restored"):
+                Recovery()._recover_f7(5, receipt)
+
+    def test_f10_recovery_does_not_use_unsupported_namespace_restart(self):
+        from scripts.stabilize.recovery import Recovery
+
+        with patch("scripts.stabilize.recovery.kubectl_delete") as delete, patch(
+            "scripts.stabilize.recovery.kubectl"
+        ) as kubectl_mock:
+            result = Recovery()._recover_f10(2, {})
+        delete.assert_called_once_with("resourcequota", "fault-quota-cpu")
+        kubectl_mock.assert_not_called()
+        self.assertEqual(result, {"action": "delete_quota", "trial": 2})
 
 
 if __name__ == "__main__":
