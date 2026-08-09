@@ -188,3 +188,19 @@ CSV/raw JSON/ground truth는 수정하지 않는다.
 ---
 
 생성: 2026-08-03 · Copilot 인계용 · 운영 변경 없음
+
+## 후속 정정 (2026-08-03, 같은 날 세션 내)
+
+**§5-A(Hermes 측 plugin command API 확장)와 §8 시작 프롬프트의 "Hermes의 plugin
+command API를 ... generic하게 확장해" 지시는 폐기한다.** 사용자가 Hermes는 Slack에
+연결해서 사용만 하는 서드파티 저장소이며 절대 수정하면 안 된다고 정정했다. 실제로
+만들었던 Hermes 로컬 커밋(plugin context 확장 + Codex outer sandbox launcher)은 모두
+되돌리고 `~/.hermes/hermes-agent`를 `origin/main` 기준 pristine 상태로 리셋했다.
+
+대신 Hermes에 이미 존재하는 `pre_gateway_dispatch` plugin hook
+(`ctx.register_hook`)만 사용하는 방식으로 재구현했다 — Hermes 소스는 전혀 읽거나
+고치지 않는다. 상세 설계는 `docs/plans/hermes_control_plane_adapter_contract.md`의
+"2026-08-03 전면 재설계 — Hermes 수정 금지" 절, 구현은
+`control_plane/gateway_hook.py`를 참고한다. §5-B(thesis adapter 자체)와 §6(완료
+조건 — agent loop 미호출, signed IPC)은 그대로 유효하다.
+
