@@ -143,3 +143,12 @@
 - **수정 내용**: 실패 event 기록은 primary error를 보존하는 best-effort 진단으로 격리해 기록 오류와 무관하게 recovery를 수행한다. masker에도 NFKC 이후 fault-ID 전용 Unicode separator pattern을 추가해 공백·하이픈·underscore·전각 변형을 제거하되 SHA/UID 내부 `f7` substring은 유지한다. disk-full mock과 fault-ID 적대 변형 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/retrieval.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_retrieval.py:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 전체 136개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 독립 재리뷰 승인
+
+### 17. Copilot CLI 세션 상한 호환성과 campaign 선예약 gate — 2026-08-09
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: campaign `v2-3-pilot-f7t1-20260809-220152`의 첫 subprocess가 CLI 1.0.78의 최소 세션 상한 30보다 낮은 `--max-ai-credits 10.0` 옵션을 거부했다.
+- **원인**: adapter와 승인 문서가 현재 CLI의 세션 상한 최소값을 사전 검증하지 않았다.
+- **수정 내용**: Copilot backend는 30 이상의 정수 세션 상한만 허용하고 pilot은 최소값 30을 사용한다. caller는 subprocess 전에 `누적 AIC + 세션 상한 <= campaign 360`을 강제해 상한 변경이 전체 예산 경계를 약화하지 않게 했다. manifest schema를 v2로 올리고 세션 상한 의미를 명시했다. 실패 campaign은 actual model/session/AIC 결측, charged receipt 1·정상 ledger/result 0으로 보존하며 usage uncertain으로 처리한다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/v2_3/config.py:1`, `experiments/v2_3/live_caller.py:1`, `experiments/v2_3/run.py:1`, `tests/test_copilot_cli.py:1`, `tests/test_v2_3_live_caller.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 전체 139개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, manifest direct assertion, `git diff --check` 통과 및 독립 재리뷰 승인; live 자동 재시도 금지

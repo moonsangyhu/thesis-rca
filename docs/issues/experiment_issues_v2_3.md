@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 4건
-- 심각(실험 무효화): 2건
+- 총 이슈: 5건
+- 심각(실험 무효화): 3건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 0건
 
@@ -66,4 +66,19 @@
 - **관련 로그**:
   ```text
   experiments.v2_3.scanner.LeakageDetected: forbidden leakage detected: 6 match(es)
+  ```
+
+### [ISS-005] Copilot CLI 세션 AIC 최소값과 adapter 상한 불일치
+
+- **카테고리**: code
+- **심각도**: critical (P1)
+- **영향**: campaign `v2-3-pilot-f7t1-20260809-220152` 전체. F7 trial 1 처치와 retrieval gate는 통과했지만 첫 Copilot subprocess의 option validation에서 중단되어 결과 0행이다.
+- **발생 빈도**: 1회
+- **관찰한 사실**: CLI 1.0.78은 `--max-ai-credits 10.0`을 거부하며 최소 30 AIC를 요구했다. charged-call receipt 1건에는 exit code 1, actual model·session·AIC가 모두 결측이고, attempt/pilot ledger는 0건이다. 따라서 실제 추론 실행이나 AIC 0을 주장하지 않고 usage uncertain으로 분류한다. recovery 이후 frontend 200m/100m, Boutique 12/12, 노드 6/6, 모니터링과 잔여 리소스가 모두 GREEN이다.
+- **근본 원인**: 계획과 adapter가 CLI help의 현재 최소 세션 상한을 사전 검증하지 않고 10.0을 고정했다.
+- **현재 영향**: 해당 campaign은 무효이며 자동 재시도하지 않는다. 별도 과금은 관리자 paid-usage disabled와 budget hard-stop으로 차단돼 있으나, included AIC 변화는 UI 사후 관측 전까지 미확정이다.
+- **수정 방안**: CLI 세션 상한을 허용 최소 정수 30으로 변경하고, 각 호출 전에 누적 AIC와 다음 세션 최악 상한의 합이 campaign 360 이하인지 검사한다. CLI 최소값 적대 테스트, campaign 사전 예약 테스트, manifest schema와 비용 문서를 함께 갱신한다.
+- **관련 로그**:
+  ```text
+  Invalid value for --max-ai-credits: "10.0". Use at least 30 AI credits.
   ```

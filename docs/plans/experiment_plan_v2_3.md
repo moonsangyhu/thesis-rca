@@ -338,7 +338,7 @@ GitHub의 조직용 usage-based billing은 included pool 소진 후 paid usage�
 2. 적용되는 budget에 `Stop usage when budget limit is reached = Enabled`를 확인한다.
 3. 증빙 일시·적용 account/org와 확인 방법을 campaign manifest에 남긴다. 비밀값이나 관리자 화면 전체는 저장하지 않는다.
 4. 위 확인 뒤에만 로컬 실행 gate `THESIS_COPILOT_ZERO_OVERAGE_CONFIRMED=1`을 설정한다.
-5. adapter는 호출별 `--max-ai-credits 10.0` 상한을 추가 적용한다. 이는 runaway 방지용 보조장치이며 paid-usage 비활성화를 대체하지 않는다.
+5. Copilot CLI 1.0.78이 허용하는 최소 세션 상한인 `--max-ai-credits 30`을 적용한다. 이는 예상 단일-call 사용량이 아니라 runaway 방지용 보조장치이며 paid-usage 비활성화를 대체하지 않는다. adapter는 각 subprocess 전에 `누적 AIC + 30 <= 360`을 검사해 세션 최악 상한을 예약하므로 campaign 360 AIC를 사후 초과하지 않는다.
 
 어느 하나라도 확인되지 않으면 mock/dry-run만 허용하고 Copilot inference는 adapter 수준에서 subprocess 실행 전에 차단한다.
 
