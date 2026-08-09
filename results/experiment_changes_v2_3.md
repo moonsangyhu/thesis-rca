@@ -107,3 +107,12 @@
 - **수정 내용**: `KnowledgeRetriever` 생성자에 선택적 `chroma_dir`를 추가하고 V2.3 runner가 `resolve(strict=True)`로 검증한 경로를 직접 전달하게 했다. repo venv Python 3.11.15에서 PyYAML·ChromaDB·sentence-transformers와 Copilot CLI 1.0.78을 확인하고, offline embedding으로 동결 Chroma corpus 일반 질의 2건을 실제 조회했다. targeted unittest 11개가 통과했다. 실패 attempt의 artifact/result/raw/call ledger/charged receipt와 fault injection은 모두 0건이었다.
 - **수정 파일**: `src/rag/retriever.py:1`, `experiments/v2_3/run.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 전체 테스트·dry-run·diff 검증과 commit-push 후 새 campaign ID로 pilot 실행
+
+### 13. F7 recovery desired-state 봉인과 false-GREEN 차단 — 2026-08-09
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: campaign `v2-3-pilot-20260809-2145`에서 currencyservice 5m 새 pod가 Ready가 되지 않아 post-injection gate가 차단했다. 자동 recovery는 `recovery_green`을 기록했지만 desired CPU 5m와 비정상 새 pod가 남았고, `kubectl rollout restart deployment --all`도 현재 CLI에서 실패했다.
+- **원인**: injector receipt에 주입 전 CPU limit/request와 container identity가 없어 revision-based undo에 의존했다. generic health는 old 200m pod 하나의 Ready 상태를 정상으로 오판했고 namespace-wide restart 명령도 지원하지 않는 flag를 사용했다.
+- **수정 내용**: F7 주입 전에 target container와 CPU limit/request를 캡처하고 campaign event에 fsync한 뒤 recovery state로 먼저 보유한다. apply 직후 timeout 예외에도 이 pre-state를 복구에 전달한다. mutation은 캡처한 container 하나로 제한하고, recovery는 receipt 값을 `kubectl set resources`로 명시 복원한 뒤 Deployment generation/observedGeneration, updated/ready/available replicas, container limit/request가 모두 일치하지 않으면 실패한다. namespace-wide restart는 netem F11/F12에만 수행하며 실제 deployment 목록을 순회하고 F10의 미지원 restart를 제거했다. 실제 클러스터는 currencyservice 200m/100m와 전체 health GREEN으로 수동 복원했고, 실패 artifact의 result·attempt·charged·pilot ledger가 0임을 확인했다. 실패 campaign provenance는 삭제하지 않고 `artifacts/v2_3_pilot/`에서 로컬 보존하되 git 추적과 다음 clean-revision gate에서 제외한다. partial-mutation/F10 회귀를 포함한 targeted live-runner 테스트 16개가 통과했다.
+- **수정 파일**: `.gitignore:1`, `scripts/fault_inject/injector.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 복구 false-GREEN 수정됨 — F7 t5 5m 처치의 readiness 교락은 미해결이며 자동 재시도 금지

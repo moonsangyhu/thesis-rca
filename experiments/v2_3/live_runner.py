@@ -421,10 +421,23 @@ class PilotIncidentRunner:
         primary_error: BaseException | None = None
         pending: tuple[list[dict], list[dict], list[dict]] | None = None
         try:
+            prepare_recovery = getattr(self.injector, "prepare_recovery_context", None)
+            if not callable(prepare_recovery):
+                raise PilotError("injector lacks pre-mutation recovery receipt support")
+            prepared_recovery = prepare_recovery(fault_id, trial)
+            if not isinstance(prepared_recovery, dict) or not prepared_recovery:
+                raise PilotError("pre-mutation recovery receipt is empty")
+            injection_result = dict(prepared_recovery)
+            if hasattr(self.store, "append_event"):
+                self.store.append_event(
+                    "recovery_receipt_sealed", recovery_context=injection_result
+                )
             injection_attempted = True
             if hasattr(self.store, "append_event"):
                 self.store.append_event("injection_started", fault_id=fault_id, trial=trial)
-            injection_result = self.injector.inject(fault_id, trial)
+            injection_result = self.injector.inject(
+                fault_id, trial, recovery_context=prepared_recovery
+            )
             wait_seconds = int(injection_result.get("wait_seconds", 0))
             if not 0 <= wait_seconds <= 600:
                 raise PilotError("invalid injection wait interval")
