@@ -188,3 +188,12 @@
 - **수정 내용**: 해당 event는 공식 exact schema와 pinned Terra model, root/session event, ephemeral=true일 때만 허용한다. 실제 tool request/execution, MCP/remote/custom event는 계속 거부한다. 실패 campaign은 included AIC 1.9994, result/validated ledger 0, recovery GREEN으로 보존한다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `tests/test_copilot_cli.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 관련 60개·전체 161개 테스트와 독립 검토 묶음 70개, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 최종 독립 재리뷰 승인
+
+### 22. Copilot skill metadata 격리 — 2026-08-10
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: tools metadata 호환 후 다음 파일럿 첫 호출이 `session.skills_loaded`에서 fail-closed했다.
+- **원인**: CLI는 custom instructions 비활성화와 별개로 resolved skill metadata event를 emit하며 adapter가 이를 아직 분류하지 않았다.
+- **수정 내용**: mode-0700 임시 cwd·격리 `COPILOT_HOME`·빈 추가 skill dir를 만들고, 모델 호출 전 공식 `skill list --json`으로 builtin-only 집합을 확인한다. 그 전부를 공식 `disabledSkills` config(mode 0600)에 기록한 뒤 재조회해 동일 집합이 모두 disabled인지 검증한다. project/personal/plugin/custom/신규 skill 또는 inventory drift는 AIC 사용 전에 차단한다. skills event는 공식 UUID/timestamp/root/ephemeral envelope와 exact preflight 집합의 `enabled=false` metadata만 허용하며 실제 invocation은 거부한다. 실패 call은 Terra, exit0, included AIC 2.02915이고 누적 무효 파일럿 사용량은 4.02855다. 결과/validated ledger 0, recovery GREEN이다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `tests/test_copilot_cli.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 기존 빈 directory 방식의 독립 리뷰 반려를 반영해 공식 `disabledSkills` 이중 preflight로 교체하고, exact `session.skills_loaded` 1건을 inference binding 증거로 필수화함. targeted 16개·전체 165개 테스트, 실제 비과금 CLI preflight, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 최종 독립 재리뷰 승인
