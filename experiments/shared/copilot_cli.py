@@ -19,6 +19,7 @@ from typing import Callable
 
 
 DEFAULT_COPILOT_MODEL = "gpt-5.6-terra"
+MIN_COPILOT_SESSION_AIC = 30
 
 
 class CopilotCLIError(RuntimeError):
@@ -53,13 +54,21 @@ class CopilotCLIBackend:
         model: str = DEFAULT_COPILOT_MODEL,
         executable: str = "copilot",
         timeout_seconds: int = 180,
-        max_ai_credits: float = 10.0,
+        max_ai_credits: int = MIN_COPILOT_SESSION_AIC,
         zero_overage_confirmed: bool | None = None,
         charge_observer: Callable[[dict], None] | None = None,
     ) -> None:
         resolved = shutil.which(executable)
         if not resolved:
             raise RuntimeError(f"Copilot CLI executable not found: {executable}")
+        if (
+            isinstance(max_ai_credits, bool)
+            or not isinstance(max_ai_credits, int)
+            or max_ai_credits < MIN_COPILOT_SESSION_AIC
+        ):
+            raise ValueError(
+                "Copilot CLI session AIC cap must be an integer at least 30"
+            )
         self.executable = resolved
         self.model = model
         self.timeout_seconds = timeout_seconds

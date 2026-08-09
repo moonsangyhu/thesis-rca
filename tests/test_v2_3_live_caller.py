@@ -15,6 +15,7 @@ from tests.v2_3_helpers import LIVE_ENV, verified_authorization
 
 class FakeBackend:
     model = "gpt-5.6-terra"
+    max_ai_credits = 0.1
 
     def __init__(self):
         self.calls = []
@@ -122,6 +123,27 @@ class LiveCallerTests(unittest.TestCase):
             caller(invocation)
         self.assertEqual(len(backend.calls), 1)
 
+    def test_session_ceiling_is_reserved_before_subprocess(self):
+        backend = FakeBackend()
+        backend.max_ai_credits = 30
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "pilot-campaign", "copilot-1.0.78",
+            max_campaign_aic=360,
+        )
+        caller.cumulative_aic = 331
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        invocation = Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        )
+
+        with self.assertRaisesRegex(LiveCallerError, "cap reached before call"):
+            caller(invocation)
+
+        self.assertEqual(backend.calls, [])
+
     def test_charged_malformed_response_updates_usage_before_parse_failure(self):
         backend = MalformedBackend()
         caller = AuthorizedTerraCaller(
@@ -141,6 +163,7 @@ class LiveCallerTests(unittest.TestCase):
 
     def test_charged_cap_exceed_updates_usage_before_failure(self):
         backend = FakeBackend()
+        backend.max_ai_credits = 0.05
         caller = AuthorizedTerraCaller(
             self.authorization(), backend, "pilot-campaign", "copilot-1.0.78",
             max_campaign_aic=0.05,

@@ -64,7 +64,7 @@ class CopilotCLIBackendTest(unittest.TestCase):
         self.assertIn("--available-tools=none", command)
         self.assertIn("--disable-builtin-mcps", command)
         self.assertNotIn("--allow-all-tools", command)
-        self.assertEqual(command[command.index("--max-ai-credits") + 1], "10.0")
+        self.assertEqual(command[command.index("--max-ai-credits") + 1], "30")
         self.assertEqual(command[command.index("--model") + 1], "gpt-5.6-terra")
         self.assertIn("<SYSTEM_INSTRUCTIONS>", command[command.index("-p") + 1])
         self.assertTrue(response.started_at)
@@ -74,6 +74,14 @@ class CopilotCLIBackendTest(unittest.TestCase):
         self.assertEqual(len(receipts), 1)
         self.assertTrue(receipts[0]["usage_metadata_complete"])
         self.assertEqual(receipts[0]["ai_credits"], 0.9669)
+
+    @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
+    def test_cli_session_aic_cap_respects_current_minimum(self, _which):
+        with self.assertRaisesRegex(ValueError, "integer at least 30"):
+            CopilotCLIBackend(max_ai_credits=10)
+        with self.assertRaisesRegex(ValueError, "integer at least 30"):
+            CopilotCLIBackend(max_ai_credits=30.0)
+        self.assertEqual(CopilotCLIBackend(max_ai_credits=30).max_ai_credits, 30)
 
     @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
     def test_model_drift_fails_closed(self, _which):

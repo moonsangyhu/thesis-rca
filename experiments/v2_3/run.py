@@ -17,7 +17,9 @@ from pathlib import Path
 
 from .mock import run_dry_run, run_mock_campaign
 from .authorization import LiveAuthorization
-from .config import PILOT_FAULT_ID, PILOT_TRIAL
+from .config import (
+    COPILOT_SESSION_MAX_AIC, PILOT_FAULT_ID, PILOT_MANIFEST_SCHEMA, PILOT_TRIAL,
+)
 
 
 class RealExecutionDisabled(RuntimeError):
@@ -26,6 +28,14 @@ class RealExecutionDisabled(RuntimeError):
 
 def _pilot_identity() -> dict:
     return {"fault_id": PILOT_FAULT_ID, "trial": PILOT_TRIAL}
+
+
+def _pilot_budget_manifest_fields(max_campaign_aic: float) -> dict:
+    return {
+        "schema_version": PILOT_MANIFEST_SCHEMA,
+        "max_campaign_aic": max_campaign_aic,
+        "copilot_session_max_aic": COPILOT_SESSION_MAX_AIC,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -160,7 +170,7 @@ def _run_authorized_pilot(
     charged_journal = ChargedCallJournal(output_dir / "charged_call_ledger.jsonl")
     backend = CopilotCLIBackend(
         model="gpt-5.6-terra",
-        max_ai_credits=10.0,
+        max_ai_credits=COPILOT_SESSION_MAX_AIC,
         zero_overage_confirmed=True,
         charge_observer=charged_journal.append,
     )
@@ -169,7 +179,7 @@ def _run_authorized_pilot(
         (DEBUGGING_DIR, RUNBOOKS_DIR, KNOWN_ISSUES_DIR, resolved_chroma)
     )
     manifest = {
-        "schema_version": "v2.3-pilot-campaign-1",
+        **_pilot_budget_manifest_fields(max_campaign_aic),
         "campaign_id": campaign_id,
         "git_commit": git_revision,
         "git_worktree_clean_at_start": True,
@@ -186,8 +196,6 @@ def _run_authorized_pilot(
         **_pilot_identity(),
         "expected_rows": 3,
         "expected_calls": 36,
-        "max_campaign_aic": max_campaign_aic,
-        "per_call_max_aic": 10.0,
         "corpus_version": corpus_version,
         "cli_version": cli_version,
     }

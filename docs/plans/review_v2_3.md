@@ -118,6 +118,7 @@ F1 × trial 1은 기능 검증에는 적합하지만 비용 stress test로는 �
 - 파일럿 전후 UI의 실제 AIC balance와 call-ledger 합이 일치하지 않으면 본실험을 중단한다.
 - 10% account reserve 외에 사용자가 별도로 보존할 회사 AIC가 있으면 그 금액을 먼저 차감한다.
 - 잔여 AIC와 무관하게 조직 관리자의 `AI credits paid usage = Disabled` 및 budget hard-stop 증빙이 없으면 Copilot subprocess를 실행하지 않는다. 로컬 환경 flag와 per-session AIC cap은 보조 gate일 뿐 관리자 정책을 대체하지 않는다.
+- Copilot CLI 1.0.78의 세션 상한 최소값 30 AIC를 사용하되, 다음 호출 전에 해당 30 AIC를 campaign 잔여 상한에서 예약해 누적 최악값이 360 AIC를 넘으면 subprocess를 시작하지 않는다.
 
 ## 8. 대안 가설
 

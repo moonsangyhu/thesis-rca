@@ -74,6 +74,15 @@ class AuthorizedTerraCaller:
             raise LiveCallerError("Copilot backend billing guard is not enabled")
         if getattr(self.backend, "charge_observer", None) is None:
             raise LiveCallerError("durable charged-call observer is required")
+        session_cap = getattr(self.backend, "max_ai_credits", None)
+        if (
+            isinstance(session_cap, bool)
+            or not isinstance(session_cap, (int, float))
+            or not math.isfinite(session_cap)
+            or session_cap <= 0
+            or session_cap > self.max_campaign_aic
+        ):
+            raise LiveCallerError("invalid Copilot session AIC ceiling")
 
     def __call__(self, invocation: Invocation) -> InvocationResult:
         self.authorization.revalidate()
@@ -81,7 +90,8 @@ class AuthorizedTerraCaller:
             raise LiveCallerError("campaign aborted after a failed Copilot call")
         if self.usage_uncertain:
             raise LiveCallerError("campaign AIC is uncertain after a failed call")
-        if self.cumulative_aic >= self.max_campaign_aic:
+        session_cap = float(self.backend.max_ai_credits)
+        if self.cumulative_aic + session_cap > self.max_campaign_aic:
             raise LiveCallerError("campaign AIC cap reached before call")
         if invocation.role == "generator":
             system_prompt = GENERATOR_SYSTEM_PROMPT

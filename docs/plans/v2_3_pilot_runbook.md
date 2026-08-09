@@ -8,8 +8,9 @@
 - conditions: `runtime`, `length_placebo`, `blind_procedural_rag`
 - model: generator/judge 모두 `gpt-5.6-terra`
 - calls: generator 9 + judge 27 = 총 36
-- call별 최대 AIC: 10.0
+- Copilot 단일 CLI 세션 상한: 30 AIC (CLI 1.0.78의 허용 최소값이며 예상 사용량이 아님)
 - campaign 최대 AIC: 360.0
+- 호출 전 `누적 AIC + 30 <= 360`일 때만 다음 subprocess를 허용한다.
 - output: `artifacts/v2_3_pilot/{campaign_id}/`
 - 자동 재시도: 없음
 - injection을 시도한 뒤에는 성공·예외·중단과 관계없이 recovery를 정확히 한 번 시도한다.

@@ -11,7 +11,8 @@ from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.mock import DeterministicMockCaller, clean_fixture
 from experiments.v2_3.mock import run_dry_run, run_mock_campaign
 from experiments.v2_3.run import (
-    RealExecutionDisabled, _pilot_identity, _verified_git_revision, main,
+    RealExecutionDisabled, _pilot_budget_manifest_fields, _pilot_identity,
+    _verified_git_revision, main,
 )
 from experiments.v2_3.authorization import AuthorizationError
 from experiments.v2_3.storage import DuplicateResultError, OutputSafetyError, SafeOutputStore
@@ -155,6 +156,13 @@ class StorageAndRunTests(unittest.TestCase):
 
     def test_live_manifest_identity_is_frozen_to_approved_f7_trial_1(self):
         self.assertEqual(_pilot_identity(), {"fault_id": "F7", "trial": 1})
+
+    def test_live_manifest_records_cli_and_campaign_aic_boundaries(self):
+        self.assertEqual(_pilot_budget_manifest_fields(360), {
+            "schema_version": "v2.3-pilot-campaign-2",
+            "max_campaign_aic": 360,
+            "copilot_session_max_aic": 30,
+        })
 
     def test_retriever_accepts_explicit_live_chroma_directory(self):
         from src.rag.retriever import KnowledgeRetriever
