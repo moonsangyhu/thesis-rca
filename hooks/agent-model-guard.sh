@@ -10,7 +10,7 @@ SUBAGENT=$(printf '%s' "$INPUT" | jq -r '.tool_input.subagent_type // empty')
 MODEL=$(printf '%s' "$INPUT" | jq -r '.tool_input.model // empty')
 
 case "$SUBAGENT" in
-  experiment-planner|paper-writer) REQUIRED=opus ;;
+  research-planner|experiment-planner|paper-writer|results-critic) REQUIRED=opus ;;
   experiment) REQUIRED=sonnet ;;
   *) exit 0 ;;
 esac

@@ -73,3 +73,12 @@ Signal collection complete
 metrics: 3/14 fields populated
 kubectl: 5/5 fields populated
 ```
+
+### [1]. Claude Code 운영 환경의 Codex-native 이식 — 2026-08-09
+
+- **수정 에이전트**: Codex
+- **증상/문제**: 저장소의 연구·실험 workflow가 `.claude/settings.json`, Claude slash skills, Claude subagents에만 연결되어 Codex에서는 동일한 자동 발견·hook 강제·역할 분리가 보장되지 않았다.
+- **원인**: Codex는 repo skill을 `.agents/skills`, custom agent를 `.codex/agents/*.toml`, lifecycle hook을 `.codex/hooks.json`에서 읽으며, `apply_patch` hook payload도 Claude Write/Edit payload와 다르다.
+- **수정 내용**: Codex 운영 계약, Claude skill 호환 wrapper 10개, custom agent 5개, PreToolUse payload adapter, project config를 추가했다. 공식 `superpowers@openai-curated` plugin을 설치하고 skill discovery·guard allow/deny·새 Codex process startup을 검증했다.
+- **수정 파일**: `AGENTS.md`, `hooks/agent-model-guard.sh`, `.codex/config.toml`, `.codex/hooks.json`, `.codex/hooks/pretool_guard.py`, `.codex/agents/*.toml`, `.agents/skills/{changelog,commit-push,deep-analysis,experiment-issues,experiment-status,lab-restore,lab-tunnel,paper-reader,paper-survey,pr-merge}/{SKILL.md,agents/openai.yaml}`, `results/experiment_changes_v8.md`
+- **상태**: 수정됨 — project hook 정의를 Codex TUI에서 검토·신뢰했고, 우회 옵션 없는 새 ephemeral session에서 실제 shell 호출이 통과함을 확인했다.
