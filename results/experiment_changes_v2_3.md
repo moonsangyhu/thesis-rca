@@ -179,3 +179,12 @@
 - **수정 내용**: root와 app의 exact state를 단일 hierarchy receipt에 봉인하고 root→app CAS suspend·각 10회 안정화 후에만 F7을 주입한다. recovery/emergency는 F7 뒤 app→root exact restore를 수행하며 일부 restore 실패에도 나머지 복구를 시도한다. 실패 campaign은 result/raw/attempt/charged/pilot ledger 0건이고 cluster recovery GREEN이다.
 - **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/flux_restore.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — root/app 공동 안정화·F7 직전 동시 검증·nested receipt canonical binding을 포함한 targeted 52개·전체 160개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 최종 독립 재리뷰 승인
+
+### 21. Copilot resolved-tools metadata schema 호환 — 2026-08-10
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 계층 격리 파일럿의 첫 Terra subprocess가 exit 0과 완전한 AIC receipt를 냈지만 `session.tools_updated` 미등록 event로 parse 실패했다.
+- **원인**: CLI 1.0.78 공식 로컬 SDK가 emitting하는 transient resolved-tools metadata를 adapter가 tool execution과 구분하지 못했다.
+- **수정 내용**: 해당 event는 공식 exact schema와 pinned Terra model, root/session event, ephemeral=true일 때만 허용한다. 실제 tool request/execution, MCP/remote/custom event는 계속 거부한다. 실패 campaign은 included AIC 1.9994, result/validated ledger 0, recovery GREEN으로 보존한다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `tests/test_copilot_cli.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 관련 60개·전체 161개 테스트와 독립 검토 묶음 70개, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 최종 독립 재리뷰 승인
