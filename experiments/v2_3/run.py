@@ -17,10 +17,15 @@ from pathlib import Path
 
 from .mock import run_dry_run, run_mock_campaign
 from .authorization import LiveAuthorization
+from .config import PILOT_FAULT_ID, PILOT_TRIAL
 
 
 class RealExecutionDisabled(RuntimeError):
     pass
+
+
+def _pilot_identity() -> dict:
+    return {"fault_id": PILOT_FAULT_ID, "trial": PILOT_TRIAL}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -28,7 +33,10 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--mock", action="store_true", help="run all 180 mock rows")
     mode.add_argument("--dry-run", action="store_true", help="alias for offline mock validation")
-    mode.add_argument("--pilot", action="store_true", help="authorized F7 trial 5 live pilot")
+    mode.add_argument(
+        "--pilot", action="store_true",
+        help=f"authorized {PILOT_FAULT_ID} trial {PILOT_TRIAL} live pilot",
+    )
     parser.add_argument("--output-dir", type=Path, help="explicit non-results output directory")
     parser.add_argument(
         "--approve-real", action="store_true",
@@ -175,8 +183,7 @@ def _run_authorized_pilot(
         "aic_balance_observed_at": authorization.evidence.balance_observed_at,
         "approval_id": authorization.approval_id,
         "model": "gpt-5.6-terra",
-        "fault_id": "F7",
-        "trial": 5,
+        **_pilot_identity(),
         "expected_rows": 3,
         "expected_calls": 36,
         "max_campaign_aic": max_campaign_aic,
@@ -192,9 +199,11 @@ def _run_authorized_pilot(
     store.append_event("preflight_green")
 
     ground_truth = load_ground_truth(project_root / "results" / "ground_truth.csv")
-    gt_row = ground_truth.get(("F7", 5))
+    gt_row = ground_truth.get((PILOT_FAULT_ID, PILOT_TRIAL))
     if gt_row is None:
-        raise RuntimeError("F7 trial 5 ground truth is missing")
+        raise RuntimeError(
+            f"{PILOT_FAULT_ID} trial {PILOT_TRIAL} ground truth is missing"
+        )
     journal = AttemptJournal(output_dir / "attempt_call_ledger.jsonl")
     caller = AuthorizedTerraCaller(
         authorization=authorization,
@@ -224,7 +233,7 @@ def _run_authorized_pilot(
         ),
         store=store,
     )
-    summary = runner.run("F7", 5, gt_row)
+    summary = runner.run(PILOT_FAULT_ID, PILOT_TRIAL, gt_row)
     summary.update({
         "campaign_id": campaign_id,
         "aic_used": caller.cumulative_aic,

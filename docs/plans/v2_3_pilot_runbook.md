@@ -1,10 +1,10 @@
 # V2.3 Terra 파일럿 실행 Runbook
 
-> 상태: 코드 경로만 구현됨. 관리자 증빙과 사용자의 별도 파일럿 승인이 없으므로 현재 실행 금지.
+> 상태: 관리자 zero-overage 증빙 및 사용자 실행 승인을 확인함. 2026-08-09 F7 trial 5의 5m rollout 교락으로 무효화한 뒤, 사용자 승인에 따라 F7 trial 1로 변경함.
 
 ## 1. 파일럿 고정 범위
 
-- incident: `F7` trial `5` 한 건
+- incident: `F7` trial `1` 한 건 (`frontend`, CPU limit/request `10m`)
 - conditions: `runtime`, `length_placebo`, `blind_procedural_rag`
 - model: generator/judge 모두 `gpt-5.6-terra`
 - calls: generator 9 + judge 27 = 총 36
@@ -13,6 +13,7 @@
 - output: `artifacts/v2_3_pilot/{campaign_id}/`
 - 자동 재시도: 없음
 - injection을 시도한 뒤에는 성공·예외·중단과 관계없이 recovery를 정확히 한 번 시도한다.
+- V2.2 historical prompt proxy는 F7 t1 최대 약 12.9k chars, F7 t5 최대 약 16.6k chars다. t1 pilot 비용을 본실험에 투영할 때 기존 15% margin 외에 context ratio `16.6/12.9 ≈ 1.29`를 적용한다.
 
 ## 2. Zero-overage 증빙
 
@@ -55,11 +56,11 @@ export THESIS_V23_PILOT_USER_APPROVED=1
 
 ## 4. 고정 명령
 
-아래 명령은 `$lab-tunnel`이 GREEN이고 사용자가 36-call 파일럿을 별도 승인한 뒤에만 실행한다. 현재는 실행하지 않는다.
+아래 명령은 `$lab-tunnel`이 GREEN이고 사용자가 승인한 새 campaign에서만 실행한다.
 
 ```bash
 KUBECONFIG="/Users/yumunsang/.kube/config-k8s-lab" \
-python3.11 -m experiments.v2_3.run --pilot \
+/Users/yumunsang/thesis-rca/.venv/bin/python -m experiments.v2_3.run --pilot \
   --billing-evidence /absolute/path/v2_3-billing-evidence.json \
   --approval-id pilot-YYYYMMDD-approved \
   --campaign-id v2-3-pilot-YYYYMMDD-HHMM \

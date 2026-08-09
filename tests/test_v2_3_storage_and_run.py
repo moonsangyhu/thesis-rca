@@ -10,7 +10,9 @@ from experiments.v2_3.conditions import ConditionAssembler
 from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.mock import DeterministicMockCaller, clean_fixture
 from experiments.v2_3.mock import run_dry_run, run_mock_campaign
-from experiments.v2_3.run import RealExecutionDisabled, _verified_git_revision, main
+from experiments.v2_3.run import (
+    RealExecutionDisabled, _pilot_identity, _verified_git_revision, main,
+)
 from experiments.v2_3.authorization import AuthorizationError
 from experiments.v2_3.storage import DuplicateResultError, OutputSafetyError, SafeOutputStore
 
@@ -150,6 +152,9 @@ class StorageAndRunTests(unittest.TestCase):
         with patch("experiments.v2_3.run.subprocess.run", side_effect=dirty):
             with self.assertRaisesRegex(RuntimeError, "clean"):
                 _verified_git_revision(Path("/tmp"))
+
+    def test_live_manifest_identity_is_frozen_to_approved_f7_trial_1(self):
+        self.assertEqual(_pilot_identity(), {"fault_id": "F7", "trial": 1})
 
     def test_retriever_accepts_explicit_live_chroma_directory(self):
         from src.rag.retriever import KnowledgeRetriever
