@@ -120,14 +120,15 @@
 
 - **카테고리**: code
 - **심각도**: critical (P1)
-- **영향**: campaign `v2-3-pilot-f7t1-20260810-0702-hierarchy` 전체. F7 처치·수집·retrieval을 통과했지만 첫 generator call parse에서 중단되어 결과 0행이다.
-- **발생 빈도**: 1회
+- **영향**: campaigns `v2-3-pilot-f7t1-20260810-0702-hierarchy`, `v2-3-pilot-f7t1-20260810-0711-metadata` 전체. F7 처치·수집·retrieval을 통과했지만 각각 첫 generator call session metadata parse에서 중단되어 결과 0행이다.
+- **발생 빈도**: 2회
 - **관찰한 사실**: root/app hierarchy suspend 뒤 frontend/server 10m/10m, generation=observedGeneration, updated/ready/available=1이 120초 유지되어 injection validator를 통과했다. 첫 Copilot subprocess는 exit 0, actual model `gpt-5.6-terra`, session ID, output 179 tokens, included AIC 1.9994를 durable receipt에 남겼다. strict parser가 `session.tools_updated`를 unrecognized로 거부해 정상/attempt/pilot ledger와 result/raw는 0건이다. 이후 F7 200m/100m와 app→root exact restore, `recovery_green`을 확인했다.
-- **근본 원인**: CLI 1.0.78의 로컬 공식 SDK schema는 `session.tools_updated`를 모델별 resolved tool set이 갱신됐음을 알리는 ephemeral session metadata로 정의하지만 adapter allowlist는 assistant/result/usage 세 이벤트만 허용했다. 이는 `tool.*` 실행 event나 assistant `toolRequests`와 다른 이벤트다.
-- **현재 영향**: 해당 campaign은 무효다. included AIC 1.9994가 사용됐으며 actual balance의 UI 사후 확인은 아직 하지 않았다. 관리자 paid usage disabled와 budget hard stop 때문에 별도 과금 경로는 차단돼 있다. cluster는 GREEN이다.
-- **수정 방안**: `session.tools_updated`는 로컬 SDK의 exact schema(UUIDv4, timezone timestamp, parentId, ephemeral=true, root event, data model=Terra)일 때만 metadata로 허용한다. agentId·추가 field·model drift·malformed payload는 거부하고, `tool.*`, MCP/remote/custom event와 assistant tool request는 계속 fail-closed한다. 적대 테스트·전체 검증·독립 리뷰 후 새 campaign만 실행한다.
+- **근본 원인**: CLI 1.0.78의 로컬 공식 SDK schema는 `session.tools_updated`와 `session.skills_loaded`를 각각 resolved tool/skill metadata를 알리는 ephemeral session event로 정의하지만 adapter allowlist는 assistant/result/usage 세 이벤트만 허용했다. 또한 빈 `COPILOT_SKILLS_DIRS`는 discovery 경로를 대체하지 않고 추가할 뿐이어서 builtin skill까지 사전 격리하지 못했다. 이 metadata는 실제 `tool.*`/skill invocation과 다르지만, skill이 enabled인 상태도 실험 입력 오염 가능성이 있어 허용할 수 없다.
+- **현재 영향**: 두 campaign은 무효다. included AIC 1.9994 + 2.02915 = 4.02855가 사용됐으며 actual balance의 UI 사후 확인은 아직 하지 않았다. 관리자 paid usage disabled와 budget hard stop 때문에 별도 과금 경로는 차단돼 있다. cluster는 GREEN이다.
+- **수정 방안**: `session.tools_updated`는 로컬 SDK의 exact schema(UUIDv4, timezone timestamp, parentId, ephemeral=true, root event, data model=Terra)일 때만 metadata로 허용한다. skill은 매 inference 전 mode-0700 임시 cwd와 격리 `COPILOT_HOME`에서 공식 `skill list --json`으로 두 번 검증한다. 첫 목록은 builtin-only여야 하며, 이를 공식 `disabledSkills` 설정(mode 0600)에 전부 기록한 뒤 두 번째 목록에서 같은 집합이 모두 disabled인지 확인한다. discovery drift·project/personal/plugin/custom skill은 모델 subprocess 전에 중단한다. `session.skills_loaded`도 exact envelope, builtin-only, exact preflight 집합, `enabled=false`일 때만 허용한다. agentId·추가 field·model drift·malformed payload, skill invocation, `tool.*`, MCP/remote/custom event와 assistant tool request는 계속 fail-closed한다. 적대 테스트·전체 검증·독립 리뷰 후 새 campaign만 실행한다.
 - **관련 로그**:
   ```text
   RuntimeError: unrecognized Copilot event type: session.tools_updated
   LiveCallerError: Copilot CLI call failed after durable charge receipt
+  RuntimeError: unrecognized Copilot event type: session.skills_loaded
   ```
