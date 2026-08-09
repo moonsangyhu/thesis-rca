@@ -80,3 +80,12 @@
 - **수정 내용**: 사람이 paid usage disabled, budget hard stop, included AIC balance를 직접 검토했다는 명시적 flag를 요구하는 intake CLI를 추가했다. 세 artifact와 manifest가 repo 밖인지, 파일·hash가 고유한지, balance가 양의 유한값인지 검증하고, manifest를 exclusive create·mode 0600·fsync한 뒤 기존 `BillingEvidence` verifier로 즉시 재검증한다. GitHub·Copilot·Kubernetes·네트워크 호출은 없다.
 - **수정 파일**: `experiments/v2_3/evidence_intake.py:1`, `tests/test_v2_3_evidence_intake.py:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — intake 2개 단위 테스트 및 authorization 5개 회귀 테스트 통과; 실제 관리자 증빙 파일 수신 대기
+
+### 10. Live campaign의 clean git revision gate 추가 — 2026-08-09
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 계획서는 단일 git commit과 clean code snapshot을 요구하지만 pilot manifest가 실제 commit SHA를 기록하지 않아 실행 코드 버전을 campaign artifact만으로 재구성할 수 없었다.
+- **원인**: corpus·CLI·billing provenance는 manifest에 포함했지만 source revision과 dirty 상태 검증이 빠졌다.
+- **수정 내용**: 외부 dependency import와 cluster/Copilot 접근 전에 40자리 HEAD SHA와 전체 untracked를 포함한 clean worktree를 검사한다. dirty/unavailable revision이면 live 실행을 차단하고, 통과한 SHA와 `git_worktree_clean_at_start=true`를 campaign manifest에 기록한다.
+- **수정 파일**: `experiments/v2_3/run.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — clean/dirty revision 단위 테스트 추가; 파일럿 실행 전 재커밋·전체 검증 필요

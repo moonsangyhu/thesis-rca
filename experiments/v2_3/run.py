@@ -92,6 +92,23 @@ def _probe_cli_version(executable: str) -> str:
     return version[0][:200]
 
 
+def _verified_git_revision(project_root: Path) -> str:
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=project_root,
+        text=True, capture_output=True, timeout=15, check=False,
+    )
+    status = subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=all"],
+        cwd=project_root, text=True, capture_output=True, timeout=15, check=False,
+    )
+    revision = head.stdout.strip()
+    if head.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise RuntimeError("experiment git revision is unavailable")
+    if status.returncode != 0 or status.stdout.strip():
+        raise RuntimeError("experiment worktree must be clean before live execution")
+    return revision
+
+
 def _run_authorized_pilot(
     authorization: LiveAuthorization,
     *,
@@ -102,6 +119,7 @@ def _run_authorized_pilot(
     """Lazy-import every external dependency only after authorization."""
     authorization.revalidate()
     project_root = Path(__file__).resolve().parents[2]
+    git_revision = _verified_git_revision(project_root)
     output_dir = project_root / "artifacts" / "v2_3_pilot" / campaign_id
 
     from experiments.shared.copilot_cli import CopilotCLIBackend
@@ -147,6 +165,8 @@ def _run_authorized_pilot(
     manifest = {
         "schema_version": "v2.3-pilot-campaign-1",
         "campaign_id": campaign_id,
+        "git_commit": git_revision,
+        "git_worktree_clean_at_start": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "account_scope": authorization.evidence.account_scope,
         "billing_confirmed_at": authorization.evidence.confirmed_at,

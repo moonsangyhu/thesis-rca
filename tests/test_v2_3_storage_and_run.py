@@ -10,7 +10,7 @@ from experiments.v2_3.conditions import ConditionAssembler
 from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.mock import DeterministicMockCaller, clean_fixture
 from experiments.v2_3.mock import run_dry_run, run_mock_campaign
-from experiments.v2_3.run import RealExecutionDisabled, main
+from experiments.v2_3.run import RealExecutionDisabled, _verified_git_revision, main
 from experiments.v2_3.authorization import AuthorizationError
 from experiments.v2_3.storage import DuplicateResultError, OutputSafetyError, SafeOutputStore
 
@@ -123,6 +123,33 @@ class StorageAndRunTests(unittest.TestCase):
         self.assertEqual(summary["calls"], 2160)
         self.assertEqual(summary["filesystem_writes"], 0)
         self.assertEqual(summary["external_calls"], 0)
+
+    def test_live_revision_requires_clean_full_git_sha(self):
+        clean = [
+            type("Result", (), {
+                "returncode": 0,
+                "stdout": "a" * 40 + "\n",
+                "stderr": "",
+            })(),
+            type("Result", (), {"returncode": 0, "stdout": "", "stderr": ""})(),
+        ]
+        with patch("experiments.v2_3.run.subprocess.run", side_effect=clean):
+            self.assertEqual(_verified_git_revision(Path("/tmp")), "a" * 40)
+        dirty = [
+            type("Result", (), {
+                "returncode": 0,
+                "stdout": "b" * 40 + "\n",
+                "stderr": "",
+            })(),
+            type("Result", (), {
+                "returncode": 0,
+                "stdout": " M experiments/v2_3/run.py\n",
+                "stderr": "",
+            })(),
+        ]
+        with patch("experiments.v2_3.run.subprocess.run", side_effect=dirty):
+            with self.assertRaisesRegex(RuntimeError, "clean"):
+                _verified_git_revision(Path("/tmp"))
 
 
 if __name__ == "__main__":
