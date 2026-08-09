@@ -162,6 +162,7 @@ class StorageAndRunTests(unittest.TestCase):
             "schema_version": "v2.3-pilot-campaign-2",
             "max_campaign_aic": 360,
             "copilot_session_max_aic": 30,
+            "flux_reconciliation_policy": "suspend-flux-system-app-during-incident",
         })
 
     def test_retriever_accepts_explicit_live_chroma_directory(self):

@@ -18,7 +18,8 @@ from pathlib import Path
 from .mock import run_dry_run, run_mock_campaign
 from .authorization import LiveAuthorization
 from .config import (
-    COPILOT_SESSION_MAX_AIC, PILOT_FAULT_ID, PILOT_MANIFEST_SCHEMA, PILOT_TRIAL,
+    COPILOT_SESSION_MAX_AIC, FLUX_RECONCILIATION_POLICY, PILOT_FAULT_ID,
+    PILOT_MANIFEST_SCHEMA, PILOT_TRIAL,
 )
 
 
@@ -35,6 +36,7 @@ def _pilot_budget_manifest_fields(max_campaign_aic: float) -> dict:
         "schema_version": PILOT_MANIFEST_SCHEMA,
         "max_campaign_aic": max_campaign_aic,
         "copilot_session_max_aic": COPILOT_SESSION_MAX_AIC,
+        "flux_reconciliation_policy": FLUX_RECONCILIATION_POLICY,
     }
 
 
@@ -165,6 +167,7 @@ def _run_authorized_pilot(
         AttemptJournal, ChargedCallJournal, F7InjectionValidator,
         PilotIncidentRunner, PilotOutputStore, RuntimeOnlyRetriever, snapshot_tree,
     )
+    from .flux_restore import build_live_flux_guard
 
     store = PilotOutputStore(output_dir)
     charged_journal = ChargedCallJournal(output_dir / "charged_call_ledger.jsonl")
@@ -236,6 +239,7 @@ def _run_authorized_pilot(
             lambda target: kubectl_get_json("deployment", target),
             lambda: kubectl_get_json("pods"),
         ),
+        flux_guard=build_live_flux_guard(),
         retriever=RuntimeOnlyRetriever(
             KnowledgeRetriever(chroma_dir=resolved_chroma), corpus_version=corpus_version
         ),

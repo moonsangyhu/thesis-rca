@@ -272,7 +272,7 @@ recovery gate GREEN
 - `boutique` workload가 사전 정의 replica/Ready 상태
 - injection object·patch·traffic control·network policy·node mutation 잔류 0건
 - Prometheus·Loki와 K8s API health 정상, 수집 window query 성공
-- Flux/ArgoCD가 환경 오염을 만들지 않는 정상 상태; GitOps 정보는 모델 context에 넣지 않음
+- Flux/ArgoCD가 환경 오염을 만들지 않는 정상 상태; GitOps 정보는 모델 context에 넣지 않음. 다만 live patch fault가 10분 reconcile로 소실되는 것을 막기 위해 `flux-system/app`만 incident 동안 일시 suspend하고, 원래 field 존재 여부·값을 durable receipt로 봉인해 recovery 후 정확히 복원한다.
 - recovery manifest path와 대상 revision/hash가 계획값과 일치
 - 이전 trial marker와 low-quality signal 0건
 
@@ -320,6 +320,7 @@ dry-run은 실제 fault나 유료 Copilot 호출 없이 다음을 검증해야 �
 dry-run과 코드 리뷰를 통과한 뒤, 라이브 fault injection에 대한 별도 사용자 승인을 받고 1 incident 유료 파일럿을 수행한다. 최초 선택한 historical 최대-context proxy F7 trial 5(약 16.6k characters)는 실제 5m rollout에서 새 currencyservice pod가 Ready가 되지 않아 CPU-throttle과 rollout failure가 교락됐고 Copilot 호출 전 무효화했다. 2026-08-09 사용자 승인에 따라 pilot-only target을 ground truth상 10m인 F7 trial 1(`frontend`, historical 최대 약 12.9k characters)로 변경한다. 이는 primary dataset의 fault/trial 구성 변경이 아니라 live harness·AIC 검증용 pilot 변경이다. 비용 투영에는 t5/t1 context ratio 약 1.29를 기존 15% margin과 함께 적용한다. F1 기능 smoke는 mock으로만 수행한다. 파일럿은 다음을 동시에 확인한다.
 
 - injection/collection/recovery GREEN
+- Flux app suspend/restore receipt 완전성과 F7 처치 전 구간 유지
 - three-condition runtime hash와 length match
 - leakage scanner 0건
 - Terra JSON schema, k/m aggregation, session uniqueness
@@ -327,6 +328,8 @@ dry-run과 코드 리뷰를 통과한 뒤, 라이브 fault injection에 대한 �
 - 실제 AIC와 latency로 전체 campaign 비용 추정
 
 파일럿 후 prompt/masker/길이/collector를 수정하면 파일럿을 폐기하고 dry-run부터 다시 승인받는다.
+
+Flux 일시 suspend는 세 condition 모두에 공통으로 적용되므로 RAG 독립변수 차이를 만들지는 않지만, active reconciliation이 동작하는 production 환경으로의 외적 타당성을 제한한다. 따라서 결과는 “reconciliation이 정지된 통제 incident”로 명시하며 GitOps 효과에 관한 근거로 사용하지 않는다.
 
 ### 8.5 AIC budget stop rule
 

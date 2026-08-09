@@ -29,6 +29,172 @@ class RecoveryFailure(PilotError):
     pass
 
 
+class FluxAppGuard:
+    """Temporarily suspend the Flux app reconciler with exact-state restore."""
+
+    def __init__(
+        self,
+        resource_loader: Callable[[], dict],
+        suspend_patcher: Callable[[bool | None, str], dict],
+    ) -> None:
+        self.resource_loader = resource_loader
+        self.suspend_patcher = suspend_patcher
+
+    @staticmethod
+    def _identity(resource: dict) -> tuple[str, str, str]:
+        metadata = resource.get("metadata", {}) if isinstance(resource, dict) else {}
+        return (
+            str(metadata.get("namespace") or ""),
+            str(metadata.get("name") or ""),
+            str(metadata.get("uid") or ""),
+        )
+
+    def prepare_recovery_context(self) -> dict:
+        resource = self.resource_loader()
+        namespace, name, uid = self._identity(resource)
+        if (namespace, name) != ("flux-system", "app") or not uid:
+            raise PilotError("Flux app Kustomization identity is invalid")
+        spec = resource.get("spec", {})
+        if not isinstance(spec, dict):
+            raise PilotError("Flux app Kustomization spec is invalid")
+        present = "suspend" in spec
+        original = spec.get("suspend", False)
+        resource_version = str(
+            resource.get("metadata", {}).get("resourceVersion") or ""
+        )
+        if not isinstance(original, bool):
+            raise PilotError("Flux app suspend state is invalid")
+        if original:
+            raise PilotError("Flux app must be active before the pilot")
+        if not resource_version:
+            raise PilotError("Flux app resourceVersion is missing")
+        return {
+            "flux_guard_schema": "v2.3-flux-app-guard-1",
+            "flux_namespace": namespace,
+            "flux_name": name,
+            "flux_uid": uid,
+            "flux_resource_version": resource_version,
+            "flux_original_suspend_present": present,
+            "flux_original_suspend": original,
+        }
+
+    def _validate_receipt(self, context: dict) -> None:
+        required = {
+            "flux_guard_schema", "flux_namespace", "flux_name", "flux_uid",
+            "flux_resource_version", "flux_original_suspend_present",
+            "flux_original_suspend",
+        }
+        if set(context) != required:
+            raise PilotError("Flux recovery receipt schema mismatch")
+        if (
+            context["flux_guard_schema"] != "v2.3-flux-app-guard-1"
+            or (context["flux_namespace"], context["flux_name"])
+            != ("flux-system", "app")
+            or not context["flux_uid"]
+            or not isinstance(context["flux_resource_version"], str)
+            or not context["flux_resource_version"]
+            or not isinstance(context["flux_original_suspend_present"], bool)
+            or context["flux_original_suspend"] is not False
+        ):
+            raise PilotError("Flux recovery receipt is invalid")
+
+    def suspend(self, context: dict) -> dict:
+        self._validate_receipt(context)
+        current = self.resource_loader()
+        if self._identity(current) != (
+            context["flux_namespace"], context["flux_name"], context["flux_uid"]
+        ):
+            raise PilotError("Flux app identity changed before suspension")
+        current_spec = current.get("spec", {})
+        current_rv = str(current.get("metadata", {}).get("resourceVersion") or "")
+        if (
+            current_rv != context["flux_resource_version"]
+            or ("suspend" in current_spec)
+            != context["flux_original_suspend_present"]
+            or current_spec.get("suspend", False)
+            != context["flux_original_suspend"]
+        ):
+            raise PilotError("Flux app changed after recovery receipt was sealed")
+        patched = self.suspend_patcher(True, current_rv)
+        patched_rv = str(patched.get("metadata", {}).get("resourceVersion") or "")
+        if (
+            self._identity(patched) != self._identity(current)
+            or patched.get("spec", {}).get("suspend") is not True
+            or not patched_rv or patched_rv == current_rv
+        ):
+            raise PilotError("Flux app suspension CAS did not succeed")
+        suspended = self.resource_loader()
+        if (
+            self._identity(suspended) != self._identity(current)
+            or suspended.get("spec", {}).get("suspend") is not True
+        ):
+            raise PilotError("Flux app suspension did not persist")
+        return dict(context)
+
+    def restore(self, context: dict) -> dict:
+        self._validate_receipt(context)
+        current = self.resource_loader()
+        if self._identity(current) != (
+            context["flux_namespace"], context["flux_name"], context["flux_uid"]
+        ):
+            raise PilotError("Flux app identity changed before restore")
+        current_spec = current.get("spec", {})
+        current_rv = str(current.get("metadata", {}).get("resourceVersion") or "")
+        if not isinstance(current_spec, dict) or not current_rv:
+            raise PilotError("Flux app current state is invalid during restore")
+        current_present = "suspend" in current_spec
+        current_value = current_spec.get("suspend", False)
+        exact_original = (
+            current_present == context["flux_original_suspend_present"]
+            and current_value == context["flux_original_suspend"]
+        )
+        if exact_original:
+            return {
+                "flux_restored": True, "flux_exact_original": True,
+                "flux_suspend_present": current_present,
+                "flux_restore_action": "already-original",
+            }
+        if current_value is not True:
+            # A concurrent actor changed the object after the receipt. Never
+            # erase that state merely to recreate the older field shape.
+            return {
+                "flux_restored": False, "flux_exact_original": False,
+                "flux_suspend_present": current_present,
+                "flux_restore_action": "external-change-preserved",
+            }
+        restore_value = (
+            context["flux_original_suspend"]
+            if context["flux_original_suspend_present"] else None
+        )
+        patched = self.suspend_patcher(restore_value, current_rv)
+        patched_spec = patched.get("spec", {}) if isinstance(patched, dict) else {}
+        patched_rv = str(patched.get("metadata", {}).get("resourceVersion") or "")
+        if (
+            self._identity(patched) != self._identity(current)
+            or not patched_rv or patched_rv == current_rv
+            or ("suspend" in patched_spec)
+            != context["flux_original_suspend_present"]
+            or patched_spec.get("suspend", False)
+            != context["flux_original_suspend"]
+        ):
+            raise PilotError("Flux app restore CAS did not succeed")
+        restored = self.resource_loader()
+        spec = restored.get("spec", {}) if isinstance(restored, dict) else {}
+        present = "suspend" in spec
+        value = spec.get("suspend", False)
+        if (
+            self._identity(restored) != self._identity(current)
+            or present != context["flux_original_suspend_present"]
+            or value != context["flux_original_suspend"]
+        ):
+            raise PilotError("Flux app suspend state was not exactly restored")
+        return {
+            "flux_restored": True, "flux_exact_original": True,
+            "flux_suspend_present": present,
+            "flux_restore_action": "cas-restored",
+        }
+
+
 class F7InjectionValidator:
     """Bind the injector receipt to the live deployment resource state."""
 
@@ -398,6 +564,7 @@ class PilotIncidentRunner:
     collector: object
     validator: object
     injection_validator: object
+    flux_guard: object
     retriever: RuntimeOnlyRetriever
     store: PilotOutputStore
     renderer: RuntimeEvidenceRenderer = RuntimeEvidenceRenderer()
@@ -419,11 +586,32 @@ class PilotIncidentRunner:
         if getattr(validation, "status", None) not in {"clean", "corrected"}:
             raise PilotError("pre-injection cluster state is not GREEN")
 
+        flux_context: dict = {}
+        flux_attempted = False
         injection_result: dict = {}
         injection_attempted = False
         primary_error: BaseException | None = None
         pending: tuple[list[dict], list[dict], list[dict]] | None = None
         try:
+            prepare_flux = getattr(self.flux_guard, "prepare_recovery_context", None)
+            if not callable(prepare_flux):
+                raise PilotError("Flux guard lacks durable recovery receipt support")
+            prepared_flux = prepare_flux()
+            if not isinstance(prepared_flux, dict) or not prepared_flux:
+                raise PilotError("Flux recovery receipt is empty")
+            flux_context = dict(prepared_flux)
+            if hasattr(self.store, "append_event"):
+                self.store.append_event(
+                    "flux_recovery_receipt_sealed", recovery_context=flux_context
+                )
+            flux_attempted = True
+            suspended_context = self.flux_guard.suspend(dict(prepared_flux))
+            if suspended_context != prepared_flux:
+                raise PilotError("Flux guard altered the sealed recovery receipt")
+            if hasattr(self.store, "append_event"):
+                self.store.append_event(
+                    "flux_suspended", namespace="flux-system", name="app"
+                )
             prepare_recovery = getattr(self.injector, "prepare_recovery_context", None)
             if not callable(prepare_recovery):
                 raise PilotError("injector lacks pre-mutation recovery receipt support")
@@ -505,6 +693,7 @@ class PilotIncidentRunner:
                     # Diagnostic persistence must never bypass mandatory
                     # post-injection recovery. Preserve the primary failure.
                     pass
+        recovery_errors: list[BaseException] = []
         if injection_attempted:
             try:
                 recovery_result = self.recovery.recover(
@@ -512,18 +701,37 @@ class PilotIncidentRunner:
                 )
                 if recovery_result.get("health_check_passed") is not True:
                     raise RecoveryFailure("post-trial recovery is not GREEN")
-                if hasattr(self.store, "append_event"):
-                    self.store.append_event("recovery_green")
             except BaseException as recovery_error:
+                recovery_errors.append(recovery_error)
+        if flux_attempted:
+            try:
+                flux_restore = self.flux_guard.restore(flux_context)
+                if (
+                    flux_restore.get("flux_restored") is not True
+                    or flux_restore.get("flux_exact_original") is not True
+                ):
+                    raise RecoveryFailure("Flux app restore did not PASS")
                 if hasattr(self.store, "append_event"):
+                    self.store.append_event("flux_restored", **flux_restore)
+            except BaseException as flux_error:
+                recovery_errors.append(flux_error)
+        if recovery_errors:
+            if hasattr(self.store, "append_event"):
+                try:
                     self.store.append_event(
-                        "recovery_failed", error_type=type(recovery_error).__name__
+                        "recovery_failed",
+                        error_types=[type(error).__name__ for error in recovery_errors],
                     )
-                detail = (
-                    f"recovery failed after {type(primary_error).__name__}"
-                    if primary_error else "recovery failed"
-                )
-                raise RecoveryFailure(detail) from recovery_error
+                except BaseException:
+                    pass
+            detail = (
+                f"recovery failed after {type(primary_error).__name__}"
+                if primary_error else "recovery failed"
+            )
+            raise RecoveryFailure(detail) from recovery_errors[0]
+        if injection_attempted or flux_attempted:
+            if hasattr(self.store, "append_event"):
+                self.store.append_event("recovery_green")
         if primary_error is not None:
             raise primary_error.with_traceback(primary_error.__traceback__)
         if pending is None:
