@@ -265,34 +265,18 @@ class AdapterSocketRoundTripTests(unittest.TestCase):
         self.assertIn("campaign_id=v2.3-c02", r2)
 
 
-class RegisterTests(unittest.TestCase):
-    """`/thesis` must always be reserved as context-required, even unconfigured."""
+class UnconfiguredHandlerTests(unittest.TestCase):
+    """`/thesis` must always fail closed when the control plane isn't wired.
 
-    def setUp(self):
-        for var in (
-            "THESIS_CONTROLLER_SOCKET",
-            "THESIS_SIGNER_KEY_PATH",
-            "THESIS_ALLOWED_USER_ID",
-            "THESIS_ALLOWED_CHANNEL_ID",
-        ):
-            os.environ.pop(var, None)
+    The Hermes plugin-registration path itself (``ctx.register_hook``) is
+    covered in ``tests/test_thesis_gateway_hook.py`` — this only proves the
+    stub reply used when no adapter could be built from the environment.
+    """
 
-    def test_register_always_registers_context_required(self):
-        from control_plane.adapter import register
+    def test_unconfigured_handler_fails_closed(self):
+        from control_plane.adapter import unconfigured_handler
 
-        captured = {}
-
-        class Ctx:
-            def register_command(self, name, handler, **kwargs):
-                captured["name"] = name
-                captured["handler"] = handler
-                captured["kwargs"] = kwargs
-
-        register(Ctx())
-        self.assertEqual(captured["name"], "thesis")
-        self.assertTrue(captured["kwargs"]["wants_context"])
-        # Unconfigured -> fail-closed stub, never a live signer, never agent.
-        reply = captured["handler"]("approve x y", FakeContext().with_now())
+        reply = unconfigured_handler("approve x y", FakeContext().with_now())
         self.assertIn("거부됨", reply)
         self.assertIn("구성되지 않", reply)
 

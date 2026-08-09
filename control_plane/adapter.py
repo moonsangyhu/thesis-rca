@@ -1,18 +1,20 @@
 """Agent-free `/thesis` Slack adapter.
 
 This is the *only* bridge between an authenticated Slack slash command and
-the campaign :class:`~control_plane.controller.CampaignController`. It runs
-inside the Hermes gateway's structured plugin-command path (never the natural
-language / model / Codex loop), takes the platform-verified request identity,
-signs a :class:`~control_plane.protocol.CommandEnvelope`, and calls the
-Controller over its bounded Unix socket.
+the campaign :class:`~control_plane.controller.CampaignController`. It is
+invoked from :mod:`control_plane.gateway_hook`, a Hermes *project plugin*
+that uses only Hermes's existing, unmodified ``pre_gateway_dispatch`` plugin
+hook (``ctx.register_hook`` — a stock Hermes plugin API, not a custom
+extension). Hermes's own source is never modified: this repository is a
+consumer of the upstream Hermes gateway, connected to Slack.
 
 Design constraints (see docs/plans/hermes_control_plane_adapter_contract.md):
 
 * No agent, terminal tool, or Codex MCP surface may reach the signer or the
   Controller socket. The signer lives entirely inside this adapter instance.
-* The request identity is supplied by the gateway; this adapter never forges
-  one. Missing identity fails closed.
+* The request identity is derived from the gateway-verified inbound
+  ``MessageEvent`` (see :mod:`control_plane.gateway_hook`); this adapter
+  never forges one. Missing identity fails closed.
 * Native slash commands have no thread context, so an empty ``thread_ts`` is
   signed and the Controller dereferences the sealed campaign thread.
 * Responses are length-bounded and key-allowlisted so nothing unexpected is
@@ -193,37 +195,14 @@ def _render_response(response: Any) -> str:
     return rendered
 
 
-def _unconfigured_handler(raw_args: str, context: Any) -> str:
+def unconfigured_handler(raw_args: str, context: Any) -> str:
     """Fail-closed stand-in used when the adapter is not configured.
 
-    Registered so that `/thesis` is always claimed as a context-required
-    command and can never fall through to the agent/skill loop, on any
-    surface, when signing is unavailable.
+    Used so that `/thesis` on Slack always produces a rejection reply and
+    never falls through to the agent/skill loop, even when signing is
+    unavailable. See :mod:`control_plane.gateway_hook` for the plugin entry
+    point that wires this (and the real adapter) into Hermes's
+    ``pre_gateway_dispatch`` hook — the only Hermes plugin extension point
+    this repository uses, unmodified from upstream.
     """
     return "거부됨: thesis 제어면이 구성되지 않았습니다."
-
-
-def register(ctx) -> None:
-    """Hermes plugin entry point.
-
-    Wires the signed `/thesis` command into the gateway's structured
-    plugin-command path with ``wants_context=True`` so it receives the
-    platform-verified request identity and never the agent loop. The signer
-    key path, Controller socket path, and identity allowlist come from plugin
-    config; nothing here reads or generates a live key during import or tests.
-
-    `/thesis` is registered unconditionally as context-required: when the
-    adapter is not configured a fail-closed stub is registered instead, so the
-    command name is always reserved and never reaches the agent loop.
-    """
-    from control_plane.adapter_config import load_adapter_runtime  # local import
-
-    adapter = load_adapter_runtime(ctx)
-    handler = adapter.handle if adapter is not None else _unconfigured_handler
-    ctx.register_command(
-        "thesis",
-        handler,
-        description="Signed control-plane command for thesis experiment campaigns",
-        args_hint="status|approve <campaign> <sha>|stop <campaign>",
-        wants_context=True,
-    )
