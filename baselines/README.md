@@ -28,3 +28,30 @@ python3 -m baselines.evaluate_baseline \
 ```
 
 이 baseline은 train split의 최빈 `fault_name`만 예측한다. balanced multi-class RCA에서 낮은 점수가 정상이며, 향후 방법론이 이 기준선을 넘지 못하면 연구 주장의 최소 요건을 만족하지 못한다.
+
+## `baseline_runtime_keyword`
+
+목적: `baseline_naive`보다 강한 non-LLM comparator다. V2.2 raw artifact의 `C1_A` arm, 즉 runtime-observability context만 읽고 deterministic keyword/rule로 fault type을 예측한다. GitOps, RAG, LLM response sample, ground-truth root-cause text, injection metadata는 사용하지 않는다.
+
+### 입력/출력 계약
+
+- 입력 데이터셋/split: `baseline_naive`와 동일한 `results/ground_truth.csv`, seed `42`, fault별 1 trial holdout
+- runtime context: `results/raw_v2_2/*_C1_A_*.json`의 `context` 필드
+- 출력:
+  - `baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_predictions.csv`
+  - `baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_details.csv`
+  - `baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_metric_table.md`
+  - `baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_failures.md`
+  - `baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_manifest.json`
+
+### 재현 명령
+
+```bash
+python3 -m baselines.runtime_keyword_baseline --config baselines/configs/baseline_runtime_keyword.json
+python3 -m baselines.evaluate_baseline \
+  --predictions baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_predictions.csv \
+  --output baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_metric_table.md
+```
+
+이 baseline은 simple rule parser이므로 cascade symptom과 root cause를 자주 혼동한다. 그래도 `baseline_naive`보다 강한 비교 기준이며, proposed LLM/GitOps/RAG method는 최소한 이 runtime-only rule baseline을 넘어야 연구 주장의 출발점이 생긴다.
+
