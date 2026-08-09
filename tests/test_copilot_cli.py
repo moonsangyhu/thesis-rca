@@ -73,6 +73,20 @@ def disabled_skills_metadata():
     ])
 
 
+def unknown_tool_sentinel_metadata():
+    return json.dumps({
+        "id": str(uuid.uuid4()),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "parentId": None,
+        "ephemeral": True,
+        "type": "session.info",
+        "data": {
+            "infoType": "configuration",
+            "message": "Unknown tool name in the available tools filter: none",
+        },
+    })
+
+
 class CopilotCLIBackendTest(unittest.TestCase):
     @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
     @patch("experiments.shared.copilot_cli.subprocess.run")
@@ -83,6 +97,7 @@ class CopilotCLIBackendTest(unittest.TestCase):
             stdout="\n".join(
                 [
                     disabled_skills_metadata(),
+                    unknown_tool_sentinel_metadata(),
                     event(
                         "assistant.message",
                         {
@@ -124,6 +139,7 @@ class CopilotCLIBackendTest(unittest.TestCase):
         self.assertEqual(run.call_count, 3)
         command = run.call_args.args[0]
         self.assertIn("--available-tools=none", command)
+        self.assertNotIn("--available-tools", command)
         self.assertIn("--disable-builtin-mcps", command)
         self.assertNotIn("--allow-all-tools", command)
         self.assertEqual(command[command.index("--max-ai-credits") + 1], "30")
@@ -468,10 +484,17 @@ class CopilotCLIBackendTest(unittest.TestCase):
                 config = kwargs["env"]["COPILOT_HOME"] + "/config.json"
                 self.assertEqual(os.stat(config).st_mode & 0o777, 0o600)
                 with open(config, encoding="utf-8") as handle:
-                    self.assertEqual(
-                        json.load(handle)["disabledSkills"],
-                        ["customize-cloud-agent", "github-pr-media"],
-                    )
+                    config_data = json.load(handle)
+                self.assertEqual(
+                    config_data,
+                    {
+                        "banner": "never",
+                        "disabledSkills": [
+                            "customize-cloud-agent", "github-pr-media"
+                        ],
+                        "showTipsOnStartup": False,
+                    },
+                )
                 return subprocess.CompletedProcess(
                     args=[], returncode=0,
                     stdout=json.dumps(skill_inventory(False)), stderr="",
@@ -494,6 +517,71 @@ class CopilotCLIBackendTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "zero-overage"):
             backend.call("diagnose", "return JSON", 512)
         run.assert_not_called()
+
+    @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
+    def test_only_exact_disabled_tools_info_metadata_is_allowed(self, _which):
+        backend = CopilotCLIBackend()
+        metadata = {
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "parentId": None,
+            "ephemeral": True,
+            "type": "session.info",
+            "data": {
+                "infoType": "configuration",
+                "message": "Disabled tools: shell, view, edit",
+            },
+        }
+        output = "\n".join([
+            json.dumps(metadata),
+            event("assistant.message", {
+                "content": "{}", "model": "gpt-5.6-terra", "outputTokens": 1,
+            }),
+            event("session.usage_checkpoint", {"totalNanoAiu": 1}),
+            event("result", sessionId="session-disabled-tools-info"),
+        ])
+        self.assertEqual(
+            backend._parse_jsonl(output).session_id,
+            "session-disabled-tools-info",
+        )
+        sentinel = json.loads(unknown_tool_sentinel_metadata())
+        sentinel_output = "\n".join([
+            json.dumps(sentinel),
+            event("assistant.message", {
+                "content": "{}", "model": "gpt-5.6-terra", "outputTokens": 1,
+            }),
+            event("session.usage_checkpoint", {"totalNanoAiu": 1}),
+            event("result", sessionId="session-unknown-sentinel"),
+        ])
+        self.assertEqual(
+            backend._parse_jsonl(sentinel_output).session_id,
+            "session-unknown-sentinel",
+        )
+        for mutation in ("unknown", "excluded", "tip", "persistent"):
+            altered = json.loads(json.dumps(metadata))
+            if mutation == "unknown":
+                altered["data"]["message"] = "Unknown tool name: shell"
+            elif mutation == "excluded":
+                altered["data"]["message"] = (
+                    "Unknown tool name in the excluded tools filter: none"
+                )
+            elif mutation == "tip":
+                altered["data"]["tip"] = "unexpected"
+            else:
+                altered["ephemeral"] = False
+            with self.subTest(mutation=mutation), self.assertRaisesRegex(
+                RuntimeError, "metadata"
+            ):
+                backend._parse_jsonl(json.dumps(altered))
+
+        backend._tool_filter_binding_required = True
+        with self.assertRaisesRegex(RuntimeError, "missing zero-tool"):
+            backend._parse_jsonl(output)
+        with self.assertRaisesRegex(RuntimeError, "duplicated"):
+            backend._parse_jsonl("\n".join([
+                unknown_tool_sentinel_metadata(),
+                unknown_tool_sentinel_metadata(),
+            ]))
 
 
 if __name__ == "__main__":

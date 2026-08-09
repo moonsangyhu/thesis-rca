@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 8건
-- 심각(실험 무효화): 6건
+- 총 이슈: 9건
+- 심각(실험 무효화): 7건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 0건
 
@@ -131,4 +131,20 @@
   RuntimeError: unrecognized Copilot event type: session.tools_updated
   LiveCallerError: Copilot CLI call failed after durable charge receipt
   RuntimeError: unrecognized Copilot event type: session.skills_loaded
+  ```
+
+### [ISS-009] 빈 tool allowlist를 `none` sentinel로 잘못 전달
+
+- **카테고리**: code
+- **심각도**: critical (P1)
+- **영향**: campaign `v2-3-pilot-f7t1-20260810-0730-skillisolated` 전체. F7 처치·120초 validator·수집·retrieval을 통과했지만 첫 generator call metadata parse에서 중단되어 결과 0행이다.
+- **발생 빈도**: 1회
+- **관찰한 사실**: root/app hierarchy suspend와 frontend/server 10m/10m Ready 상태가 120초 유지돼 `injection_verified`를 통과했다. 첫 Copilot subprocess는 exit 0, actual `gpt-5.6-terra`, 완전한 usage metadata와 included AIC 2.025를 durable charged receipt에 기록했다. skill 이중 preflight는 통과했지만 strict parser가 `session.info`를 거부했다. 이후 frontend 200m/100m exact recovery, app→root exact restore와 `recovery_green`을 확인했다. attempt/pilot ledger와 result/raw는 0건이다.
+- **근본 원인**: adapter는 0개 tool과 매칭시키기 위해 nonempty allowlist `--available-tools=none`을 사용했다. 이 값은 특별한 sentinel이 아니라 의도적으로 존재하지 않는 실제 이름이므로 filter 결과는 0개지만, CLI가 unknown-name configuration `session.info`를 emit한다. adapter가 이 결합 증거를 아직 분류하지 못했다. 반대로 값 없는 bare option은 CLI 후단에서 `undefined`로 접혀 필터 없음이 되므로 안전한 대안이 아니다. 실패 stdout 원문은 민감 입력 비보존 정책 때문에 hash만 남아 exact message를 사후 재현하지 않으며, 원인 판정은 pinned local CLI 구현과 실행 option의 정적 대조에 근거한다.
+- **현재 영향**: 해당 campaign은 무효다. 지금까지 exact usage가 확인된 무효 파일럿 included AIC는 1.9994 + 2.02915 + 2.025 = 6.05355다. 실제 UI balance 사후 관측은 아직 하지 않았고, 관리자 paid usage disabled와 budget hard stop으로 별도 과금 경로는 차단돼 있다. cluster는 GREEN이다.
+- **수정 방안**: nonempty `--available-tools=none`을 유지해 filter semantics와 0-match를 보존한다. 격리 config에는 startup banner/tip off를 명시한다. 모델 호출 결과에는 공식 UUIDv4/timezone/root/ephemeral envelope, exact `infoType=configuration`, byte-exact `Unknown tool name in the available tools filter: none` metadata를 정확히 1건 필수화해 argv→session filter binding을 증명한다. 부수적인 `Disabled tools: ` summary만 같은 envelope로 허용한다. excluded/다른 filter의 unknown name·추가 field·persistent/duplicate/missing sentinel event와 모든 tool request/execution은 계속 거부한다. 적대 테스트·전체 검증·독립 리뷰·commit-push 전 재실행하지 않는다.
+- **관련 로그**:
+  ```text
+  RuntimeError: unrecognized Copilot event type: session.info
+  LiveCallerError: Copilot CLI call failed after durable charge receipt
   ```

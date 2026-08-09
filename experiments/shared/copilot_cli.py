@@ -77,6 +77,7 @@ class CopilotCLIBackend:
         self.charge_observer = charge_observer
         self._disabled_skill_names: frozenset[str] = frozenset()
         self._skill_isolation_prepared = False
+        self._tool_filter_binding_required = False
 
     def _billing_guard_passes(self) -> bool:
         if self.zero_overage_confirmed is not None:
@@ -113,6 +114,11 @@ class CopilotCLIBackend:
             "--no-remote",
             "--no-remote-export",
             "--disable-builtin-mcps",
+            # A bare variadic option is normalized to `undefined` (no filter)
+            # by CLI 1.0.78.  A nonempty allowlist containing the deliberately
+            # nonexistent sentinel instead preserves filter semantics and
+            # resolves to zero model-visible tools.  The corresponding exact
+            # unknown-sentinel diagnostic is mandatory below.
             "--available-tools=none",
             "--no-auto-update",
             "--max-ai-credits",
@@ -135,6 +141,7 @@ class CopilotCLIBackend:
             subprocess_env = self._prepare_skill_isolation(
                 Path(cwd), subprocess_env
             )
+            self._tool_filter_binding_required = True
             try:
                 completed = subprocess.run(
                     command,
@@ -225,7 +232,11 @@ class CopilotCLIBackend:
         config_path = isolated_home / "config.json"
         config_path.write_text(
             json.dumps(
-                {"disabledSkills": sorted(names)},
+                {
+                    "banner": "never",
+                    "disabledSkills": sorted(names),
+                    "showTipsOnStartup": False,
+                },
                 ensure_ascii=False,
                 sort_keys=True,
                 separators=(",", ":"),
@@ -407,6 +418,7 @@ class CopilotCLIBackend:
         result: dict | None = None
         usage_checkpoint: dict | None = None
         skills_metadata_count = 0
+        unknown_tool_sentinel_count = 0
         for line in output.splitlines():
             if not line.strip():
                 continue
@@ -481,6 +493,37 @@ class CopilotCLIBackend:
                     raise RuntimeError(
                         "Copilot skills metadata does not match disabled inventory"
                     )
+            elif event.get("type") == "session.info":
+                # The nonempty allowlist sentinel produces an official
+                # configuration diagnostic.  Requiring that exact sentinel
+                # binds the pre-call argv to the inference session while the
+                # resolved allowlist itself matches zero tools.
+                data = self._validated_ephemeral_metadata(event, "session.info")
+                message_text = data.get("message")
+                unknown_sentinel = (
+                    isinstance(message_text, str)
+                    and message_text
+                    == "Unknown tool name in the available tools filter: none"
+                )
+                disabled_summary = (
+                    isinstance(message_text, str)
+                    and message_text.startswith("Disabled tools: ")
+                )
+                if (
+                    set(data) != {"infoType", "message"}
+                    or data.get("infoType") != "configuration"
+                    or not isinstance(message_text, str)
+                    or not (unknown_sentinel or disabled_summary)
+                    or len(message_text) > 4096
+                    or any(ord(char) < 32 for char in message_text)
+                ):
+                    raise RuntimeError("Copilot informational metadata is invalid")
+                if unknown_sentinel:
+                    unknown_tool_sentinel_count += 1
+                    if unknown_tool_sentinel_count != 1:
+                        raise RuntimeError(
+                            "Copilot unknown-tool sentinel metadata is duplicated"
+                        )
             else:
                 event_type = str(event.get("type") or "").lower()
                 if event_type.startswith("tool."):
@@ -495,6 +538,13 @@ class CopilotCLIBackend:
         if self._skill_isolation_prepared and skills_metadata_count != 1:
             raise RuntimeError(
                 "Copilot response is missing skill-isolation metadata"
+            )
+        if (
+            self._tool_filter_binding_required
+            and unknown_tool_sentinel_count != 1
+        ):
+            raise RuntimeError(
+                "Copilot response is missing zero-tool filter metadata"
             )
         if not message or not result or not usage_checkpoint:
             raise RuntimeError(
