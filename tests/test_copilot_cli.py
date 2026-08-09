@@ -1,6 +1,8 @@
 import json
 import subprocess
 import unittest
+import uuid
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 from experiments.shared.copilot_cli import CopilotCLIBackend, CopilotCLIError
@@ -231,6 +233,51 @@ class CopilotCLIBackendTest(unittest.TestCase):
         ])
         with self.assertRaisesRegex(RuntimeError, "usage metadata"):
             backend._parse_jsonl(output)
+
+    @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
+    def test_tools_updated_metadata_is_schema_bound_but_not_tool_execution(self, _which):
+        backend = CopilotCLIBackend()
+        metadata = json.dumps({
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "parentId": None,
+            "ephemeral": True,
+            "type": "session.tools_updated",
+            "data": {"model": "gpt-5.6-terra"},
+        })
+        output = "\n".join([
+            metadata,
+            event("assistant.message", {
+                "content": "{}", "model": "gpt-5.6-terra", "outputTokens": 1,
+            }),
+            event("session.usage_checkpoint", {
+                "totalNanoAiu": 1_000_000_000, "totalPremiumRequests": 1,
+            }),
+            event("result", sessionId="session-tools-metadata"),
+        ])
+        response = backend._parse_jsonl(output)
+        self.assertEqual(response.session_id, "session-tools-metadata")
+
+        invalid = json.loads(metadata)
+        invalid["agentId"] = "subagent-1"
+        with self.assertRaisesRegex(RuntimeError, "tools metadata"):
+            backend._parse_jsonl(json.dumps(invalid))
+        invalid = json.loads(metadata)
+        invalid["data"]["model"] = "other-model"
+        with self.assertRaisesRegex(RuntimeError, "tools metadata"):
+            backend._parse_jsonl(json.dumps(invalid))
+        for field, value in (
+            ("parentId", "not-a-uuid/tool.started"),
+            ("id", str(uuid.uuid1())),
+            ("timestamp", "2026-08-10T07:00:00"),
+            ("ephemeral", False),
+        ):
+            invalid = json.loads(metadata)
+            invalid[field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(
+                RuntimeError, "tools metadata"
+            ):
+                backend._parse_jsonl(json.dumps(invalid))
 
     @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
     @patch("experiments.shared.copilot_cli.subprocess.run")

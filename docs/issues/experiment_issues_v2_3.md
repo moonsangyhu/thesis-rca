@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 7건
-- 심각(실험 무효화): 5건
+- 총 이슈: 8건
+- 심각(실험 무효화): 6건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 0건
 
@@ -114,4 +114,20 @@
   Kustomization/flux-system/app: configured
   Deployment/boutique/frontend: configured
   PilotError: post-injection live CPU state does not match injector receipt
+  ```
+
+### [ISS-008] Copilot CLI transient tools metadata event 미등록
+
+- **카테고리**: code
+- **심각도**: critical (P1)
+- **영향**: campaign `v2-3-pilot-f7t1-20260810-0702-hierarchy` 전체. F7 처치·수집·retrieval을 통과했지만 첫 generator call parse에서 중단되어 결과 0행이다.
+- **발생 빈도**: 1회
+- **관찰한 사실**: root/app hierarchy suspend 뒤 frontend/server 10m/10m, generation=observedGeneration, updated/ready/available=1이 120초 유지되어 injection validator를 통과했다. 첫 Copilot subprocess는 exit 0, actual model `gpt-5.6-terra`, session ID, output 179 tokens, included AIC 1.9994를 durable receipt에 남겼다. strict parser가 `session.tools_updated`를 unrecognized로 거부해 정상/attempt/pilot ledger와 result/raw는 0건이다. 이후 F7 200m/100m와 app→root exact restore, `recovery_green`을 확인했다.
+- **근본 원인**: CLI 1.0.78의 로컬 공식 SDK schema는 `session.tools_updated`를 모델별 resolved tool set이 갱신됐음을 알리는 ephemeral session metadata로 정의하지만 adapter allowlist는 assistant/result/usage 세 이벤트만 허용했다. 이는 `tool.*` 실행 event나 assistant `toolRequests`와 다른 이벤트다.
+- **현재 영향**: 해당 campaign은 무효다. included AIC 1.9994가 사용됐으며 actual balance의 UI 사후 확인은 아직 하지 않았다. 관리자 paid usage disabled와 budget hard stop 때문에 별도 과금 경로는 차단돼 있다. cluster는 GREEN이다.
+- **수정 방안**: `session.tools_updated`는 로컬 SDK의 exact schema(UUIDv4, timezone timestamp, parentId, ephemeral=true, root event, data model=Terra)일 때만 metadata로 허용한다. agentId·추가 field·model drift·malformed payload는 거부하고, `tool.*`, MCP/remote/custom event와 assistant tool request는 계속 fail-closed한다. 적대 테스트·전체 검증·독립 리뷰 후 새 campaign만 실행한다.
+- **관련 로그**:
+  ```text
+  RuntimeError: unrecognized Copilot event type: session.tools_updated
+  LiveCallerError: Copilot CLI call failed after durable charge receipt
   ```

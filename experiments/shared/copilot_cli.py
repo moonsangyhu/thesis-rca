@@ -291,6 +291,49 @@ class CopilotCLIBackend:
                 usage_checkpoint = event.get("data") or {}
                 if not isinstance(usage_checkpoint, dict):
                     raise RuntimeError("Copilot usage checkpoint data is invalid")
+            elif event.get("type") == "session.tools_updated":
+                # CLI 1.0.78 emits this transient metadata event when the
+                # model-specific *resolved* tool set is established. It is not
+                # a tool request/execution event. Accept only the exact local
+                # SDK schema for the pinned root model; every tool.* event and
+                # assistant toolRequests remain fail-closed below/above.
+                expected_keys = {
+                    "id", "timestamp", "parentId", "ephemeral", "type", "data",
+                }
+                data = event.get("data")
+                try:
+                    raw_event_id = event.get("id")
+                    if not isinstance(raw_event_id, str):
+                        raise ValueError("event ID is not a string")
+                    event_id = uuid.UUID(raw_event_id)
+                    raw_parent_id = event.get("parentId")
+                    parent_id = (
+                        None if raw_parent_id is None else uuid.UUID(raw_parent_id)
+                    )
+                    event_timestamp = datetime.fromisoformat(
+                        str(event.get("timestamp") or "")
+                    )
+                except (ValueError, TypeError, AttributeError) as exc:
+                    raise RuntimeError("Copilot tools metadata event is invalid") from exc
+                if (
+                    set(event) != expected_keys
+                    or event_id.version != 4
+                    or str(event_id) != raw_event_id.lower()
+                    or (
+                        raw_parent_id is not None
+                        and (
+                            not isinstance(raw_parent_id, str)
+                            or parent_id is None or parent_id.version != 4
+                            or str(parent_id) != raw_parent_id.lower()
+                        )
+                    )
+                    or event_timestamp.tzinfo is None
+                    or event.get("ephemeral") is not True
+                    or not isinstance(data, dict)
+                    or set(data) != {"model"}
+                    or data.get("model") != self.model
+                ):
+                    raise RuntimeError("Copilot tools metadata event is invalid")
             else:
                 event_type = str(event.get("type") or "").lower()
                 if event_type.startswith("tool."):
