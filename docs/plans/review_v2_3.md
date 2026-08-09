@@ -112,9 +112,9 @@ F1 × trial 1은 기능 검증에는 적합하지만 비용 stress test로는 �
 
 ### 필수 수정 P0-B
 
-- 파일럿 incident는 dry-run에서 세 condition의 예상 prompt 크기가 가장 큰 fault/trial로 사전 선택한다. 현재 historical proxy는 F7 trial 5다.
+- 최초 historical maximum proxy F7 trial 5는 실제 5m rollout이 Ready가 되지 않아 CPU-throttle과 rollout failure가 교락됐으므로 무효화한다. 사용자 승인에 따라 pilot-only target을 F7 trial 1(10m frontend, historical 최대 약 12.9k chars)로 변경하고, t5/t1 context ratio 약 1.29를 비용 투영에 추가한다.
 - 기능 smoke는 mock/F1으로 무료 수행하고, 유료 36-call AIC pilot은 cost-stress incident 하나만 사용한다.
-- budget projection은 `P×60×1.15`와 role별 최대 단가 기반 상한 중 큰 값을 사용한다.
+- budget projection은 `P×60×1.15×1.29`와 `(540×Gmax + 1,620×Jmax)×1.15×1.29` 중 큰 값을 사용한다.
 - 파일럿 전후 UI의 실제 AIC balance와 call-ledger 합이 일치하지 않으면 본실험을 중단한다.
 - 10% account reserve 외에 사용자가 별도로 보존할 회사 AIC가 있으면 그 금액을 먼저 차감한다.
 - 잔여 AIC와 무관하게 조직 관리자의 `AI credits paid usage = Disabled` 및 budget hard-stop 증빙이 없으면 Copilot subprocess를 실행하지 않는다. 로컬 환경 flag와 per-session AIC cap은 보조 gate일 뿐 관리자 정책을 대체하지 않는다.
@@ -160,7 +160,7 @@ F1 × trial 1은 기능 검증에는 적합하지만 비용 stress test로는 �
 - 증거 artifact 3종·환경 gate·사용자 approval을 live 경계마다 재검증하며 forged authorization을 거부한다.
 - 모든 Copilot subprocess attempt는 strict parse보다 먼저 charged-call receipt를 fsync한다. 비정형 JSONL이나 nested data도 receipt를 보존한 채 `CopilotCLIError`로 중단한다.
 - known 실패-call AIC는 campaign 누적값에 반영하고 usage가 불명확하면 campaign을 영구 중단한다.
-- F7 trial 5의 실제 `currencyservice` deployment와 `server` container, 5m CPU, Ready pod 상태를 검증한 뒤에만 collection과 36 calls를 허용한다.
+- F7 trial 1의 실제 `frontend` deployment와 `server` container, 10m CPU, Ready pod 상태를 검증한 뒤에만 collection과 36 calls를 허용한다.
 - recovery GREEN 후에만 3-row pilot 결과를 commit한다.
 - primary 분석 bootstrap은 fault-cluster 50,000회·seed 20260809로 고정되어 CLI에서 변경할 수 없다.
 

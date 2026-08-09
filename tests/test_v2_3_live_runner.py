@@ -106,7 +106,7 @@ class FakeCollector:
 
 GROUND_TRUTH = {
     "fault_id": "F7",
-    "trial": "5",
+    "trial": "1",
     "fault_name": "CPUThrottle",
     "target_service": "frontend",
     "injection_method": "Set CPU limit to 10m on frontend",
@@ -162,7 +162,7 @@ class LiveRunnerTests(unittest.TestCase):
 
     def test_success_collects_once_commits_three_arms_and_recovers_once(self):
         runner, backend = self.make_runner()
-        summary = runner.run("F7", 5, GROUND_TRUTH)
+        summary = runner.run("F7", 1, GROUND_TRUTH)
         self.assertEqual((summary["rows"], summary["calls"]), (3, 36))
         self.assertEqual(runner.collector.calls, 1)
         self.assertEqual(len(runner.store.writes), 1)
@@ -177,12 +177,18 @@ class LiveRunnerTests(unittest.TestCase):
         events = [event for event, _ in runner.store.events]
         self.assertLess(events.index("recovery_green"), events.index("incident_committed"))
 
+    def test_pilot_rejects_invalidated_f7_trial_5_before_injection(self):
+        runner, _ = self.make_runner()
+        with self.assertRaisesRegex(PilotError, "frozen to F7 trial 1"):
+            runner.run("F7", 5, GROUND_TRUTH)
+        self.assertEqual(runner.injector.calls, [])
+
     def test_injection_exception_still_attempts_recovery(self):
         injector = FakeInjector(error=RuntimeError("partial injection"))
         recovery = FakeRecovery()
         runner, _ = self.make_runner(injector=injector, recovery=recovery)
         with self.assertRaisesRegex(RuntimeError, "partial injection"):
-            runner.run("F7", 5, GROUND_TRUTH)
+            runner.run("F7", 1, GROUND_TRUTH)
         self.assertEqual(len(recovery.calls), 1)
         self.assertEqual(recovery.calls[0][2]["original_cpu_limit"], "200m")
         events = [event for event, _ in runner.store.events]
@@ -197,7 +203,7 @@ class LiveRunnerTests(unittest.TestCase):
             "THESIS_V23_PILOT_USER_APPROVED": "0",
         }, clear=False):
             with self.assertRaisesRegex(RuntimeError, "zero-overage"):
-                runner.run("F7", 5, GROUND_TRUTH)
+                runner.run("F7", 1, GROUND_TRUTH)
         self.assertEqual(len(runner.injector.calls), 0)
 
     def test_collection_contamination_fails_and_recovers(self):
@@ -205,7 +211,7 @@ class LiveRunnerTests(unittest.TestCase):
         recovery = FakeRecovery()
         runner, _ = self.make_runner(collector=collector, recovery=recovery)
         with self.assertRaisesRegex(PilotError, "non-runtime"):
-            runner.run("F7", 5, GROUND_TRUTH)
+            runner.run("F7", 1, GROUND_TRUTH)
         self.assertEqual(len(recovery.calls), 1)
         self.assertEqual(len(runner.store.writes), 0)
 
@@ -217,7 +223,7 @@ class LiveRunnerTests(unittest.TestCase):
         )
         runner, _ = self.make_runner(injection_validator=injection_validator)
         with self.assertRaisesRegex(PilotError, "post-injection mismatch"):
-            runner.run("F7", 5, GROUND_TRUTH)
+            runner.run("F7", 1, GROUND_TRUTH)
         self.assertEqual(runner.collector.calls, 0)
         self.assertEqual(len(runner.recovery.calls), 1)
         self.assertEqual(len(runner.store.writes), 0)
@@ -226,7 +232,7 @@ class LiveRunnerTests(unittest.TestCase):
         recovery = FakeRecovery(healthy=False)
         runner, _ = self.make_runner(recovery=recovery)
         with self.assertRaises(RecoveryFailure):
-            runner.run("F7", 5, GROUND_TRUTH)
+            runner.run("F7", 1, GROUND_TRUTH)
         self.assertEqual(len(runner.store.writes), 0)
 
     def test_f7_post_injection_validator_binds_identity_and_live_state(self):
@@ -252,19 +258,19 @@ class LiveRunnerTests(unittest.TestCase):
             },
         }]}
         validator = F7InjectionValidator(lambda _: deployment, lambda: pods)
-        result = FakeInjector().inject("F7", 5)
+        result = FakeInjector().inject("F7", 1)
         self.assertEqual(
-            validator.validate("F7", 5, GROUND_TRUTH, result)["status"], "verified"
+            validator.validate("F7", 1, GROUND_TRUTH, result)["status"], "verified"
         )
         bad = dict(result, trial=4)
         with self.assertRaisesRegex(PilotError, "trial identity"):
-            validator.validate("F7", 5, GROUND_TRUTH, bad)
+            validator.validate("F7", 1, GROUND_TRUTH, bad)
 
     def test_short_injection_value_is_forbidden(self):
         from experiments.v2_3.live_runner import build_forbidden_lexicon
         from experiments.v2_3.scanner import LeakageScanner
         lexicon = build_forbidden_lexicon(
-            "F7", 5, GROUND_TRUTH, FakeInjector().inject("F7", 5)
+            "F7", 1, GROUND_TRUTH, FakeInjector().inject("F7", 1)
         )
         self.assertIn("10m", lexicon.field_values)
         self.assertGreater(LeakageScanner().scan("limit=10-m", lexicon).match_count, 0)
@@ -273,7 +279,7 @@ class LiveRunnerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             journal = AttemptJournal(Path(temp_dir) / "attempts.jsonl")
             runner, _ = self.make_runner(journal=journal)
-            runner.run("F7", 5, GROUND_TRUTH)
+            runner.run("F7", 1, GROUND_TRUTH)
             lines = journal.path.read_text().splitlines()
             self.assertEqual(len(lines), 36)
 
@@ -334,21 +340,21 @@ class LiveRunnerTests(unittest.TestCase):
             "scripts.fault_inject.injector.kubectl_get_json", return_value=deployment
         ), patch("scripts.fault_inject.injector.kubectl", return_value="updated"):
             injector = FaultInjector()
-            recovery_context = injector.prepare_recovery_context("F7", 5)
+            recovery_context = injector.prepare_recovery_context("F7", 1)
             result = injector._inject_f7_cpu_throttle(
-                "currencyservice", 5, {}, recovery_context
+                "frontend", 1, {}, recovery_context
             )
         self.assertEqual(result["container_name"], "server")
         self.assertEqual(result["original_cpu_limit"], "200m")
         self.assertEqual(result["original_cpu_request"], "100m")
-        self.assertEqual(result["cpu_limit"], "5m")
+        self.assertEqual(result["cpu_limit"], "10m")
 
     def test_f7_partial_mutation_error_keeps_pre_state_for_recovery(self):
         recovery = FakeRecovery()
         injector = FakeInjector(error=TimeoutError("applied then timed out"))
         runner, _ = self.make_runner(injector=injector, recovery=recovery)
         with self.assertRaisesRegex(TimeoutError, "applied then timed out"):
-            runner.run("F7", 5, GROUND_TRUTH)
+            runner.run("F7", 1, GROUND_TRUTH)
         receipt = recovery.calls[0][2]
         self.assertEqual(receipt["container_name"], "server")
         self.assertEqual(receipt["original_cpu_limit"], "200m")
@@ -377,7 +383,7 @@ class LiveRunnerTests(unittest.TestCase):
             },
         }
         receipt = {
-            "target_service": "currencyservice",
+            "target_service": "frontend",
             "container_name": "server",
             "original_cpu_limit": "200m",
             "original_cpu_request": "100m",
@@ -395,7 +401,7 @@ class LiveRunnerTests(unittest.TestCase):
         stale["spec"]["template"] = {"spec": {"containers": [{
             "name": "server",
             "resources": {
-                "limits": {"cpu": "5m"}, "requests": {"cpu": "5m"}
+                "limits": {"cpu": "10m"}, "requests": {"cpu": "10m"}
             },
         }]}}
         with patch("scripts.stabilize.recovery.kubectl"), patch(

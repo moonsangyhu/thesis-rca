@@ -317,7 +317,7 @@ dry-run은 실제 fault나 유료 Copilot 호출 없이 다음을 검증해야 �
 
 ### 8.4 Step 4a — 1 fault × 1 trial 파일럿
 
-dry-run과 코드 리뷰를 통과한 뒤, 라이브 fault injection에 대한 별도 사용자 승인을 받고 **dry-run에서 세 condition 예상 prompt 크기가 가장 큰 fault/trial 한 건**으로 유료 파일럿을 수행한다. V2.2 historical proxy는 약 16.6k characters의 F7 trial 5이며, Step 3 dry-run이 다른 최대치를 보이면 실행 전에 그 근거와 선택을 고정한다. F1 기능 smoke는 mock으로만 수행한다. 파일럿은 다음을 동시에 확인한다.
+dry-run과 코드 리뷰를 통과한 뒤, 라이브 fault injection에 대한 별도 사용자 승인을 받고 1 incident 유료 파일럿을 수행한다. 최초 선택한 historical 최대-context proxy F7 trial 5(약 16.6k characters)는 실제 5m rollout에서 새 currencyservice pod가 Ready가 되지 않아 CPU-throttle과 rollout failure가 교락됐고 Copilot 호출 전 무효화했다. 2026-08-09 사용자 승인에 따라 pilot-only target을 ground truth상 10m인 F7 trial 1(`frontend`, historical 최대 약 12.9k characters)로 변경한다. 이는 primary dataset의 fault/trial 구성 변경이 아니라 live harness·AIC 검증용 pilot 변경이다. 비용 투영에는 t5/t1 context ratio 약 1.29를 기존 15% margin과 함께 적용한다. F1 기능 smoke는 mock으로만 수행한다. 파일럿은 다음을 동시에 확인한다.
 
 - injection/collection/recovery GREEN
 - three-condition runtime hash와 length match
@@ -345,8 +345,8 @@ GitHub의 조직용 usage-based billing은 included pool 소진 후 paid usage�
 deep-analysis 작성 시점의 보고 잔여량은 28,850 AIC다. 파일럿 직전에 실제 계정 잔여량 `B0`를 다시 기록하고 이 값이 다르면 실제값을 사용한다. 파일럿 36 calls의 AIC 합을 `P`, 파일럿 후 잔여량을 `B1`, generator/judge 각 역할의 파일럿 최대 단일-call AIC를 `Gmax`, `Jmax`라 한다.
 
 ```text
-scaled_pilot   = P × 60 × 1.15
-role_upper     = (540 × Gmax + 1,620 × Jmax) × 1.15
+scaled_pilot   = P × 60 × 1.15 × 1.29
+role_upper     = (540 × Gmax + 1,620 × Jmax) × 1.15 × 1.29
 projected_main = ceil(max(scaled_pilot, role_upper))
 reserve        = ceil(B0 × 0.10)
 진행 조건      = usage metadata 36/36 완전
@@ -354,7 +354,7 @@ reserve        = ceil(B0 × 0.10)
                  AND projected_main <= 28,850
 ```
 
-`×60`은 1 incident 파일럿과 같은 60개 본실험 incident, `×1.15`는 output 길이·과금 변동을 위한 15% 보수 계수다. 파일럿은 최대-context stress case를 사용하고, 평균비용 외에 역할별 최대 단가 상한도 적용한다. 다음 중 하나면 **본실험을 시작하지 않는다**.
+`×60`은 1 incident 파일럿과 같은 60개 본실험 incident, `×1.15`는 output 길이·과금 변동을 위한 15% 보수 계수, `×1.29`는 F7 t1과 historical maximum F7 t5의 context 차이를 보정하는 계수다. 평균비용 외에 역할별 최대 단가 상한도 적용한다. 다음 중 하나면 **본실험을 시작하지 않는다**.
 
 - AIC/session/output-token metadata 누락 또는 계정 잔여량 불일치
 - 예측 비용이 진행 조건을 넘음

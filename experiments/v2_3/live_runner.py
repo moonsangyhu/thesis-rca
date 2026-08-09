@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 
 from .authorization import LiveAuthorization
 from .conditions import ConditionAssembler, latin_square_schedule, schedule_hash
+from .config import PILOT_FAULT_ID, PILOT_TRIAL
 from .engine import RCAEngineV2_3
 from .ledger import CallLedgerEntry
 from .retrieval import BlindProcedure, BlindProcedureBuilder, RetrievalChunk
@@ -410,8 +411,10 @@ class PilotIncidentRunner:
 
     def run(self, fault_id: str, trial: int, ground_truth: dict) -> dict:
         self.authorization.revalidate()
-        if (fault_id, trial) != ("F7", 5):
-            raise PilotError("V2.3 cost-stress pilot is frozen to F7 trial 5")
+        if (fault_id, trial) != (PILOT_FAULT_ID, PILOT_TRIAL):
+            raise PilotError(
+                f"V2.3 live pilot is frozen to {PILOT_FAULT_ID} trial {PILOT_TRIAL}"
+            )
         validation = self.validator.validate_and_correct(fault_id=fault_id, trial=trial)
         if getattr(validation, "status", None) not in {"clean", "corrected"}:
             raise PilotError("pre-injection cluster state is not GREEN")

@@ -116,3 +116,12 @@
 - **수정 내용**: F7 주입 전에 target container와 CPU limit/request를 캡처하고 campaign event에 fsync한 뒤 recovery state로 먼저 보유한다. apply 직후 timeout 예외에도 이 pre-state를 복구에 전달한다. mutation은 캡처한 container 하나로 제한하고, recovery는 receipt 값을 `kubectl set resources`로 명시 복원한 뒤 Deployment generation/observedGeneration, updated/ready/available replicas, container limit/request가 모두 일치하지 않으면 실패한다. namespace-wide restart는 netem F11/F12에만 수행하며 실제 deployment 목록을 순회하고 F10의 미지원 restart를 제거했다. 실제 클러스터는 currencyservice 200m/100m와 전체 health GREEN으로 수동 복원했고, 실패 artifact의 result·attempt·charged·pilot ledger가 0임을 확인했다. 실패 campaign provenance는 삭제하지 않고 `artifacts/v2_3_pilot/`에서 로컬 보존하되 git 추적과 다음 clean-revision gate에서 제외한다. partial-mutation/F10 회귀를 포함한 targeted live-runner 테스트 16개가 통과했다.
 - **수정 파일**: `.gitignore:1`, `scripts/fault_inject/injector.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 복구 false-GREEN 수정됨 — F7 t5 5m 처치의 readiness 교락은 미해결이며 자동 재시도 금지
+
+### 14. V2.3 pilot target을 F7 trial 1로 변경 — 2026-08-09
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 최초 pilot target F7 trial 5의 currencyservice 5m 새 pod가 Ready가 되지 않아 CPU-throttle과 rollout/restart가 교락됐고, 동일 처치를 반복하면 유효한 36-call pilot에 도달할 수 없었다.
+- **원인**: historical 최대 context만으로 pilot을 선택하고 현재 클러스터에서 injection treatment가 Ready 상태와 양립하는지 반영하지 않았다.
+- **수정 내용**: 사용자 승인에 따라 pilot-only target을 ground truth상 10m인 F7 trial 1 `frontend/server`로 변경했다. shared pilot identity 상수를 manifest·ground-truth lookup·runner hard gate가 함께 사용해 실제 실행과 provenance가 어긋나지 않게 했고, manifest identity와 무효화된 t5의 주입 전 거부를 검증하는 회귀 테스트를 추가했다. V2.2 historical context 최대치는 t1 약 12.9k, t5 약 16.6k chars이므로 본실험 AIC 투영의 `scaled_pilot`과 `role_upper`에 1.29 보정계수를 기존 15% margin과 함께 적용한다. runbook은 repo venv Python을 명시한다. primary V2.3의 60 incident·3 condition 설계는 변경하지 않았다.
+- **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/run.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 전체 test/dry-run·독립 리뷰·commit-push 후 새 campaign으로 36-call pilot 실행
