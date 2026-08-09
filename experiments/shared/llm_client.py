@@ -24,6 +24,9 @@ class BaseLLMClient:
         elif self.provider == "openai":
             from openai import OpenAI
             return OpenAI()
+        elif self.provider == "copilot":
+            from .copilot_cli import CopilotCLIBackend
+            return CopilotCLIBackend(model=self.model)
         else:
             raise ValueError(f"Unknown provider: {self.provider}")
 
@@ -78,6 +81,18 @@ class BaseLLMClient:
                 "output": response.usage.completion_tokens,
             }
             return text, tokens
+
+        elif self.provider == "copilot":
+            response = self._client.call(prompt, system_prompt, max_tokens)
+            tokens = {
+                "input": 0,
+                "output": response.output_tokens,
+                "ai_credits": response.ai_credits,
+                "premium_requests": response.premium_requests,
+                "session_id": response.session_id,
+                "model": response.model,
+            }
+            return response.text, tokens
 
         raise ValueError(f"Unknown provider: {self.provider}")
 
