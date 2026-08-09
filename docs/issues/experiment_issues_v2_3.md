@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 6건
-- 심각(실험 무효화): 4건
+- 총 이슈: 7건
+- 심각(실험 무효화): 5건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 0건
 
@@ -96,5 +96,22 @@
 - **상태 (2026-08-10)**: 사용자가 A안을 승인했다. runner는 Flux identity·resourceVersion·원래 suspend field 존재 여부·값을 mutation 전에 fsync하고 CAS suspend 검증 뒤 F7을 주입한다. F7 recovery 실패와 partial suspend 예외에도 Flux 원상복원을 별도로 시도하고, concurrent 변경은 덮어쓰지 않는다. process/SIGKILL 경계에는 sealed receipt를 읽는 독립 idempotent `experiments.v2_3.flux_restore` 명령을 오케스트레이터가 실행한다. exact restore가 아니면 결과 commit과 후속 실험을 금지한다.
 - **관련 로그**:
   ```text
+  PilotError: post-injection live CPU state does not match injector receipt
+  ```
+
+### [ISS-007] 상위 Flux Kustomization이 하위 app suspend를 제거
+
+- **카테고리**: injection / recovery
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-pilot-f7t1-20260810-0648-flux` 전체. 결과 0행이며 실험 데이터로 사용할 수 없다.
+- **발생 빈도**: 1회
+- **관찰한 사실**: runner는 `flux-system/app`의 suspend=true를 확인한 뒤 F7 t1 10m ReplicaSet을 생성했지만 약 12초 뒤 200m ReplicaSet으로 원복됐다. kustomize-controller 로그에는 상위 `flux-system` Kustomization이 `Kustomization/flux-system/app: configured`를 적용하고 이어 `Deployment/boutique/frontend: configured`를 적용한 고유 reconcile ID가 남았다. validator가 Copilot 전에 차단했고 campaign은 `incident_failed(PilotError)→flux_restored→recovery_green`으로 종료됐다. result/raw/attempt/charged/pilot ledger는 모두 0개다.
+- **근본 원인**: `app` Kustomization은 독립 객체가 아니라 상위 `flux-system` Kustomization의 관리 대상이다. child만 suspend하면 root의 다음 server-side apply가 child의 desired manifest에서 absent인 suspend field를 제거하고 app reconciliation을 다시 활성화한다.
+- **현재 영향**: frontend/server limit/request 200m/100m, generation=observedGeneration=29, updated/ready/available=1, Flux app suspend absent·Ready, 노드 6/6, Boutique 12/12, Prometheus/Loki, 잔여 리소스와 Failed pod 0으로 GREEN이다. Copilot subprocess와 AIC charge receipt는 0건이다.
+- **수정 방안**: root `flux-system`과 child `app`의 identity/resourceVersion/original suspend shape를 하나의 durable hierarchy receipt로 봉인한다. root를 CAS suspend하고 10회 연속 안정 상태를 확인한 뒤 child를 CAS suspend·안정화하고 F7을 주입한다. recovery는 F7 exact restore 후 child→root 역순 exact restore를 수행한다. SIGKILL emergency 경로도 같은 hierarchy receipt를 사용한다.
+- **관련 로그**:
+  ```text
+  Kustomization/flux-system/app: configured
+  Deployment/boutique/frontend: configured
   PilotError: post-injection live CPU state does not match injector receipt
   ```
