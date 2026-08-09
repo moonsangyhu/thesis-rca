@@ -152,3 +152,12 @@
 - **수정 내용**: Copilot backend는 30 이상의 정수 세션 상한만 허용하고 pilot은 최소값 30을 사용한다. caller는 subprocess 전에 `누적 AIC + 세션 상한 <= campaign 360`을 강제해 상한 변경이 전체 예산 경계를 약화하지 않게 했다. manifest schema를 v2로 올리고 세션 상한 의미를 명시했다. 실패 campaign은 actual model/session/AIC 결측, charged receipt 1·정상 ledger/result 0으로 보존하며 usage uncertain으로 처리한다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/v2_3/config.py:1`, `experiments/v2_3/live_caller.py:1`, `experiments/v2_3/run.py:1`, `tests/test_copilot_cli.py:1`, `tests/test_v2_3_live_caller.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 전체 139개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, manifest direct assertion, `git diff --check` 통과 및 독립 재리뷰 승인; live 자동 재시도 금지
+
+### 18. Flux reconciliation에 의한 F7 처치 소실 기록 — 2026-08-09
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: campaign `v2-3-pilot-f7t1-20260809-221556`에서 10m frontend 처치가 생성됐지만 120초 validator 전에 200m/100m desired state로 원복됐다.
+- **원인**: live Deployment patch가 Flux `app` Kustomization의 Git desired state와 충돌했고, 10분 reconcile 주기와 겹쳐 처치가 유지되지 않았다. event 시각과 interval에 근거한 추론이며 actor audit log 직접 확인은 남은 검증 과제다.
+- **수정 내용**: campaign을 결과 0행으로 무효화하고 manifest/events만 보존했다. charged·attempt·pilot ledger와 Copilot/AIC 호출 0건, recovery GREEN과 전체 cluster 정상 상태를 확인했다. 자동 재시도는 금지하고 Flux 일시 suspend와 Git-native fault injection을 다음 방법론 checkpoint의 선택지로 분리했다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 미해결 — 처치 유지 전략에 대한 사용자 승인 대기
