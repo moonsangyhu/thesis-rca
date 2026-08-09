@@ -89,3 +89,12 @@
 - **수정 내용**: 외부 dependency import와 cluster/Copilot 접근 전에 40자리 HEAD SHA와 전체 untracked를 포함한 clean worktree를 검사한다. dirty/unavailable revision이면 live 실행을 차단하고, 통과한 SHA와 `git_worktree_clean_at_start=true`를 campaign manifest에 기록한다.
 - **수정 파일**: `experiments/v2_3/run.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — clean/dirty revision 단위 테스트 추가; 파일럿 실행 전 재커밋·전체 검증 필요
+
+### 11. V2.3 첫 launch 무실행 판정과 지속 PTY 재시도 절차 — 2026-08-09
+
+- **수정 에이전트**: @Codex, @experiment
+- **증상/문제**: experiment agent가 보고한 nohup PID 48358이 즉시 종료했고 agent 환경 log는 0 bytes, campaign artifact는 생성되지 않았다.
+- **원인**: background child가 agent command executor 종료 시 유지되지 않은 것으로 추정한다. Python 출력이 없어 코드·authorization 원인으로 단정하지 않는다.
+- **수정 내용**: artifact/result/raw/validated/charged ledger 0개와 Copilot·fault injection 0건을 확인했다. currencyservice CPU 200m, 6/6 Ready, DiskPressure False, Boutique 12 deployments 1/1, residual resource와 Failed pod 0, Prometheus/Loki Ready를 확인했다. 다음 단일 재시도는 root의 지속 PTY exec session, 새 campaign ID, root-side session/log/artifact 교차검증으로 고정한다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 무실행·무과금 launch failure로 분류 — 기록 commit-push 후 새 campaign으로 단일 재시도
