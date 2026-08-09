@@ -8,6 +8,7 @@ Usage:
 """
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import chromadb
@@ -48,14 +49,15 @@ class RetrievedDoc:
 class KnowledgeRetriever:
     """Query the ChromaDB knowledge base for relevant RCA documents."""
 
-    def __init__(self):
-        if not CHROMA_DIR.exists():
+    def __init__(self, chroma_dir: Optional[Path] = None):
+        resolved_chroma_dir = Path(chroma_dir) if chroma_dir is not None else CHROMA_DIR
+        if not resolved_chroma_dir.exists():
             raise RuntimeError(
-                f"ChromaDB not found at {CHROMA_DIR}. "
+                f"ChromaDB not found at {resolved_chroma_dir}. "
                 "Run: python -m src.rag.ingest"
             )
 
-        self._client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+        self._client = chromadb.PersistentClient(path=str(resolved_chroma_dir))
         self._embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=EMBEDDING_MODEL
         )
