@@ -1,0 +1,105 @@
+import unittest
+from dataclasses import replace
+
+from experiments.v2_3.conditions import ConditionAssembler
+from experiments.v2_3.retrieval import BlindProcedureBuilder, RetrievalChunk
+from experiments.v2_3.scanner import ForbiddenLexicon, LeakageDetected
+
+
+class RetrievalTests(unittest.TestCase):
+    def setUp(self):
+        self.lexicon = ForbiddenLexicon(
+            canonical_labels=("memory exhaustion",),
+            aliases=("oomkill",),
+            metadata=("runbooks/private-memory.md",),
+            entities=("secret-workload",),
+            commands=("kubectl patch deployment secret-workload",),
+            harness_markers=("F1",),
+        )
+
+    def test_runtime_query_ground_truth_is_rejected(self):
+        with self.assertRaises(LeakageDetected):
+            BlindProcedureBuilder().build(
+                runtime_context="Investigate F-1 memory exhaustion",
+                runtime_query="Investigate F-1 memory exhaustion",
+                chunks=(RetrievalChunk("doc", "generic procedure", 0.5, 0, 17),),
+                corpus_version="corpus-1",
+                lexicon=self.lexicon,
+            )
+
+    def test_runtime_query_injection_command_is_rejected(self):
+        query = "kubectl patch deployment secret-workload"
+        with self.assertRaises(LeakageDetected):
+            BlindProcedureBuilder().build(
+                runtime_context=query,
+                runtime_query=query,
+                chunks=(RetrievalChunk("doc", "generic procedure", 0.5, 0, 17),),
+                corpus_version="corpus-1",
+                lexicon=self.lexicon,
+            )
+
+    def test_runtime_observed_entity_is_allowed_as_query_evidence(self):
+        query = "secret-workload reports elevated latency"
+        result = BlindProcedureBuilder().build(
+            runtime_context=query,
+            runtime_query=query,
+            chunks=(RetrievalChunk("doc", "generic review sequence", 0.5, 0, 23),),
+            corpus_version="corpus-1",
+            lexicon=self.lexicon,
+        )
+        self.assertEqual(result.provenance["query_origin"], "runtime_only")
+
+    def test_masking_records_retrieval_and_removed_span_provenance(self):
+        source = "Inspect secret-workload, then kubectl patch deployment secret-workload."
+        result = BlindProcedureBuilder().build(
+            runtime_context="elevated latency and repeating warnings",
+            runtime_query="elevated latency and repeating warnings",
+            chunks=(RetrievalChunk("source-private-7", source, 0.81, 10, 80),),
+            corpus_version="corpus-20260809",
+            lexicon=self.lexicon,
+        )
+        self.assertNotIn("secret-workload", result.text)
+        self.assertEqual(result.provenance["query_origin"], "runtime_only")
+        self.assertEqual(result.provenance["corpus_version"], "corpus-20260809")
+        self.assertEqual(result.provenance["candidates"][0]["source_id"], "source-private-7")
+        self.assertGreater(len(result.provenance["removed_spans"]), 0)
+
+    def test_assembler_rejects_unprovenanced_string(self):
+        with self.assertRaises(TypeError):
+            ConditionAssembler().assemble_all("runtime", "plain string", self.lexicon)
+
+    def test_assembler_rejects_forged_procedure_hash(self):
+        result = BlindProcedureBuilder().build(
+            runtime_context="elevated latency",
+            runtime_query="elevated latency",
+            chunks=(RetrievalChunk("doc", "generic review sequence", 0.5, 0, 23),),
+            corpus_version="corpus-1",
+            lexicon=self.lexicon,
+        )
+        with self.assertRaisesRegex(ValueError, "hash"):
+            ConditionAssembler().assemble_all(
+                "runtime", replace(result, text=result.text + " tampered"), self.lexicon
+            )
+
+    def test_removed_spans_use_original_chunk_coordinates(self):
+        lexicon = ForbiddenLexicon(entities=("verylongsecret", "x"))
+        source = "verylongsecret abc x"
+        result = BlindProcedureBuilder().build(
+            runtime_context="generic warning",
+            runtime_query="generic warning",
+            chunks=(RetrievalChunk("doc", source, 0.5, 0, len(source)),),
+            corpus_version="corpus-1",
+            lexicon=lexicon,
+        )
+        spans = {(item["term"], item["start"], item["end"])
+                 for item in result.provenance["removed_spans"]}
+        self.assertIn(("verylongsecret", 0, 14), spans)
+        self.assertIn(("x", 19, 20), spans)
+        self.assertEqual(
+            result.provenance["candidates"][0]["snapshot_locator"],
+            f"corpus-1:doc:0:{len(source)}",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
