@@ -93,6 +93,7 @@
 - **근본 원인**: F7을 live Deployment에 직접 patch했지만 GitOps desired state는 200m/100m여서, 예약된 Flux reconciliation이 fault desired state를 validator 전에 원복했다. 이는 event 시각·reconcile interval과 일치하는 원인 추론이며 controller audit log로 actor를 직접 식별한 것은 아니다.
 - **현재 영향**: Copilot subprocess와 AIC 사용은 0건이다. frontend generation=observedGeneration, limit/request 200m/100m, updated/ready/available=1, Boutique 12/12, 노드 6/6, 모니터링·잔여 리소스가 모두 GREEN이다.
 - **수정 방안**: 자동 재시도하지 않는다. 다음 설계 checkpoint에서 (A) `flux-system/app` Kustomization의 기존 suspend 상태를 mutation 전에 fsync하고 파일럿 동안만 suspend한 뒤 recovery에서 원래 상태로 복원하거나, (B) fault를 Git desired state로 주입하는 방법 중 하나를 선택한다. RAG-only 단일변수 파일럿에는 A가 최소 변경이지만 GitOps 동작 정지라는 실험 조건을 manifest와 위협요인에 명시해야 한다.
+- **상태 (2026-08-10)**: 사용자가 A안을 승인했다. runner는 Flux identity·resourceVersion·원래 suspend field 존재 여부·값을 mutation 전에 fsync하고 CAS suspend 검증 뒤 F7을 주입한다. F7 recovery 실패와 partial suspend 예외에도 Flux 원상복원을 별도로 시도하고, concurrent 변경은 덮어쓰지 않는다. process/SIGKILL 경계에는 sealed receipt를 읽는 독립 idempotent `experiments.v2_3.flux_restore` 명령을 오케스트레이터가 실행한다. exact restore가 아니면 결과 commit과 후속 실험을 금지한다.
 - **관련 로그**:
   ```text
   PilotError: post-injection live CPU state does not match injector receipt

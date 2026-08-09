@@ -161,3 +161,12 @@
 - **수정 내용**: campaign을 결과 0행으로 무효화하고 manifest/events만 보존했다. charged·attempt·pilot ledger와 Copilot/AIC 호출 0건, recovery GREEN과 전체 cluster 정상 상태를 확인했다. 자동 재시도는 금지하고 Flux 일시 suspend와 Git-native fault injection을 다음 방법론 checkpoint의 선택지로 분리했다.
 - **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 미해결 — 처치 유지 전략에 대한 사용자 승인 대기
+
+### 19. Flux app 일시 suspend와 exact restore gate — 2026-08-10
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: F7 live patch가 Flux `app` Kustomization의 reconcile과 충돌해 validator 전에 소실됐다.
+- **원인**: 실험 runner가 GitOps controller의 desired-state 복원을 처치 생명주기에 포함하지 않았다.
+- **수정 내용**: 사용자 승인에 따라 별도 `FluxAppGuard`를 추가했다. `flux-system/app`의 UID·resourceVersion·원래 suspend field 존재 여부·값을 mutation 전에 event journal에 fsync하고, resourceVersion CAS 응답과 suspend=true를 재조회 검증한 뒤에만 F7을 주입한다. 정상·injection 예외·partial suspend·F7 recovery 실패 모두에서 F7 복구 후 Flux field를 원래 형태로 CAS 복원하며, concurrent false 변경은 덮어쓰지 않는다. process/SIGKILL 경계는 campaign의 sealed receipt를 사용하는 독립 idempotent `flux_restore` 명령과 오케스트레이터 checkpoint로 보완한다. 어느 복구든 exact original이 아니면 결과 commit을 차단한다. manifest와 plan/review/runbook에 공통 처치 및 외적 타당성 한계를 기록했다.
+- **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/flux_restore.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/run.py:1`, `tests/test_v2_3_flux_restore.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — F7→Flux 및 pre-F7 Flux-only 강제종료 복구, truncated-tail 내성을 포함한 targeted 48개·전체 156개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 최종 독립 재리뷰 승인

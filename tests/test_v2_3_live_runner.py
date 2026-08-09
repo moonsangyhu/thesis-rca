@@ -7,8 +7,9 @@ from types import SimpleNamespace
 
 from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.live_runner import (
-    AttemptJournal, ChargedCallJournal, F7InjectionValidator, PilotError, PilotIncidentRunner,
-    RecoveryFailure, RuntimeEvidenceRenderer, RuntimeOnlyRetriever,
+    AttemptJournal, ChargedCallJournal, F7InjectionValidator, FluxAppGuard,
+    PilotError, PilotIncidentRunner, RecoveryFailure, RuntimeEvidenceRenderer,
+    RuntimeOnlyRetriever,
 )
 from experiments.v2_3.mock import DeterministicMockCaller
 from experiments.v2_3.scanner import ForbiddenLexicon
@@ -68,6 +69,39 @@ class FakeRecovery:
     def recover(self, fault_id, trial, injection_result):
         self.calls.append((fault_id, trial, injection_result))
         return {"health_check_passed": self.healthy}
+
+
+class FakeFluxGuard:
+    def __init__(self, suspend_error=None, restore_error=None):
+        self.suspend_error = suspend_error
+        self.restore_error = restore_error
+        self.calls = []
+
+    def prepare_recovery_context(self):
+        self.calls.append("prepare")
+        return {
+            "flux_guard_schema": "v2.3-flux-app-guard-1",
+            "flux_namespace": "flux-system", "flux_name": "app",
+            "flux_uid": "uid-1", "flux_resource_version": "1",
+            "flux_original_suspend_present": False,
+            "flux_original_suspend": False,
+        }
+
+    def suspend(self, context):
+        self.calls.append("suspend")
+        if self.suspend_error:
+            raise self.suspend_error
+        return dict(context)
+
+    def restore(self, context):
+        self.calls.append("restore")
+        if self.restore_error:
+            raise self.restore_error
+        return {
+            "flux_restored": True, "flux_exact_original": True,
+            "flux_suspend_present": False,
+            "flux_restore_action": "cas-restored",
+        }
 
 
 class FakeInjector:
@@ -138,7 +172,7 @@ class LiveRunnerTests(unittest.TestCase):
 
     def make_runner(
         self, *, injector=None, recovery=None, collector=None, journal=None,
-        injection_validator=None,
+        injection_validator=None, flux_guard=None,
     ):
         auth = verified_authorization(Path(self.temp.name))
         caller = AuthorizedMockCaller("pilot-campaign", auth)
@@ -161,6 +195,7 @@ class LiveRunnerTests(unittest.TestCase):
             injection_validator=injection_validator or SimpleNamespace(
                 validate=lambda *args: {"status": "verified"}
             ),
+            flux_guard=flux_guard or FakeFluxGuard(),
             retriever=RuntimeOnlyRetriever(backend, corpus_version="corpus-snapshot-1"),
             store=FakeStore(),
             sleep_fn=lambda _: None,
@@ -174,6 +209,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(runner.collector.calls, 1)
         self.assertEqual(len(runner.store.writes), 1)
         self.assertEqual(len(runner.recovery.calls), 1)
+        self.assertEqual(runner.flux_guard.calls, ["prepare", "suspend", "restore"])
         self.assertEqual(len(backend.calls), 1)
         self.assertIsNone(backend.calls[0]["fault_type"])
         rows, raws, ledger = runner.store.writes[0]
@@ -182,6 +218,8 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(len(ledger), 36)
         self.assertEqual(len({row["runtime_context_hash"] for row in rows}), 1)
         events = [event for event, _ in runner.store.events]
+        self.assertLess(events.index("flux_suspended"), events.index("injection_started"))
+        self.assertLess(events.index("flux_restored"), events.index("recovery_green"))
         self.assertLess(events.index("recovery_green"), events.index("incident_committed"))
 
     def test_pilot_rejects_invalidated_f7_trial_5_before_injection(self):
@@ -197,6 +235,7 @@ class LiveRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "partial injection"):
             runner.run("F7", 1, GROUND_TRUTH)
         self.assertEqual(len(recovery.calls), 1)
+        self.assertEqual(runner.flux_guard.calls[-1], "restore")
         self.assertEqual(recovery.calls[0][2]["original_cpu_limit"], "200m")
         events = [event for event, _ in runner.store.events]
         self.assertLess(
@@ -260,6 +299,126 @@ class LiveRunnerTests(unittest.TestCase):
         with self.assertRaises(RecoveryFailure):
             runner.run("F7", 1, GROUND_TRUTH)
         self.assertEqual(len(runner.store.writes), 0)
+        self.assertEqual(runner.flux_guard.calls[-1], "restore")
+
+    def test_partial_flux_suspend_error_still_restores_original_state(self):
+        flux = FakeFluxGuard(suspend_error=RuntimeError("patch timeout"))
+        runner, _ = self.make_runner(flux_guard=flux)
+        with self.assertRaisesRegex(RuntimeError, "patch timeout"):
+            runner.run("F7", 1, GROUND_TRUTH)
+        self.assertEqual(flux.calls, ["prepare", "suspend", "restore"])
+        self.assertEqual(runner.injector.calls, [])
+
+    def test_flux_guard_cannot_alter_sealed_receipt(self):
+        flux = FakeFluxGuard()
+
+        def altered(context):
+            flux.calls.append("suspend")
+            return {**context, "flux_resource_version": "forged"}
+
+        flux.suspend = altered
+        runner, _ = self.make_runner(flux_guard=flux)
+        with self.assertRaisesRegex(PilotError, "altered"):
+            runner.run("F7", 1, GROUND_TRUTH)
+        self.assertEqual(flux.calls, ["prepare", "suspend", "restore"])
+        self.assertEqual(runner.injector.calls, [])
+
+    def test_flux_restore_failure_invalidates_result_after_cluster_recovery(self):
+        flux = FakeFluxGuard(restore_error=RuntimeError("restore failed"))
+        runner, _ = self.make_runner(flux_guard=flux)
+        with self.assertRaises(RecoveryFailure):
+            runner.run("F7", 1, GROUND_TRUTH)
+        self.assertEqual(len(runner.recovery.calls), 1)
+        self.assertEqual(len(runner.store.writes), 0)
+
+    def test_flux_guard_restores_absent_suspend_field_exactly(self):
+        state = {
+            "metadata": {
+                "namespace": "flux-system", "name": "app",
+                "uid": "uid-1", "resourceVersion": "10",
+            },
+            "spec": {"interval": "10m"},
+        }
+
+        def load():
+            import copy
+            return copy.deepcopy(state)
+
+        def patch_suspend(value, resource_version):
+            self.assertEqual(resource_version, state["metadata"]["resourceVersion"])
+            if value is None:
+                state["spec"].pop("suspend", None)
+            else:
+                state["spec"]["suspend"] = value
+            state["metadata"]["resourceVersion"] = str(
+                int(state["metadata"]["resourceVersion"]) + 1
+            )
+            return load()
+
+        guard = FluxAppGuard(load, patch_suspend)
+        receipt = guard.prepare_recovery_context()
+        guard.suspend(receipt)
+        self.assertIs(state["spec"]["suspend"], True)
+        restored = guard.restore(receipt)
+        self.assertNotIn("suspend", state["spec"])
+        self.assertTrue(restored["flux_restored"])
+        self.assertTrue(restored["flux_exact_original"])
+
+    def test_flux_guard_rejects_preexisting_suspension(self):
+        resource = {
+            "metadata": {
+                "namespace": "flux-system", "name": "app",
+                "uid": "uid-1", "resourceVersion": "10",
+            },
+            "spec": {"suspend": True},
+        }
+        guard = FluxAppGuard(lambda: resource, lambda _: None)
+        with self.assertRaisesRegex(PilotError, "must be active"):
+            guard.prepare_recovery_context()
+
+    def test_flux_guard_rejects_missing_resource_version(self):
+        resource = {
+            "metadata": {
+                "namespace": "flux-system", "name": "app", "uid": "uid-1",
+            },
+            "spec": {},
+        }
+        guard = FluxAppGuard(lambda: resource, lambda *_: {})
+        with self.assertRaisesRegex(PilotError, "resourceVersion"):
+            guard.prepare_recovery_context()
+
+    def test_flux_guard_preserves_concurrent_false_field_on_cas_conflict(self):
+        state = {
+            "metadata": {
+                "namespace": "flux-system", "name": "app",
+                "uid": "uid-1", "resourceVersion": "10",
+            },
+            "spec": {"interval": "10m"},
+        }
+        patch_calls = []
+
+        def load():
+            import copy
+            return copy.deepcopy(state)
+
+        def patch_suspend(value, resource_version):
+            patch_calls.append((value, resource_version))
+            return load()
+
+        guard = FluxAppGuard(load, patch_suspend)
+        receipt = guard.prepare_recovery_context()
+        state["metadata"]["resourceVersion"] = "11"
+        state["spec"]["suspend"] = False
+
+        with self.assertRaisesRegex(PilotError, "changed after"):
+            guard.suspend(receipt)
+        restored = guard.restore(receipt)
+
+        self.assertEqual(patch_calls, [])
+        self.assertIn("suspend", state["spec"])
+        self.assertIs(state["spec"]["suspend"], False)
+        self.assertFalse(restored["flux_restored"])
+        self.assertEqual(restored["flux_restore_action"], "external-change-preserved")
 
     def test_f7_post_injection_validator_binds_identity_and_live_state(self):
         deployment = {

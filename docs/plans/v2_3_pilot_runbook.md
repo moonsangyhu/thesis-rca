@@ -13,6 +13,7 @@
 - 호출 전 `누적 AIC + 30 <= 360`일 때만 다음 subprocess를 허용한다.
 - output: `artifacts/v2_3_pilot/{campaign_id}/`
 - 자동 재시도: 없음
+- Flux `flux-system/app` Kustomization은 incident 동안만 suspend한다. 기존 suspend field의 존재 여부와 값을 mutation 전에 fsync하고, F7 복구 뒤 정확히 원상복원한다.
 - injection을 시도한 뒤에는 성공·예외·중단과 관계없이 recovery를 정확히 한 번 시도한다.
 - V2.2 historical prompt proxy는 F7 t1 최대 약 12.9k chars, F7 t5 최대 약 16.6k chars다. t1 pilot 비용을 본실험에 투영할 때 기존 15% margin 외에 context ratio `16.6/12.9 ≈ 1.29`를 적용한다.
 
@@ -77,7 +78,21 @@ KUBECONFIG="/Users/yumunsang/.kube/config-k8s-lab" \
 - CLI 종료 직후 성공·파싱 실패·cap 초과와 무관하게 charged-call receipt를 fsync
 - Chroma corpus/index snapshot hash와 runtime-only query provenance
 - preflight GREEN, injector receipt와 live deployment CPU state 일치, 단일 collect
+- Flux app identity/원래 suspend 상태를 durable receipt로 봉인하고 suspend=true 검증 뒤에만 F7을 주입
+- 성공·오류·partial patch와 무관하게 F7 복구 후 Flux suspend field를 원래 존재 여부·값으로 복원
 - recovery `health_check_passed=true` 확인 후에만 three-arm 3 rows/36 calls commit
+
+### 강제 종료 emergency restore
+
+오케스트레이터는 pilot PID와 `campaign_events.jsonl`을 함께 감시한다. 프로세스가 사라졌는데 `flux_restored` 또는 `flux_emergency_restored`가 없으면 다음 idempotent 명령을 즉시 실행한다. 이 명령은 campaign identity와 sealed receipt를 검증하고, F7 receipt가 있으면 **frontend/server CPU limit 200m·request 100m exact recovery를 먼저 수행한 뒤** Kubernetes `resourceVersion` CAS로 원래 suspend field 존재 여부·값을 복원한다. Flux suspend 뒤 F7 receipt 전 crash window에서는 mutation이 시작되지 않았으므로 Flux-only exact restore를 수행한다. `injection_started` 뒤 F7 receipt가 없거나 receipt가 중복이면 실패로 남기되 Flux 복구는 계속 시도한다. journal의 마지막 append가 SIGKILL로 잘린 경우 그 불완전 tail만 무시하며 중간 손상은 거부한다. concurrent actor가 다른 false 상태를 만든 경우 이를 덮어쓰지 않고 실패한다.
+
+```bash
+KUBECONFIG=/Users/yumunsang/.kube/config-k8s-lab \
+/Users/yumunsang/thesis-rca/.venv/bin/python -m experiments.v2_3.flux_restore \
+  --campaign-dir /Users/yumunsang/thesis-rca-v2-3-terra/artifacts/v2_3_pilot/CAMPAIGN_ID
+```
+
+명령 성공 뒤에도 frontend/server CPU limit 200m·request 100m와 rollout generation/ready/available exact state, `spec.suspend` 원래 absent/false, Flux `app` Ready, Boutique 12/12를 읽기 전용으로 확인한다. F7 또는 Flux emergency restore가 하나라도 실패하면 완료 event를 기록하지 않고 추가 실험을 시작하지 않으며 cluster recovery를 최우선으로 처리한다.
 
 ## 5. 완료 후 확인
 
