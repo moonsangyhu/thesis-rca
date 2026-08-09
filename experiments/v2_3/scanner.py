@@ -136,6 +136,20 @@ class LeakageScanner:
                 # spans; raw text remains separate provenance.
                 compact_text = folded.replace(" ", "")
                 compact_term = term.replace(" ", "")
+                fault_marker = (
+                    re.fullmatch(r"f(\d+)", compact_term)
+                    if category == "harness_markers" else None
+                )
+                if fault_marker:
+                    marker_pattern = re.compile(
+                        rf"(?<!\w)f\s*{re.escape(fault_marker.group(1))}(?!\w)"
+                    )
+                    for found in marker_pattern.finditer(folded):
+                        add(
+                            category, "fault_id_separator_variant", term,
+                            found.start(), found.end(),
+                        )
+                    continue
                 compact_minimum = (
                     2 if category in {"harness_markers", "field_values"} else 4
                 )
@@ -165,6 +179,7 @@ class LeakageScanner:
         report = self.scan(text, lexicon, runtime_scope=runtime_scope)
         if report.match_count:
             raise LeakageDetected(
-                f"forbidden leakage detected: {report.match_count} match(es)"
+                f"forbidden leakage detected: {report.match_count} match(es); "
+                f"categories={report.category_counts}"
             )
         return report

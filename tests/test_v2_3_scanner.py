@@ -60,6 +60,14 @@ class ScannerTests(unittest.TestCase):
                 0,
                 variant,
             )
+        self.assertEqual(
+            scanner.scan(
+                "sha256=91af12e0b7c3 and uid=abcdf12ef09",
+                lexicon,
+                runtime_scope=True,
+            ).match_count,
+            0,
+        )
 
 
 if __name__ == "__main__":

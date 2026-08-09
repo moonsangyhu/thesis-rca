@@ -11,7 +11,7 @@ from .scanner import (
     SCANNER_VERSION, ForbiddenLexicon, LeakageScanner, normalize, sha256_text,
 )
 
-MASKER_VERSION = "v2.3-procedure-mask-1"
+MASKER_VERSION = "v2.3-procedure-mask-2"
 
 
 @dataclass(frozen=True)
@@ -157,12 +157,39 @@ class BlindProcedureBuilder:
         value = unicodedata.normalize("NFKC", text)
         removed: list[RemovedSpan] = []
         occupied: list[tuple[int, int]] = []
+        mask_terms: set[tuple[str, str]] = set()
+        regex_terms: list[tuple[str, str]] = []
+        for category, terms in lexicon.categories().items():
+            for raw_term in terms:
+                if raw_term.startswith("re:"):
+                    regex_terms.append((category, raw_term))
+                    continue
+                tokens = normalize(raw_term).split()
+                if not tokens:
+                    continue
+                compact_term = "".join(tokens)
+                if (
+                    category == "harness_markers"
+                    and re.fullmatch(r"f\d+", compact_term)
+                ):
+                    digits = compact_term[1:]
+                    regex_terms.append((
+                        category,
+                        "re:" + r"(?<![^\W_])f[\W_]*"
+                        + re.escape(digits)
+                        + r"(?![^\W_])",
+                    ))
+                    continue
+                mask_terms.add((category, " ".join(tokens)))
+                minimum = 3 if category == "commands" else 2
+                if len(tokens) >= minimum:
+                    for size in range(len(tokens) - 1, minimum - 1, -1):
+                        for index in range(len(tokens) - size + 1):
+                            mask_terms.add(
+                                (category, " ".join(tokens[index:index + size]))
+                            )
         ordered_terms = sorted(
-            (
-                (category, raw_term)
-                for category, terms in lexicon.categories().items()
-                for raw_term in terms
-            ),
+            regex_terms + list(mask_terms),
             key=lambda item: len(normalize(item[1])),
             reverse=True,
         )
@@ -174,7 +201,9 @@ class BlindProcedureBuilder:
                 if not tokens:
                     continue
                 pattern = re.compile(
-                    r"(?<!\w)" + r"[\W_]*".join(map(re.escape, tokens)) + r"(?!\w)",
+                    r"(?<![^\W_])"
+                    + r"[\W_]*".join(map(re.escape, tokens))
+                    + r"(?![^\W_])",
                     re.IGNORECASE,
                 )
 

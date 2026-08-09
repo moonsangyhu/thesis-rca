@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 3건
-- 심각(실험 무효화): 1건
+- 총 이슈: 4건
+- 심각(실험 무효화): 2건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 0건
 
@@ -51,4 +51,19 @@
   kubectl stderr: error: timed out waiting for the condition
   kubectl stderr: error: unknown flag: --all
   experiments.v2_3.live_runner.PilotError: post-injection live CPU state does not match injector receipt
+  ```
+
+### [ISS-004] runtime query masker와 scanner n-gram 규칙 불일치
+
+- **카테고리**: data / code
+- **심각도**: critical (P1)
+- **영향**: campaign `v2-3-pilot-f7t1-20260809-2230` 전체. F7 trial 1 처치 검증은 통과했지만 retrieval query gate에서 중단되어 결과 0행이며 primary dataset에 포함할 수 없음.
+- **발생 빈도**: 1회
+- **관찰한 사실**: `frontend/server` 10m pod는 Ready=true, restart=0으로 post-injection validator를 통과했다. 이후 `LeakageDetected: forbidden leakage detected: 6 match(es)`가 발생해 Copilot 호출 전에 중단했다. recovery event 이후 frontend limit/request 200m/100m, generation=observed, updated/ready/available=1과 전체 cluster GREEN을 확인했다. attempt/charged/pilot ledger와 result는 모두 0개다.
+- **근본 원인**: masker는 긴 canonical label·alias·injection command 전체 문자열만 제거했지만 scanner는 그 문자열의 부분 token n-gram도 차단했다. 또한 masker의 word boundary가 underscore를 word 문자로 취급해 `cpu_throttling`, `F7_t1`을 제거하지 못했다. 반대로 scanner는 2글자 fault ID에 일반 compact-substring을 적용해 SHA/UID 내부의 우연한 `f7`도 차단했다.
+- **현재 영향**: Copilot 호출과 AIC 사용 0. 실제 직전 5분 collector 신호를 read-only로 재수집한 replay에서 query pre-scan 12건, 원문 좌표 removal 6개, post-scan 0건을 확인했다. 원문 runtime/정답 문자열은 출력하지 않고 category count만 검증했다.
+- **수정 방안**: masker version을 올리고 scanner와 동일한 category별 n-gram을 긴 순서로 원문에서 제거한다. underscore를 separator로 취급하는 Unicode boundary를 사용한다. fault ID는 `F-7`, `F_7`, `F 7`, 전각 변형을 막는 전용 경계 규칙으로 분리하고 hash 내부 substring은 허용한다. fail-closed 예외에는 원문 없이 category count를, campaign event에는 error type만 기록한다. 동일 fault는 자동 재시도하지 않고 전체 검증·독립 리뷰·commit-push 후 다음 실행 checkpoint로 넘긴다.
+- **관련 로그**:
+  ```text
+  experiments.v2_3.scanner.LeakageDetected: forbidden leakage detected: 6 match(es)
   ```
