@@ -496,6 +496,15 @@ class PilotIncidentRunner:
             pending = (rows, raws, incident_entries)
         except BaseException as exc:
             primary_error = exc
+            if hasattr(self.store, "append_event"):
+                try:
+                    self.store.append_event(
+                        "incident_failed", error_type=type(exc).__name__
+                    )
+                except BaseException:
+                    # Diagnostic persistence must never bypass mandatory
+                    # post-injection recovery. Preserve the primary failure.
+                    pass
         if injection_attempted:
             try:
                 recovery_result = self.recovery.recover(

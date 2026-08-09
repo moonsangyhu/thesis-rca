@@ -53,6 +53,13 @@ class FakeStore:
         self.events.append((event, details))
 
 
+class FailingDiagnosticStore(FakeStore):
+    def append_event(self, event, **details):
+        if event == "incident_failed":
+            raise OSError("simulated event journal failure")
+        super().append_event(event, **details)
+
+
 class FakeRecovery:
     def __init__(self, healthy=True):
         self.healthy = healthy
@@ -227,6 +234,25 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(runner.collector.calls, 0)
         self.assertEqual(len(runner.recovery.calls), 1)
         self.assertEqual(len(runner.store.writes), 0)
+        self.assertIn("incident_failed", [event for event, _ in runner.store.events])
+
+    def test_incident_failed_event_error_cannot_bypass_recovery(self):
+        recovery = FakeRecovery()
+        injection_validator = SimpleNamespace(
+            validate=lambda *args: (_ for _ in ()).throw(
+                PilotError("post-injection mismatch")
+            )
+        )
+        runner, _ = self.make_runner(
+            recovery=recovery, injection_validator=injection_validator
+        )
+        runner.store = FailingDiagnosticStore()
+
+        with self.assertRaisesRegex(PilotError, "post-injection mismatch"):
+            runner.run("F7", 1, GROUND_TRUTH)
+
+        self.assertEqual(len(recovery.calls), 1)
+        self.assertIn("recovery_green", [event for event, _ in runner.store.events])
 
     def test_recovery_not_green_invalidates_pilot(self):
         recovery = FakeRecovery(healthy=False)

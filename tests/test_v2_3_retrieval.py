@@ -49,6 +49,53 @@ class RetrievalTests(unittest.TestCase):
         )
         self.assertEqual(result.provenance["query_origin"], "runtime_only")
 
+    def test_sanitizer_masks_scanner_ngram_matches_from_long_forbidden_terms(self):
+        from experiments.v2_3.scanner import ForbiddenLexicon, LeakageScanner
+
+        lexicon = ForbiddenLexicon(
+            canonical_labels=(
+                "frontend exceeded its constrained CPU allocation",
+            ),
+            commands=(
+                "Set frontend CPU limit to 10m under sustained load",
+            ),
+            aliases=("throttling",),
+            field_values=("10m",),
+            harness_markers=("F7",),
+        )
+        source = (
+            "frontend reports constrained cpu allocation and cpu limit to 10m "
+            "while cpu_throttling is present in F7_t1"
+        )
+        sanitized, removals = BlindProcedureBuilder().sanitize_runtime_query(
+            source, source, lexicon
+        )
+        self.assertGreater(len(removals), 0)
+        self.assertEqual(LeakageScanner().scan(sanitized, lexicon).match_count, 0)
+        self.assertIn("frontend", sanitized)
+
+    def test_sanitizer_masks_fault_id_internal_separator_variants(self):
+        from experiments.v2_3.scanner import ForbiddenLexicon, LeakageScanner
+
+        lexicon = ForbiddenLexicon(harness_markers=("F7", "F12"))
+        for marker in ("F-7", "F_7", "F 7", "Ｆ－７", "F-12", "Ｆ＿１２"):
+            with self.subTest(marker=marker):
+                source = f"observed {marker} marker"
+                sanitized, removals = BlindProcedureBuilder().sanitize_runtime_query(
+                    source, source, lexicon
+                )
+                self.assertGreater(len(removals), 0)
+                self.assertEqual(
+                    LeakageScanner().scan(sanitized, lexicon).match_count, 0
+                )
+
+        source = "runtime uid 91af7e0 remains ordinary evidence"
+        sanitized, removals = BlindProcedureBuilder().sanitize_runtime_query(
+            source, source, lexicon
+        )
+        self.assertEqual(removals, [])
+        self.assertIn("91af7e0", sanitized)
+
     def test_masking_records_retrieval_and_removed_span_provenance(self):
         source = "Inspect secret-workload, then kubectl patch deployment secret-workload."
         result = BlindProcedureBuilder().build(

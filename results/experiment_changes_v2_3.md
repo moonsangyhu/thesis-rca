@@ -125,3 +125,21 @@
 - **수정 내용**: 사용자 승인에 따라 pilot-only target을 ground truth상 10m인 F7 trial 1 `frontend/server`로 변경했다. shared pilot identity 상수를 manifest·ground-truth lookup·runner hard gate가 함께 사용해 실제 실행과 provenance가 어긋나지 않게 했고, manifest identity와 무효화된 t5의 주입 전 거부를 검증하는 회귀 테스트를 추가했다. V2.2 historical context 최대치는 t1 약 12.9k, t5 약 16.6k chars이므로 본실험 AIC 투영의 `scaled_pilot`과 `role_upper`에 1.29 보정계수를 기존 15% margin과 함께 적용한다. runbook은 repo venv Python을 명시한다. primary V2.3의 60 incident·3 condition 설계는 변경하지 않았다.
 - **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/run.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 전체 test/dry-run·독립 리뷰·commit-push 후 새 campaign으로 36-call pilot 실행
+
+### 15. Runtime query masker와 scanner 규칙 정합화 — 2026-08-09
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: campaign `v2-3-pilot-f7t1-20260809-2230`은 F7 t1 10m Ready 처치를 검증했지만 runtime-only retrieval query에서 leakage 6건을 탐지해 Copilot 호출 전에 중단했다.
+- **원인**: masker는 금지 문구 전체만 치환하고 scanner는 부분 n-gram까지 탐지했다. masker boundary는 underscore를 단어 문자로 보았고, scanner의 2글자 fault-ID compact scan은 SHA/UID 내부 우연한 `f7`도 false positive로 처리했다.
+- **수정 내용**: masker version을 `v2.3-procedure-mask-2`로 올리고 category별 scanner n-gram을 동일하게 생성해 긴 span부터 원문 좌표로 제거한다. underscore를 separator로 처리하고 fault ID는 separator 변형 전용 경계 scan으로 분리해 hash substring false positive를 제거했다. leakage 예외에는 원문 대신 category count, campaign에는 `incident_failed` error type을 남긴다. 직전 5분 collector 신호 read-only replay에서 pre-scan 12건, removal 6개, post-scan 0건을 확인했다. 실패 campaign의 result·attempt·charged·pilot ledger와 AIC 사용은 모두 0이다.
+- **수정 파일**: `experiments/v2_3/retrieval.py:1`, `experiments/v2_3/scanner.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_retrieval.py:1`, `tests/test_v2_3_scanner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 전체 test/dry-run·독립 리뷰·commit-push 후 다음 live checkpoint 대기
+
+### 16. 실패 이벤트와 fault-ID 변형의 fail-closed 보완 — 2026-08-09
+
+- **수정 에이전트**: @Codex, @explorer-reviewer
+- **증상/문제**: 독립 적대 리뷰에서 `incident_failed` event fsync 오류가 필수 recovery보다 먼저 전파될 수 있었고, scanner가 차단하는 `F-7`·`F_7`·`F 7` 변형을 masker가 제거하지 못했다.
+- **원인**: 진단 event 기록을 recovery safety boundary 안에서 필수 작업처럼 처리했고, fault ID의 내부 separator 전용 규칙은 scanner에만 구현했다.
+- **수정 내용**: 실패 event 기록은 primary error를 보존하는 best-effort 진단으로 격리해 기록 오류와 무관하게 recovery를 수행한다. masker에도 NFKC 이후 fault-ID 전용 Unicode separator pattern을 추가해 공백·하이픈·underscore·전각 변형을 제거하되 SHA/UID 내부 `f7` substring은 유지한다. disk-full mock과 fault-ID 적대 변형 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/retrieval.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_retrieval.py:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 전체 136개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 독립 재리뷰 승인
