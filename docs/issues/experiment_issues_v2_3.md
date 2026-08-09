@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 5건
-- 심각(실험 무효화): 3건
+- 총 이슈: 6건
+- 심각(실험 무효화): 4건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 0건
 
@@ -81,4 +81,19 @@
 - **관련 로그**:
   ```text
   Invalid value for --max-ai-credits: "10.0". Use at least 30 AI credits.
+  ```
+
+### [ISS-006] Flux reconciliation이 F7 처치를 validator 전에 원복
+
+- **카테고리**: injection
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-pilot-f7t1-20260809-221556` 전체. 결과 0행이며 실험 데이터로 사용할 수 없다.
+- **발생 빈도**: 1회
+- **관찰한 사실**: `recovery_receipt_sealed`와 `injection_started` 뒤 10m frontend ReplicaSet/pod가 생성됐지만, 120초 validator 시점의 Deployment는 다시 limit/request 200m/100m였다. Kubernetes events에는 10m ReplicaSet scale-up과 수 초 뒤 pod 종료/scale-down이 남았고, Flux `app` Kustomization은 interval 10m, suspend=false, Ready=true였다. campaign은 `incident_failed(PilotError)` 후 `recovery_green`으로 끝났고 manifest/events 외 charged·attempt·pilot ledger와 result/raw 파일은 생성되지 않았다.
+- **근본 원인**: F7을 live Deployment에 직접 patch했지만 GitOps desired state는 200m/100m여서, 예약된 Flux reconciliation이 fault desired state를 validator 전에 원복했다. 이는 event 시각·reconcile interval과 일치하는 원인 추론이며 controller audit log로 actor를 직접 식별한 것은 아니다.
+- **현재 영향**: Copilot subprocess와 AIC 사용은 0건이다. frontend generation=observedGeneration, limit/request 200m/100m, updated/ready/available=1, Boutique 12/12, 노드 6/6, 모니터링·잔여 리소스가 모두 GREEN이다.
+- **수정 방안**: 자동 재시도하지 않는다. 다음 설계 checkpoint에서 (A) `flux-system/app` Kustomization의 기존 suspend 상태를 mutation 전에 fsync하고 파일럿 동안만 suspend한 뒤 recovery에서 원래 상태로 복원하거나, (B) fault를 Git desired state로 주입하는 방법 중 하나를 선택한다. RAG-only 단일변수 파일럿에는 A가 최소 변경이지만 GitOps 동작 정지라는 실험 조건을 manifest와 위협요인에 명시해야 한다.
+- **관련 로그**:
+  ```text
+  PilotError: post-injection live CPU state does not match injector receipt
   ```
