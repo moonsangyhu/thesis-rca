@@ -1,0 +1,18 @@
+{
+  "description": "Codex equivalents of thesis-rca's Claude Code PreToolUse guards.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|apply_patch|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/pretool_guard.py\"",
+            "timeout": 30,
+            "statusMessage": "Checking thesis-rca safety policy"
+          }
+        ]
+      }
+    ]
+  }
+}
