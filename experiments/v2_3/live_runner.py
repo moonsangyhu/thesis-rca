@@ -30,15 +30,17 @@ class RecoveryFailure(PilotError):
 
 
 class FluxAppGuard:
-    """Temporarily suspend the Flux app reconciler with exact-state restore."""
+    """Temporarily suspend one Flux Kustomization with exact-state restore."""
 
     def __init__(
         self,
         resource_loader: Callable[[], dict],
         suspend_patcher: Callable[[bool | None, str], dict],
+        name: str = "app",
     ) -> None:
         self.resource_loader = resource_loader
         self.suspend_patcher = suspend_patcher
+        self.name = name
 
     @staticmethod
     def _identity(resource: dict) -> tuple[str, str, str]:
@@ -52,22 +54,22 @@ class FluxAppGuard:
     def prepare_recovery_context(self) -> dict:
         resource = self.resource_loader()
         namespace, name, uid = self._identity(resource)
-        if (namespace, name) != ("flux-system", "app") or not uid:
-            raise PilotError("Flux app Kustomization identity is invalid")
+        if (namespace, name) != ("flux-system", self.name) or not uid:
+            raise PilotError("Flux Kustomization identity is invalid")
         spec = resource.get("spec", {})
         if not isinstance(spec, dict):
-            raise PilotError("Flux app Kustomization spec is invalid")
+            raise PilotError("Flux Kustomization spec is invalid")
         present = "suspend" in spec
         original = spec.get("suspend", False)
         resource_version = str(
             resource.get("metadata", {}).get("resourceVersion") or ""
         )
         if not isinstance(original, bool):
-            raise PilotError("Flux app suspend state is invalid")
+            raise PilotError("Flux suspend state is invalid")
         if original:
-            raise PilotError("Flux app must be active before the pilot")
+            raise PilotError("Flux Kustomization must be active before the pilot")
         if not resource_version:
-            raise PilotError("Flux app resourceVersion is missing")
+            raise PilotError("Flux resourceVersion is missing")
         return {
             "flux_guard_schema": "v2.3-flux-app-guard-1",
             "flux_namespace": namespace,
@@ -89,7 +91,7 @@ class FluxAppGuard:
         if (
             context["flux_guard_schema"] != "v2.3-flux-app-guard-1"
             or (context["flux_namespace"], context["flux_name"])
-            != ("flux-system", "app")
+            != ("flux-system", self.name)
             or not context["flux_uid"]
             or not isinstance(context["flux_resource_version"], str)
             or not context["flux_resource_version"]
@@ -104,7 +106,7 @@ class FluxAppGuard:
         if self._identity(current) != (
             context["flux_namespace"], context["flux_name"], context["flux_uid"]
         ):
-            raise PilotError("Flux app identity changed before suspension")
+            raise PilotError("Flux identity changed before suspension")
         current_spec = current.get("spec", {})
         current_rv = str(current.get("metadata", {}).get("resourceVersion") or "")
         if (
@@ -114,7 +116,7 @@ class FluxAppGuard:
             or current_spec.get("suspend", False)
             != context["flux_original_suspend"]
         ):
-            raise PilotError("Flux app changed after recovery receipt was sealed")
+            raise PilotError("Flux object changed after recovery receipt was sealed")
         patched = self.suspend_patcher(True, current_rv)
         patched_rv = str(patched.get("metadata", {}).get("resourceVersion") or "")
         if (
@@ -122,14 +124,24 @@ class FluxAppGuard:
             or patched.get("spec", {}).get("suspend") is not True
             or not patched_rv or patched_rv == current_rv
         ):
-            raise PilotError("Flux app suspension CAS did not succeed")
+            raise PilotError("Flux suspension CAS did not succeed")
         suspended = self.resource_loader()
         if (
             self._identity(suspended) != self._identity(current)
             or suspended.get("spec", {}).get("suspend") is not True
         ):
-            raise PilotError("Flux app suspension did not persist")
+            raise PilotError("Flux suspension did not persist")
         return dict(context)
+
+    def verify_suspended(self, context: dict) -> None:
+        self._validate_receipt(context)
+        current = self.resource_loader()
+        if (
+            self._identity(current)
+            != (context["flux_namespace"], context["flux_name"], context["flux_uid"])
+            or current.get("spec", {}).get("suspend") is not True
+        ):
+            raise PilotError("Flux suspension did not remain stable")
 
     def restore(self, context: dict) -> dict:
         self._validate_receipt(context)
@@ -137,11 +149,11 @@ class FluxAppGuard:
         if self._identity(current) != (
             context["flux_namespace"], context["flux_name"], context["flux_uid"]
         ):
-            raise PilotError("Flux app identity changed before restore")
+            raise PilotError("Flux identity changed before restore")
         current_spec = current.get("spec", {})
         current_rv = str(current.get("metadata", {}).get("resourceVersion") or "")
         if not isinstance(current_spec, dict) or not current_rv:
-            raise PilotError("Flux app current state is invalid during restore")
+            raise PilotError("Flux current state is invalid during restore")
         current_present = "suspend" in current_spec
         current_value = current_spec.get("suspend", False)
         exact_original = (
@@ -177,7 +189,7 @@ class FluxAppGuard:
             or patched_spec.get("suspend", False)
             != context["flux_original_suspend"]
         ):
-            raise PilotError("Flux app restore CAS did not succeed")
+            raise PilotError("Flux restore CAS did not succeed")
         restored = self.resource_loader()
         spec = restored.get("spec", {}) if isinstance(restored, dict) else {}
         present = "suspend" in spec
@@ -187,11 +199,93 @@ class FluxAppGuard:
             or present != context["flux_original_suspend_present"]
             or value != context["flux_original_suspend"]
         ):
-            raise PilotError("Flux app suspend state was not exactly restored")
+            raise PilotError("Flux suspend state was not exactly restored")
         return {
             "flux_restored": True, "flux_exact_original": True,
             "flux_suspend_present": present,
             "flux_restore_action": "cas-restored",
+        }
+
+
+class FluxHierarchyGuard:
+    """Suspend the self-managing Flux root before its child app object."""
+
+    def __init__(
+        self,
+        root_guard: FluxAppGuard,
+        app_guard: FluxAppGuard,
+        settle: Callable[..., None] | None = None,
+    ) -> None:
+        self.root_guard = root_guard
+        self.app_guard = app_guard
+        self.settle = settle or self._verify_members
+
+    @staticmethod
+    def _verify_members(*members: tuple[FluxAppGuard, dict]) -> None:
+        for guard, receipt in members:
+            guard.verify_suspended(receipt)
+
+    @staticmethod
+    def _validate(context: dict) -> None:
+        if (
+            not isinstance(context, dict)
+            or set(context) != {"flux_hierarchy_schema", "root", "app"}
+            or context.get("flux_hierarchy_schema") != "v2.3-flux-hierarchy-1"
+            or not isinstance(context.get("root"), dict)
+            or not isinstance(context.get("app"), dict)
+        ):
+            raise PilotError("Flux hierarchy receipt schema mismatch")
+
+    def prepare_recovery_context(self) -> dict:
+        return {
+            "flux_hierarchy_schema": "v2.3-flux-hierarchy-1",
+            "root": self.root_guard.prepare_recovery_context(),
+            "app": self.app_guard.prepare_recovery_context(),
+        }
+
+    def suspend(self, context: dict) -> dict:
+        self._validate(context)
+        self.root_guard.suspend(context["root"])
+        self.settle((self.root_guard, context["root"]))
+        self.app_guard.suspend(context["app"])
+        members = (
+            (self.root_guard, context["root"]),
+            (self.app_guard, context["app"]),
+        )
+        self.settle(*members)
+        self._verify_members(*members)
+        return json.loads(json.dumps(context, sort_keys=True))
+
+    def restore(self, context: dict) -> dict:
+        self._validate(context)
+        errors: list[BaseException] = []
+        app_result: dict = {}
+        root_result: dict = {}
+        try:
+            app_result = self.app_guard.restore(context["app"])
+            if not app_result.get("flux_exact_original"):
+                raise PilotError("Flux app exact restore failed")
+        except BaseException as exc:
+            errors.append(exc)
+        try:
+            root_result = self.root_guard.restore(context["root"])
+            if not root_result.get("flux_exact_original"):
+                raise PilotError("Flux root exact restore failed")
+        except BaseException as exc:
+            errors.append(exc)
+        if errors:
+            raise PilotError("Flux hierarchy exact restore failed") from errors[0]
+        return {
+            "flux_restored": True,
+            "flux_exact_original": True,
+            "flux_suspend_present": {
+                "root": root_result.get("flux_suspend_present"),
+                "app": app_result.get("flux_suspend_present"),
+            },
+            "flux_restore_action": {
+                "root": root_result.get("flux_restore_action"),
+                "app": app_result.get("flux_restore_action"),
+            },
         }
 
 
@@ -599,14 +693,23 @@ class PilotIncidentRunner:
             prepared_flux = prepare_flux()
             if not isinstance(prepared_flux, dict) or not prepared_flux:
                 raise PilotError("Flux recovery receipt is empty")
-            flux_context = dict(prepared_flux)
+            sealed_flux = json.dumps(
+                prepared_flux, ensure_ascii=False, sort_keys=True,
+                separators=(",", ":"),
+            )
+            flux_context = json.loads(sealed_flux)
             if hasattr(self.store, "append_event"):
                 self.store.append_event(
-                    "flux_recovery_receipt_sealed", recovery_context=flux_context
+                    "flux_recovery_receipt_sealed",
+                    recovery_context=json.loads(sealed_flux),
                 )
             flux_attempted = True
-            suspended_context = self.flux_guard.suspend(dict(prepared_flux))
-            if suspended_context != prepared_flux:
+            suspended_context = self.flux_guard.suspend(json.loads(sealed_flux))
+            returned_flux = json.dumps(
+                suspended_context, ensure_ascii=False, sort_keys=True,
+                separators=(",", ":"),
+            )
+            if returned_flux != sealed_flux:
                 raise PilotError("Flux guard altered the sealed recovery receipt")
             if hasattr(self.store, "append_event"):
                 self.store.append_event(

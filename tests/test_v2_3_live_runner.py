@@ -8,8 +8,8 @@ from types import SimpleNamespace
 from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.live_runner import (
     AttemptJournal, ChargedCallJournal, F7InjectionValidator, FluxAppGuard,
-    PilotError, PilotIncidentRunner, RecoveryFailure, RuntimeEvidenceRenderer,
-    RuntimeOnlyRetriever,
+    FluxHierarchyGuard, PilotError, PilotIncidentRunner, RecoveryFailure,
+    RuntimeEvidenceRenderer, RuntimeOnlyRetriever,
 )
 from experiments.v2_3.mock import DeterministicMockCaller
 from experiments.v2_3.scanner import ForbiddenLexicon
@@ -103,6 +103,35 @@ class FakeFluxGuard:
             "flux_restore_action": "cas-restored",
         }
 
+
+class FakeHierarchyMember:
+    def __init__(self, name, calls, restore_error=None):
+        self.name = name
+        self.calls = calls
+        self.restore_error = restore_error
+        self.stable = True
+
+    def prepare_recovery_context(self):
+        self.calls.append(f"prepare-{self.name}")
+        return {"name": self.name}
+
+    def suspend(self, receipt):
+        self.calls.append(f"suspend-{self.name}")
+        return receipt
+
+    def verify_suspended(self, receipt):
+        self.calls.append(f"settle-{self.name}")
+        if not self.stable:
+            raise PilotError(f"{self.name} drift")
+
+    def restore(self, receipt):
+        self.calls.append(f"restore-{self.name}")
+        if self.restore_error:
+            raise self.restore_error
+        return {
+            "flux_restored": True, "flux_exact_original": True,
+            "flux_suspend_present": False, "flux_restore_action": "cas-restored",
+        }
 
 class FakeInjector:
     def __init__(self, error=None):
@@ -323,6 +352,37 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(flux.calls, ["prepare", "suspend", "restore"])
         self.assertEqual(runner.injector.calls, [])
 
+    def test_nested_flux_receipt_mutation_cannot_change_recovery_copy(self):
+        class NestedMutatingGuard:
+            def __init__(self):
+                self.restored = None
+
+            def prepare_recovery_context(self):
+                return {
+                    "flux_hierarchy_schema": "v2.3-flux-hierarchy-1",
+                    "root": {"flux_resource_version": "10"},
+                    "app": {"flux_resource_version": "20"},
+                }
+
+            def suspend(self, context):
+                context["root"]["flux_resource_version"] = "forged"
+                return context
+
+            def restore(self, context):
+                self.restored = context
+                return {
+                    "flux_restored": True, "flux_exact_original": True,
+                    "flux_suspend_present": False,
+                    "flux_restore_action": "cas-restored",
+                }
+
+        flux = NestedMutatingGuard()
+        runner, _ = self.make_runner(flux_guard=flux)
+        with self.assertRaisesRegex(PilotError, "altered"):
+            runner.run("F7", 1, GROUND_TRUTH)
+        self.assertEqual(flux.restored["root"]["flux_resource_version"], "10")
+        self.assertEqual(runner.injector.calls, [])
+
     def test_flux_restore_failure_invalidates_result_after_cluster_recovery(self):
         flux = FakeFluxGuard(restore_error=RuntimeError("restore failed"))
         runner, _ = self.make_runner(flux_guard=flux)
@@ -419,6 +479,48 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertIs(state["spec"]["suspend"], False)
         self.assertFalse(restored["flux_restored"])
         self.assertEqual(restored["flux_restore_action"], "external-change-preserved")
+
+    def test_flux_hierarchy_suspends_root_then_app_and_restores_reverse(self):
+        calls = []
+        root = FakeHierarchyMember("root", calls)
+        app = FakeHierarchyMember("app", calls)
+        guard = FluxHierarchyGuard(root, app)
+        receipt = guard.prepare_recovery_context()
+        guard.suspend(receipt)
+        result = guard.restore(receipt)
+        self.assertEqual(calls, [
+            "prepare-root", "prepare-app",
+            "suspend-root", "settle-root", "suspend-app",
+            "settle-root", "settle-app", "settle-root", "settle-app",
+            "restore-app", "restore-root",
+        ])
+        self.assertTrue(result["flux_exact_original"])
+
+    def test_flux_hierarchy_restores_root_even_when_app_restore_fails(self):
+        calls = []
+        root = FakeHierarchyMember("root", calls)
+        app = FakeHierarchyMember("app", calls, restore_error=RuntimeError("app"))
+        guard = FluxHierarchyGuard(root, app)
+        receipt = guard.prepare_recovery_context()
+        with self.assertRaisesRegex(PilotError, "hierarchy"):
+            guard.restore(receipt)
+        self.assertEqual(calls[-2:], ["restore-app", "restore-root"])
+
+    def test_flux_hierarchy_rejects_root_drift_during_app_settle(self):
+        calls = []
+        root = FakeHierarchyMember("root", calls)
+        app = FakeHierarchyMember("app", calls)
+
+        def adversarial_settle(*members):
+            if len(members) == 2:
+                root.stable = False
+            for member, receipt in members:
+                member.verify_suspended(receipt)
+
+        guard = FluxHierarchyGuard(root, app, settle=adversarial_settle)
+        receipt = guard.prepare_recovery_context()
+        with self.assertRaisesRegex(PilotError, "root drift"):
+            guard.suspend(receipt)
 
     def test_f7_post_injection_validator_binds_identity_and_live_state(self):
         deployment = {

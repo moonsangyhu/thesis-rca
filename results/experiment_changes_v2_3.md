@@ -170,3 +170,12 @@
 - **수정 내용**: 사용자 승인에 따라 별도 `FluxAppGuard`를 추가했다. `flux-system/app`의 UID·resourceVersion·원래 suspend field 존재 여부·값을 mutation 전에 event journal에 fsync하고, resourceVersion CAS 응답과 suspend=true를 재조회 검증한 뒤에만 F7을 주입한다. 정상·injection 예외·partial suspend·F7 recovery 실패 모두에서 F7 복구 후 Flux field를 원래 형태로 CAS 복원하며, concurrent false 변경은 덮어쓰지 않는다. process/SIGKILL 경계는 campaign의 sealed receipt를 사용하는 독립 idempotent `flux_restore` 명령과 오케스트레이터 checkpoint로 보완한다. 어느 복구든 exact original이 아니면 결과 commit을 차단한다. manifest와 plan/review/runbook에 공통 처치 및 외적 타당성 한계를 기록했다.
 - **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/flux_restore.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/run.py:1`, `tests/test_v2_3_flux_restore.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — F7→Flux 및 pre-F7 Flux-only 강제종료 복구, truncated-tail 내성을 포함한 targeted 48개·전체 156개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 최종 독립 재리뷰 승인
+
+### 20. Flux root/app 계층 suspend gate — 2026-08-10
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: child `app`만 suspend한 campaign에서도 F7 10m 처치가 약 12초 뒤 200m로 원복됐다.
+- **원인**: 상위 `flux-system` Kustomization이 child `app` 객체 자체를 관리해 desired manifest를 재적용하면서 child suspend field를 제거했다. controller 로그의 동일 reconcile 경로에서 `Kustomization/flux-system/app: configured`와 `Deployment/boutique/frontend: configured`를 직접 확인했다.
+- **수정 내용**: root와 app의 exact state를 단일 hierarchy receipt에 봉인하고 root→app CAS suspend·각 10회 안정화 후에만 F7을 주입한다. recovery/emergency는 F7 뒤 app→root exact restore를 수행하며 일부 restore 실패에도 나머지 복구를 시도한다. 실패 campaign은 result/raw/attempt/charged/pilot ledger 0건이고 cluster recovery GREEN이다.
+- **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/flux_restore.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — root/app 공동 안정화·F7 직전 동시 검증·nested receipt canonical binding을 포함한 targeted 52개·전체 160개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 최종 독립 재리뷰 승인

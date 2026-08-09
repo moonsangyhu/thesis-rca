@@ -272,7 +272,7 @@ recovery gate GREEN
 - `boutique` workload가 사전 정의 replica/Ready 상태
 - injection object·patch·traffic control·network policy·node mutation 잔류 0건
 - Prometheus·Loki와 K8s API health 정상, 수집 window query 성공
-- Flux/ArgoCD가 환경 오염을 만들지 않는 정상 상태; GitOps 정보는 모델 context에 넣지 않음. 다만 live patch fault가 10분 reconcile로 소실되는 것을 막기 위해 `flux-system/app`만 incident 동안 일시 suspend하고, 원래 field 존재 여부·값을 durable receipt로 봉인해 recovery 후 정확히 복원한다.
+- Flux/ArgoCD가 환경 오염을 만들지 않는 정상 상태; GitOps 정보는 모델 context에 넣지 않음. 다만 live patch fault가 reconcile로 소실되는 것을 막기 위해 상위 `flux-system`과 하위 `app` Kustomization을 root→child 순서로 incident 동안 일시 suspend하고, 두 객체의 원래 field 존재 여부·값을 durable hierarchy receipt로 봉인해 recovery 후 child→root 순서로 정확히 복원한다.
 - recovery manifest path와 대상 revision/hash가 계획값과 일치
 - 이전 trial marker와 low-quality signal 0건
 

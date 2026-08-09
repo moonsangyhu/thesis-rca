@@ -6,40 +6,54 @@ import argparse
 import json
 import os
 import re
+import time
 from pathlib import Path
 
-from .live_runner import FluxAppGuard, PilotError
+from .live_runner import FluxAppGuard, FluxHierarchyGuard, PilotError
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
-def build_live_flux_guard() -> FluxAppGuard:
-    """Build the production guard with resourceVersion CAS merge patches."""
+def build_live_flux_guard() -> FluxHierarchyGuard:
+    """Build the production root/app hierarchy guard with CAS patches."""
     from scripts.fault_inject.base import kubectl, kubectl_get_json
 
-    def load() -> dict:
-        return kubectl_get_json("kustomization", "app", namespace="flux-system")
+    def guard_for(name: str) -> FluxAppGuard:
+        def load() -> dict:
+            return kubectl_get_json("kustomization", name, namespace="flux-system")
 
-    def patch_suspend(value: bool | None, resource_version: str) -> dict:
-        patch = {
-            "metadata": {"resourceVersion": resource_version},
-            "spec": {"suspend": value},
-        }
-        output = kubectl(
-            "patch", "kustomization", "app", "--type", "merge",
-            "-p", json.dumps(patch, separators=(",", ":")), "-o", "json",
-            namespace="flux-system",
-        )
-        try:
-            parsed = json.loads(output) if output else {}
-        except json.JSONDecodeError as exc:
-            raise PilotError("Flux patch response is not JSON") from exc
-        if not isinstance(parsed, dict):
-            raise PilotError("Flux patch response is not an object")
-        return parsed
+        def patch_suspend(value: bool | None, resource_version: str) -> dict:
+            patch = {
+                "metadata": {"resourceVersion": resource_version},
+                "spec": {"suspend": value},
+            }
+            output = kubectl(
+                "patch", "kustomization", name, "--type", "merge",
+                "-p", json.dumps(patch, separators=(",", ":")), "-o", "json",
+                namespace="flux-system",
+            )
+            try:
+                parsed = json.loads(output) if output else {}
+            except json.JSONDecodeError as exc:
+                raise PilotError("Flux patch response is not JSON") from exc
+            if not isinstance(parsed, dict):
+                raise PilotError("Flux patch response is not an object")
+            return parsed
 
-    return FluxAppGuard(load, patch_suspend)
+        return FluxAppGuard(load, patch_suspend, name=name)
+
+    def settle(*members: tuple[FluxAppGuard, dict]) -> None:
+        # A parent reconciliation already in flight may write after the CAS.
+        # Ten joint observations establish quiescence before the fault patch.
+        for _ in range(10):
+            time.sleep(1)
+            for guard, receipt in members:
+                guard.verify_suspended(receipt)
+
+    return FluxHierarchyGuard(
+        guard_for("flux-system"), guard_for("app"), settle=settle
+    )
 
 
 def _validated_campaign_dir(path: Path) -> Path:
@@ -128,7 +142,7 @@ def _append_event(campaign_dir: Path, event: str, **details) -> None:
 
 def restore_campaign(
     campaign_dir: Path,
-    guard: FluxAppGuard | None = None,
+    guard: object | None = None,
     recovery: object | None = None,
 ) -> dict:
     """Restore F7 exactly, then Flux, after a crashed pilot process."""
