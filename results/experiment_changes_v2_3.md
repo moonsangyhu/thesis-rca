@@ -98,3 +98,12 @@
 - **수정 내용**: artifact/result/raw/validated/charged ledger 0개와 Copilot·fault injection 0건을 확인했다. currencyservice CPU 200m, 6/6 Ready, DiskPressure False, Boutique 12 deployments 1/1, residual resource와 Failed pod 0, Prometheus/Loki Ready를 확인했다. 다음 단일 재시도는 root의 지속 PTY exec session, 새 campaign ID, root-side session/log/artifact 교차검증으로 고정한다.
 - **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 무실행·무과금 launch failure로 분류 — 기록 commit-push 후 새 campaign으로 단일 재시도
+
+### 12. V2.3 live Python·Chroma 경로 사전검증 보강 — 2026-08-09
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 지속 PTY로 시작한 두 번째 pilot이 전역 Python 3.11의 PyYAML 누락으로 import 단계에서 종료했다. repo venv로 바꿔도 `src.rag` package import가 기본 worktree Chroma 경로를 조기 고정해 승인된 외부 동결 Chroma 경로가 적용되지 않았다.
+- **원인**: live launcher interpreter가 고정되지 않았고 `KnowledgeRetriever`가 module-level `CHROMA_DIR`만 참조해 V2.3 `--chroma-dir`와 실행 객체 사이의 명시적 binding이 없었다.
+- **수정 내용**: `KnowledgeRetriever` 생성자에 선택적 `chroma_dir`를 추가하고 V2.3 runner가 `resolve(strict=True)`로 검증한 경로를 직접 전달하게 했다. repo venv Python 3.11.15에서 PyYAML·ChromaDB·sentence-transformers와 Copilot CLI 1.0.78을 확인하고, offline embedding으로 동결 Chroma corpus 일반 질의 2건을 실제 조회했다. targeted unittest 11개가 통과했다. 실패 attempt의 artifact/result/raw/call ledger/charged receipt와 fault injection은 모두 0건이었다.
+- **수정 파일**: `src/rag/retriever.py:1`, `experiments/v2_3/run.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 전체 테스트·dry-run·diff 검증과 commit-push 후 새 campaign ID로 pilot 실행

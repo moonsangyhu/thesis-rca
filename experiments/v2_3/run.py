@@ -130,7 +130,6 @@ def _run_authorized_pilot(
     from scripts.stabilize import Recovery
     from scripts.stabilize.state_validator import StateValidator
     from src.collector import SignalCollector
-    import src.rag.config as rag_config
     from src.rag.config import DEBUGGING_DIR, KNOWN_ISSUES_DIR, RUNBOOKS_DIR
 
     # Retrieval must be reproducible and must not download a model during a run.
@@ -139,7 +138,6 @@ def _run_authorized_pilot(
     resolved_chroma = Path(chroma_dir).resolve(strict=True)
     if not resolved_chroma.is_dir():
         raise RuntimeError("--chroma-dir must be an existing directory")
-    rag_config.CHROMA_DIR = resolved_chroma
     from src.rag.retriever import KnowledgeRetriever
 
     from .engine import RCAEngineV2_3
@@ -222,7 +220,7 @@ def _run_authorized_pilot(
             lambda: kubectl_get_json("pods"),
         ),
         retriever=RuntimeOnlyRetriever(
-            KnowledgeRetriever(), corpus_version=corpus_version
+            KnowledgeRetriever(chroma_dir=resolved_chroma), corpus_version=corpus_version
         ),
         store=store,
     )

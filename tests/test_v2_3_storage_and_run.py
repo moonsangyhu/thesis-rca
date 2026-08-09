@@ -151,6 +151,18 @@ class StorageAndRunTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "clean"):
                 _verified_git_revision(Path("/tmp"))
 
+    def test_retriever_accepts_explicit_live_chroma_directory(self):
+        from src.rag.retriever import KnowledgeRetriever
+
+        with tempfile.TemporaryDirectory() as temp_dir, \
+                patch("src.rag.retriever.chromadb.PersistentClient") as client, \
+                patch("src.rag.retriever.embedding_functions.SentenceTransformerEmbeddingFunction"):
+            collection = client.return_value.get_collection.return_value
+            collection.count.return_value = 1
+            KnowledgeRetriever(chroma_dir=Path(temp_dir))
+
+        client.assert_called_once_with(path=temp_dir)
+
 
 if __name__ == "__main__":
     unittest.main()
