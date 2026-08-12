@@ -164,3 +164,13 @@
   AuthorizationError: billing confirmation is stale
   CopilotQuotaError: Copilot server permits paid/additional usage after included AIC exhaustion
   ```
+
+### [ISS-011] 사용자 결정으로 paid-overage 실행 모드 전환
+
+- **카테고리**: billing / experiment authorization
+- **심각도**: info (resolved decision)
+- **영향**: ISS-010의 서버 overage=true 차단을 해제하고 F7 trial 1 파일럿을 재개한다.
+- **발생 빈도**: 사용자 지시 1회(2026-08-12)
+- **관찰한 사실**: 사용자는 회사 과금 정책이 사용을 막는 것이 아니라 추가 과금 허용 때문에 실험기가 중단됐다는 설명을 받은 뒤, 실험을 계속하고 앞으로 해당 조건을 신경 쓰지 말라고 명시했다. 당시 비추론 SDK snapshot은 Business seat, entitlement 50,000 AIC, used 34,100, remaining 15,900, exhausted-quota/overage 허용 flag 모두 true, 실제 overage 0이었다.
+- **수정 내용**: authorization을 `zero-overage-evidence`와 `paid-overage-user-authorized` 두 상호 배타적 모드로 분리한다. 후자는 전용 CLI/process gate를 요구하고 서버 정책을 차단 대신 provenance로 기록한다. account/Business seat binding, 30 AIC session cap, 360 AIC pilot campaign cap, durable charge receipt, model/tool/skill isolation과 recovery gate는 유지한다.
+- **현재 영향**: billing policy는 더 이상 파일럿 blocker가 아니다. clean commit 및 cluster preflight 후 실행 가능하다.

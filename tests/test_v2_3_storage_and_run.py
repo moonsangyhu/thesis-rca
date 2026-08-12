@@ -14,7 +14,9 @@ from experiments.v2_3.run import (
     RealExecutionDisabled, _pilot_budget_manifest_fields, _pilot_identity,
     _run_authorized_pilot, _verified_git_revision, main,
 )
-from experiments.v2_3.authorization import AuthorizationError
+from experiments.v2_3.authorization import (
+    AuthorizationError, LiveAuthorization, PAID_OVERAGE_MODE,
+)
 from experiments.shared.copilot_quota import CopilotQuotaError
 from experiments.v2_3.storage import DuplicateResultError, OutputSafetyError, SafeOutputStore
 
@@ -119,6 +121,41 @@ class StorageAndRunTests(unittest.TestCase):
                 main(argv)
         live.assert_not_called()
 
+    def test_paid_overage_cli_requires_explicit_runtime_gate(self):
+        argv = [
+            "--pilot", "--allow-paid-overage",
+            "--approval-id", "paid-overage-20260812",
+            "--campaign-id", "campaign-20260812",
+            "--chroma-dir", "/tmp/not-reached",
+        ]
+        with patch.dict("os.environ", {
+            "THESIS_V23_PAID_OVERAGE_AUTHORIZED": "0",
+            "THESIS_V23_PILOT_USER_APPROVED": "1",
+        }, clear=False), patch("experiments.v2_3.run._run_authorized_pilot") as live:
+            with self.assertRaisesRegex(AuthorizationError, "paid-overage"):
+                main(argv)
+        live.assert_not_called()
+
+    def test_paid_overage_cli_seals_mode_before_live_builder(self):
+        argv = [
+            "--pilot", "--allow-paid-overage",
+            "--approval-id", "paid-overage-20260812",
+            "--campaign-id", "campaign-20260812",
+            "--chroma-dir", "/tmp/not-reached",
+        ]
+        with patch.dict("os.environ", {
+            "THESIS_V23_PAID_OVERAGE_AUTHORIZED": "1",
+            "THESIS_V23_PILOT_USER_APPROVED": "1",
+        }, clear=False), patch(
+            "experiments.v2_3.run._run_authorized_pilot",
+            return_value={"status": "not-run"},
+        ) as live:
+            self.assertEqual(main(argv), 0)
+        authorization = live.call_args.args[0]
+        self.assertIsInstance(authorization, LiveAuthorization)
+        self.assertEqual(authorization.billing_mode, PAID_OVERAGE_MODE)
+        self.assertIsNone(authorization.evidence)
+
     def test_dry_run_has_no_filesystem_or_external_calls(self):
         with patch("experiments.v2_3.mock.SafeOutputStore") as store:
             summary = run_dry_run()
@@ -160,7 +197,7 @@ class StorageAndRunTests(unittest.TestCase):
 
     def test_live_manifest_records_cli_and_campaign_aic_boundaries(self):
         self.assertEqual(_pilot_budget_manifest_fields(360), {
-            "schema_version": "v2.3-pilot-campaign-3",
+            "schema_version": "v2.3-pilot-campaign-4",
             "max_campaign_aic": 360,
             "copilot_session_max_aic": 30,
             "flux_reconciliation_policy": "suspend-flux-root-then-app-during-incident",
@@ -173,14 +210,23 @@ class StorageAndRunTests(unittest.TestCase):
             / "artifacts" / "v2_3_pilot" / campaign
         )
         self.assertFalse(output.exists())
-        authorization = type("Authorization", (), {"revalidate": lambda self: self})()
+        authorization = LiveAuthorization.require_paid_overage(
+            approval_id="paid-overage-20260812",
+            environment={
+                "THESIS_V23_PAID_OVERAGE_AUTHORIZED": "1",
+                "THESIS_V23_PILOT_USER_APPROVED": "1",
+            },
+        )
         backend = type("Backend", (), {"executable": "/opt/bin/copilot"})()
-        with patch(
+        with patch.dict("os.environ", {
+            "THESIS_V23_PAID_OVERAGE_AUTHORIZED": "1",
+            "THESIS_V23_PILOT_USER_APPROVED": "1",
+        }, clear=False), patch(
             "experiments.v2_3.run._verified_git_revision", return_value="a" * 40
         ), patch(
             "experiments.shared.copilot_cli.CopilotCLIBackend", return_value=backend
         ), patch(
-            "experiments.shared.copilot_quota.verify_zero_overage_quota",
+            "experiments.shared.copilot_quota.inspect_copilot_quota",
             side_effect=CopilotQuotaError("paid/additional usage permitted"),
         ):
             with self.assertRaisesRegex(CopilotQuotaError, "paid/additional"):

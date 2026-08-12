@@ -56,6 +56,7 @@ class CopilotCLIBackend:
         timeout_seconds: int = 180,
         max_ai_credits: int = MIN_COPILOT_SESSION_AIC,
         zero_overage_confirmed: bool | None = None,
+        billing_execution_authorized: bool | None = None,
         charge_observer: Callable[[dict], None] | None = None,
         pre_call_guard: Callable[[], object] | None = None,
     ) -> None:
@@ -70,11 +71,22 @@ class CopilotCLIBackend:
             raise ValueError(
                 "Copilot CLI session AIC cap must be an integer at least 30"
             )
+        if zero_overage_confirmed is not None and billing_execution_authorized is not None:
+            raise ValueError("billing authorization modes are mutually exclusive")
+        if (
+            zero_overage_confirmed is not None
+            and not isinstance(zero_overage_confirmed, bool)
+        ) or (
+            billing_execution_authorized is not None
+            and not isinstance(billing_execution_authorized, bool)
+        ):
+            raise ValueError("billing authorization state must be boolean")
         self.executable = resolved
         self.model = model
         self.timeout_seconds = timeout_seconds
         self.max_ai_credits = max_ai_credits
         self.zero_overage_confirmed = zero_overage_confirmed
+        self.billing_execution_authorized = billing_execution_authorized
         self.charge_observer = charge_observer
         self.pre_call_guard = pre_call_guard
         self._disabled_skill_names: frozenset[str] = frozenset()
@@ -82,6 +94,8 @@ class CopilotCLIBackend:
         self._tool_filter_binding_required = False
 
     def _billing_guard_passes(self) -> bool:
+        if self.billing_execution_authorized is not None:
+            return self.billing_execution_authorized is True
         if self.zero_overage_confirmed is not None:
             return self.zero_overage_confirmed
         return os.environ.get("THESIS_COPILOT_ZERO_OVERAGE_CONFIRMED") == "1"
@@ -103,7 +117,7 @@ class CopilotCLIBackend:
     def call(self, prompt: str, system_prompt: str, max_tokens: int) -> CopilotCLIResponse:
         if not self._billing_guard_passes():
             raise RuntimeError(
-                "Copilot inference blocked: zero-overage billing control is not confirmed"
+                "Copilot inference blocked: billing execution is not authorized"
             )
         if self.pre_call_guard is not None:
             self.pre_call_guard()

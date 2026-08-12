@@ -20,6 +20,9 @@ from typing import Mapping
 AUTH_SCHEMA = "v2.3-zero-overage-1"
 ZERO_OVERAGE_ENV = "THESIS_COPILOT_ZERO_OVERAGE_CONFIRMED"
 PILOT_APPROVAL_ENV = "THESIS_V23_PILOT_USER_APPROVED"
+PAID_OVERAGE_ENV = "THESIS_V23_PAID_OVERAGE_AUTHORIZED"
+ZERO_OVERAGE_MODE = "zero-overage-evidence"
+PAID_OVERAGE_MODE = "paid-overage-user-authorized"
 _AUTH_SEAL = object()
 
 
@@ -164,19 +167,30 @@ class BillingEvidence:
 
 @dataclass(frozen=True, init=False)
 class LiveAuthorization:
-    evidence: BillingEvidence
+    evidence: BillingEvidence | None
     approval_id: str
+    billing_mode: str
     _seal: object = field(repr=False, compare=False)
 
     @classmethod
     def _create(
-        cls, *, evidence: BillingEvidence, approval_id: str, seal: object
+        cls, *, evidence: BillingEvidence | None, approval_id: str,
+        billing_mode: str, seal: object
     ) -> "LiveAuthorization":
-        if seal is not _AUTH_SEAL or evidence._seal is not _AUTH_SEAL:
+        if seal is not _AUTH_SEAL:
             raise AuthorizationError("live authorization construction is sealed")
+        if billing_mode == ZERO_OVERAGE_MODE:
+            if evidence is None or evidence._seal is not _AUTH_SEAL:
+                raise AuthorizationError("zero-overage evidence seal is invalid")
+        elif billing_mode == PAID_OVERAGE_MODE:
+            if evidence is not None:
+                raise AuthorizationError("paid-overage authorization cannot claim evidence")
+        else:
+            raise AuthorizationError("live billing authorization mode is invalid")
         instance = object.__new__(cls)
         object.__setattr__(instance, "evidence", evidence)
         object.__setattr__(instance, "approval_id", approval_id)
+        object.__setattr__(instance, "billing_mode", billing_mode)
         object.__setattr__(instance, "_seal", seal)
         return instance
 
@@ -198,7 +212,30 @@ class LiveAuthorization:
             raise AuthorizationError("pilot approval ID is missing or invalid")
         evidence = BillingEvidence.load(evidence_path, now=now)
         return cls._create(
-            evidence=evidence, approval_id=approval_id, seal=_AUTH_SEAL
+            evidence=evidence, approval_id=approval_id,
+            billing_mode=ZERO_OVERAGE_MODE, seal=_AUTH_SEAL
+        )
+
+    @classmethod
+    def require_paid_overage(
+        cls,
+        *,
+        approval_id: str,
+        environment: Mapping[str, str] | None = None,
+    ) -> "LiveAuthorization":
+        """Seal the user's explicit authorization to permit metered overage."""
+        env = os.environ if environment is None else environment
+        if env.get(PAID_OVERAGE_ENV) != "1":
+            raise AuthorizationError("paid-overage process gate is not enabled")
+        if env.get(PILOT_APPROVAL_ENV) != "1":
+            raise AuthorizationError("pilot user-approval process gate is not enabled")
+        if not approval_id or re.fullmatch(r"[A-Za-z0-9_.-]{8,128}", approval_id) is None:
+            raise AuthorizationError("pilot approval ID is missing or invalid")
+        return cls._create(
+            evidence=None,
+            approval_id=approval_id,
+            billing_mode=PAID_OVERAGE_MODE,
+            seal=_AUTH_SEAL,
         )
 
     def revalidate(
@@ -210,15 +247,28 @@ class LiveAuthorization:
         """Re-read artifacts and process gates at every live boundary."""
         if (
             getattr(self, "_seal", None) is not _AUTH_SEAL
-            or getattr(getattr(self, "evidence", None), "_seal", None) is not _AUTH_SEAL
         ):
             raise AuthorizationError("live authorization seal is invalid")
-        refreshed = type(self).require(
-            Path(self.evidence.manifest_path),
-            approval_id=self.approval_id,
-            environment=environment,
-            now=now,
-        )
-        if refreshed.evidence != self.evidence:
-            raise AuthorizationError("billing evidence changed after authorization")
+        if self.billing_mode == ZERO_OVERAGE_MODE:
+            if getattr(getattr(self, "evidence", None), "_seal", None) is not _AUTH_SEAL:
+                raise AuthorizationError("zero-overage evidence seal is invalid")
+            refreshed = type(self).require(
+                Path(self.evidence.manifest_path),
+                approval_id=self.approval_id,
+                environment=environment,
+                now=now,
+            )
+            if refreshed.evidence != self.evidence:
+                raise AuthorizationError("billing evidence changed after authorization")
+        elif self.billing_mode == PAID_OVERAGE_MODE:
+            if self.evidence is not None:
+                raise AuthorizationError("paid-overage authorization evidence is invalid")
+            refreshed = type(self).require_paid_overage(
+                approval_id=self.approval_id,
+                environment=environment,
+            )
+        else:
+            raise AuthorizationError("live billing authorization mode is invalid")
+        if refreshed != self:
+            raise AuthorizationError("live authorization changed after sealing")
         return self
