@@ -58,14 +58,15 @@ intake는 세 artifact의 경로와 SHA-256이 모두 고유한지, 파일과 ou
 
 ## 3. 실행 전 필수 승인
 
-다음 두 환경변수는 증빙 검토와 사용자의 파일럿 승인 후 같은 shell에서만 설정한다.
+현재 paid-overage 모드는 다음 두 환경변수를 사용자 결정이 유효한 같은 shell에서만 설정한다.
 
 ```bash
-export THESIS_COPILOT_ZERO_OVERAGE_CONFIRMED=1
+export THESIS_V23_PAID_OVERAGE_AUTHORIZED=1
 export THESIS_V23_PILOT_USER_APPROVED=1
 ```
 
 둘 중 하나라도 없거나 `1`이 아니면 Copilot·Kubernetes lazy import 전에 중단된다.
+legacy zero-overage mode만 첫 변수를 `THESIS_COPILOT_ZERO_OVERAGE_CONFIRMED=1`로 바꾸고 billing evidence를 전달한다.
 
 ## 4. 고정 명령
 
@@ -74,8 +75,8 @@ export THESIS_V23_PILOT_USER_APPROVED=1
 ```bash
 KUBECONFIG="/Users/yumunsang/.kube/config-k8s-lab" \
 /Users/yumunsang/thesis-rca/.venv/bin/python -m experiments.v2_3.run --pilot \
-  --billing-evidence /absolute/path/v2_3-billing-evidence.json \
-  --approval-id pilot-YYYYMMDD-approved \
+  --allow-paid-overage \
+  --approval-id paid-overage-20260812 \
   --campaign-id v2-3-pilot-YYYYMMDD-HHMM \
   --chroma-dir /Users/yumunsang/thesis-rca/data/chromadb \
   --max-campaign-aic 360
@@ -83,7 +84,7 @@ KUBECONFIG="/Users/yumunsang/.kube/config-k8s-lab" \
 
 실행 경로는 다음을 fail-closed 검증한다.
 
-- 증빙 3종의 실제 file hash, 조직 scope, 확인자·방법, 24시간 freshness
+- sealed billing authorization mode와 user approval ID, 실제 Business account/quota snapshot
 - output campaign directory가 존재하지 않음
 - Copilot CLI 실제 모델·session·output token·AIC 및 tool/MCP/remote event 0
 - CLI 종료 직후 성공·파싱 실패·cap 초과와 무관하게 charged-call receipt를 fsync
