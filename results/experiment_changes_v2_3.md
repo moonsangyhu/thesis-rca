@@ -215,3 +215,12 @@
 - **수정 내용**: native `sessionPlanToolFilterDiagnosticsForSessionJson`을 모델 호출 없이 실행해 nonempty `availableTools=['none']`의 exact 출력 `Unknown tool name in the tool allowlist: "none"`과 반대 의미인 `tool excludedlist`를 확인했다. parser는 exact allowlist event 1건만 inference binding으로 인정하고 기존 추정 문구·excludedlist·missing/duplicate/malformed metadata를 거부하도록 교정했다. 실패 campaign의 actual model은 Terra, exit 0, included AIC는 2.0857이며 result/raw/attempt/pilot ledger는 0, recovery는 GREEN이다. exact 무효 파일럿 누적 included AIC는 8.13925다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `tests/test_copilot_cli.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — targeted 17개·전체 166개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 독립 read-only 재리뷰 승인
+
+### 25. Copilot 서버 zero-overage quota 실시간 검증 — 2026-08-12
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 과거 수동 zero-overage 증거가 만료됐고, 현재 공식 SDK quota는 exhausted quota 뒤 추가 사용을 허용한다고 보고해 사용자의 별도 과금 금지 조건과 충돌했다.
+- **원인**: 수동 관리자 증거와 실제 Copilot 서버 quota policy 사이의 시간적 drift를 실행기가 검증하지 않았다.
+- **수정 내용**: 공식 SDK의 비추론 `account.getCurrentAuth`와 `account.getQuota`를 격리 임시 home에서 실행해 approved login `moonsangyhu`·GitHub CLI auth·Business seat SKU·token-based billing과 premium-interactions quota를 strict binding한다. 두 overage 허용 flag false, overage/overage entitlement 0, 내부 수치 정합성과 `campaign max + session max` 잔여 reserve를 모두 요구한다. 이 검사는 artifact/K8s import 전과 각 model subprocess 전에 반복되며 실패·malformed·account drift는 외부작용 전에 차단한다. 현재 서버의 true flag는 의도대로 차단됐고 조회 AIC는 0이다. quota provenance 추가에 따라 pilot manifest schema를 v3로 올렸다.
+- **수정 파일**: `experiments/shared/copilot_quota.py:1`, `experiments/shared/copilot_cli.py:1`, `experiments/v2_3/config.py:1`, `experiments/v2_3/run.py:1`, `tests/test_copilot_quota.py:1`, `tests/test_copilot_cli.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 관련 37개·전체 173개 테스트와 180행/2,160호출 무파일·무외부호출 dry-run 통과; 현재 live server overage=true를 model/K8s/artifact 이전에 재현 차단

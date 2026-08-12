@@ -12,9 +12,10 @@ from experiments.v2_3.mock import DeterministicMockCaller, clean_fixture
 from experiments.v2_3.mock import run_dry_run, run_mock_campaign
 from experiments.v2_3.run import (
     RealExecutionDisabled, _pilot_budget_manifest_fields, _pilot_identity,
-    _verified_git_revision, main,
+    _run_authorized_pilot, _verified_git_revision, main,
 )
 from experiments.v2_3.authorization import AuthorizationError
+from experiments.shared.copilot_quota import CopilotQuotaError
 from experiments.v2_3.storage import DuplicateResultError, OutputSafetyError, SafeOutputStore
 
 
@@ -159,11 +160,37 @@ class StorageAndRunTests(unittest.TestCase):
 
     def test_live_manifest_records_cli_and_campaign_aic_boundaries(self):
         self.assertEqual(_pilot_budget_manifest_fields(360), {
-            "schema_version": "v2.3-pilot-campaign-2",
+            "schema_version": "v2.3-pilot-campaign-3",
             "max_campaign_aic": 360,
             "copilot_session_max_aic": 30,
             "flux_reconciliation_policy": "suspend-flux-root-then-app-during-incident",
         })
+
+    def test_live_server_quota_blocks_before_output_and_cluster_imports(self):
+        campaign = "quota-block-before-cluster-20260812"
+        output = (
+            Path(__file__).resolve().parents[1]
+            / "artifacts" / "v2_3_pilot" / campaign
+        )
+        self.assertFalse(output.exists())
+        authorization = type("Authorization", (), {"revalidate": lambda self: self})()
+        backend = type("Backend", (), {"executable": "/opt/bin/copilot"})()
+        with patch(
+            "experiments.v2_3.run._verified_git_revision", return_value="a" * 40
+        ), patch(
+            "experiments.shared.copilot_cli.CopilotCLIBackend", return_value=backend
+        ), patch(
+            "experiments.shared.copilot_quota.verify_zero_overage_quota",
+            side_effect=CopilotQuotaError("paid/additional usage permitted"),
+        ):
+            with self.assertRaisesRegex(CopilotQuotaError, "paid/additional"):
+                _run_authorized_pilot(
+                    authorization,
+                    campaign_id=campaign,
+                    max_campaign_aic=360,
+                    chroma_dir=Path("/not/reached"),
+                )
+        self.assertFalse(output.exists())
 
     def test_retriever_accepts_explicit_live_chroma_directory(self):
         from src.rag.retriever import KnowledgeRetriever

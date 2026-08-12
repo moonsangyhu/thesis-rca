@@ -519,6 +519,19 @@ class CopilotCLIBackendTest(unittest.TestCase):
         run.assert_not_called()
 
     @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
+    @patch("experiments.shared.copilot_cli.subprocess.run")
+    def test_live_quota_guard_blocks_before_any_subprocess(self, run, _which):
+        def blocked():
+            raise RuntimeError("paid overage enabled")
+
+        backend = CopilotCLIBackend(
+            zero_overage_confirmed=True, pre_call_guard=blocked
+        )
+        with self.assertRaisesRegex(RuntimeError, "paid overage"):
+            backend.call("diagnose", "return JSON", 512)
+        run.assert_not_called()
+
+    @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
     def test_only_exact_disabled_tools_info_metadata_is_allowed(self, _which):
         backend = CopilotCLIBackend()
         metadata = {
