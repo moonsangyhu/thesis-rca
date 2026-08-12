@@ -174,3 +174,19 @@
 - **관찰한 사실**: 사용자는 회사 과금 정책이 사용을 막는 것이 아니라 추가 과금 허용 때문에 실험기가 중단됐다는 설명을 받은 뒤, 실험을 계속하고 앞으로 해당 조건을 신경 쓰지 말라고 명시했다. 당시 비추론 SDK snapshot은 Business seat, entitlement 50,000 AIC, used 34,100, remaining 15,900, exhausted-quota/overage 허용 flag 모두 true, 실제 overage 0이었다.
 - **수정 내용**: authorization을 `zero-overage-evidence`와 `paid-overage-user-authorized` 두 상호 배타적 모드로 분리한다. 후자는 전용 CLI/process gate를 요구하고 서버 정책을 차단 대신 provenance로 기록한다. account/Business seat binding, 30 AIC session cap, 360 AIC pilot campaign cap, durable charge receipt, model/tool/skill isolation과 recovery gate는 유지한다.
 - **현재 영향**: billing policy는 더 이상 파일럿 blocker가 아니다. clean commit 및 cluster preflight 후 실행 가능하다.
+
+### [ISS-012] Copilot CLI 1.0.78 lifecycle JSONL schema drift
+
+- **카테고리**: code / external interface
+- **심각도**: P1 (파일럿 1회 무효, 복구 성공)
+- **영향**: campaign `v2-3-pilot-f7t1-20260812-2113-paidoverage`는 F7 injection 검증 뒤 첫 Terra 응답에서 `user.message`를 인식하지 못해 결과 commit 전에 중단됐다.
+- **발생 빈도**: 무효 파일럿 1회, schema 진단 호출 11회
+- **관찰한 사실**: 첫 파일럿 호출은 actual model `gpt-5.6-terra`, exit 0, 1.91085 AIC였고 durable charged ledger 1건에 기록됐다. pilot/attempt/result/raw는 모두 0이다. runner는 frontend/server를 200m/100m로 복구하고 Flux app→root를 원래 absent suspend field로 CAS 복원한 뒤 `recovery_green`을 기록했다. 공식 로컬 schema와 실제 JSONL에는 `user.message`, turn/model-call/message streaming, optional reasoning, usage, idle lifecycle가 포함된다. schema 진단 11회는 총 11.00435 AIC를 사용했다.
+- **근본 원인**: 기존 strict parser가 tool/skill metadata 변화는 추적했지만 새 정상 lifecycle event를 allowlist에 포함하지 않았다.
+- **수정 내용**: 제출 prompt의 byte-exact `user.message` binding, UUIDv4/timezone/root/empty-attachment 검증, turn/model/message ID와 interaction ID 교차결합, delta→final content 일치, optional reasoning delta/final 결합, lifecycle singleton/incomplete gate를 추가했다. subagent/source/attachment/steering/parent-tool/unknown extra field는 계속 거부하며 reasoning content는 결과 provenance에 저장하지 않는다.
+- **현재 영향**: 실제 Terra smoke call이 strict parser를 통과했고 전체 181개 테스트와 180행/2,160호출 dry-run이 통과했다. clean commit에서 새 campaign 재실행 가능하다.
+- **관련 로그**:
+  ```text
+  LiveCallerError: unrecognized Copilot event type: user.message
+  authorization_verified → injection_verified → incident_failed → flux_restored → recovery_green
+  ```

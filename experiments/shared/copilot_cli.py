@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import time
 import math
+import re
 import uuid
 from dataclasses import dataclass
 from dataclasses import replace
@@ -216,7 +217,7 @@ class CopilotCLIBackend:
                 receipt,
             )
         try:
-            parsed = self._parse_jsonl(stdout)
+            parsed = self._parse_jsonl(stdout, expected_user_message=combined)
         except Exception as exc:
             raise CopilotCLIError(str(exc), receipt) from exc
         return replace(
@@ -374,6 +375,95 @@ class CopilotCLIBackend:
         return data
 
     @staticmethod
+    def _validate_user_message(event: dict, expected_content: str) -> dict:
+        """Bind the persisted root user event to the exact submitted prompt."""
+        expected_event_keys = {"id", "timestamp", "parentId", "type", "data"}
+        expected_data_keys = {
+            "attachments", "content", "delivery", "interactionId",
+            "parentAgentTaskId", "supportedNativeDocumentMimeTypes",
+            "transformedContent",
+        }
+        data = event.get("data")
+        try:
+            event_id = uuid.UUID(event.get("id"))
+            parent_id = uuid.UUID(event.get("parentId"))
+            event_timestamp = datetime.fromisoformat(event.get("timestamp"))
+            interaction_id = uuid.UUID(data.get("interactionId"))
+            parent_task_id = uuid.UUID(data.get("parentAgentTaskId"))
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise RuntimeError("Copilot user message event is invalid") from exc
+        canonical_ids = (
+            (event_id, event.get("id")),
+            (parent_id, event.get("parentId")),
+            (interaction_id, data.get("interactionId")),
+            (parent_task_id, data.get("parentAgentTaskId")),
+        )
+        transformed = data.get("transformedContent")
+        match = re.fullmatch(
+            r"<current_datetime>([^<]+)</current_datetime>\n\n" +
+            re.escape(expected_content),
+            transformed if isinstance(transformed, str) else "",
+        )
+        try:
+            transformed_timestamp = datetime.fromisoformat(match.group(1)) if match else None
+        except ValueError as exc:
+            raise RuntimeError("Copilot user message transform is invalid") from exc
+        if (
+            set(event) != expected_event_keys
+            or event.get("type") != "user.message"
+            or not isinstance(data, dict)
+            or set(data) != expected_data_keys
+            or any(
+                parsed.version != 4
+                or not isinstance(raw, str)
+                or str(parsed) != raw.lower()
+                for parsed, raw in canonical_ids
+            )
+            or event_timestamp.tzinfo is None
+            or transformed_timestamp is None
+            or transformed_timestamp.tzinfo is None
+            or data.get("content") != expected_content
+            or data.get("attachments") != []
+            or data.get("supportedNativeDocumentMimeTypes") != []
+            or data.get("delivery") != "idle"
+        ):
+            raise RuntimeError("Copilot user message event is invalid")
+        return {
+            "event_id": event.get("id"),
+            "interaction_id": data.get("interactionId"),
+        }
+
+    @staticmethod
+    def _validated_lifecycle_event(
+        event: dict, event_type: str, *, ephemeral: bool
+    ) -> dict:
+        expected_keys = {"id", "timestamp", "parentId", "type", "data"}
+        if ephemeral:
+            expected_keys.add("ephemeral")
+        data = event.get("data")
+        try:
+            raw_id = event.get("id")
+            raw_parent = event.get("parentId")
+            event_id = uuid.UUID(raw_id)
+            parent_id = uuid.UUID(raw_parent)
+            timestamp = datetime.fromisoformat(event.get("timestamp"))
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise RuntimeError(f"Copilot {event_type} lifecycle event is invalid") from exc
+        if (
+            set(event) != expected_keys
+            or event.get("type") != event_type
+            or event_id.version != 4
+            or parent_id.version != 4
+            or str(event_id) != raw_id.lower()
+            or str(parent_id) != raw_parent.lower()
+            or timestamp.tzinfo is None
+            or (ephemeral and event.get("ephemeral") is not True)
+            or not isinstance(data, dict)
+        ):
+            raise RuntimeError(f"Copilot {event_type} lifecycle event is invalid")
+        return data
+
+    @staticmethod
     def _tolerant_usage(output: str) -> dict:
         """Extract whatever billing identity exists without ever raising."""
         actual_model = None
@@ -431,12 +521,30 @@ class CopilotCLIBackend:
             )),
         }
 
-    def _parse_jsonl(self, output: str) -> CopilotCLIResponse:
+    def _parse_jsonl(
+        self, output: str, *, expected_user_message: str | None = None
+    ) -> CopilotCLIResponse:
         message: dict | None = None
         result: dict | None = None
         usage_checkpoint: dict | None = None
         skills_metadata_count = 0
         unknown_tool_sentinel_count = 0
+        user_message_count = 0
+        user_metadata: dict | None = None
+        turn_id: str | None = None
+        message_id: str | None = None
+        message_phase: str | None = None
+        streamed_parts: list[str] = []
+        reasoning_id: str | None = None
+        reasoning_parts: list[str] = []
+        reasoning_event_count = 0
+        lifecycle_counts = {
+            "assistant.turn_start": 0,
+            "model.call_start": 0,
+            "assistant.message_start": 0,
+            "assistant.turn_end": 0,
+            "assistant.idle": 0,
+        }
         for line in output.splitlines():
             if not line.strip():
                 continue
@@ -457,6 +565,124 @@ class CopilotCLIBackend:
                     raise RuntimeError(
                         f"Copilot model drift detected: expected {self.model}, got {event_model}"
                     )
+            elif event.get("type") == "user.message":
+                if expected_user_message is None:
+                    raise RuntimeError("unexpected Copilot user message event")
+                user_message_count += 1
+                if user_message_count != 1:
+                    raise RuntimeError("Copilot user message event is duplicated")
+                user_metadata = self._validate_user_message(
+                    event, expected_user_message
+                )
+            elif event.get("type") == "assistant.turn_start":
+                lifecycle_counts["assistant.turn_start"] += 1
+                data = self._validated_lifecycle_event(
+                    event, "assistant.turn_start", ephemeral=False
+                )
+                if (
+                    lifecycle_counts["assistant.turn_start"] != 1
+                    or set(data) != {"turnId", "interactionId"}
+                    or not isinstance(data.get("turnId"), str)
+                    or not data["turnId"]
+                    or user_metadata is None
+                    or data.get("interactionId") != user_metadata["interaction_id"]
+                ):
+                    raise RuntimeError("Copilot assistant turn start is invalid")
+                turn_id = data["turnId"]
+            elif event.get("type") == "model.call_start":
+                lifecycle_counts["model.call_start"] += 1
+                data = self._validated_lifecycle_event(
+                    event, "model.call_start", ephemeral=True
+                )
+                if (
+                    lifecycle_counts["model.call_start"] != 1
+                    or set(data) != {"turnId", "model"}
+                    or data.get("turnId") != turn_id
+                    or data.get("model") != self.model
+                ):
+                    raise RuntimeError("Copilot model call start is invalid")
+            elif event.get("type") == "assistant.message_start":
+                lifecycle_counts["assistant.message_start"] += 1
+                data = self._validated_lifecycle_event(
+                    event, "assistant.message_start", ephemeral=True
+                )
+                if (
+                    lifecycle_counts["assistant.message_start"] != 1
+                    or set(data) != {"messageId", "phase"}
+                    or not isinstance(data.get("messageId"), str)
+                    or not data["messageId"]
+                    or not isinstance(data.get("phase"), str)
+                    or not data["phase"]
+                ):
+                    raise RuntimeError("Copilot assistant message start is invalid")
+                message_id = data["messageId"]
+                message_phase = data["phase"]
+            elif event.get("type") == "assistant.reasoning_delta":
+                data = self._validated_lifecycle_event(
+                    event, "assistant.reasoning_delta", ephemeral=True
+                )
+                current_id = data.get("reasoningId")
+                if (
+                    set(data) != {"reasoningId", "deltaContent"}
+                    or not isinstance(current_id, str)
+                    or not current_id
+                    or (reasoning_id is not None and current_id != reasoning_id)
+                    or not isinstance(data.get("deltaContent"), str)
+                ):
+                    raise RuntimeError("Copilot assistant reasoning delta is invalid")
+                reasoning_id = current_id
+                reasoning_parts.append(data["deltaContent"])
+            elif event.get("type") == "assistant.reasoning":
+                reasoning_event_count += 1
+                data = self._validated_lifecycle_event(
+                    event, "assistant.reasoning", ephemeral=True
+                )
+                allowed = {"reasoningId", "content"}
+                if "rte" in data:
+                    allowed.add("rte")
+                current_id = data.get("reasoningId")
+                content_value = data.get("content")
+                if (
+                    reasoning_event_count != 1
+                    or set(data) != allowed
+                    or not isinstance(current_id, str)
+                    or not current_id
+                    or not isinstance(content_value, str)
+                    or ("rte" in data and not isinstance(data["rte"], bool))
+                    or (reasoning_id is not None and current_id != reasoning_id)
+                    or (reasoning_parts and "".join(reasoning_parts) != content_value)
+                ):
+                    raise RuntimeError("Copilot assistant reasoning event is invalid")
+                reasoning_id = current_id
+            elif event.get("type") == "assistant.message_delta":
+                data = self._validated_lifecycle_event(
+                    event, "assistant.message_delta", ephemeral=True
+                )
+                if (
+                    set(data) != {"messageId", "deltaContent"}
+                    or data.get("messageId") != message_id
+                    or not isinstance(data.get("deltaContent"), str)
+                ):
+                    raise RuntimeError("Copilot assistant message delta is invalid")
+                streamed_parts.append(data["deltaContent"])
+            elif event.get("type") == "assistant.turn_end":
+                lifecycle_counts["assistant.turn_end"] += 1
+                data = self._validated_lifecycle_event(
+                    event, "assistant.turn_end", ephemeral=False
+                )
+                if (
+                    lifecycle_counts["assistant.turn_end"] != 1
+                    or set(data) != {"turnId"}
+                    or data.get("turnId") != turn_id
+                ):
+                    raise RuntimeError("Copilot assistant turn end is invalid")
+            elif event.get("type") == "assistant.idle":
+                lifecycle_counts["assistant.idle"] += 1
+                data = self._validated_lifecycle_event(
+                    event, "assistant.idle", ephemeral=True
+                )
+                if lifecycle_counts["assistant.idle"] != 1 or data != {}:
+                    raise RuntimeError("Copilot assistant idle event is invalid")
             elif event.get("type") == "result":
                 result = event
             elif event.get("type") == "session.usage_checkpoint":
@@ -564,6 +790,14 @@ class CopilotCLIBackend:
             raise RuntimeError(
                 "Copilot response is missing zero-tool filter metadata"
             )
+        if expected_user_message is not None and user_message_count != 1:
+            raise RuntimeError("Copilot response is missing bound user message metadata")
+        if expected_user_message is not None and any(
+            count != 1 for count in lifecycle_counts.values()
+        ):
+            raise RuntimeError("Copilot response lifecycle is incomplete")
+        if reasoning_parts and reasoning_event_count != 1:
+            raise RuntimeError("Copilot assistant reasoning lifecycle is incomplete")
         if not message or not result or not usage_checkpoint:
             raise RuntimeError(
                 "Copilot CLI response is missing message, result, or AIC usage metadata"
@@ -595,6 +829,44 @@ class CopilotCLIBackend:
         content = message.get("content")
         if not isinstance(content, str) or not content.strip():
             raise RuntimeError("Copilot CLI response content is empty")
+        if expected_user_message is not None:
+            required_message_keys = {
+                "apiCallId", "clientRequestId", "content", "interactionId",
+                "messageId", "model", "outputTokens", "phase", "requestId",
+                "rte", "serviceRequestId", "toolRequests", "turnId",
+            }
+            optional_reasoning_keys = {
+                "reasoningOpaque", "reasoningText", "reasoningWireField",
+                "encryptedContent",
+            }
+            string_keys = (set(message) - {
+                "outputTokens", "rte", "toolRequests",
+            })
+            if (
+                not required_message_keys.issubset(message)
+                or not set(message).issubset(
+                    required_message_keys | optional_reasoning_keys
+                )
+                or any(
+                    not isinstance(message.get(key), str)
+                    for key in string_keys
+                )
+                or any(
+                    not message[key]
+                    for key in (
+                        "content", "interactionId", "messageId", "model",
+                        "phase", "turnId",
+                    )
+                )
+                or message.get("interactionId") != user_metadata["interaction_id"]
+                or message.get("messageId") != message_id
+                or message.get("turnId") != turn_id
+                or message.get("phase") != message_phase
+                or message.get("toolRequests") != []
+                or not isinstance(message.get("rte"), bool)
+                or "".join(streamed_parts) != content
+            ):
+                raise RuntimeError("Copilot assistant lifecycle binding is invalid")
         return CopilotCLIResponse(
             text=content,
             model=actual_model,

@@ -87,10 +87,92 @@ def unknown_tool_sentinel_metadata():
     })
 
 
+def user_message_metadata(content, **overrides):
+    now = datetime.now(timezone.utc).isoformat()
+    data = {
+        "attachments": [],
+        "content": content,
+        "delivery": "idle",
+        "interactionId": str(uuid.uuid4()),
+        "parentAgentTaskId": str(uuid.uuid4()),
+        "supportedNativeDocumentMimeTypes": [],
+        "transformedContent": f"<current_datetime>{now}</current_datetime>\n\n{content}",
+    }
+    data.update(overrides.pop("data_overrides", {}))
+    payload = {
+        "id": str(uuid.uuid4()),
+        "timestamp": now,
+        "parentId": str(uuid.uuid4()),
+        "type": "user.message",
+        "data": data,
+        **overrides,
+    }
+    return json.dumps(payload)
+
+
+def lifecycle_events(
+    interaction_id, response_content='{"ready":true}', *,
+    session_id="session-1", output_tokens=7, nano_aiu=966_900_000,
+    premium_requests=1,
+):
+    now = datetime.now(timezone.utc).isoformat()
+    turn_id = "0"
+    message_id = str(uuid.uuid4())
+    phase = "final"
+
+    def persisted(event_type, data):
+        return json.dumps({
+            "id": str(uuid.uuid4()), "timestamp": now,
+            "parentId": str(uuid.uuid4()), "type": event_type, "data": data,
+        })
+
+    def ephemeral(event_type, data):
+        return json.dumps({
+            "id": str(uuid.uuid4()), "timestamp": now,
+            "parentId": str(uuid.uuid4()), "ephemeral": True,
+            "type": event_type, "data": data,
+        })
+
+    return [
+        persisted("assistant.turn_start", {
+            "turnId": turn_id, "interactionId": interaction_id,
+        }),
+        ephemeral("model.call_start", {
+            "turnId": turn_id, "model": "gpt-5.6-terra",
+        }),
+        ephemeral("assistant.message_start", {
+            "messageId": message_id, "phase": phase,
+        }),
+        ephemeral("assistant.message_delta", {
+            "messageId": message_id, "deltaContent": response_content,
+        }),
+        persisted("assistant.message", {
+            "apiCallId": "api-1", "clientRequestId": "client-1",
+            "content": response_content, "interactionId": interaction_id,
+            "messageId": message_id, "model": "gpt-5.6-terra",
+            "outputTokens": output_tokens, "phase": phase,
+            "requestId": "request-1", "rte": False,
+            "serviceRequestId": "service-1", "toolRequests": [],
+            "turnId": turn_id,
+        }),
+        persisted("assistant.turn_end", {"turnId": turn_id}),
+        persisted("session.usage_checkpoint", {
+            "totalNanoAiu": nano_aiu,
+            "totalPremiumRequests": premium_requests,
+        }),
+        ephemeral("assistant.idle", {}),
+        event("result", sessionId=session_id, usage={"premiumRequests": premium_requests}),
+    ]
+
+
 class CopilotCLIBackendTest(unittest.TestCase):
     @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
     @patch("experiments.shared.copilot_cli.subprocess.run")
     def test_call_pins_model_and_disables_tools(self, run, _which):
+        submitted = CopilotCLIBackend._compose_prompt(
+            "diagnose", "return JSON", 512
+        )
+        user_event = json.loads(user_message_metadata(submitted))
         inference = subprocess.CompletedProcess(
             args=[],
             returncode=0,
@@ -98,26 +180,8 @@ class CopilotCLIBackendTest(unittest.TestCase):
                 [
                     disabled_skills_metadata(),
                     unknown_tool_sentinel_metadata(),
-                    event(
-                        "assistant.message",
-                        {
-                            "content": '{"ready":true}',
-                            "model": "gpt-5.6-terra",
-                            "outputTokens": 7,
-                        },
-                    ),
-                    event(
-                        "session.usage_checkpoint",
-                        {
-                            "totalNanoAiu": 966_900_000,
-                            "totalPremiumRequests": 1,
-                        },
-                    ),
-                    event(
-                        "result",
-                        sessionId="session-1",
-                        usage={"premiumRequests": 1},
-                    ),
+                    json.dumps(user_event),
+                    *lifecycle_events(user_event["data"]["interactionId"]),
                 ]
             ),
             stderr="",
@@ -156,6 +220,100 @@ class CopilotCLIBackendTest(unittest.TestCase):
         self.assertEqual(len(receipts), 1)
         self.assertTrue(receipts[0]["usage_metadata_complete"])
         self.assertEqual(receipts[0]["ai_credits"], 0.9669)
+
+    @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
+    def test_user_message_must_exactly_bind_submitted_prompt(self, _which):
+        backend = CopilotCLIBackend()
+        expected = "sealed prompt"
+        base = json.loads(user_message_metadata(expected))
+        backend._validate_user_message(base, expected)
+        mutations = []
+        for field, value in (
+            ("content", "other prompt"),
+            ("attachments", [{"type": "file", "path": "/tmp/x"}]),
+            ("delivery", "steering"),
+            ("supportedNativeDocumentMimeTypes", ["text/plain"]),
+            ("interactionId", "not-a-uuid"),
+            ("parentAgentTaskId", "not-a-uuid"),
+            ("transformedContent", expected),
+        ):
+            altered = json.loads(json.dumps(base))
+            altered["data"][field] = value
+            mutations.append((field, altered))
+        altered = json.loads(json.dumps(base))
+        altered["agentId"] = "subagent"
+        mutations.append(("agentId", altered))
+        altered = json.loads(json.dumps(base))
+        altered["data"]["source"] = "skill-pdf"
+        mutations.append(("source", altered))
+        for field, altered in mutations:
+            with self.subTest(field=field), self.assertRaisesRegex(
+                RuntimeError, "user message"
+            ):
+                backend._validate_user_message(altered, expected)
+
+    @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
+    def test_parser_requires_exactly_one_bound_user_message_for_live_call(self, _which):
+        backend = CopilotCLIBackend()
+        expected = "sealed prompt"
+        user_event = json.loads(user_message_metadata(expected))
+        lifecycle = lifecycle_events(
+            user_event["data"]["interactionId"],
+            response_content='{"ok":true}', output_tokens=1,
+            nano_aiu=1, premium_requests=0,
+        )
+        valid = "\n".join([json.dumps(user_event), *lifecycle])
+        self.assertEqual(
+            backend._parse_jsonl(valid, expected_user_message=expected).session_id,
+            "session-1",
+        )
+        without = "\n".join(lifecycle)
+        with self.assertRaisesRegex(RuntimeError, "turn start|missing bound user message"):
+            backend._parse_jsonl(without, expected_user_message=expected)
+        with self.assertRaisesRegex(RuntimeError, "duplicated"):
+            backend._parse_jsonl(
+                "\n".join([user_message_metadata(expected), valid]),
+                expected_user_message=expected,
+            )
+
+    @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
+    def test_reasoning_lifecycle_is_schema_bound_without_exposing_content(self, _which):
+        backend = CopilotCLIBackend()
+        expected = "sealed prompt"
+        user_event = json.loads(user_message_metadata(expected))
+        lifecycle = lifecycle_events(user_event["data"]["interactionId"])
+        reasoning_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc).isoformat()
+        delta = json.dumps({
+            "id": str(uuid.uuid4()), "timestamp": now,
+            "parentId": str(uuid.uuid4()), "ephemeral": True,
+            "type": "assistant.reasoning_delta",
+            "data": {"reasoningId": reasoning_id, "deltaContent": "private"},
+        })
+        final = json.dumps({
+            "id": str(uuid.uuid4()), "timestamp": now,
+            "parentId": str(uuid.uuid4()), "ephemeral": True,
+            "type": "assistant.reasoning",
+            "data": {"reasoningId": reasoning_id, "content": "private", "rte": False},
+        })
+        valid = "\n".join([
+            json.dumps(user_event), lifecycle[0], lifecycle[1], delta, final,
+            *lifecycle[2:],
+        ])
+        self.assertEqual(
+            backend._parse_jsonl(valid, expected_user_message=expected).session_id,
+            "session-1",
+        )
+        forged = json.loads(final)
+        forged["data"]["parentToolCallId"] = "tool-1"
+        with self.assertRaisesRegex(RuntimeError, "reasoning event"):
+            backend._parse_jsonl(
+                "\n".join([
+                    json.dumps(user_event), lifecycle[0], lifecycle[1], delta,
+                    json.dumps(forged), *lifecycle[2:],
+                ]),
+                expected_user_message=expected,
+            )
 
     @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
     def test_cli_session_aic_cap_respects_current_minimum(self, _which):
