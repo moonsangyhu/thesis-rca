@@ -85,10 +85,29 @@ class FaultInjector:
 
     def prepare_recovery_context(self, fault_id: str, trial: int) -> dict:
         """Capture reversible pre-state before a V2.3 mutation is attempted."""
-        if fault_id != "F7":
-            raise ValueError("durable recovery context is currently defined only for F7")
         gt = load_trial(fault_id, trial)
         target = gt["target_service"]
+        if fault_id in {"F11", "F12"}:
+            node_maps = {
+                "F11": {1: "yms-proxmox-02", 2: "yms-proxmox-03", 3: "yms-proxmox-02", 4: "yms-proxmox-04", 5: "yms-proxmox-03"},
+                "F12": {1: "yms-proxmox-02", 2: "yms-proxmox-03", 3: "yms-proxmox-04", 4: "yms-proxmox-02", 5: "yms-proxmox-03"},
+            }
+            return {
+                "fault_id": fault_id, "trial": trial,
+                "target_service": target, "node": node_maps[fault_id][trial],
+                "interface": self.NETEM_IFACE,
+            }
+        if fault_id == "F4":
+            nodes = {1: "yms-proxmox-02", 2: "yms-proxmox-03", 3: "yms-proxmox-04", 4: "yms-proxmox-02", 5: "yms-proxmox-03"}
+            return {
+                "fault_id": fault_id, "trial": trial,
+                "target_service": target, "node": nodes[trial],
+            }
+        if fault_id != "F7":
+            return {
+                "fault_id": fault_id, "trial": trial,
+                "target_service": target,
+            }
         original = kubectl_get_json("deployment", target)
         containers = (
             original.get("spec", {}).get("template", {}).get("spec", {})
@@ -224,7 +243,11 @@ class FaultInjector:
         node_actions = {
             1: ("yms-proxmox-02", "sudo systemctl stop kubelet"),
             2: ("yms-proxmox-03", "sudo iptables -A OUTPUT -p tcp --dport 6443 -j DROP"),
-            3: ("yms-proxmox-04", "sudo stress-ng --vm 2 --vm-bytes 90% --timeout 300s &"),
+            3: (
+                "yms-proxmox-04",
+                "sudo sh -c 'stress-ng --vm 2 --vm-bytes 90% --timeout 300s "
+                ">/dev/null 2>&1 </dev/null &'",
+            ),
             4: ("yms-proxmox-02", "sudo fallocate -l $(($(df --output=avail / | tail -1) * 95 / 100))k /tmp/diskfill"),
             5: ("yms-proxmox-03", "sudo systemctl stop containerd"),
         }
@@ -265,7 +288,8 @@ class FaultInjector:
                 "metadata": {"name": "prometheus-fault", "namespace": "monitoring"},
                 "spec": {
                     "accessModes": ["ReadWriteOnce"],
-                    "storageClassName": "local-path",
+                    "storageClassName": "capacity-probe",
+                    "selector": {"matchLabels": {"capacity-probe": "small"}},
                     "resources": {"requests": {"storage": "500Gi"}},  # too large
                 },
             },
@@ -289,7 +313,46 @@ class FaultInjector:
                 "scale", "deployment", "local-path-provisioner",
                 "--replicas=0", namespace="local-path-storage",
             )
-            return {"action": "scale_provisioner_to_zero", "kubectl_output": result}
+            probe = {
+                "apiVersion": "v1", "kind": "PersistentVolumeClaim",
+                "metadata": {"name": "storage-probe-pvc", "namespace": NAMESPACE},
+                "spec": {
+                    "accessModes": ["ReadWriteOnce"],
+                    "storageClassName": "local-path",
+                    "resources": {"requests": {"storage": "1Gi"}},
+                },
+            }
+            result += kubectl_apply(probe)
+            return {
+                "action": "scale_provisioner_to_zero",
+                "pvc": "storage-probe-pvc", "kubectl_output": result,
+            }
+
+        if trial == 2:
+            # local-path does not reserve requested bytes, so a bare 500Gi PVC
+            # can bind despite insufficient disk.  A sealed 1Gi available PV
+            # makes the intended capacity mismatch deterministic and observable.
+            pv = {
+                "apiVersion": "v1", "kind": "PersistentVolume",
+                "metadata": {
+                    "name": "prometheus-capacity-probe-pv",
+                    "labels": {"capacity-probe": "small"},
+                },
+                "spec": {
+                    "capacity": {"storage": "1Gi"},
+                    "accessModes": ["ReadWriteOnce"],
+                    "storageClassName": "capacity-probe",
+                    "hostPath": {"path": "/tmp/prometheus-capacity-probe"},
+                },
+            }
+            r1 = kubectl_apply(pv, namespace="")
+            manifest = pvc_manifests[2]
+            r2 = kubectl_apply(manifest, namespace="monitoring")
+            return {
+                "action": "create_pvc", "pvc": "prometheus-fault",
+                "capacity_probe_pv": "prometheus-capacity-probe-pv",
+                "kubectl_output": r1 + r2,
+            }
 
         if trial == 5:
             # Create PV with impossible node affinity, then PVC
@@ -327,7 +390,26 @@ class FaultInjector:
             }
             r1 = kubectl_apply(pv, namespace="")
             r2 = kubectl_apply(pvc, namespace="monitoring")
-            return {"action": "pv_bad_node_affinity", "kubectl_output": r1 + r2}
+            pod = {
+                "apiVersion": "v1", "kind": "Pod",
+                "metadata": {"name": "grafana-storage-probe", "namespace": "monitoring"},
+                "spec": {
+                    "containers": [{
+                        "name": "probe", "image": "busybox:1.36",
+                        "command": ["sh", "-c", "sleep 600"],
+                        "volumeMounts": [{"name": "data", "mountPath": "/data"}],
+                    }],
+                    "volumes": [{
+                        "name": "data",
+                        "persistentVolumeClaim": {"claimName": "grafana-fault-pvc"},
+                    }],
+                },
+            }
+            r3 = kubectl_apply(pod, namespace="monitoring")
+            return {
+                "action": "pv_bad_node_affinity", "pod": "grafana-storage-probe",
+                "kubectl_output": r1 + r2 + r3,
+            }
 
         manifest = pvc_manifests.get(trial)
         if manifest:
@@ -711,6 +793,19 @@ class FaultInjector:
             if trial in (1, 2, 3):
                 # Delete a few pods to trigger quota enforcement
                 time.sleep(5)
+                kubectl("delete", "pod", "-l", "app=frontend", "--grace-period=0", namespace=NAMESPACE)
+            elif trial == 4:
+                probe_service = {
+                    "apiVersion": "v1", "kind": "Service",
+                    "metadata": {"name": "quota-probe-service", "namespace": NAMESPACE},
+                    "spec": {"selector": {"app": "frontend"}, "ports": [{"port": 80, "targetPort": 8080}]},
+                }
+                try:
+                    kubectl_apply(probe_service)
+                except RuntimeError:
+                    # Admission rejection is the intended treatment signal.
+                    pass
+            elif trial == 5:
                 kubectl("delete", "pod", "-l", "app=frontend", "--grace-period=0", namespace=NAMESPACE)
             return {
                 "action": "apply_quota",

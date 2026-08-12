@@ -237,7 +237,9 @@ class Recovery:
             kubectl_delete("pvc", "redis-cart-fault")
         elif trial == 2:
             kubectl_delete("pvc", "prometheus-fault", namespace="monitoring")
+            kubectl_delete("pv", "prometheus-capacity-probe-pv", namespace="")
         elif trial == 3:
+            kubectl_delete("pvc", "storage-probe-pvc")
             kubectl(
                 "scale", "deployment", "local-path-provisioner",
                 "--replicas=1", namespace="local-path-storage",
@@ -245,6 +247,7 @@ class Recovery:
         elif trial == 4:
             kubectl_delete("pvc", "redis-cart-rwx")
         elif trial == 5:
+            kubectl_delete("pod", "grafana-storage-probe", namespace="monitoring")
             kubectl_delete("pvc", "grafana-fault-pvc", namespace="monitoring")
             kubectl_delete("pv", "grafana-fault-pv", namespace="")
         return {"action": "cleanup_pvc", "trial": trial}

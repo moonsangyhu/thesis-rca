@@ -156,6 +156,25 @@ class StorageAndRunTests(unittest.TestCase):
         self.assertEqual(authorization.billing_mode, PAID_OVERAGE_MODE)
         self.assertIsNone(authorization.evidence)
 
+    def test_main_cli_requires_paid_mode_and_dispatches_authorized_builder(self):
+        common = [
+            "--main", "--approval-id", "main-approved-20260812",
+            "--campaign-id", "main-campaign-20260812",
+            "--chroma-dir", "/tmp/not-reached",
+        ]
+        with self.assertRaises(SystemExit):
+            main(common + ["--billing-evidence", "/tmp/evidence.json"])
+        with patch.dict("os.environ", {
+            "THESIS_V23_PAID_OVERAGE_AUTHORIZED": "1",
+            "THESIS_V23_PILOT_USER_APPROVED": "1",
+        }, clear=False), patch(
+            "experiments.v2_3.main_campaign.run_authorized_main",
+            return_value={"status": "not-run"},
+        ) as live:
+            self.assertEqual(main(common + ["--allow-paid-overage"]), 0)
+        authorization = live.call_args.args[0]
+        self.assertEqual(authorization.billing_mode, PAID_OVERAGE_MODE)
+
     def test_dry_run_has_no_filesystem_or_external_calls(self):
         with patch("experiments.v2_3.mock.SafeOutputStore") as store:
             summary = run_dry_run()

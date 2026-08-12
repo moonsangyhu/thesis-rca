@@ -229,6 +229,41 @@ class FluxEmergencyRestoreTests(unittest.TestCase):
                     )
             self.assertEqual(calls, ["flux"])
 
+    def test_main_campaign_uses_only_latest_unrecovered_receipts(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project = Path(temp_dir)
+            campaign_id = "main-campaign-1"
+            campaign = project / "artifacts" / "v2_3_main" / campaign_id
+            campaign.mkdir(parents=True)
+            (campaign / "campaign_manifest.json").write_text(json.dumps({
+                "campaign_id": campaign_id,
+            }))
+            old_flux = {"old": True}
+            active_flux = {"active": True}
+            records = [
+                {"event": "flux_recovery_receipt_sealed", "recovery_context": old_flux},
+                {"event": "recovery_receipt_sealed", "recovery_context": {
+                    "fault_id": "F1", "trial": 1, "target_service": "cartservice",
+                }},
+                {"event": "injection_started", "fault_id": "F1", "trial": 1},
+                {"event": "recovery_green", "fault_id": "F1", "trial": 1},
+                {"event": "flux_recovery_receipt_sealed", "recovery_context": active_flux},
+                {"event": "recovery_receipt_sealed", "recovery_context": {
+                    "fault_id": "F6", "trial": 4,
+                    "target_service": "productcatalogservice",
+                }},
+                {"event": "injection_started", "fault_id": "F6", "trial": 4},
+            ]
+            (campaign / "campaign_events.jsonl").write_text(
+                "\n".join(json.dumps(record) for record in records) + "\n"
+            )
+            guard = FakeEmergencyGuard()
+            recovery = FakeEmergencyRecovery()
+            with patch("experiments.v2_3.flux_restore.PROJECT_ROOT", project):
+                restore_campaign(campaign, guard=guard, recovery=recovery)
+            self.assertEqual(guard.receipts, [active_flux])
+            self.assertEqual(recovery.receipts[0][:2], ("F6", 4))
+
 
 if __name__ == "__main__":
     unittest.main()

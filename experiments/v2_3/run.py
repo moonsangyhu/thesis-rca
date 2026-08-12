@@ -49,6 +49,10 @@ def main(argv: list[str] | None = None) -> int:
         "--pilot", action="store_true",
         help=f"authorized {PILOT_FAULT_ID} trial {PILOT_TRIAL} live pilot",
     )
+    mode.add_argument(
+        "--main", action="store_true",
+        help="authorized F1-F12 x five-trial V2.3 primary campaign",
+    )
     parser.add_argument("--output-dir", type=Path, help="explicit non-results output directory")
     parser.add_argument(
         "--approve-real", action="store_true",
@@ -64,18 +68,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-campaign-aic", type=float, default=360.0)
     parser.add_argument("--chroma-dir", type=Path)
     args = parser.parse_args(argv)
-    if args.pilot:
+    if args.pilot or args.main:
         if args.output_dir is not None or args.approve_real:
-            parser.error("--pilot does not accept --output-dir or --approve-real")
+            parser.error("live modes do not accept --output-dir or --approve-real")
         if not args.approval_id or not args.campaign_id or not args.chroma_dir:
             parser.error(
-                "--pilot requires --approval-id, --campaign-id, and --chroma-dir"
+                "live modes require --approval-id, --campaign-id, and --chroma-dir"
             )
         if bool(args.billing_evidence) == bool(args.allow_paid_overage):
             parser.error(
-                "--pilot requires exactly one of --billing-evidence or "
+                "live modes require exactly one of --billing-evidence or "
                 "--allow-paid-overage"
             )
+        if args.main and not args.allow_paid_overage:
+            parser.error("--main requires --allow-paid-overage")
         if re.fullmatch(r"[A-Za-z0-9_.-]{8,128}", args.campaign_id) is None:
             parser.error("--campaign-id is invalid")
         if args.allow_paid_overage:
@@ -86,12 +92,19 @@ def main(argv: list[str] | None = None) -> int:
             authorization = LiveAuthorization.require(
                 args.billing_evidence, approval_id=args.approval_id
             )
-        summary = _run_authorized_pilot(
-            authorization,
-            campaign_id=args.campaign_id,
-            max_campaign_aic=args.max_campaign_aic,
-            chroma_dir=args.chroma_dir,
-        )
+        if args.main:
+            from .main_campaign import run_authorized_main
+            summary = run_authorized_main(
+                authorization, campaign_id=args.campaign_id,
+                chroma_dir=args.chroma_dir,
+            )
+        else:
+            summary = _run_authorized_pilot(
+                authorization,
+                campaign_id=args.campaign_id,
+                max_campaign_aic=args.max_campaign_aic,
+                chroma_dir=args.chroma_dir,
+            )
         print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
         return 0
     if not (args.mock or args.dry_run):

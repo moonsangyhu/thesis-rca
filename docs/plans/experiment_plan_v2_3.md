@@ -346,6 +346,8 @@ GitHub의 조직용 usage-based billing은 included pool 소진 후 paid usage�
 
 2026-08-12 사용자 결정으로 현재 실행에는 상호 배타적인 `paid-overage-user-authorized` 모드를 적용한다. 이 모드에서는 관리자 zero-overage 증거 대신 명시적 CLI/process gate를 봉인하고, 공식 SDK quota를 매 호출 전 조회해 실제 overage 허용값을 provenance로 보존한다. 계정·Business seat binding, 세션/campaign AIC cap, durable charge journal과 실패 후 중단은 그대로 유지한다.
 
+2026-08-12 후속 사용자 결정으로 본실험은 campaign AIC 상한을 중단 조건으로 사용하지 않는다. 본실험 manifest의 `max_campaign_aic`는 `null`로 기록하며, 매 subprocess의 Copilot CLI 30 AIC 상한, 실제 AIC durable receipt, account/Business seat/model/session/tool isolation, 실패 후 campaign 중단은 유지한다. 이 결정은 비용 제약만 해제하며 60 incident·2,160 call의 사전 지정 표본이나 안전·유효성 gate를 축소하지 않는다. 파일럿 이후 본실험용 cluster-resource collector가 추가되므로 변경된 clean commit에서 F7 t1 36-call 파일럿을 다시 수행해 context·AIC·recovery를 확인한 후 본실험을 시작한다.
+
 어느 하나라도 확인되지 않으면 mock/dry-run만 허용하고 Copilot inference는 adapter 수준에서 subprocess 실행 전에 차단한다.
 
 deep-analysis 작성 시점의 보고 잔여량은 28,850 AIC다. 파일럿 직전에 실제 계정 잔여량 `B0`를 다시 기록하고 이 값이 다르면 실제값을 사용한다. 파일럿 36 calls의 AIC 합을 `P`, 파일럿 후 잔여량을 `B1`, generator/judge 각 역할의 파일럿 최대 단일-call AIC를 `Gmax`, `Jmax`라 한다.
@@ -392,6 +394,8 @@ total estimate                  = 두 항 + preflight/restore + 15% contingency
 5. 중단 조건이 없을 때 F1–F12 × 5 trials를 같은 campaign에서 끝낸다.
 
 실제 CLI 명령은 Step 3 구현 후 `--help`와 dry-run으로 검증해 review 문서에 고정한다. 존재하지 않는 `experiments/v2_3` 명령을 이 설계 단계에서 실행 가능한 것처럼 제시하지 않는다.
+
+현재 구현된 본실험 entrypoint는 `python -m experiments.v2_3.run --main --allow-paid-overage --approval-id <id> --campaign-id <id> --chroma-dir <path>`이며, 결과는 기존 불변 `results/`가 아니라 `artifacts/v2_3_main/<campaign-id>/`에 incident별 원자 커밋된다. 본실험은 새 디렉터리만 허용하고 중복 campaign을 거부한다.
 
 ### 8.8 복원과 완료 검증
 

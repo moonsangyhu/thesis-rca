@@ -57,7 +57,7 @@ class AuthorizedTerraCaller:
     backend: CopilotCLIBackend
     campaign_id: str
     cli_version: str
-    max_campaign_aic: float = 360.0
+    max_campaign_aic: float | None = 360.0
     cumulative_aic: float = 0.0
     usage_uncertain: bool = False
     campaign_aborted: bool = False
@@ -68,8 +68,13 @@ class AuthorizedTerraCaller:
             raise LiveCallerError("Copilot backend model is not gpt-5.6-terra")
         if not self.cli_version.strip() or not self.campaign_id.strip():
             raise LiveCallerError("CLI version and campaign ID are required")
-        if not 0 < self.max_campaign_aic <= 360.0:
-            raise LiveCallerError("pilot campaign AIC cap must be within (0, 360]")
+        if self.max_campaign_aic is not None and (
+            isinstance(self.max_campaign_aic, bool)
+            or not isinstance(self.max_campaign_aic, (int, float))
+            or not math.isfinite(self.max_campaign_aic)
+            or self.max_campaign_aic <= 0
+        ):
+            raise LiveCallerError("campaign AIC cap must be positive and finite")
         if not self.backend._billing_guard_passes():
             raise LiveCallerError("Copilot backend billing guard is not enabled")
         if getattr(self.backend, "charge_observer", None) is None:
@@ -80,7 +85,10 @@ class AuthorizedTerraCaller:
             or not isinstance(session_cap, (int, float))
             or not math.isfinite(session_cap)
             or session_cap <= 0
-            or session_cap > self.max_campaign_aic
+            or (
+                self.max_campaign_aic is not None
+                and session_cap > self.max_campaign_aic
+            )
         ):
             raise LiveCallerError("invalid Copilot session AIC ceiling")
 
@@ -91,7 +99,10 @@ class AuthorizedTerraCaller:
         if self.usage_uncertain:
             raise LiveCallerError("campaign AIC is uncertain after a failed call")
         session_cap = float(self.backend.max_ai_credits)
-        if self.cumulative_aic + session_cap > self.max_campaign_aic:
+        if (
+            self.max_campaign_aic is not None
+            and self.cumulative_aic + session_cap > self.max_campaign_aic
+        ):
             raise LiveCallerError("campaign AIC cap reached before call")
         if invocation.role == "generator":
             system_prompt = GENERATOR_SYSTEM_PROMPT
@@ -126,7 +137,7 @@ class AuthorizedTerraCaller:
             raise LiveCallerError("Copilot response AIC is invalid")
         next_cumulative = self.cumulative_aic + response.ai_credits
         self.cumulative_aic = next_cumulative
-        if next_cumulative > self.max_campaign_aic:
+        if self.max_campaign_aic is not None and next_cumulative > self.max_campaign_aic:
             raise LiveCallerError("campaign AIC cap exceeded")
         payload = parse_json_object(response.text)
         metrics = text_metrics(invocation.prompt)

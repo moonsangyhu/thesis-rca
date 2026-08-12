@@ -17,6 +17,7 @@ SCHEDULE_SEED = 20260809
 PILOT_FAULT_ID = "F7"
 PILOT_TRIAL = 1
 PILOT_MANIFEST_SCHEMA = "v2.3-pilot-campaign-4"
+MAIN_MANIFEST_SCHEMA = "v2.3-main-campaign-1"
 COPILOT_SESSION_MAX_AIC = 30
 COPILOT_ACCOUNT_LOGIN = "moonsangyhu"
 FLUX_RECONCILIATION_POLICY = "suspend-flux-root-then-app-during-incident"
