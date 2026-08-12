@@ -242,3 +242,12 @@
 - **수정 내용**: 현재 실행 변수를 `THESIS_V23_PAID_OVERAGE_AUTHORIZED=1`로, CLI를 `--allow-paid-overage --approval-id paid-overage-20260812`로 교정하고 legacy mode 차이를 명시했다.
 - **수정 파일**: `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 고정 명령과 구현 CLI/parser의 인자·gate 일치 확인
+
+### 28. Copilot lifecycle JSONL exact binding — 2026-08-12
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 실제 CLI 1.0.78이 정상 Terra 호출에 `user.message`, turn/streaming/reasoning lifecycle event를 출력해 기존 unknown-event fail-close가 파일럿을 중단했다.
+- **원인**: strict parser의 허용 schema가 기존 assistant/result/usage와 tool/skill metadata에 고정되어 최신 공식 lifecycle schema를 반영하지 못했다.
+- **수정 내용**: 공식 로컬 `session-events.schema.json`과 실제 root call을 대조해 user prompt, interaction/turn/message ID, model, stream delta/final content, optional reasoning과 idle lifecycle를 exact envelope로 검증한다. tool request/execution, MCP/remote/custom, subagent/source/attachment/steering, parent-tool과 알 수 없는 field는 계속 fail-close한다. reasoning payload는 ledger에 저장하지 않는다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `tests/test_copilot_cli.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — actual Terra strict-parser smoke PASS, 전체 181개 테스트·dry-run PASS; 무효 파일럿 1.91085 AIC와 진단 11.00435 AIC 사용, 결과 0, recovery GREEN
