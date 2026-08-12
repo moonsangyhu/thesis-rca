@@ -57,10 +57,13 @@ def build_live_flux_guard() -> FluxHierarchyGuard:
 
 
 def _validated_campaign_dir(path: Path) -> Path:
-    allowed = (PROJECT_ROOT / "artifacts" / "v2_3_pilot").resolve()
+    allowed_roots = {
+        (PROJECT_ROOT / "artifacts" / "v2_3_pilot").resolve(),
+        (PROJECT_ROOT / "artifacts" / "v2_3_main").resolve(),
+    }
     resolved = Path(path).resolve(strict=True)
     if (
-        resolved.parent != allowed
+        resolved.parent not in allowed_roots
         or re.fullmatch(r"[A-Za-z0-9_.-]{8,128}", resolved.name) is None
     ):
         raise PilotError("emergency restore path is not a V2.3 campaign directory")
@@ -110,20 +113,42 @@ def _sealed_receipt(events: list[dict], event_name: str, label: str) -> dict:
     return receipts[0]
 
 
-def _optional_f7_receipt(events: list[dict]) -> dict | None:
+def _active_incident_events(events: list[dict]) -> list[dict]:
+    """Ignore receipts belonging to incidents already restored GREEN."""
+    boundary = -1
+    for index, event in enumerate(events):
+        if event.get("event") == "recovery_green":
+            boundary = index
+    return events[boundary + 1:]
+
+
+def _optional_injection_receipt(events: list[dict]) -> tuple[str, int, dict] | None:
     matching = [
         event for event in events if event.get("event") == "recovery_receipt_sealed"
     ]
     if len(matching) > 1:
-        raise PilotError("campaign contains duplicate sealed F7 receipts")
+        raise PilotError("active incident contains duplicate sealed recovery receipts")
     if not matching:
         if any(event.get("event") == "injection_started" for event in events):
-            raise PilotError("F7 injection started without a sealed recovery receipt")
+            raise PilotError("injection started without a sealed recovery receipt")
         return None
     receipt = matching[0].get("recovery_context")
     if not isinstance(receipt, dict):
-        raise PilotError("sealed F7 recovery receipt is malformed")
-    return receipt
+        raise PilotError("sealed injection recovery receipt is malformed")
+    fault_id = receipt.get("fault_id")
+    trial = receipt.get("trial")
+    if not isinstance(fault_id, str) or not re.fullmatch(r"F(?:[1-9]|1[0-2])", fault_id):
+        raise PilotError("sealed injection fault identity is malformed")
+    if isinstance(trial, bool) or not isinstance(trial, int) or trial not in range(1, 6):
+        raise PilotError("sealed injection trial identity is malformed")
+    starts = [event for event in events if event.get("event") == "injection_started"]
+    if len(starts) > 1:
+        raise PilotError("active incident contains duplicate injection starts")
+    if starts and (
+        starts[0].get("fault_id") != fault_id or starts[0].get("trial") != trial
+    ):
+        raise PilotError("sealed recovery receipt and injection start differ")
+    return fault_id, trial, receipt
 
 
 def _append_event(campaign_dir: Path, event: str, **details) -> None:
@@ -145,11 +170,12 @@ def restore_campaign(
     guard: object | None = None,
     recovery: object | None = None,
 ) -> dict:
-    """Restore F7 exactly, then Flux, after a crashed pilot process."""
+    """Restore the active injection, then Flux, after a crashed process."""
     resolved = _validated_campaign_dir(campaign_dir)
     events = _durable_events(resolved)
+    active_events = _active_incident_events(events)
     flux_receipt = _sealed_receipt(
-        events, "flux_recovery_receipt_sealed", "Flux"
+        active_events, "flux_recovery_receipt_sealed", "Flux"
     )
     active_guard = guard or build_live_flux_guard()
     if recovery is None:
@@ -162,19 +188,20 @@ def restore_campaign(
     flux_error: BaseException | None = None
     flux_result: dict = {}
     try:
-        injection_receipt = _optional_f7_receipt(events)
-        if injection_receipt is None:
+        sealed = _optional_injection_receipt(active_events)
+        if sealed is None:
             recovery_result = {
                 "action": "not-started", "health_check_passed": True,
             }
         else:
-            recovery_result = recovery.recover("F7", 1, injection_receipt)
+            fault_id, trial, injection_receipt = sealed
+            recovery_result = recovery.recover(fault_id, trial, injection_receipt)
             if recovery_result.get("health_check_passed") is not True:
-                raise PilotError("emergency F7 recovery did not recover exact GREEN state")
+                raise PilotError("emergency injection recovery did not reach GREEN")
     except BaseException as exc:
         recovery_error = exc
 
-    # Flux must be restored even when F7 recovery fails, matching the live
+    # Flux must be restored even when injection recovery fails, matching the live
     # runner's independent cleanup boundaries.
     try:
         flux_result = active_guard.restore(flux_receipt)
@@ -189,14 +216,16 @@ def restore_campaign(
     if recovery_error is not None or flux_error is not None:
         _append_event(
             resolved, "flux_emergency_restore_failed",
-            f7_error_type=(type(recovery_error).__name__ if recovery_error else None),
+            injection_error_type=(type(recovery_error).__name__ if recovery_error else None),
             flux_error_type=(type(flux_error).__name__ if flux_error else None),
             restore_action=flux_result.get("flux_restore_action", "unknown"),
         )
         raise PilotError("emergency F7/Flux restore did not recover exact original state")
     _append_event(
         resolved, "flux_emergency_restored",
-        f7_action=recovery_result.get("action", "unknown"),
+        fault_id=(sealed[0] if sealed is not None else None),
+        trial=(sealed[1] if sealed is not None else None),
+        recovery_action=recovery_result.get("action", "unknown"),
         restore_action=flux_result.get("flux_restore_action", "unknown"),
     )
     return {**recovery_result, **flux_result}

@@ -48,7 +48,61 @@ class KubectlCollector:
             "services": self._collect_services(),
             "nodes": self._collect_nodes(),
             "describe_unhealthy": self._describe_unhealthy_pods(),
+            "cluster_resources": self._collect_cluster_resources(),
         }
+
+    def _collect_cluster_resources(self) -> dict:
+        """Collect bounded cluster-scoped evidence needed by storage/policy faults."""
+        resources: dict[str, list[dict]] = {}
+        specs = (
+            ("persistentvolumeclaims", ["get", "pvc", "-A", "-o", "json"]),
+            ("persistentvolumes", ["get", "pv", "-o", "json"]),
+            ("resourcequotas", ["get", "resourcequota", "-A", "-o", "json"]),
+            ("limitranges", ["get", "limitrange", "-A", "-o", "json"]),
+            ("networkpolicies", ["get", "networkpolicy", "-A", "-o", "json"]),
+        )
+        for key, command in specs:
+            output = _run(command)
+            if not output:
+                resources[key] = []
+                continue
+            try:
+                items = json.loads(output).get("items", [])
+            except json.JSONDecodeError:
+                items = []
+            resources[key] = [
+                {
+                    "namespace": item.get("metadata", {}).get("namespace", ""),
+                    "name": item.get("metadata", {}).get("name", ""),
+                    "spec": item.get("spec", {}),
+                    "status": item.get("status", {}),
+                }
+                for item in items[:50]
+            ]
+
+        output = _run(["get", "pods", "-A", "-o", "json"])
+        try:
+            items = json.loads(output).get("items", []) if output else []
+        except json.JSONDecodeError:
+            items = []
+        resources["non_boutique_unhealthy_pods"] = [
+            {
+                "namespace": item.get("metadata", {}).get("namespace", ""),
+                "name": item.get("metadata", {}).get("name", ""),
+                "phase": item.get("status", {}).get("phase", "Unknown"),
+                "conditions": item.get("status", {}).get("conditions", []),
+            }
+            for item in items
+            if item.get("metadata", {}).get("namespace") != self.namespace
+            and (
+                item.get("status", {}).get("phase") != "Running"
+                or any(
+                    condition.get("type") == "Ready" and condition.get("status") != "True"
+                    for condition in item.get("status", {}).get("conditions", [])
+                )
+            )
+        ][:30]
+        return resources
 
     def _collect_pods(self) -> list[dict]:
         """Get pod status summary."""

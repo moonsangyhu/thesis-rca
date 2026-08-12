@@ -251,3 +251,12 @@
 - **수정 내용**: 공식 로컬 `session-events.schema.json`과 실제 root call을 대조해 user prompt, interaction/turn/message ID, model, stream delta/final content, optional reasoning과 idle lifecycle를 exact envelope로 검증한다. tool request/execution, MCP/remote/custom, subagent/source/attachment/steering, parent-tool과 알 수 없는 field는 계속 fail-close한다. reasoning payload는 ledger에 저장하지 않는다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `tests/test_copilot_cli.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — actual Terra strict-parser smoke PASS, 전체 181개 테스트·dry-run PASS; 무효 파일럿 1.91085 AIC와 진단 11.00435 AIC 사용, 결과 0, recovery GREEN
+
+### 29. V2.3 본실험 60-incident 실행·복구 경계 — 2026-08-12
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 유효 F7 파일럿 뒤에도 live runner가 F7 trial 1에 고정되어 본실험을 실행할 수 없었고, 다른 fault의 독립 treatment 검증·강제종료 recovery 및 storage/quota 관측이 없었다.
+- **원인**: 파일럿 구현 범위를 본실험 lifecycle로 일반화하지 않았으며 boutique namespace 중심 collector가 cluster-scoped fault를 누락했다. F5 일부 injection은 실제 local-path 동작에서 결정적 실패 신호를 만들지 못했다.
+- **수정 내용**: 본실험 manifest/store와 F1–F12×5 고정 schedule, incident별 3 rows/36 calls 원자 커밋, progress/AIC event, 전 fault live-state validator를 추가했다. 사용자 결정에 따라 본실험 campaign AIC cap은 `null`로 기록하되 매 call의 30 AIC CLI 상한·quota provenance·durable charge·실패 중단을 유지한다. 모든 fault의 pre-mutation receipt와 active-incident emergency recovery를 추가하고, F5 capacity/provisioner/affinity probe 및 cluster resource collector로 관측 가능성을 보강했다.
+- **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/injection_validator.py:1`, `experiments/v2_3/live_caller.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/run.py:1`, `experiments/v2_3/flux_restore.py:1`, `scripts/fault_inject/injector.py:1`, `scripts/stabilize/recovery.py:1`, `src/collector/kubectl.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_flux_restore.py:1`, `tests/test_v2_3_live_caller.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 전체 test/dry-run·clean commit-push 후 변경된 collector 기준 F7 t1 재파일럿 대기

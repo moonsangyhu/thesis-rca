@@ -190,3 +190,13 @@
   LiveCallerError: unrecognized Copilot event type: user.message
   authorization_verified → injection_verified → incident_failed → flux_restored → recovery_green
   ```
+
+### [ISS-013] 파일럿 전용 runner와 cluster-resource 관측 공백
+
+- **카테고리**: code / data / recovery
+- **심각도**: P0 (본실험 시작 전 차단, live 영향 없음)
+- **영향**: 기존 구현은 F7 trial 1 한 incident만 허용하고 F7 CPU 상태만 독립 검증했다. F5 storage 및 F10 quota의 cluster-scoped 상태는 boutique 전용 collector에 포함되지 않았고, 강제종료 비상복구도 단일 F7 receipt만 처리했다.
+- **발생 빈도**: 본실험 실행 전 정적 검토 1회. Copilot 호출·K8s mutation·AIC 사용은 0이다.
+- **근본 원인**: Step 4a 파일럿 안전 경계를 먼저 완성하면서 Step 4b의 60-incident lifecycle, 전 fault treatment validator, 반복 receipt 선택을 구현하지 않았다. 기존 F5 trial 2의 500Gi local-path PVC는 provisioner가 실제 용량을 예약하지 않아 bind될 수 있고, trial 3/5는 실패를 소비하는 probe가 없어 처치가 runtime evidence에 드러나지 않을 수 있었다.
+- **수정 내용**: fresh `artifacts/v2_3_main/<campaign>` 저장소, 60-incident 고정 루프, paid-overage unbounded campaign mode와 30 AIC session guard, F1–F12 live-state validator를 추가했다. injector는 모든 fault의 pre-mutation recovery identity를 봉인한다. emergency restore는 마지막 `recovery_green` 이후 active receipt만 선택해 해당 fault/trial을 복구한 뒤 Flux app→root를 복원한다. collector는 bounded cluster PVC/PV/quota/LimitRange/NetworkPolicy 및 non-boutique unhealthy pod를 항상 수집한다. F5 trial 2는 1Gi available PV 대비 500Gi claim, trial 3은 provisioner-down probe PVC, trial 5는 bad-affinity PVC 소비 pod로 처치를 결정적으로 관측한다.
+- **현재 영향**: 코드·dry-run·적대 unit 검증 후 변경된 collector commit에서 36-call F7 t1 파일럿을 다시 수행해야 한다. 새 파일럿이 GREEN일 때만 본실험을 시작한다.

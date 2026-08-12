@@ -107,6 +107,17 @@ class LiveCallerTests(unittest.TestCase):
         self.assertTrue(all("sealed expected RCA" in prompt for prompt in judge_prompts))
         self.assertTrue(all("blind_procedural_rag" not in prompt for prompt in judge_prompts))
 
+    def test_explicit_unbounded_campaign_keeps_session_guard(self):
+        backend = FakeBackend()
+        backend.max_ai_credits = 30
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        caller.cumulative_aic = 10_000
+        self.assertIsNone(caller.max_campaign_aic)
+        self.assertEqual(backend.max_ai_credits, 30)
+
     def test_campaign_aic_cap_blocks_before_next_call(self):
         backend = FakeBackend()
         caller = AuthorizedTerraCaller(

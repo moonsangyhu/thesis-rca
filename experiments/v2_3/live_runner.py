@@ -623,6 +623,26 @@ class PilotOutputStore(SafeOutputStore):
             os.fsync(handle.fileno())
 
 
+class MainOutputStore(PilotOutputStore):
+    """Fresh, append-per-incident primary campaign artifact store."""
+
+    def __init__(self, output_dir: Path):
+        output_dir = Path(output_dir)
+        project_root = Path(__file__).resolve().parents[2]
+        allowed_root = (project_root / "artifacts" / "v2_3_main").resolve()
+        resolved = output_dir.resolve()
+        if allowed_root not in resolved.parents or resolved == allowed_root:
+            raise PilotError(
+                "main output must be a campaign directory under artifacts/v2_3_main"
+            )
+        if resolved.exists():
+            raise PilotError("main output directory already exists")
+        SafeOutputStore.__init__(self, resolved)
+        self.csv_path = self.output_dir / "experiment_results_v2_3.csv"
+        self.raw_dir = self.output_dir / "raw_v2_3"
+        self.ledger_path = self.output_dir / "call_ledger_v2_3.jsonl"
+        self._keys = self._load_keys()
+
 def snapshot_tree(paths: tuple[Path, ...]) -> str:
     """Hash frozen corpus/index files by relative locator and bytes."""
     digest = hashlib.sha256()
@@ -661,6 +681,7 @@ class PilotIncidentRunner:
     flux_guard: object
     retriever: RuntimeOnlyRetriever
     store: PilotOutputStore
+    allowed_incidents: frozenset[tuple[str, int]] | None = None
     renderer: RuntimeEvidenceRenderer = RuntimeEvidenceRenderer()
     sleep_fn: Callable[[float], None] = __import__("time").sleep
 
@@ -672,9 +693,14 @@ class PilotIncidentRunner:
 
     def run(self, fault_id: str, trial: int, ground_truth: dict) -> dict:
         self.authorization.revalidate()
-        if (fault_id, trial) != (PILOT_FAULT_ID, PILOT_TRIAL):
+        allowed = self.allowed_incidents or frozenset({(PILOT_FAULT_ID, PILOT_TRIAL)})
+        if (fault_id, trial) not in allowed:
+            if self.allowed_incidents is None:
+                raise PilotError(
+                    f"V2.3 live pilot is frozen to {PILOT_FAULT_ID} trial {PILOT_TRIAL}"
+                )
             raise PilotError(
-                f"V2.3 live pilot is frozen to {PILOT_FAULT_ID} trial {PILOT_TRIAL}"
+                f"V2.3 live incident is not authorized: {fault_id} trial {trial}"
             )
         validation = self.validator.validate_and_correct(fault_id=fault_id, trial=trial)
         if getattr(validation, "status", None) not in {"clean", "corrected"}:
@@ -834,7 +860,9 @@ class PilotIncidentRunner:
             raise RecoveryFailure(detail) from recovery_errors[0]
         if injection_attempted or flux_attempted:
             if hasattr(self.store, "append_event"):
-                self.store.append_event("recovery_green")
+                self.store.append_event(
+                    "recovery_green", fault_id=fault_id, trial=trial
+                )
         if primary_error is not None:
             raise primary_error.with_traceback(primary_error.__traceback__)
         if pending is None:
@@ -843,7 +871,8 @@ class PilotIncidentRunner:
         self.store.write_incident(rows, raws, incident_entries)
         if hasattr(self.store, "append_event"):
             self.store.append_event(
-                "incident_committed", rows=len(rows), calls=len(incident_entries)
+                "incident_committed", fault_id=fault_id, trial=trial,
+                rows=len(rows), calls=len(incident_entries)
             )
         return {
             "fault_id": fault_id,
