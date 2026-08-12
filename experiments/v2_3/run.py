@@ -18,7 +18,7 @@ from pathlib import Path
 from .mock import run_dry_run, run_mock_campaign
 from .authorization import LiveAuthorization
 from .config import (
-    COPILOT_SESSION_MAX_AIC, FLUX_RECONCILIATION_POLICY, PILOT_FAULT_ID,
+    COPILOT_ACCOUNT_LOGIN, COPILOT_SESSION_MAX_AIC, FLUX_RECONCILIATION_POLICY, PILOT_FAULT_ID,
     PILOT_MANIFEST_SCHEMA, PILOT_TRIAL,
 )
 
@@ -143,6 +143,23 @@ def _run_authorized_pilot(
     output_dir = project_root / "artifacts" / "v2_3_pilot" / campaign_id
 
     from experiments.shared.copilot_cli import CopilotCLIBackend
+    from experiments.shared.copilot_quota import verify_zero_overage_quota
+
+    backend = CopilotCLIBackend(
+        model="gpt-5.6-terra",
+        max_ai_credits=COPILOT_SESSION_MAX_AIC,
+        zero_overage_confirmed=True,
+    )
+    def quota_check():
+        return verify_zero_overage_quota(
+            backend.executable,
+            expected_login=COPILOT_ACCOUNT_LOGIN,
+            required_remaining_aic=max_campaign_aic + COPILOT_SESSION_MAX_AIC,
+        )
+
+    quota = quota_check()
+    backend.pre_call_guard = quota_check
+
     from experiments.shared.csv_io import load_ground_truth
     from experiments.shared.infra import preflight_check
     from scripts.fault_inject import FaultInjector
@@ -171,12 +188,7 @@ def _run_authorized_pilot(
 
     store = PilotOutputStore(output_dir)
     charged_journal = ChargedCallJournal(output_dir / "charged_call_ledger.jsonl")
-    backend = CopilotCLIBackend(
-        model="gpt-5.6-terra",
-        max_ai_credits=COPILOT_SESSION_MAX_AIC,
-        zero_overage_confirmed=True,
-        charge_observer=charged_journal.append,
-    )
+    backend.charge_observer = charged_journal.append
     cli_version = _probe_cli_version(backend.executable)
     corpus_version = snapshot_tree(
         (DEBUGGING_DIR, RUNBOOKS_DIR, KNOWN_ISSUES_DIR, resolved_chroma)
@@ -194,6 +206,7 @@ def _run_authorized_pilot(
         "billing_evidence_sha256": authorization.evidence.evidence_sha256,
         "included_aic_balance_before": authorization.evidence.included_aic_balance,
         "aic_balance_observed_at": authorization.evidence.balance_observed_at,
+        "server_quota": quota.to_dict(),
         "approval_id": authorization.approval_id,
         "model": "gpt-5.6-terra",
         **_pilot_identity(),

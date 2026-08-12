@@ -57,6 +57,7 @@ class CopilotCLIBackend:
         max_ai_credits: int = MIN_COPILOT_SESSION_AIC,
         zero_overage_confirmed: bool | None = None,
         charge_observer: Callable[[dict], None] | None = None,
+        pre_call_guard: Callable[[], object] | None = None,
     ) -> None:
         resolved = shutil.which(executable)
         if not resolved:
@@ -75,6 +76,7 @@ class CopilotCLIBackend:
         self.max_ai_credits = max_ai_credits
         self.zero_overage_confirmed = zero_overage_confirmed
         self.charge_observer = charge_observer
+        self.pre_call_guard = pre_call_guard
         self._disabled_skill_names: frozenset[str] = frozenset()
         self._skill_isolation_prepared = False
         self._tool_filter_binding_required = False
@@ -103,6 +105,8 @@ class CopilotCLIBackend:
             raise RuntimeError(
                 "Copilot inference blocked: zero-overage billing control is not confirmed"
             )
+        if self.pre_call_guard is not None:
+            self.pre_call_guard()
         combined = self._compose_prompt(prompt, system_prompt, max_tokens)
         command = [
             self.executable,

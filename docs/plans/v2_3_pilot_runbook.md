@@ -1,6 +1,6 @@
 # V2.3 Terra 파일럿 실행 Runbook
 
-> 상태: 관리자 zero-overage 증빙 및 사용자 실행 승인을 확인함. 2026-08-09 F7 trial 5의 5m rollout 교락으로 무효화한 뒤, 사용자 승인에 따라 F7 trial 1로 변경함.
+> 상태: 2026-08-12 공식 SDK quota 조회에서 추가 사용 허용 flag가 true로 확인되어 실행 차단 중. 기존 승인과 F7 trial 1 설계는 유지하되 server overage flag가 false가 되기 전에는 재실행하지 않는다.
 
 ## 1. 파일럿 고정 범위
 
@@ -24,6 +24,8 @@
 1. `AI credits paid usage = Disabled`
 2. `Stop usage when budget limit is reached = Enabled`
 3. 파일럿 직전 included AIC balance
+
+수동 증빙 외에 공식 SDK `account.getCurrentAuth`와 `account.getQuota`를 K8s import 전과 매 Copilot 호출 전에 확인한다. login `moonsangyhu`, Business seat SKU, token-based billing을 exact binding하고, `usageAllowedWithExhaustedQuota` 또는 `overageAllowedWithExhaustedQuota`가 true이거나, overage/overage entitlement가 0이 아니거나, 포함 잔여량이 `campaign max + session max` 미만이면 즉시 중단한다. 이 server gate는 로컬 환경변수나 과거 승인으로 우회하지 않는다.
 
 세 파일은 repo 밖에 보관하고 SHA-256을 계산한다. `docs/plans/v2_3_billing_evidence_template.json`을 repo 밖으로 복사해 절대경로·hash·관측값을 채운다. 확인 시각과 balance 관측 시각은 24시간 이내여야 한다.
 

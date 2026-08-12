@@ -148,3 +148,19 @@
   RuntimeError: unrecognized Copilot event type: session.info
   LiveCallerError: Copilot CLI call failed after durable charge receipt
   ```
+
+### [ISS-010] Copilot 서버 quota가 추가 사용 허용으로 변경됨
+
+- **카테고리**: billing / external state
+- **심각도**: critical (P0)
+- **영향**: 2026-08-12 파일럿 재개 전체. stale billing evidence gate와 새 server quota gate가 Copilot 추론 및 K8s mutation 전에 실행을 차단한다.
+- **발생 빈도**: 1회 확인, 매 호출 전 재검증 예정
+- **관찰한 사실**: Copilot CLI `/usage`는 entitlement 50,000 AIC 중 34,100 사용, 15,900 잔여, 현재 session 0 AIC를 표시했다. 같은 인증 계정 `moonsangyhu`를 공식 SDK의 비추론 `account.getQuota`로 조회한 결과 `premium_interactions`는 `hasQuota=true`, `overage=0`, `overageEntitlement=0`이지만 `usageAllowedWithExhaustedQuota=true`와 `overageAllowedWithExhaustedQuota=true`였다. 이는 2026-08-09 수동 `paid usage disabled` 확인서와 현재 서버 상태가 충돌함을 뜻한다. stale evidence로 시작한 campaign ID는 authorization 단계에서 artifact 생성·Copilot 호출·K8s mutation 전에 종료됐고 AIC 사용은 0이다.
+- **근본 원인**: 관리자 설정이 변경됐거나 과거 수동 증거가 현재 실제 quota policy를 완전히 반영하지 못했다. 현재 증거만으로 어느 쪽인지 단정하지 않는다.
+- **현재 영향**: 사용자의 별도 과금 절대 금지 조건 때문에 파일럿과 본실험을 실행할 수 없다. cluster는 frontend 200m/100m, Boutique 12/12, nodes 6/6 Ready, Flux root/app unsuspended·Ready, Prometheus/Loki ready다.
+- **수정 방안**: pinned Copilot 공식 SDK의 `account.getCurrentAuth`와 `account.getQuota`를 model inference 없이 실행한다. approved login `moonsangyhu`, GitHub CLI auth, Business plan, `copilot_for_business_seat_quota`, token-based billing을 상호 binding한다. premium-interactions의 두 overage 허용 flag가 모두 false, overage/overage entitlement가 모두 0, token-based quota가 active, 포함 잔여량이 `campaign max + session max` 이상일 때만 K8s import·artifact 생성으로 진행한다. 동일 gate를 각 Copilot subprocess 직전에도 반복하며, schema/필드/SDK/Node 오류는 모두 fail-closed한다. 서버 설정이 false로 바뀌기 전에는 승인 문자열이나 로컬 환경변수로 우회하지 않는다.
+- **관련 로그**:
+  ```text
+  AuthorizationError: billing confirmation is stale
+  CopilotQuotaError: Copilot server permits paid/additional usage after included AIC exhaustion
+  ```
