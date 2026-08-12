@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from experiments.v2_3.authorization import (
-    AuthorizationError, BillingEvidence, LiveAuthorization,
+    AuthorizationError, BillingEvidence, LiveAuthorization, PAID_OVERAGE_MODE,
 )
 
 
@@ -89,6 +89,29 @@ class AuthorizationTests(unittest.TestCase):
                     LiveAuthorization.require(
                         path, approval_id="pilot-20260809", environment=env, now=self.NOW
                     )
+
+    def test_paid_overage_requires_two_process_gates_and_revalidates(self):
+        approved = {
+            "THESIS_V23_PAID_OVERAGE_AUTHORIZED": "1",
+            "THESIS_V23_PILOT_USER_APPROVED": "1",
+        }
+        with self.assertRaisesRegex(AuthorizationError, "paid-overage"):
+            LiveAuthorization.require_paid_overage(
+                approval_id="paid-overage-20260812", environment={}
+            )
+        with self.assertRaisesRegex(AuthorizationError, "user-approval"):
+            LiveAuthorization.require_paid_overage(
+                approval_id="paid-overage-20260812",
+                environment={"THESIS_V23_PAID_OVERAGE_AUTHORIZED": "1"},
+            )
+        auth = LiveAuthorization.require_paid_overage(
+            approval_id="paid-overage-20260812", environment=approved
+        )
+        self.assertEqual(auth.billing_mode, PAID_OVERAGE_MODE)
+        self.assertIsNone(auth.evidence)
+        self.assertIs(auth.revalidate(environment=approved), auth)
+        with self.assertRaisesRegex(AuthorizationError, "paid-overage"):
+            auth.revalidate(environment={"THESIS_V23_PILOT_USER_APPROVED": "1"})
 
     def test_evidence_artifact_hash_mismatch_fails_closed(self):
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -224,3 +224,12 @@
 - **수정 내용**: 공식 SDK의 비추론 `account.getCurrentAuth`와 `account.getQuota`를 격리 임시 home에서 실행해 approved login `moonsangyhu`·GitHub CLI auth·Business seat SKU·token-based billing과 premium-interactions quota를 strict binding한다. 두 overage 허용 flag false, overage/overage entitlement 0, 내부 수치 정합성과 `campaign max + session max` 잔여 reserve를 모두 요구한다. 이 검사는 artifact/K8s import 전과 각 model subprocess 전에 반복되며 실패·malformed·account drift는 외부작용 전에 차단한다. 현재 서버의 true flag는 의도대로 차단됐고 조회 AIC는 0이다. quota provenance 추가에 따라 pilot manifest schema를 v3로 올렸다.
 - **수정 파일**: `experiments/shared/copilot_quota.py:1`, `experiments/shared/copilot_cli.py:1`, `experiments/v2_3/config.py:1`, `experiments/v2_3/run.py:1`, `tests/test_copilot_quota.py:1`, `tests/test_copilot_cli.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 관련 37개·전체 173개 테스트와 180행/2,160호출 무파일·무외부호출 dry-run 통과; 현재 live server overage=true를 model/K8s/artifact 이전에 재현 차단
+
+### 26. 사용자 승인 paid-overage 실행 모드 — 2026-08-12
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: zero-overage 전용 authorization이 사용자의 최신 결정과 충돌해, 포함 AIC가 남아 있어도 V2.3 파일럿을 진행할 수 없었다.
+- **원인**: billing authorization이 관리자 hard-stop 증거 한 방식으로만 모델링되어 사용자 승인 paid-overage 실행을 사실대로 기록할 수 없었다.
+- **수정 내용**: sealed authorization에 상호 배타적 `zero-overage-evidence`/`paid-overage-user-authorized` 모드를 추가하고, 후자에 전용 CLI/process gate를 요구했다. 공식 SDK quota 조회는 account·Business seat·수치 schema 검증을 유지하면서 paid mode에서는 overage 상태를 차단하지 않고 snapshot으로 반환한다. manifest schema v4에 authorization mode와 실제 quota를 기록하며, backend는 의미가 거짓인 zero-overage flag 대신 billing execution authorization을 사용한다.
+- **수정 파일**: `experiments/v2_3/authorization.py:1`, `experiments/v2_3/run.py:1`, `experiments/v2_3/config.py:1`, `experiments/shared/copilot_cli.py:1`, `experiments/shared/copilot_quota.py:1`, `tests/test_v2_3_authorization.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `tests/test_copilot_cli.py:1`, `tests/test_copilot_quota.py:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 전체 178개 테스트 통과, 실제 Business quota snapshot(overage 허용 true, 사용량 0)을 비추론 paid mode로 검증

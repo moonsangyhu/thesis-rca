@@ -514,9 +514,17 @@ class CopilotCLIBackendTest(unittest.TestCase):
     @patch("experiments.shared.copilot_cli.subprocess.run")
     def test_billing_guard_blocks_before_subprocess(self, run, _which):
         backend = CopilotCLIBackend(zero_overage_confirmed=False)
-        with self.assertRaisesRegex(RuntimeError, "zero-overage"):
+        with self.assertRaisesRegex(RuntimeError, "billing execution"):
             backend.call("diagnose", "return JSON", 512)
         run.assert_not_called()
+
+    @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
+    def test_billing_authorization_modes_are_mutually_exclusive(self, _which):
+        with self.assertRaisesRegex(ValueError, "mutually exclusive"):
+            CopilotCLIBackend(
+                zero_overage_confirmed=True,
+                billing_execution_authorized=True,
+            )
 
     @patch("experiments.shared.copilot_cli.shutil.which", return_value="/opt/bin/copilot")
     @patch("experiments.shared.copilot_cli.subprocess.run")

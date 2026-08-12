@@ -1,6 +1,6 @@
 # V2.3 Terra 파일럿 실행 Runbook
 
-> 상태: 2026-08-12 공식 SDK quota 조회에서 추가 사용 허용 flag가 true로 확인되어 실행 차단 중. 기존 승인과 F7 trial 1 설계는 유지하되 server overage flag가 false가 되기 전에는 재실행하지 않는다.
+> 상태: 2026-08-12 사용자가 추가 과금 가능성을 실행 차단 사유에서 제외하도록 명시적으로 변경했다. F7 trial 1 설계와 캠페인/세션 AIC 상한은 유지하고, 실제 server quota는 provenance로 기록한 뒤 파일럿을 재개한다.
 
 ## 1. 파일럿 고정 범위
 
@@ -17,7 +17,16 @@
 - injection을 시도한 뒤에는 성공·예외·중단과 관계없이 recovery를 정확히 한 번 시도한다.
 - V2.2 historical prompt proxy는 F7 t1 최대 약 12.9k chars, F7 t5 최대 약 16.6k chars다. t1 pilot 비용을 본실험에 투영할 때 기존 15% margin 외에 context ratio `16.6/12.9 ≈ 1.29`를 적용한다.
 
-## 2. Zero-overage 증빙
+## 2. Billing authorization
+
+두 상호 배타적 실행 모드를 지원한다.
+
+- `zero-overage-evidence`: 기존 관리자 증빙 3종과 서버 overage=false를 요구한다.
+- `paid-overage-user-authorized`: `--allow-paid-overage`, `THESIS_V23_PAID_OVERAGE_AUTHORIZED=1`, 사용자 승인 gate를 함께 요구한다. 서버 overage 상태는 account/Business seat와 함께 매 호출 전 재조회해 manifest에 기록하지만 차단하지 않는다.
+
+현재 캠페인은 사용자의 2026-08-12 지시에 따라 두 번째 모드로 실행한다. 이는 tool/MCP/skill 차단, 30 AIC 세션 cap, 360 AIC 파일럿 campaign cap, durable charge receipt, 실패 후 campaign abort를 변경하지 않는다.
+
+### Zero-overage legacy mode
 
 회사 GitHub 관리자에게서 다음 세 자료를 잘라낸 화면 또는 export 파일로 받는다. 계정명·조직명과 설정 상태만 남기고 토큰·개인정보·다른 조직 정보는 제거한다.
 
@@ -25,7 +34,7 @@
 2. `Stop usage when budget limit is reached = Enabled`
 3. 파일럿 직전 included AIC balance
 
-수동 증빙 외에 공식 SDK `account.getCurrentAuth`와 `account.getQuota`를 K8s import 전과 매 Copilot 호출 전에 확인한다. login `moonsangyhu`, Business seat SKU, token-based billing을 exact binding하고, `usageAllowedWithExhaustedQuota` 또는 `overageAllowedWithExhaustedQuota`가 true이거나, overage/overage entitlement가 0이 아니거나, 포함 잔여량이 `campaign max + session max` 미만이면 즉시 중단한다. 이 server gate는 로컬 환경변수나 과거 승인으로 우회하지 않는다.
+수동 증빙 모드에서는 공식 SDK `account.getCurrentAuth`와 `account.getQuota`를 K8s import 전과 매 Copilot 호출 전에 확인한다. login `moonsangyhu`, Business seat SKU, token-based billing을 exact binding하고, overage 허용 flag/사용량이 있거나 포함 잔여량이 부족하면 즉시 중단한다.
 
 세 파일은 repo 밖에 보관하고 SHA-256을 계산한다. `docs/plans/v2_3_billing_evidence_template.json`을 repo 밖으로 복사해 절대경로·hash·관측값을 채운다. 확인 시각과 balance 관측 시각은 24시간 이내여야 한다.
 

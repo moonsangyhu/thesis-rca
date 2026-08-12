@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from experiments.shared.copilot_quota import (
-    CopilotQuotaError, verify_zero_overage_quota,
+    CopilotQuotaError, inspect_copilot_quota, verify_zero_overage_quota,
 )
 
 
@@ -78,6 +78,28 @@ class CopilotQuotaTests(unittest.TestCase):
                     "/opt/bin/copilot", expected_login="researcher", required_remaining_aic=390,
                     sdk_path=Path(__file__),
                 )
+
+    @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
+    @patch("experiments.shared.copilot_quota.subprocess.run")
+    def test_explicit_paid_overage_mode_records_policy_without_blocking(self, run, _which):
+        run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=0,
+            stdout=response(
+                usageAllowedWithExhaustedQuota=True,
+                overageAllowedWithExhaustedQuota=True,
+            ),
+            stderr="",
+        )
+        snapshot = inspect_copilot_quota(
+            "/opt/bin/copilot",
+            expected_login="researcher",
+            required_remaining_aic=0,
+            allow_paid_overage=True,
+            sdk_path=Path(__file__),
+        )
+        self.assertTrue(snapshot.overage_permitted)
+        self.assertTrue(snapshot.usage_allowed_with_exhausted_quota)
+        self.assertTrue(snapshot.overage_allowed_with_exhausted_quota)
 
     @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
     @patch("experiments.shared.copilot_quota.subprocess.run")

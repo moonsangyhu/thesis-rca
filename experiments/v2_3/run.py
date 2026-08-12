@@ -2,7 +2,7 @@
 """V2.3 offline harness and externally gated one-incident pilot entrypoint.
 
 No import in this module initializes Copilot, Kubernetes, Prometheus, or Loki.
-Live imports occur only after fresh billing evidence and two process gates pass.
+Live imports occur only after sealed user/billing authorization gates pass.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .mock import run_dry_run, run_mock_campaign
-from .authorization import LiveAuthorization
+from .authorization import LiveAuthorization, PAID_OVERAGE_MODE
 from .config import (
     COPILOT_ACCOUNT_LOGIN, COPILOT_SESSION_MAX_AIC, FLUX_RECONCILIATION_POLICY, PILOT_FAULT_ID,
     PILOT_MANIFEST_SCHEMA, PILOT_TRIAL,
@@ -55,6 +55,10 @@ def main(argv: list[str] | None = None) -> int:
         help="reserved follow-up approval marker; live path is still disabled",
     )
     parser.add_argument("--billing-evidence", type=Path)
+    parser.add_argument(
+        "--allow-paid-overage", action="store_true",
+        help="record explicit user authorization for metered Copilot usage",
+    )
     parser.add_argument("--approval-id")
     parser.add_argument("--campaign-id")
     parser.add_argument("--max-campaign-aic", type=float, default=360.0)
@@ -63,19 +67,25 @@ def main(argv: list[str] | None = None) -> int:
     if args.pilot:
         if args.output_dir is not None or args.approve_real:
             parser.error("--pilot does not accept --output-dir or --approve-real")
-        if (
-            not args.billing_evidence or not args.approval_id
-            or not args.campaign_id or not args.chroma_dir
-        ):
+        if not args.approval_id or not args.campaign_id or not args.chroma_dir:
             parser.error(
-                "--pilot requires --billing-evidence, --approval-id, --campaign-id, "
-                "and --chroma-dir"
+                "--pilot requires --approval-id, --campaign-id, and --chroma-dir"
+            )
+        if bool(args.billing_evidence) == bool(args.allow_paid_overage):
+            parser.error(
+                "--pilot requires exactly one of --billing-evidence or "
+                "--allow-paid-overage"
             )
         if re.fullmatch(r"[A-Za-z0-9_.-]{8,128}", args.campaign_id) is None:
             parser.error("--campaign-id is invalid")
-        authorization = LiveAuthorization.require(
-            args.billing_evidence, approval_id=args.approval_id
-        )
+        if args.allow_paid_overage:
+            authorization = LiveAuthorization.require_paid_overage(
+                approval_id=args.approval_id
+            )
+        else:
+            authorization = LiveAuthorization.require(
+                args.billing_evidence, approval_id=args.approval_id
+            )
         summary = _run_authorized_pilot(
             authorization,
             campaign_id=args.campaign_id,
@@ -89,7 +99,10 @@ def main(argv: list[str] | None = None) -> int:
         raise RealExecutionDisabled(
             f"V2.3 real execution is disabled (follow-up approval flag{approval})"
         )
-    if any((args.billing_evidence, args.approval_id, args.campaign_id, args.chroma_dir)):
+    if any((
+        args.billing_evidence, args.allow_paid_overage, args.approval_id,
+        args.campaign_id, args.chroma_dir,
+    )):
         parser.error("live authorization arguments are valid only with --pilot")
     if args.dry_run:
         if args.output_dir is not None:
@@ -143,18 +156,24 @@ def _run_authorized_pilot(
     output_dir = project_root / "artifacts" / "v2_3_pilot" / campaign_id
 
     from experiments.shared.copilot_cli import CopilotCLIBackend
-    from experiments.shared.copilot_quota import verify_zero_overage_quota
+    from experiments.shared.copilot_quota import inspect_copilot_quota
+
+    paid_overage_authorized = authorization.billing_mode == PAID_OVERAGE_MODE
 
     backend = CopilotCLIBackend(
         model="gpt-5.6-terra",
         max_ai_credits=COPILOT_SESSION_MAX_AIC,
-        zero_overage_confirmed=True,
+        billing_execution_authorized=True,
     )
     def quota_check():
-        return verify_zero_overage_quota(
+        return inspect_copilot_quota(
             backend.executable,
             expected_login=COPILOT_ACCOUNT_LOGIN,
-            required_remaining_aic=max_campaign_aic + COPILOT_SESSION_MAX_AIC,
+            required_remaining_aic=(
+                0 if paid_overage_authorized
+                else max_campaign_aic + COPILOT_SESSION_MAX_AIC
+            ),
+            allow_paid_overage=paid_overage_authorized,
         )
 
     quota = quota_check()
@@ -193,21 +212,38 @@ def _run_authorized_pilot(
     corpus_version = snapshot_tree(
         (DEBUGGING_DIR, RUNBOOKS_DIR, KNOWN_ISSUES_DIR, resolved_chroma)
     )
+    billing_fields = {
+        "billing_authorization_mode": authorization.billing_mode,
+        "approval_id": authorization.approval_id,
+    }
+    if authorization.evidence is not None:
+        billing_fields.update({
+            "account_scope": authorization.evidence.account_scope,
+            "billing_confirmed_at": authorization.evidence.confirmed_at,
+            "billing_confirmed_by": authorization.evidence.confirmed_by,
+            "billing_confirmation_method": authorization.evidence.confirmation_method,
+            "billing_evidence_sha256": authorization.evidence.evidence_sha256,
+            "included_aic_balance_before": authorization.evidence.included_aic_balance,
+            "aic_balance_observed_at": authorization.evidence.balance_observed_at,
+        })
+    else:
+        billing_fields.update({
+            "account_scope": f"github:{quota.login}",
+            "billing_confirmed_at": quota.observed_at,
+            "billing_confirmed_by": "user",
+            "billing_confirmation_method": "explicit-paid-overage-authorization",
+            "billing_evidence_sha256": (),
+            "included_aic_balance_before": quota.remaining_aic,
+            "aic_balance_observed_at": quota.observed_at,
+        })
     manifest = {
         **_pilot_budget_manifest_fields(max_campaign_aic),
         "campaign_id": campaign_id,
         "git_commit": git_revision,
         "git_worktree_clean_at_start": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "account_scope": authorization.evidence.account_scope,
-        "billing_confirmed_at": authorization.evidence.confirmed_at,
-        "billing_confirmed_by": authorization.evidence.confirmed_by,
-        "billing_confirmation_method": authorization.evidence.confirmation_method,
-        "billing_evidence_sha256": authorization.evidence.evidence_sha256,
-        "included_aic_balance_before": authorization.evidence.included_aic_balance,
-        "aic_balance_observed_at": authorization.evidence.balance_observed_at,
+        **billing_fields,
         "server_quota": quota.to_dict(),
-        "approval_id": authorization.approval_id,
         "model": "gpt-5.6-terra",
         **_pilot_identity(),
         "expected_rows": 3,

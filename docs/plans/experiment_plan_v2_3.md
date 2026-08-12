@@ -3,7 +3,7 @@
 > 작성: 2026-08-09 · Experiment Track Step 1 설계 초안
 > 입력: `docs/surveys/deep_analysis_v2_3.md`, `results/analysis_v2_2.md`, `docs/plans/next_experiment_goal_v2_3.md`, `docs/plans/experiment_plan_v2_2.md`
 > 사용자 승인 고정사항: Copilot CLI `gpt-5.6-terra`, generator/judge 모두 Terra, 독립변수 `context_condition` 하나
-> 상태: **설계 승인·Step 3A/3B 코드 검증 완료** — 36-call 파일럿은 zero-overage 관리자 증빙 및 별도 승인 전 금지
+> 상태: **설계 승인·Step 3A/3B 코드 검증 완료** — 2026-08-12 사용자의 paid-overage 허용 지시에 따라 36-call 파일럿 재개 준비 완료
 > Step 3B: zero-overage evidence verifier, gated Terra caller, runtime-only retriever, post-injection validator, recovery-before-commit pilot runner와 고정 분석 스크립트가 독립 재리뷰를 통과했다. 실행 runbook은 `docs/plans/v2_3_pilot_runbook.md`.
 
 ## 0. 설계 결정과 선행 조건
@@ -344,6 +344,8 @@ GitHub의 조직용 usage-based billing은 included pool 소진 후 paid usage�
 5. Copilot CLI 1.0.78이 허용하는 최소 세션 상한인 `--max-ai-credits 30`을 적용한다. 이는 예상 단일-call 사용량이 아니라 runaway 방지용 보조장치이며 paid-usage 비활성화를 대체하지 않는다. adapter는 각 subprocess 전에 `누적 AIC + 30 <= 360`을 검사해 세션 최악 상한을 예약하므로 campaign 360 AIC를 사후 초과하지 않는다.
 6. 공식 SDK의 model-free `account.getQuota`에서 현재 계정의 `premium_interactions`를 확인한다. `usageAllowedWithExhaustedQuota=false`, `overageAllowedWithExhaustedQuota=false`, overage와 overage entitlement 0, active token-based quota, `remaining >= campaign max + session max`를 K8s import 전과 각 Copilot subprocess 전에 모두 만족해야 한다.
 
+2026-08-12 사용자 결정으로 현재 실행에는 상호 배타적인 `paid-overage-user-authorized` 모드를 적용한다. 이 모드에서는 관리자 zero-overage 증거 대신 명시적 CLI/process gate를 봉인하고, 공식 SDK quota를 매 호출 전 조회해 실제 overage 허용값을 provenance로 보존한다. 계정·Business seat binding, 세션/campaign AIC cap, durable charge journal과 실패 후 중단은 그대로 유지한다.
+
 어느 하나라도 확인되지 않으면 mock/dry-run만 허용하고 Copilot inference는 adapter 수준에서 subprocess 실행 전에 차단한다.
 
 deep-analysis 작성 시점의 보고 잔여량은 28,850 AIC다. 파일럿 직전에 실제 계정 잔여량 `B0`를 다시 기록하고 이 값이 다르면 실제값을 사용한다. 파일럿 36 calls의 AIC 합을 `P`, 파일럿 후 잔여량을 `B1`, generator/judge 각 역할의 파일럿 최대 단일-call AIC를 `Gmax`, `Jmax`라 한다.
@@ -473,4 +475,4 @@ Step 5 분석은 대화 성공 기대를 전달받지 않은 fresh `results_crit
 | Step 5 | `results/analysis_v2_3.md` |
 | Step 6 | `docs/plans/next_experiment_goal_v2_4.md`, 새 session prompt, TickTick handoff |
 
-**다음 checkpoint:** 격리형 mock/dry-run과 독립 코드 리뷰를 통과한 뒤에도 실제 Copilot·클러스터 호출은 자동 승인되지 않는다. 회사 관리자 화면에서 paid usage disabled와 budget hard stop을 증빙하고, live retriever/runner의 별도 코드 리뷰 및 최대-context 36-call 파일럿 승인을 받아야 Step 4a로 이동한다.
+**다음 checkpoint:** clean feature-branch SHA에서 클러스터 preflight를 통과한 뒤 `paid-overage-user-authorized` F7 trial 1 최대-context 36-call 파일럿을 실행하고, 결과·호출 ledger·recovery GREEN을 검증한다.

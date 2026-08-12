@@ -1,4 +1,4 @@
-"""Read-only Copilot server quota verification for zero-overage experiments."""
+"""Read-only Copilot server quota inspection for billing-authorized experiments."""
 
 from __future__ import annotations
 
@@ -31,6 +31,8 @@ class CopilotQuotaSnapshot:
     token_based_billing: bool
     overage_count: int
     overage_entitlement: int
+    usage_allowed_with_exhausted_quota: bool
+    overage_allowed_with_exhausted_quota: bool
     overage_permitted: bool
 
     def to_dict(self) -> dict:
@@ -99,24 +101,27 @@ def _finite(value: object, field: str) -> float:
     return parsed
 
 
-def verify_zero_overage_quota(
+def inspect_copilot_quota(
     executable: str,
     *,
     expected_login: str,
-    required_remaining_aic: float,
+    required_remaining_aic: float = 0,
+    allow_paid_overage: bool = False,
     sdk_path: Path | None = None,
     node_executable: str = "node",
     timeout_seconds: int = 30,
     now: datetime | None = None,
 ) -> CopilotQuotaSnapshot:
-    """Query the official SDK without inference and reject any overage path."""
+    """Query the official SDK without inference and bind billing/account state."""
     if (
         isinstance(required_remaining_aic, bool)
         or not isinstance(required_remaining_aic, (int, float))
         or not math.isfinite(float(required_remaining_aic))
-        or required_remaining_aic <= 0
+        or required_remaining_aic < 0
     ):
-        raise ValueError("required remaining AIC must be positive and finite")
+        raise ValueError("required remaining AIC must be non-negative and finite")
+    if not isinstance(allow_paid_overage, bool):
+        raise ValueError("allow_paid_overage must be boolean")
     if not isinstance(expected_login, str) or not expected_login.strip():
         raise ValueError("expected Copilot login is required")
     node = shutil.which(node_executable)
@@ -181,9 +186,9 @@ def verify_zero_overage_quota(
     remaining_percentage = _finite(
         quota.get("remainingPercentage"), "remainingPercentage"
     )
-    if used > entitlement:
+    if used > entitlement and not allow_paid_overage:
         raise CopilotQuotaError("Copilot included AIC is already exhausted")
-    remaining = entitlement - used
+    remaining = max(0, entitlement - used)
     expected_percentage = remaining * 100 / entitlement
     if abs(remaining_percentage - expected_percentage) > 0.11:
         raise CopilotQuotaError("Copilot remaining AIC fields are inconsistent")
@@ -191,14 +196,19 @@ def verify_zero_overage_quota(
         raise CopilotQuotaError("Copilot AI-credit quota is unavailable")
     if quota.get("isUnlimitedEntitlement") is not False:
         raise CopilotQuotaError("Copilot quota entitlement shape is unsupported")
-    if (
-        quota.get("usageAllowedWithExhaustedQuota") is not False
-        or quota.get("overageAllowedWithExhaustedQuota") is not False
+    usage_after_exhaustion = quota.get("usageAllowedWithExhaustedQuota")
+    overage_after_exhaustion = quota.get("overageAllowedWithExhaustedQuota")
+    if not isinstance(usage_after_exhaustion, bool) or not isinstance(
+        overage_after_exhaustion, bool
+    ):
+        raise CopilotQuotaError("Copilot overage policy fields are invalid")
+    if not allow_paid_overage and (
+        usage_after_exhaustion or overage_after_exhaustion
     ):
         raise CopilotQuotaError(
             "Copilot server permits paid/additional usage after included AIC exhaustion"
         )
-    if overage != 0 or overage_entitlement != 0:
+    if not allow_paid_overage and (overage != 0 or overage_entitlement != 0):
         raise CopilotQuotaError("Copilot server reports nonzero additional usage")
     if remaining < float(required_remaining_aic):
         raise CopilotQuotaError("Copilot included AIC reserve is insufficient")
@@ -225,5 +235,30 @@ def verify_zero_overage_quota(
         token_based_billing=True,
         overage_count=overage,
         overage_entitlement=overage_entitlement,
-        overage_permitted=False,
+        usage_allowed_with_exhausted_quota=usage_after_exhaustion,
+        overage_allowed_with_exhausted_quota=overage_after_exhaustion,
+        overage_permitted=usage_after_exhaustion or overage_after_exhaustion,
+    )
+
+
+def verify_zero_overage_quota(
+    executable: str,
+    *,
+    expected_login: str,
+    required_remaining_aic: float,
+    sdk_path: Path | None = None,
+    node_executable: str = "node",
+    timeout_seconds: int = 30,
+    now: datetime | None = None,
+) -> CopilotQuotaSnapshot:
+    """Backward-compatible strict zero-overage verifier."""
+    return inspect_copilot_quota(
+        executable,
+        expected_login=expected_login,
+        required_remaining_aic=required_remaining_aic,
+        allow_paid_overage=False,
+        sdk_path=sdk_path,
+        node_executable=node_executable,
+        timeout_seconds=timeout_seconds,
+        now=now,
     )
