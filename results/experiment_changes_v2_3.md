@@ -233,3 +233,12 @@
 - **수정 내용**: sealed authorization에 상호 배타적 `zero-overage-evidence`/`paid-overage-user-authorized` 모드를 추가하고, 후자에 전용 CLI/process gate를 요구했다. 공식 SDK quota 조회는 account·Business seat·수치 schema 검증을 유지하면서 paid mode에서는 overage 상태를 차단하지 않고 snapshot으로 반환한다. manifest schema v4에 authorization mode와 실제 quota를 기록하며, backend는 의미가 거짓인 zero-overage flag 대신 billing execution authorization을 사용한다.
 - **수정 파일**: `experiments/v2_3/authorization.py:1`, `experiments/v2_3/run.py:1`, `experiments/v2_3/config.py:1`, `experiments/shared/copilot_cli.py:1`, `experiments/shared/copilot_quota.py:1`, `tests/test_v2_3_authorization.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `tests/test_copilot_cli.py:1`, `tests/test_copilot_quota.py:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 전체 178개 테스트 통과, 실제 Business quota snapshot(overage 허용 true, 사용량 0)을 비추론 paid mode로 검증
+
+### 27. paid-overage 파일럿 고정 명령 교정 — 2026-08-12
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: runbook의 설명은 paid-overage mode로 바뀌었지만 실행 환경변수와 고정 명령 예시는 이전 zero-overage evidence mode를 가리켰다.
+- **원인**: authorization 구현 변경 시 runbook의 실행 블록이 함께 교체되지 않았다.
+- **수정 내용**: 현재 실행 변수를 `THESIS_V23_PAID_OVERAGE_AUTHORIZED=1`로, CLI를 `--allow-paid-overage --approval-id paid-overage-20260812`로 교정하고 legacy mode 차이를 명시했다.
+- **수정 파일**: `docs/plans/v2_3_pilot_runbook.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 고정 명령과 구현 CLI/parser의 인자·gate 일치 확인
