@@ -82,7 +82,7 @@ def unknown_tool_sentinel_metadata():
         "type": "session.info",
         "data": {
             "infoType": "configuration",
-            "message": "Unknown tool name in the available tools filter: none",
+            "message": 'Unknown tool name in the tool allowlist: "none"',
         },
     })
 
@@ -557,13 +557,19 @@ class CopilotCLIBackendTest(unittest.TestCase):
             backend._parse_jsonl(sentinel_output).session_id,
             "session-unknown-sentinel",
         )
-        for mutation in ("unknown", "excluded", "tip", "persistent"):
+        for mutation in (
+            "unknown", "guessed_wording", "excluded", "tip", "persistent"
+        ):
             altered = json.loads(json.dumps(metadata))
             if mutation == "unknown":
                 altered["data"]["message"] = "Unknown tool name: shell"
+            elif mutation == "guessed_wording":
+                altered["data"]["message"] = (
+                    "Unknown tool name in the available tools filter: none"
+                )
             elif mutation == "excluded":
                 altered["data"]["message"] = (
-                    "Unknown tool name in the excluded tools filter: none"
+                    'Unknown tool name in the tool excludedlist: "none"'
                 )
             elif mutation == "tip":
                 altered["data"]["tip"] = "unexpected"

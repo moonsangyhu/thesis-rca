@@ -503,7 +503,7 @@ class CopilotCLIBackend:
                 unknown_sentinel = (
                     isinstance(message_text, str)
                     and message_text
-                    == "Unknown tool name in the available tools filter: none"
+                    == 'Unknown tool name in the tool allowlist: "none"'
                 )
                 disabled_summary = (
                     isinstance(message_text, str)

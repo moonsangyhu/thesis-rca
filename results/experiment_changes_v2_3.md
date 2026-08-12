@@ -206,3 +206,12 @@
 - **수정 내용**: nonempty sentinel allowlist를 유지하고 byte-exact `Unknown tool name in the available tools filter: none` configuration metadata 1건을 inference binding 증거로 필수화한다. isolated config는 banner와 startup tip도 끈다. 같은 exact envelope의 disabled-tools summary만 허용하고 excluded/다른 filter의 unknown, persistent/extra/duplicate/missing event와 실제 tool request/execution은 계속 fail-closed한다. 실패 campaign은 result/raw/attempt/pilot ledger 0, exact recovery GREEN으로 보존하며 exact 무효 파일럿 누적 included AIC는 6.05355다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `tests/test_copilot_cli.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — bare option의 tool 노출 독립 리뷰 반려를 반영해 nonempty zero-match sentinel + byte-exact available-filter metadata binding으로 교체함. targeted 17개·전체 166개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 최종 독립 재리뷰 승인
+
+### 24. Copilot native allowlist diagnostic exact binding 교정 — 2026-08-12
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 첫 `session.info` 호환 수정 뒤 재실행한 campaign도 Terra 첫 호출에서 `Copilot informational metadata is invalid`로 fail-closed했다.
+- **원인**: 추정한 `available tools filter: none` 문구가 pinned CLI 1.0.78 native diagnostic의 실제 출력과 달랐다.
+- **수정 내용**: native `sessionPlanToolFilterDiagnosticsForSessionJson`을 모델 호출 없이 실행해 nonempty `availableTools=['none']`의 exact 출력 `Unknown tool name in the tool allowlist: "none"`과 반대 의미인 `tool excludedlist`를 확인했다. parser는 exact allowlist event 1건만 inference binding으로 인정하고 기존 추정 문구·excludedlist·missing/duplicate/malformed metadata를 거부하도록 교정했다. 실패 campaign의 actual model은 Terra, exit 0, included AIC는 2.0857이며 result/raw/attempt/pilot ledger는 0, recovery는 GREEN이다. exact 무효 파일럿 누적 included AIC는 8.13925다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `tests/test_copilot_cli.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted 17개·전체 166개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 통과 및 독립 read-only 재리뷰 승인
