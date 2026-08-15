@@ -5,7 +5,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
-from experiments.shared.copilot_cli import CopilotCLIError, CopilotCLIResponse
+from experiments.shared.copilot_cli import (
+    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
+    CopilotCLIError,
+    CopilotCLIResponse,
+)
 from experiments.v2_3.conditions import ConditionAssembler
 from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.live_caller import AuthorizedTerraCaller, LiveCallerError
@@ -92,6 +96,34 @@ class RetryableMetadataBackend(FakeBackend):
                 receipt,
                 retryable_control_metadata=True,
                 failure_code="path_type",
+            )
+        return super().call(prompt, system_prompt, max_tokens)
+
+
+class RetryableZeroUsageAuthBackend(FakeBackend):
+    def __init__(self, fail_twice=False, malformed_receipt=False):
+        super().__init__()
+        self.fail_twice = fail_twice
+        self.malformed_receipt = malformed_receipt
+
+    def call(self, prompt, system_prompt, max_tokens):
+        if len(self.calls) == 0 or (self.fail_twice and len(self.calls) == 1):
+            self.calls.append((prompt, system_prompt, max_tokens))
+            index = len(self.calls)
+            receipt = {
+                "attempt_id": f"auth-{index}",
+                "ai_credits": 0.0,
+                "premium_requests": 0.0,
+                "usage_metadata_complete": True,
+                "actual_model": None,
+                "output_tokens": 1 if self.malformed_receipt else 0,
+            }
+            self.charge_observer(receipt)
+            raise CopilotCLIError(
+                "sealed zero-usage authentication failure",
+                receipt,
+                retryable_zero_usage_authentication=True,
+                failure_code=RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
             )
         return super().call(prompt, system_prompt, max_tokens)
 
@@ -285,6 +317,74 @@ class LiveCallerTests(unittest.TestCase):
         with self.assertRaisesRegex(LiveCallerError, "campaign aborted"):
             caller(invocation)
         self.assertEqual(len(backend.receipts), 2)
+
+    def test_zero_usage_auth_failure_retries_once_without_inflating_usage(self):
+        backend = RetryableZeroUsageAuthBackend()
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        invocation = Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        )
+
+        result = caller(invocation)
+
+        self.assertEqual(len(backend.calls), 2)
+        self.assertEqual(len(backend.receipts), 2)
+        self.assertAlmostEqual(caller.cumulative_aic, 0.1)
+        self.assertAlmostEqual(result.ledger_entry.ai_credits, 0.1)
+        self.assertAlmostEqual(result.ledger_entry.premium_requests, 1.0)
+
+    def test_second_zero_usage_auth_failure_aborts_without_third_call(self):
+        backend = RetryableZeroUsageAuthBackend(fail_twice=True)
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        invocation = Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        )
+
+        with self.assertRaisesRegex(LiveCallerError, "durable charge receipt"):
+            caller(invocation)
+
+        self.assertEqual(len(backend.calls), 2)
+        self.assertEqual(len(backend.receipts), 2)
+        self.assertEqual(caller.cumulative_aic, 0.0)
+        self.assertTrue(caller.campaign_aborted)
+
+    def test_zero_usage_auth_flag_with_malformed_receipt_does_not_retry(self):
+        backend = RetryableZeroUsageAuthBackend(malformed_receipt=True)
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        invocation = Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        )
+
+        with self.assertRaisesRegex(LiveCallerError, "durable charge receipt"):
+            caller(invocation)
+
+        self.assertEqual(len(backend.calls), 1)
+        self.assertTrue(caller.campaign_aborted)
+        self.assertEqual(caller.cumulative_aic, 0.0)
+        with self.assertRaisesRegex(LiveCallerError, "campaign aborted"):
+            caller(invocation)
+        self.assertEqual(len(backend.receipts), 1)
 
     def test_retryable_flag_with_incomplete_usage_does_not_retry(self):
         backend = RetryableMetadataBackend()
