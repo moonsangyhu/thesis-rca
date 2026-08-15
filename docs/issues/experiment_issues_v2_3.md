@@ -200,3 +200,14 @@
 - **근본 원인**: Step 4a 파일럿 안전 경계를 먼저 완성하면서 Step 4b의 60-incident lifecycle, 전 fault treatment validator, 반복 receipt 선택을 구현하지 않았다. 기존 F5 trial 2의 500Gi local-path PVC는 provisioner가 실제 용량을 예약하지 않아 bind될 수 있고, trial 3/5는 실패를 소비하는 probe가 없어 처치가 runtime evidence에 드러나지 않을 수 있었다.
 - **수정 내용**: fresh `artifacts/v2_3_main/<campaign>` 저장소, 60-incident 고정 루프, paid-overage unbounded campaign mode와 30 AIC session guard, F1–F12 live-state validator를 추가했다. injector는 모든 fault의 pre-mutation recovery identity를 봉인한다. emergency restore는 마지막 `recovery_green` 이후 active receipt만 선택해 해당 fault/trial을 복구한 뒤 Flux app→root를 복원한다. collector는 bounded cluster PVC/PV/quota/LimitRange/NetworkPolicy 및 non-boutique unhealthy pod를 항상 수집한다. F5 trial 2는 1Gi available PV 대비 500Gi claim, trial 3은 provisioner-down probe PVC, trial 5는 bad-affinity PVC 소비 pod로 처치를 결정적으로 관측한다.
 - **현재 영향**: 코드·dry-run·적대 unit 검증 후 변경된 collector commit에서 36-call F7 t1 파일럿을 다시 수행해야 한다. 새 파일럿이 GREEN일 때만 본실험을 시작한다.
+
+### [ISS-014] Flux root 안정화 중 app resourceVersion drift로 본실험 중단
+
+- **카테고리**: recovery / code
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260812-primary1`은 F1 trial 1–4만 12행·12 raw·144 call을 commit한 뒤 F1 trial 5의 모델 호출 전에 중단됐다. 불완전 캠페인이므로 V2.3 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회, 결정적 적대 unit 재현 1회
+- **관찰한 사실**: F1 t5는 `incident_scheduled → flux_recovery_receipt_sealed → incident_failed(PilotError) → flux_restored → recovery_green` 순서다. `flux_suspended`, injection receipt/start, charged/attempt/call ledger 증가는 없었다. 복구 결과는 app `already-original`, root `cas-restored`로, root만 suspend된 partial hierarchy 상태와 일치한다. 클러스터는 Flux root/app suspend absent, Boutique 12/12, node 6/6 Ready, 잔여 fault resource 없음으로 GREEN이다.
+- **근본 원인**: hierarchy receipt가 root와 app의 resourceVersion을 root mutation 전에 동시에 봉인했다. runner가 root를 suspend한 뒤 10초 안정화하는 동안 app 객체의 resourceVersion이 바뀌면, app CAS는 오래된 receipt를 사용해 실패한다. app version을 root settle 중 20→21로 변경한 적대 unit에서 stale receipt 실패를 재현했다.
+- **수정 내용**: root receipt를 먼저 봉인·suspend·안정화한 뒤 app pre-state를 다시 읽는다. identity·원래 suspend field shape/value가 초기 receipt와 동일하고 resourceVersion만 달라졌을 때만 전체 hierarchy receipt를 `flux_app_recovery_receipt_refreshed` event로 fsync한 후 app CAS를 수행한다. runner는 반환 receipt를 이 두 번째 정본과 byte-equivalent하게 검증하고 recovery에도 이를 사용한다. SIGKILL emergency restore는 active incident의 refresh event가 있으면 이를 우선 사용하며 중복·malformed·초기 receipt와의 binding 불일치는 거부한다.
+- **현재 영향**: 기존 12행은 operational attrition 증거로 보존한다. 전체 검증과 clean commit 후 새 36-call F7 t1 파일럿을 통과해야만 새 campaign ID로 60-incident 본실험을 처음부터 실행한다.

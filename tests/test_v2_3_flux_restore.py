@@ -85,6 +85,64 @@ class FluxEmergencyRestoreTests(unittest.TestCase):
                       (campaign / "campaign_events.jsonl").read_text().splitlines()]
             self.assertEqual(events[-1]["event"], "flux_emergency_restored")
 
+    def test_restore_prefers_durable_refreshed_child_receipt(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project = Path(temp_dir)
+            campaign, initial = self.make_campaign(project)
+            initial = {
+                "flux_hierarchy_schema": "v2.3-flux-hierarchy-1",
+                "root": {**initial, "flux_name": "flux-system"},
+                "app": initial,
+            }
+            refreshed = json.loads(json.dumps(initial))
+            refreshed["app"]["flux_resource_version"] = "11"
+            events = campaign / "campaign_events.jsonl"
+            records = [json.loads(line) for line in events.read_text().splitlines()]
+            records[0]["recovery_context"] = initial
+            records.insert(1, {
+                "event": "flux_app_recovery_receipt_refreshed",
+                "recovery_context": refreshed,
+            })
+            events.write_text(
+                "\n".join(json.dumps(record) for record in records) + "\n"
+            )
+            guard = FakeEmergencyGuard()
+            with patch("experiments.v2_3.flux_restore.PROJECT_ROOT", project):
+                restore_campaign(
+                    campaign, guard=guard, recovery=FakeEmergencyRecovery()
+                )
+            self.assertEqual(guard.receipts, [refreshed])
+
+    def test_duplicate_refreshed_child_receipt_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project = Path(temp_dir)
+            campaign, initial = self.make_campaign(project)
+            hierarchy = {
+                "flux_hierarchy_schema": "v2.3-flux-hierarchy-1",
+                "root": {**initial, "flux_name": "flux-system"},
+                "app": initial,
+            }
+            events = campaign / "campaign_events.jsonl"
+            records = [json.loads(line) for line in events.read_text().splitlines()]
+            records[0]["recovery_context"] = hierarchy
+            records.extend([{
+                "event": "flux_app_recovery_receipt_refreshed",
+                "recovery_context": hierarchy,
+            }, {
+                "event": "flux_app_recovery_receipt_refreshed",
+                "recovery_context": hierarchy,
+            }])
+            events.write_text(
+                "\n".join(json.dumps(record) for record in records) + "\n"
+            )
+            with patch("experiments.v2_3.flux_restore.PROJECT_ROOT", project):
+                with self.assertRaisesRegex(PilotError, "duplicate refreshed"):
+                    restore_campaign(
+                        campaign,
+                        guard=FakeEmergencyGuard(),
+                        recovery=FakeEmergencyRecovery(),
+                    )
+
     def test_nonexact_external_state_is_preserved_and_fails_closed(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             project = Path(temp_dir)

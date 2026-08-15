@@ -243,18 +243,52 @@ class FluxHierarchyGuard:
             "app": self.app_guard.prepare_recovery_context(),
         }
 
-    def suspend(self, context: dict) -> dict:
+    @staticmethod
+    def _same_original_object(previous: dict, refreshed: dict) -> bool:
+        """Allow only resourceVersion drift while the root becomes quiescent."""
+        previous_without_rv = dict(previous)
+        refreshed_without_rv = dict(refreshed)
+        previous_without_rv.pop("flux_resource_version", None)
+        refreshed_without_rv.pop("flux_resource_version", None)
+        return previous_without_rv == refreshed_without_rv
+
+    def suspend_with_receipt_observer(
+        self,
+        context: dict,
+        receipt_observer: Callable[[dict], None],
+    ) -> dict:
+        """Suspend root/app with a durable, post-root app CAS receipt.
+
+        The child resourceVersion can legitimately advance while the root is
+        settling.  The refreshed receipt must be durably observed before the
+        child mutation so crash recovery always has the exact CAS pre-state.
+        """
         self._validate(context)
+        if not callable(receipt_observer):
+            raise PilotError("Flux hierarchy receipt observer is required")
         self.root_guard.suspend(context["root"])
         self.settle((self.root_guard, context["root"]))
-        self.app_guard.suspend(context["app"])
+
+        refreshed_app = self.app_guard.prepare_recovery_context()
+        if not self._same_original_object(context["app"], refreshed_app):
+            raise PilotError("Flux app identity/original state drifted during root settle")
+        refreshed_context = json.loads(json.dumps(context, sort_keys=True))
+        refreshed_context["app"] = json.loads(json.dumps(refreshed_app, sort_keys=True))
+        receipt_observer(json.loads(json.dumps(refreshed_context, sort_keys=True)))
+
+        self.app_guard.suspend(refreshed_context["app"])
         members = (
-            (self.root_guard, context["root"]),
-            (self.app_guard, context["app"]),
+            (self.root_guard, refreshed_context["root"]),
+            (self.app_guard, refreshed_context["app"]),
         )
         self.settle(*members)
         self._verify_members(*members)
-        return json.loads(json.dumps(context, sort_keys=True))
+        return json.loads(json.dumps(refreshed_context, sort_keys=True))
+
+    def suspend(self, context: dict) -> dict:
+        raise PilotError(
+            "Flux hierarchy suspension requires a durable receipt observer"
+        )
 
     def restore(self, context: dict) -> dict:
         self._validate(context)
@@ -730,13 +764,40 @@ class PilotIncidentRunner:
                     recovery_context=json.loads(sealed_flux),
                 )
             flux_attempted = True
-            suspended_context = self.flux_guard.suspend(json.loads(sealed_flux))
+            refreshed_flux: str | None = None
+
+            def seal_refreshed_flux(receipt: dict) -> None:
+                nonlocal refreshed_flux
+                candidate = json.dumps(
+                    receipt, ensure_ascii=False, sort_keys=True,
+                    separators=(",", ":"),
+                )
+                if refreshed_flux is not None:
+                    raise PilotError("Flux app recovery receipt was refreshed twice")
+                if hasattr(self.store, "append_event"):
+                    self.store.append_event(
+                        "flux_app_recovery_receipt_refreshed",
+                        recovery_context=json.loads(candidate),
+                    )
+                refreshed_flux = candidate
+
+            suspend_with_observer = getattr(
+                self.flux_guard, "suspend_with_receipt_observer", None
+            )
+            if callable(suspend_with_observer):
+                suspended_context = suspend_with_observer(
+                    json.loads(sealed_flux), seal_refreshed_flux
+                )
+            else:
+                suspended_context = self.flux_guard.suspend(json.loads(sealed_flux))
             returned_flux = json.dumps(
                 suspended_context, ensure_ascii=False, sort_keys=True,
                 separators=(",", ":"),
             )
-            if returned_flux != sealed_flux:
+            expected_flux = refreshed_flux or sealed_flux
+            if returned_flux != expected_flux:
                 raise PilotError("Flux guard altered the sealed recovery receipt")
+            flux_context = json.loads(expected_flux)
             if hasattr(self.store, "append_event"):
                 self.store.append_event(
                     "flux_suspended", namespace="flux-system", name="app"

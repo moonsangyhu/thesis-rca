@@ -260,3 +260,12 @@
 - **수정 내용**: 본실험 manifest/store와 F1–F12×5 고정 schedule, incident별 3 rows/36 calls 원자 커밋, progress/AIC event, 전 fault live-state validator를 추가했다. 사용자 결정에 따라 본실험 campaign AIC cap은 `null`로 기록하되 매 call의 30 AIC CLI 상한·quota provenance·durable charge·실패 중단을 유지한다. 모든 fault의 pre-mutation receipt와 active-incident emergency recovery를 추가하고, F5 capacity/provisioner/affinity probe 및 cluster resource collector로 관측 가능성을 보강했다.
 - **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/injection_validator.py:1`, `experiments/v2_3/live_caller.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/run.py:1`, `experiments/v2_3/flux_restore.py:1`, `scripts/fault_inject/injector.py:1`, `scripts/stabilize/recovery.py:1`, `src/collector/kubectl.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_flux_restore.py:1`, `tests/test_v2_3_live_caller.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 전체 test/dry-run·clean commit-push 후 변경된 collector 기준 F7 t1 재파일럿 대기
+
+### 30. Flux 계층 2단계 durable receipt — 2026-08-15
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 첫 본실험은 F1 trial 1–4의 12행·144 call을 commit한 뒤 F1 trial 5에서 root Flux만 suspend되고 app CAS 전에 실패했다. app은 원래 상태, root는 exact CAS restore돼 recovery GREEN이었지만 campaign은 불완전해 primary 결과로 사용할 수 없다.
+- **원인**: root/app resourceVersion을 root 안정화 전에 동시에 봉인해, root settle 10초 동안 app resourceVersion이 전진하면 오래된 app receipt로 CAS했다.
+- **수정 내용**: root settle 뒤 app pre-state를 다시 읽고 identity·원래 suspend shape/value가 동일하며 resourceVersion만 달라졌는지 검증한다. 새 full hierarchy receipt를 mutation 전에 `flux_app_recovery_receipt_refreshed`로 fsync하고, runner 반환값·recovery context를 이 정본에 결합한다. emergency restore도 active refresh receipt를 우선 선택하며 duplicate/malformed/unbound receipt를 fail-close한다. 본실험 artifact 경로를 git ignore에 추가해 clean-revision gate와 원시 provenance 보존을 양립시켰다.
+- **수정 파일**: `.gitignore:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/flux_restore.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_flux_restore.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted test 44개 통과; 전체 test/dry-run·commit-push 후 새 파일럿 대기
