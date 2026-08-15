@@ -21,14 +21,40 @@ from typing import Callable
 
 DEFAULT_COPILOT_MODEL = "gpt-5.6-terra"
 MIN_COPILOT_SESSION_AIC = 30
+RETRYABLE_SKILL_METADATA_FAILURE_CODES = frozenset({
+    "entry_type", "extra_keys", "missing_keys", "name_type", "name_empty",
+    "duplicate_name", "description_type", "source", "user_invocable_type",
+    "enabled_state", "path_type", "argument_hint_type",
+})
 
 
 class CopilotCLIError(RuntimeError):
     """A post-subprocess failure carrying the already-journaled charge receipt."""
 
-    def __init__(self, message: str, receipt: dict):
+    def __init__(
+        self,
+        message: str,
+        receipt: dict,
+        *,
+        retryable_control_metadata: bool = False,
+        failure_code: str | None = None,
+    ):
         super().__init__(message)
         self.receipt = dict(receipt)
+        self.retryable_control_metadata = retryable_control_metadata
+        self.failure_code = failure_code
+
+
+class RetryableCopilotMetadataError(RuntimeError):
+    """A strict control-metadata rejection that may be retried once."""
+
+    def __init__(self, failure_code: str):
+        if failure_code not in RETRYABLE_SKILL_METADATA_FAILURE_CODES:
+            raise ValueError("unknown retryable Copilot metadata failure code")
+        super().__init__(
+            f"Copilot skills metadata entry is invalid: {failure_code}"
+        )
+        self.failure_code = failure_code
 
 
 @dataclass(frozen=True)
@@ -219,7 +245,13 @@ class CopilotCLIBackend:
         try:
             parsed = self._parse_jsonl(stdout, expected_user_message=combined)
         except Exception as exc:
-            raise CopilotCLIError(str(exc), receipt) from exc
+            retryable = isinstance(exc, RetryableCopilotMetadataError)
+            raise CopilotCLIError(
+                str(exc),
+                receipt,
+                retryable_control_metadata=retryable,
+                failure_code=exc.failure_code if retryable else None,
+            ) from exc
         return replace(
             parsed,
             started_at=started.isoformat(),
@@ -712,26 +744,40 @@ class CopilotCLIBackend:
                 loaded_names: set[str] = set()
                 for skill in data["skills"]:
                     if not isinstance(skill, dict):
-                        raise RuntimeError("Copilot skills metadata is invalid")
+                        raise RetryableCopilotMetadataError("entry_type")
                     allowed_keys = {
                         "name", "description", "source", "userInvocable",
                         "enabled", "path", "argumentHint",
                     }
+                    required_keys = {
+                        "name", "description", "source", "userInvocable", "enabled",
+                    }
                     name = skill.get("name")
-                    if (
-                        not set(skill).issubset(allowed_keys)
-                        or not {"name", "description", "source", "userInvocable", "enabled"}.issubset(skill)
-                        or not isinstance(name, str)
-                        or not name
-                        or name in loaded_names
-                        or not isinstance(skill.get("description"), str)
-                        or skill.get("source") != "builtin"
-                        or not isinstance(skill.get("userInvocable"), bool)
-                        or skill.get("enabled") is not False
-                        or ("path" in skill and not isinstance(skill["path"], str))
-                        or ("argumentHint" in skill and not isinstance(skill["argumentHint"], str))
-                    ):
-                        raise RuntimeError("Copilot skills metadata is invalid")
+                    invalid_reason = None
+                    if not set(skill).issubset(allowed_keys):
+                        invalid_reason = "extra_keys"
+                    elif not required_keys.issubset(skill):
+                        invalid_reason = "missing_keys"
+                    elif not isinstance(name, str):
+                        invalid_reason = "name_type"
+                    elif not name:
+                        invalid_reason = "name_empty"
+                    elif name in loaded_names:
+                        invalid_reason = "duplicate_name"
+                    elif not isinstance(skill.get("description"), str):
+                        invalid_reason = "description_type"
+                    elif skill.get("source") != "builtin":
+                        invalid_reason = "source"
+                    elif not isinstance(skill.get("userInvocable"), bool):
+                        invalid_reason = "user_invocable_type"
+                    elif skill.get("enabled") is not False:
+                        invalid_reason = "enabled_state"
+                    elif "path" in skill and not isinstance(skill["path"], str):
+                        invalid_reason = "path_type"
+                    elif "argumentHint" in skill and not isinstance(skill["argumentHint"], str):
+                        invalid_reason = "argument_hint_type"
+                    if invalid_reason is not None:
+                        raise RetryableCopilotMetadataError(invalid_reason)
                     loaded_names.add(name)
                 if loaded_names != set(self._disabled_skill_names):
                     raise RuntimeError(

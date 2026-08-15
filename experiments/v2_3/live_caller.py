@@ -6,7 +6,9 @@ import json
 import math
 from dataclasses import dataclass
 
-from experiments.shared.copilot_cli import CopilotCLIBackend, CopilotCLIError
+from experiments.shared.copilot_cli import (
+    CopilotCLIBackend, CopilotCLIError, RETRYABLE_SKILL_METADATA_FAILURE_CODES,
+)
 
 from .authorization import LiveAuthorization
 from .conditions import text_metrics
@@ -113,21 +115,60 @@ class AuthorizedTerraCaller:
         else:
             raise LiveCallerError("unknown inference role")
 
-        try:
-            response = self.backend.call(invocation.prompt, system_prompt, output_limit)
-        except CopilotCLIError as exc:
-            self.campaign_aborted = True
-            charged = exc.receipt.get("ai_credits")
+        retry_aic = 0.0
+        retry_premium_requests = 0.0
+        for attempt in range(2):
             if (
-                isinstance(charged, (int, float)) and not isinstance(charged, bool)
-                and math.isfinite(charged) and charged >= 0
+                self.max_campaign_aic is not None
+                and self.cumulative_aic + session_cap > self.max_campaign_aic
             ):
-                self.cumulative_aic += charged
-            else:
-                self.usage_uncertain = True
-            raise LiveCallerError(
-                f"Copilot CLI call failed after durable charge receipt: {exc}"
-            ) from exc
+                self.campaign_aborted = attempt > 0
+                raise LiveCallerError("campaign AIC cap reached before call")
+            try:
+                response = self.backend.call(
+                    invocation.prompt, system_prompt, output_limit
+                )
+                break
+            except CopilotCLIError as exc:
+                charged = exc.receipt.get("ai_credits")
+                known_charge = (
+                    isinstance(charged, (int, float))
+                    and not isinstance(charged, bool)
+                    and math.isfinite(charged)
+                    and charged >= 0
+                )
+                if known_charge:
+                    self.cumulative_aic += charged
+                else:
+                    self.usage_uncertain = True
+                premium = exc.receipt.get("premium_requests")
+                complete_usage = (
+                    exc.receipt.get("usage_metadata_complete") is True
+                    and exc.receipt.get("actual_model") == self.backend.model
+                    and isinstance(exc.receipt.get("output_tokens"), int)
+                    and not isinstance(exc.receipt.get("output_tokens"), bool)
+                    and exc.receipt["output_tokens"] >= 0
+                    and isinstance(premium, (int, float))
+                    and not isinstance(premium, bool)
+                    and math.isfinite(premium)
+                    and premium >= 0
+                )
+                retryable = (
+                    attempt == 0
+                    and exc.retryable_control_metadata
+                    and exc.failure_code in RETRYABLE_SKILL_METADATA_FAILURE_CODES
+                    and known_charge
+                    and complete_usage
+                    and not self.usage_uncertain
+                )
+                if retryable:
+                    retry_aic += charged
+                    retry_premium_requests += premium
+                    continue
+                self.campaign_aborted = True
+                raise LiveCallerError(
+                    f"Copilot CLI call failed after durable charge receipt: {exc}"
+                ) from exc
         if (
             isinstance(response.ai_credits, bool)
             or not isinstance(response.ai_credits, (int, float))
@@ -135,6 +176,7 @@ class AuthorizedTerraCaller:
             or response.ai_credits < 0
         ):
             raise LiveCallerError("Copilot response AIC is invalid")
+        logical_call_aic = retry_aic + response.ai_credits
         next_cumulative = self.cumulative_aic + response.ai_credits
         self.cumulative_aic = next_cumulative
         if self.max_campaign_aic is not None and next_cumulative > self.max_campaign_aic:
@@ -162,9 +204,9 @@ class AuthorizedTerraCaller:
             exit_code=response.exit_code,
             output_text_hash=sha256_text(response.text),
             output_tokens=response.output_tokens,
-            ai_credits=response.ai_credits,
+            ai_credits=logical_call_aic,
             cumulative_ai_credits=self.cumulative_aic,
-            premium_requests=response.premium_requests,
+            premium_requests=retry_premium_requests + response.premium_requests,
             system_prompt_hash=sha256_text(system_prompt),
             user_prompt_hash=sha256_text(invocation.prompt),
             runtime_context_hash=invocation.context.runtime_context_hash,

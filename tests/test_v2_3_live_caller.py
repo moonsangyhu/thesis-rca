@@ -69,6 +69,33 @@ class StrictParseFailureBackend(FakeBackend):
         raise CopilotCLIError("strict JSONL parse failed", receipt)
 
 
+class RetryableMetadataBackend(FakeBackend):
+    def __init__(self, fail_twice=False):
+        super().__init__()
+        self.fail_twice = fail_twice
+
+    def call(self, prompt, system_prompt, max_tokens):
+        if len(self.calls) == 0 or (self.fail_twice and len(self.calls) == 1):
+            self.calls.append((prompt, system_prompt, max_tokens))
+            index = len(self.calls)
+            receipt = {
+                "attempt_id": f"metadata-{index}",
+                "ai_credits": 0.2,
+                "premium_requests": 1.0,
+                "usage_metadata_complete": True,
+                "actual_model": self.model,
+                "output_tokens": 5,
+            }
+            self.charge_observer(receipt)
+            raise CopilotCLIError(
+                "Copilot skills metadata entry is invalid: path_type",
+                receipt,
+                retryable_control_metadata=True,
+                failure_code="path_type",
+            )
+        return super().call(prompt, system_prompt, max_tokens)
+
+
 class LiveCallerTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -210,6 +237,105 @@ class LiveCallerTests(unittest.TestCase):
         with self.assertRaisesRegex(LiveCallerError, "campaign aborted"):
             caller(invocation)
         self.assertEqual(len(backend.receipts), 1)
+
+    def test_retryable_control_metadata_retries_once_and_aggregates_usage(self):
+        backend = RetryableMetadataBackend()
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        invocation = Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        )
+
+        result = caller(invocation)
+
+        self.assertEqual(len(backend.calls), 2)
+        self.assertEqual(len(backend.receipts), 2)
+        self.assertAlmostEqual(caller.cumulative_aic, 0.3)
+        self.assertAlmostEqual(result.ledger_entry.ai_credits, 0.3)
+        self.assertAlmostEqual(result.ledger_entry.cumulative_ai_credits, 0.3)
+        self.assertAlmostEqual(result.ledger_entry.premium_requests, 2.0)
+
+    def test_second_control_metadata_failure_aborts_without_third_call(self):
+        backend = RetryableMetadataBackend(fail_twice=True)
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        invocation = Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        )
+
+        with self.assertRaisesRegex(LiveCallerError, "durable charge receipt"):
+            caller(invocation)
+
+        self.assertEqual(len(backend.calls), 2)
+        self.assertEqual(len(backend.receipts), 2)
+        self.assertAlmostEqual(caller.cumulative_aic, 0.4)
+        self.assertTrue(caller.campaign_aborted)
+        with self.assertRaisesRegex(LiveCallerError, "campaign aborted"):
+            caller(invocation)
+        self.assertEqual(len(backend.receipts), 2)
+
+    def test_retryable_flag_with_incomplete_usage_does_not_retry(self):
+        backend = RetryableMetadataBackend()
+        original_call = backend.call
+
+        def incomplete_call(prompt, system_prompt, max_tokens):
+            try:
+                return original_call(prompt, system_prompt, max_tokens)
+            except CopilotCLIError as exc:
+                exc.receipt["usage_metadata_complete"] = False
+                raise
+
+        backend.call = incomplete_call
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        invocation = Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        )
+
+        with self.assertRaisesRegex(LiveCallerError, "durable charge receipt"):
+            caller(invocation)
+
+        self.assertEqual(len(backend.calls), 1)
+        self.assertTrue(caller.campaign_aborted)
+
+    def test_metadata_retry_reserves_session_cap_again(self):
+        backend = RetryableMetadataBackend()
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "pilot-campaign", "copilot-1.0.78",
+            max_campaign_aic=0.25,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        invocation = Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        )
+
+        with self.assertRaisesRegex(LiveCallerError, "cap reached before call"):
+            caller(invocation)
+
+        self.assertEqual(len(backend.calls), 1)
+        self.assertAlmostEqual(caller.cumulative_aic, 0.2)
+        self.assertTrue(caller.campaign_aborted)
 
 
 if __name__ == "__main__":
