@@ -216,7 +216,7 @@ class StorageAndRunTests(unittest.TestCase):
 
     def test_live_manifest_records_cli_and_campaign_aic_boundaries(self):
         self.assertEqual(_pilot_budget_manifest_fields(360), {
-            "schema_version": "v2.3-pilot-campaign-4",
+            "schema_version": "v2.3-pilot-campaign-5",
             "max_campaign_aic": 360,
             "copilot_session_max_aic": 30,
             "flux_reconciliation_policy": "suspend-flux-root-then-app-during-incident",
@@ -243,7 +243,7 @@ class StorageAndRunTests(unittest.TestCase):
         }, clear=False), patch(
             "experiments.v2_3.run._verified_git_revision", return_value="a" * 40
         ), patch(
-            "experiments.shared.copilot_cli.CopilotCLIBackend", return_value=backend
+            "experiments.shared.copilot_sdk.CopilotSDKBackend", return_value=backend
         ), patch(
             "experiments.shared.copilot_quota.inspect_copilot_quota",
             side_effect=CopilotQuotaError("paid/additional usage permitted"),

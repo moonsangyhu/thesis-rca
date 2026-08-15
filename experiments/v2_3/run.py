@@ -168,12 +168,12 @@ def _run_authorized_pilot(
     git_revision = _verified_git_revision(project_root)
     output_dir = project_root / "artifacts" / "v2_3_pilot" / campaign_id
 
-    from experiments.shared.copilot_cli import CopilotCLIBackend
+    from experiments.shared.copilot_sdk import CopilotSDKBackend
     from experiments.shared.copilot_quota import inspect_copilot_quota
 
     paid_overage_authorized = authorization.billing_mode == PAID_OVERAGE_MODE
 
-    backend = CopilotCLIBackend(
+    backend = CopilotSDKBackend(
         model="gpt-5.6-terra",
         max_ai_credits=COPILOT_SESSION_MAX_AIC,
         billing_execution_authorized=True,
@@ -258,6 +258,9 @@ def _run_authorized_pilot(
         **billing_fields,
         "server_quota": quota.to_dict(),
         "model": "gpt-5.6-terra",
+        "copilot_backend": "official-sdk-empty",
+        "copilot_sdk_sha256": backend.sdk_sha256,
+        "copilot_sdk_runner_sha256": backend.runner_sha256,
         **_pilot_identity(),
         "expected_rows": 3,
         "expected_calls": 36,

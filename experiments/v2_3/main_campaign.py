@@ -27,7 +27,7 @@ def run_authorized_main(
     project_root = Path(__file__).resolve().parents[2]
 
     # Local imports keep offline/dry-run imports free of live dependencies.
-    from experiments.shared.copilot_cli import CopilotCLIBackend
+    from experiments.shared.copilot_sdk import CopilotSDKBackend
     from experiments.shared.copilot_quota import inspect_copilot_quota
     from experiments.shared.csv_io import load_ground_truth
     from experiments.shared.infra import preflight_check
@@ -56,7 +56,7 @@ def run_authorized_main(
     if not paid_overage_authorized:
         raise RuntimeError("primary campaign requires explicit paid-overage authorization")
 
-    backend = CopilotCLIBackend(
+    backend = CopilotSDKBackend(
         model=REQUESTED_MODEL,
         max_ai_credits=COPILOT_SESSION_MAX_AIC,
         billing_execution_authorized=True,
@@ -111,6 +111,9 @@ def run_authorized_main(
         "trials": list(TRIALS),
         "corpus_version": corpus_version,
         "cli_version": cli_version,
+        "copilot_backend": "official-sdk-empty",
+        "copilot_sdk_sha256": backend.sdk_sha256,
+        "copilot_sdk_runner_sha256": backend.runner_sha256,
         "flux_reconciliation_policy": FLUX_RECONCILIATION_POLICY,
     }
     store.write_manifest(manifest)
