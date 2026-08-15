@@ -368,3 +368,12 @@
 - **수정 내용**: exact empty-mode binding·UUID·byte-exact authentication error·routine zero-usage shutdown·model/user/tool event 부재를 하나의 failure code로 봉인한다. required/optional event의 cardinality·canonical 순서와 optional UUID/timezone/ephemeral/data/parent linkage도 exact 검증한다. 해당 경우만 charged receipt에 AIC/premium/output tokens 0을 기록하고 fresh SDK session으로 최대 1회 재시도한다. 두 번째 실패와 schema/binding/message/order/usage/API/model/tool drift는 즉시 fail-closed하며, 각 subprocess receipt와 성공 논리 call의 합산 provenance를 유지한다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/shared/copilot_sdk.py:1`, `experiments/v2_3/live_caller.py:1`, `tests/test_copilot_sdk.py:1`, `tests/test_v2_3_live_caller.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — SDK/live-caller 23개, V2.3 관련 136개와 SDK 9개, 180행/2,160호출 무파일·무외부호출 dry-run 통과. 전체 240개 suite는 변경과 무관한 control-plane socket/process timing 2개만 실패(238 통과; process test 단독 재실행 통과, adapter socket timeout 재현). 독립 재리뷰·clean commit-push 후 fresh campaign 재실행 예정
+
+### 42. zero-usage 인증 matcher의 persisted session-start 결합 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary12도 F1 t1에서 6회 정상 Terra 호출 뒤 동일 pre-inference authentication error로 중단됐다. attempt 6건/charged 7건/알려진 3.5765 AIC, result/raw/call 0이며 exact recovery GREEN이다. 첫 수정의 matcher가 재시도를 열지 않았다.
+- **원인**: 실제 SDK stdout은 runner의 `thesis.sdk.binding` 앞에 persisted `session.start`를 emit한다. 첫 수정은 binding을 첫 event로 강제해 exact zero-usage suffix가 맞아도 전체 lifecycle을 거부했다. 이는 느슨한 재시도 대신 usage unknown 중단을 선택한 fail-closed 결과다.
+- **수정 내용**: 공식 로컬 SDK schema와 durable 최소 진단 2회(합계 0.0512 AIC; 두 번째 auth failure known 0.0)로 persisted start의 실제 event/data key와 안전 필드 값을 확인했다. start UUID/timezone/root, exact data keys, session/model/reasoning, remote=false, call별 actual temp cwd, Copilot 1.0.77, producer, null tier, 30 AIC limit, event schema version을 binding과 교차검증하고 canonical order를 `session.start→binding→...→zero shutdown`으로 확장한다. 각 필드 drift는 적대 테스트로 거부한다.
+- **수정 파일**: `experiments/shared/copilot_sdk.py:1`, `tests/test_copilot_sdk.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted 검증·독립 재리뷰·전체 V2.3 회귀·dry-run 후 clean commit-push 및 fresh campaign 재실행 예정
