@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import signal
 import shutil
 import subprocess
 import tempfile
@@ -101,6 +102,41 @@ def _finite(value: object, field: str) -> float:
     return parsed
 
 
+def _run_quota_probe(
+    command: list[str], *, cwd: str, env: dict[str, str], timeout_seconds: int
+) -> subprocess.CompletedProcess[str]:
+    """Run the non-inference probe in its own process group."""
+    process = subprocess.Popen(
+        command,
+        cwd=cwd,
+        env=env,
+        text=True,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(_QUOTA_SCRIPT, timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.communicate()
+        raise
+    except BaseException:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.communicate()
+        raise
+    return subprocess.CompletedProcess(
+        command, process.returncode, stdout=stdout, stderr=stderr
+    )
+
+
 def inspect_copilot_quota(
     executable: str,
     *,
@@ -109,7 +145,8 @@ def inspect_copilot_quota(
     allow_paid_overage: bool = False,
     sdk_path: Path | None = None,
     node_executable: str = "node",
-    timeout_seconds: int = 30,
+    timeout_seconds: int = 60,
+    timeout_retries: int = 1,
     now: datetime | None = None,
 ) -> CopilotQuotaSnapshot:
     """Query the official SDK without inference and bind billing/account state."""
@@ -124,23 +161,46 @@ def inspect_copilot_quota(
         raise ValueError("allow_paid_overage must be boolean")
     if not isinstance(expected_login, str) or not expected_login.strip():
         raise ValueError("expected Copilot login is required")
+    if (
+        isinstance(timeout_seconds, bool)
+        or not isinstance(timeout_seconds, int)
+        or timeout_seconds < 1
+    ):
+        raise ValueError("quota timeout must be a positive integer")
+    if (
+        isinstance(timeout_retries, bool)
+        or not isinstance(timeout_retries, int)
+        or timeout_retries not in (0, 1)
+    ):
+        raise ValueError("quota timeout retries must be zero or one")
     node = shutil.which(node_executable)
     if not node:
         raise CopilotQuotaError("Node.js executable is unavailable")
     sdk = Path(sdk_path).resolve(strict=True) if sdk_path else _resolve_sdk(executable)
-    with tempfile.TemporaryDirectory(prefix="thesis-copilot-quota-") as temp_dir:
-        home = Path(temp_dir) / "copilot-home"
-        home.mkdir(mode=0o700)
-        completed = subprocess.run(
-            [node, "--input-type=module", "-", str(sdk), str(home)],
-            input=_QUOTA_SCRIPT,
-            cwd=temp_dir,
-            env={**os.environ, "COPILOT_HOME": str(home)},
-            text=True,
-            capture_output=True,
-            timeout=timeout_seconds,
-            check=False,
-        )
+    completed = None
+    for attempt in range(timeout_retries + 1):
+        with tempfile.TemporaryDirectory(prefix="thesis-copilot-quota-") as temp_dir:
+            home = Path(temp_dir) / "copilot-home"
+            home.mkdir(mode=0o700)
+            try:
+                completed = _run_quota_probe(
+                    [node, "--input-type=module", "-", str(sdk), str(home)],
+                    cwd=temp_dir,
+                    env={**os.environ, "COPILOT_HOME": str(home)},
+                    timeout_seconds=timeout_seconds,
+                )
+                break
+            except subprocess.TimeoutExpired as exc:
+                if attempt == timeout_retries:
+                    raise CopilotQuotaError(
+                        "Copilot quota probe timed out before inference"
+                    ) from exc
+            except Exception as exc:
+                raise CopilotQuotaError(
+                    "Copilot quota probe failed before inference"
+                ) from exc
+    if completed is None:
+        raise CopilotQuotaError("Copilot quota probe did not complete")
     if completed.returncode != 0:
         raise CopilotQuotaError("Copilot quota probe failed before inference")
     try:
@@ -248,7 +308,8 @@ def verify_zero_overage_quota(
     required_remaining_aic: float,
     sdk_path: Path | None = None,
     node_executable: str = "node",
-    timeout_seconds: int = 30,
+    timeout_seconds: int = 60,
+    timeout_retries: int = 1,
     now: datetime | None = None,
 ) -> CopilotQuotaSnapshot:
     """Backward-compatible strict zero-overage verifier."""
@@ -260,5 +321,6 @@ def verify_zero_overage_quota(
         sdk_path=sdk_path,
         node_executable=node_executable,
         timeout_seconds=timeout_seconds,
+        timeout_retries=timeout_retries,
         now=now,
     )

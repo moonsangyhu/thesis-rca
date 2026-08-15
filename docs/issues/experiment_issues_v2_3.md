@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 17건
-- 심각(실험 무효화): 14건
+- 총 이슈: 18건
+- 심각(실험 무효화): 15건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 1건
 
@@ -244,3 +244,14 @@
 - **근본 원인**: 공식 SDK empty-mode 전환 시 live event allowlist에 transient `assistant.usage`와 최종 metrics는 포함했지만, 대형 prompt의 cache/accounting window를 durable하게 기록하는 정상 `session.usage_checkpoint`를 포함하지 않았다. capability 노출이 아니라 billing provenance schema 누락이다.
 - **수정 내용**: checkpoint는 최대 1건의 persisted root UUIDv4/timezone event만 허용한다. exact data의 `totalNanoAiu`·`totalPremiumRequests`를 assistant usage와 최종 session metrics에 교차결합하고, model cache state는 pinned Terra·양수 TTL·timezone expiry의 단일 entry만 허용한다. duplicate/extra/malformed/model/usage drift는 fail-closed한다. 또한 KeyboardInterrupt/SystemExit 등 outer interruption에서도 Node와 SDK-spawned CLI process group을 kill/wait한다.
 - **현재 영향**: 동일 대형 RCA generator strict smoke가 Terra·정상 schema·완전 receipt로 통과했다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 처음부터 재실행한다.
+
+### [ISS-018] 매 호출 전 SDK quota probe의 30초 timeout
+
+- **카테고리**: infra / external interface
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary6`은 F1 trial 1의 첫 generator를 완료한 뒤 두 번째 호출 직전 quota 확인에서 중단됐다. result/raw/call ledger는 0이므로 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회. 실제 비추론 quota 연속 조회 10회는 5.670–28.071초 범위였으며, 30초 경계가 정상 지연 분포에 지나치게 가까웠다.
+- **관찰한 사실**: logical attempt와 charged receipt 각 1건에 Terra call 1.76945 AIC가 보존됐다. 두 번째 inference subprocess는 시작되지 않았고 Python `subprocess.TimeoutExpired`가 quota guard에서 발생했다. campaign은 `incident_failed(TimeoutExpired)→flux_restored→recovery_green`으로 종료됐으며 6/6 node pressure false, Boutique 12/12, Flux 5/5, Prometheus/Loki ready를 확인했다.
+- **근본 원인**: 각 model call 직전 공식 SDK의 비추론 `account.getQuota`를 새 Node process로 조회하면서 timeout을 30초로 고정했다. 조회 시간 자체가 최대 28초대였고, `subprocess.run`은 timeout 시 SDK가 생성한 자식 process group을 명시적으로 정리하지 않으며 transient timeout 재시도도 없었다.
+- **수정 내용**: quota probe를 새 process group에서 실행하고 60초 timeout 시 group 전체를 SIGKILL·wait한다. timeout에만 fresh 임시 home으로 정확히 1회 재시도하며, 두 번째 timeout·nonzero exit·malformed/account drift는 기존처럼 inference 전에 fail-closed한다. timeout/retry 인자는 bool을 포함한 비정상 값을 거부한다.
+- **현재 영향**: 비추론 연속 조회 10회가 모두 동일 Business account/quota snapshot으로 통과했다. 전체 test·dry-run·독립 리뷰·clean commit-push 뒤 fresh campaign으로 처음부터 재실행한다.
