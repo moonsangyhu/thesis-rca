@@ -28,12 +28,14 @@ from .copilot_cli import (
 
 SDK_RUNNER_SCHEMA = 1
 SDK_REASONING_EFFORT = "medium"
+SDK_COPILOT_VERSION = "1.0.77"
+SDK_SESSION_EVENT_VERSION = 1
 ZERO_USAGE_AUTH_MESSAGE = (
     "Execution failed: Error: Session was not created with authentication info "
     "or custom provider"
 )
 ZERO_USAGE_AUTH_EVENT_TYPES = frozenset({
-    "thesis.sdk.binding", "pending_messages.modified", "session.error",
+    "session.start", "thesis.sdk.binding", "pending_messages.modified", "session.error",
     "thesis.sdk.error", "assistant.idle", "session.idle", "session.shutdown",
     "session.background_tasks_changed",
 })
@@ -216,6 +218,7 @@ class CopilotSDKBackend:
                     expected_system_prompt=system_prompt,
                     expected_max_tokens=max_tokens,
                     expected_nonce=request_nonce,
+                    expected_working_directory=working_directory,
                 )
             )
             detail = (stderr or stdout).strip()[-2000:]
@@ -393,7 +396,7 @@ class CopilotSDKBackend:
 
         event_types = [r.get("type") for r in records]
         required_order = (
-            "thesis.sdk.binding", "session.error", "thesis.sdk.error",
+            "session.start", "thesis.sdk.binding", "session.error", "thesis.sdk.error",
             "session.shutdown",
         )
         if any(event_types.count(event_type) != 1 for event_type in required_order):
@@ -408,7 +411,7 @@ class CopilotSDKBackend:
         if any(event_types.count(event_type) > 1 for event_type in optional_order):
             return False
         allowed_sequences = (
-            ("thesis.sdk.binding", "pending_messages.modified", "session.error",
+            ("session.start", "thesis.sdk.binding", "pending_messages.modified", "session.error",
              "thesis.sdk.error", "assistant.idle", "session.idle",
              "session.shutdown", "session.background_tasks_changed"),
         )
@@ -419,6 +422,9 @@ class CopilotSDKBackend:
 
         binding = bindings[0]
         if not cls._valid_zero_usage_binding_shape(binding):
+            return False
+        start = next(r for r in records if r.get("type") == "session.start")
+        if not cls._valid_zero_usage_start(start, binding):
             return False
 
         error = errors[0]
@@ -566,8 +572,56 @@ class CopilotSDKBackend:
         )
 
     @staticmethod
+    def _valid_zero_usage_start(start: dict, binding: dict) -> bool:
+        if not CopilotSDKBackend._valid_event_envelope(
+            start, "session.start", ephemeral=False, parent_nullable=True,
+        ):
+            return False
+        data = start["data"]
+        expected_data_keys = {
+            "alreadyInUse", "context", "contextTier", "copilotVersion",
+            "producer", "reasoningEffort", "remoteSteerable",
+            "selectedModel", "sessionId", "sessionLimits", "startTime",
+            "version",
+        }
+        context = data.get("context") if isinstance(data, dict) else None
+        limits = data.get("sessionLimits") if isinstance(data, dict) else None
+        try:
+            start_time = datetime.fromisoformat(data["startTime"])
+            session_id = uuid.UUID(data["sessionId"])
+        except (ValueError, TypeError, AttributeError, KeyError):
+            return False
+        return bool(
+            start.get("parentId") is None
+            and isinstance(data, dict) and set(data) == expected_data_keys
+            and data["alreadyInUse"] is False
+            and isinstance(context, dict)
+            and set(context) == {"cwd"}
+            and isinstance(context["cwd"], str) and bool(context["cwd"])
+            and data["contextTier"] is None
+            and data["copilotVersion"] == SDK_COPILOT_VERSION
+            and data["producer"] == "copilot-agent"
+            and data["reasoningEffort"] == SDK_REASONING_EFFORT
+            and data["remoteSteerable"] is False
+            and data["selectedModel"] == binding["model"]
+            and session_id.version == 4
+            and str(session_id) == data["sessionId"].lower()
+            and data["sessionId"] == binding["session_id"]
+            and isinstance(limits, dict)
+            and set(limits) == {"maxAiCredits"}
+            and isinstance(limits["maxAiCredits"], int)
+            and not isinstance(limits["maxAiCredits"], bool)
+            and limits["maxAiCredits"] == binding["max_ai_credits"]
+            and start_time.tzinfo is not None
+            and isinstance(data["version"], int)
+            and not isinstance(data["version"], bool)
+            and data["version"] == SDK_SESSION_EVENT_VERSION
+        )
+
+    @staticmethod
     def _valid_event_envelope(
         record: dict, event_type: str, *, ephemeral: bool,
+        parent_nullable: bool = False,
     ) -> bool:
         expected_keys = {"id", "timestamp", "parentId", "type", "data"}
         if ephemeral:
@@ -576,14 +630,18 @@ class CopilotSDKBackend:
             return False
         try:
             event_id = uuid.UUID(record["id"])
-            parent_id = uuid.UUID(record["parentId"])
+            parent_raw = record["parentId"]
+            parent_id = None if parent_raw is None else uuid.UUID(parent_raw)
             timestamp = datetime.fromisoformat(record["timestamp"])
         except (ValueError, TypeError, AttributeError, KeyError):
             return False
         return bool(
             event_id.version == 4 and str(event_id) == record["id"].lower()
-            and parent_id.version == 4
-            and str(parent_id) == record["parentId"].lower()
+            and (
+                parent_nullable and parent_raw is None
+                or parent_id is not None and parent_id.version == 4
+                and str(parent_id) == parent_raw.lower()
+            )
             and timestamp.tzinfo is not None
             and isinstance(record["data"], dict)
             and (not ephemeral or record.get("ephemeral") is True)
@@ -592,7 +650,7 @@ class CopilotSDKBackend:
     def _is_retryable_zero_usage_auth_failure(
         self, output: str, *, expected_prompt: str,
         expected_system_prompt: str, expected_max_tokens: int,
-        expected_nonce: str,
+        expected_nonce: str, expected_working_directory: Path,
     ) -> bool:
         if not self._has_exact_zero_usage_auth_shutdown(output):
             return False
@@ -605,8 +663,11 @@ class CopilotSDKBackend:
             parsed_session_id = uuid.UUID(session_id)
         except (RuntimeError, StopIteration, ValueError, TypeError, AttributeError):
             return False
+        start = next(r for r in records if r.get("type") == "session.start")
         return bool(
             parsed_session_id.version == 4
+            and start["data"]["context"]["cwd"]
+            == str(expected_working_directory)
             and binding == {
                 "type": "thesis.sdk.binding",
                 "schema_version": SDK_RUNNER_SCHEMA,

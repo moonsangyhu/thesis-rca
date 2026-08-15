@@ -92,12 +92,27 @@ def valid_output(nonce: str, prompt: str, system_prompt: str) -> str:
     return "\n".join(json.dumps(record) for record in records)
 
 
-def zero_usage_auth_output(nonce: str, prompt: str, system_prompt: str) -> str:
+def zero_usage_auth_output(
+    nonce: str, prompt: str, system_prompt: str,
+    working_directory: str = "/tmp/working",
+) -> str:
     session_id = str(uuid.uuid4())
     error_id = str(uuid.uuid4())
     parent_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     records = [
+        {
+            "id": str(uuid.uuid4()), "timestamp": now, "parentId": None,
+            "type": "session.start",
+            "data": {
+                "alreadyInUse": False, "context": {"cwd": working_directory},
+                "contextTier": None, "copilotVersion": "1.0.77",
+                "producer": "copilot-agent", "reasoningEffort": "medium",
+                "remoteSteerable": False, "selectedModel": "gpt-5.6-terra",
+                "sessionId": session_id, "sessionLimits": {"maxAiCredits": 30},
+                "startTime": now, "version": 1,
+            },
+        },
         {
             "type": "thesis.sdk.binding", "schema_version": 1,
             "session_id": session_id, "mode": "empty",
@@ -205,7 +220,7 @@ class CopilotSDKBackendTest(unittest.TestCase):
             return subprocess.CompletedProcess(
                 command, 1,
                 zero_usage_auth_output(
-                    request["request_nonce"], prompt, system,
+                    request["request_nonce"], prompt, system, str(cwd),
                 ), "",
             ), False
 
@@ -297,6 +312,29 @@ class CopilotSDKBackendTest(unittest.TestCase):
                 "data"
             ]["codeChanges"]["linesAdded"] = False
             mutations.append(("boolean code changes", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "session.start")["data"][
+                "sessionId"
+            ] = str(uuid.uuid4())
+            mutations.append(("start session drift", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "session.start")["data"][
+                "remoteSteerable"
+            ] = True
+            mutations.append(("start remote enabled", altered))
+            for field, value, label in (
+                ("context", {"cwd": "/etc"}, "start cwd drift"),
+                ("copilotVersion", "evil", "start Copilot version drift"),
+                ("producer", "other", "start producer drift"),
+                ("contextTier", "unexpected", "start context tier drift"),
+                ("version", 999, "start schema version drift"),
+                ("version", True, "start boolean schema version"),
+            ):
+                altered = json.loads(json.dumps(baseline))
+                next(
+                    r for r in altered if r["type"] == "session.start"
+                )["data"][field] = value
+                mutations.append((label, altered))
 
             for label, records in mutations:
                 output = "\n".join(json.dumps(r) for r in records)
@@ -308,6 +346,7 @@ class CopilotSDKBackendTest(unittest.TestCase):
                             expected_system_prompt=system,
                             expected_max_tokens=128,
                             expected_nonce=nonce,
+                            expected_working_directory=Path("/tmp/working"),
                         )
                     )
 
