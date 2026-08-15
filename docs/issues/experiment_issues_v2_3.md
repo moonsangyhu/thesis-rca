@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 21건
-- 심각(실험 무효화): 17건
+- 총 이슈: 22건
+- 심각(실험 무효화): 18건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -288,3 +288,14 @@
 - **근본 원인**: 사용자가 paid-overage를 허용한 뒤에도 본실험이 model call마다 별도의 SDK client를 시작해 `account.getQuota`를 재조회했다. 이 조회는 estimand나 inference isolation과 무관하지만 2,160개 call 각각에 외부 failure surface와 수초~수십초 지연을 추가했다.
 - **수정 내용**: paid-overage 본실험에서는 server quota를 실행 gate/provenance로 사용하지 않는다. SDK가 `useLoggedInUser=true`로 사용하는 active GitHub login을 model-free `gh api user`로 campaign 시작과 각 incident 경계에서 확인한다. manifest는 quota 미조회 사유와 active-account provenance를 명시하고 balance를 `null`로 기록한다. 각 model call의 Terra/model/tool/skill/usage/charge receipt 검증과 30 AIC session limit은 유지한다. legacy zero-overage와 별도 pilot의 strict quota gate는 변경하지 않는다.
 - **현재 영향**: identity probe unit 5개와 main wiring 통합 1개가 통과했다. 통합 검증은 quota 0회, startup+incident identity 2회, manifest v3의 null billing timestamp/quota 미조회 provenance와 durable incident event를 직접 확인한다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 재실행한다.
+
+### [ISS-022] CLI `--version` 실행이 provenance gate를 비결정적으로 중단
+
+- **카테고리**: external interface / reproducibility
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary9`은 active account 확인 뒤 `copilot --version`이 60초 timeout 2회로 실패했다. 빈 artifact directory 외 event/inference/K8s mutation/AIC는 0이다.
+- **발생 빈도**: primary7 15초 timeout, primary9 60초 timeout 2회. 중간 실제 진단 10회는 성공해 native CLI process 시작이 비결정적임을 확인했다.
+- **관찰한 사실**: 설치 package metadata는 loader `@github/copilot@1.0.77`, native `@github/copilot-darwin-arm64@1.0.77`이며 native binary SHA-256은 로컬에서 결정적으로 계산됐다. CLI self-report는 과거 `1.0.78`이어서 package metadata와도 불일치했다.
+- **근본 원인**: 재현성 provenance를 얻기 위해 native CLI를 실행했지만, 이 subprocess 자체가 daemon/network 상태에 영향을 받았다. self-report 문자열은 설치 package version과 불일치해 단독 provenance로도 약했다.
+- **수정 내용**: paid main은 CLI를 실행하지 않고 loader/native package JSON의 name/version, 유일한 native binary mapping과 binary SHA-256을 로컬 파일에서 검증한다. manifest v4와 call ledger의 `cli_version`에는 두 package identity와 native hash를 함께 기록하고 source를 `local-package-and-native-sha256`으로 명시한다. 별도 pilot의 기존 runtime version probe는 변경하지 않는다.
+- **현재 영향**: local package/native hash unit 2개, main wiring 및 실제 설치 identity 확인을 통과했다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 재실행한다.

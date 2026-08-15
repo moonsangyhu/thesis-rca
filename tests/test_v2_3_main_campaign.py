@@ -63,7 +63,9 @@ class MainCampaignWiringTests(unittest.TestCase):
             "experiments.v2_3.live_runner.PilotIncidentRunner": MagicMock(return_value=runner),
             "experiments.v2_3.live_runner.RuntimeOnlyRetriever": MagicMock(),
             "experiments.v2_3.live_runner.snapshot_tree": MagicMock(return_value="corpus"),
-            "experiments.v2_3.run._probe_cli_version": MagicMock(return_value="1.0.78"),
+            "experiments.v2_3.run._local_cli_build_identity": MagicMock(
+                return_value="package-and-native-sha"
+            ),
             "experiments.v2_3.run._verified_git_revision": MagicMock(return_value="c" * 40),
         }
         with tempfile.TemporaryDirectory() as chroma, ExitStack() as stack:
@@ -88,7 +90,7 @@ class MainCampaignWiringTests(unittest.TestCase):
             2,
         )
         manifest = store.write_manifest.call_args.args[0]
-        self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-3")
+        self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-4")
         self.assertIsNone(manifest["billing_confirmed_at"])
         self.assertEqual(
             manifest["billing_confirmation_timestamp_status"],
@@ -97,6 +99,9 @@ class MainCampaignWiringTests(unittest.TestCase):
         self.assertIsNone(manifest["included_aic_balance_before"])
         self.assertEqual(manifest["server_quota"]["status"], "not-queried-paid-overage-mode")
         self.assertEqual(manifest["active_account"], startup.to_dict())
+        self.assertEqual(
+            manifest["cli_version_source"], "local-package-and-native-sha256"
+        )
         identity_events = [
             call for call in store.append_event.call_args_list
             if call.args and call.args[0] == "account_identity_verified"

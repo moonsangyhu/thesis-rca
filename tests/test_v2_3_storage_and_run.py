@@ -12,7 +12,8 @@ from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.mock import DeterministicMockCaller, clean_fixture
 from experiments.v2_3.mock import run_dry_run, run_mock_campaign
 from experiments.v2_3.run import (
-    RealExecutionDisabled, _pilot_budget_manifest_fields, _pilot_identity,
+    RealExecutionDisabled, _local_cli_build_identity,
+    _pilot_budget_manifest_fields, _pilot_identity,
     _probe_cli_version, _run_authorized_pilot, _run_cli_version_probe,
     _verified_git_revision, main,
 )
@@ -282,6 +283,66 @@ class StorageAndRunTests(unittest.TestCase):
         ):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 _probe_cli_version("copilot", **kwargs)
+
+    def test_local_cli_build_identity_binds_packages_and_native_hash(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            loader = root / "npm-loader.js"
+            loader.write_text("loader")
+            (root / "package.json").write_text(json.dumps({
+                "name": "@github/copilot", "version": "1.0.77",
+            }))
+            native = root / "node_modules" / "@github" / "copilot-darwin-arm64"
+            native.mkdir(parents=True)
+            (native / "package.json").write_text(json.dumps({
+                "name": "@github/copilot-darwin-arm64", "version": "1.0.77",
+                "bin": {"copilot-darwin-arm64": "copilot"},
+            }))
+            (native / "copilot").write_bytes(b"native-binary")
+
+            identity = _local_cli_build_identity(str(loader))
+
+            (native / "package.json").write_text(json.dumps({
+                "name": "@github/copilot-darwin-arm64", "version": "1.0.78",
+                "bin": {"copilot-darwin-arm64": "copilot"},
+            }))
+            with self.assertRaisesRegex(RuntimeError, "inconsistent"):
+                _local_cli_build_identity(str(loader))
+
+            (native / "package.json").write_text(json.dumps({
+                "name": "@github/copilot-linux-arm64", "version": "1.0.77",
+                "bin": {"copilot-linux-arm64": "copilot"},
+            }))
+            with self.assertRaisesRegex(RuntimeError, "locator"):
+                _local_cli_build_identity(str(loader))
+
+            outside = native.parent / "outside-copilot"
+            outside.write_bytes(b"outside")
+            (native / "package.json").write_text(json.dumps({
+                "name": "@github/copilot-darwin-arm64", "version": "1.0.77",
+                "bin": {"copilot-darwin-arm64": "../outside-copilot"},
+            }))
+            with self.assertRaisesRegex(RuntimeError, "path"):
+                _local_cli_build_identity(str(loader))
+
+        self.assertIn("@github/copilot@1.0.77", identity)
+        self.assertIn("@github/copilot-darwin-arm64@1.0.77", identity)
+        self.assertRegex(identity, r"native-sha256=[0-9a-f]{64}$")
+
+    def test_local_cli_build_identity_rejects_ambiguous_native_package(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            loader = root / "npm-loader.js"
+            loader.write_text("loader")
+            (root / "package.json").write_text(json.dumps({
+                "name": "@github/copilot", "version": "1.0.77",
+            }))
+            for suffix in ("darwin-arm64", "linux-arm64"):
+                native = root / "node_modules" / "@github" / f"copilot-{suffix}"
+                native.mkdir(parents=True)
+                (native / "package.json").write_text("{}")
+            with self.assertRaisesRegex(RuntimeError, "ambiguous"):
+                _local_cli_build_identity(str(loader))
 
     def test_live_server_quota_blocks_before_output_and_cluster_imports(self):
         campaign = "quota-block-before-cluster-20260812"
