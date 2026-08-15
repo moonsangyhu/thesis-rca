@@ -314,3 +314,12 @@
 - **수정 내용**: 비추론 probe를 독립 process group으로 실행하고 timeout을 60초로 확대했다. timeout이면 group 전체를 kill/wait한 뒤 fresh 임시 home에서 한 번만 재시도한다. 두 번째 timeout과 non-timeout 오류는 inference 전에 fail-closed하며, account·Business seat·quota exact binding은 그대로 유지한다.
 - **수정 파일**: `experiments/shared/copilot_quota.py:1`, `tests/test_copilot_quota.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — timeout/interruption process-group 정리·단일 재시도·두 번째 timeout 및 non-timeout 예외 정규화 unit 11개와 실제 비추론 quota 연속 조회 10회 통과. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정
+
+### 36. Copilot CLI version probe timeout 격리 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary7은 최초 quota 확인 뒤 `copilot --version`이 15초 timeout을 내 artifact 내용·event·result/raw/ledger/charge 0, K8s mutation 0인 채 중단됐다.
+- **원인**: quota 조회의 외부 process lifecycle은 보강했지만 version provenance 확인은 짧은 15초 `subprocess.run` 경계에 남아 있었다.
+- **수정 내용**: version probe도 독립 process group·60초 timeout·timeout 전용 1회 재시도를 사용한다. timeout/interruption은 group kill/wait, 두 번째 timeout과 일반 프로세스 오류는 inference 전 도메인 오류로 fail-closed한다.
+- **수정 파일**: `experiments/v2_3/run.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — storage/run targeted 23개와 실제 비추론 pinned version 연속 조회 10회 통과. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정

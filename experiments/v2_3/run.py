@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import re
+import signal
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -127,11 +128,62 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def _probe_cli_version(executable: str) -> str:
-    completed = subprocess.run(
-        [executable, "--version"], text=True, capture_output=True,
-        timeout=15, check=False,
+def _run_cli_version_probe(
+    executable: str, *, timeout_seconds: int
+) -> subprocess.CompletedProcess[str]:
+    process = subprocess.Popen(
+        [executable, "--version"], text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        start_new_session=True,
     )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout_seconds)
+    except BaseException:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.communicate()
+        raise
+    return subprocess.CompletedProcess(
+        [executable, "--version"], process.returncode,
+        stdout=stdout, stderr=stderr,
+    )
+
+
+def _probe_cli_version(
+    executable: str, *, timeout_seconds: int = 60, timeout_retries: int = 1
+) -> str:
+    if (
+        isinstance(timeout_seconds, bool)
+        or not isinstance(timeout_seconds, int)
+        or timeout_seconds < 1
+    ):
+        raise ValueError("CLI version timeout must be a positive integer")
+    if (
+        isinstance(timeout_retries, bool)
+        or not isinstance(timeout_retries, int)
+        or timeout_retries not in (0, 1)
+    ):
+        raise ValueError("CLI version timeout retries must be zero or one")
+    completed = None
+    for attempt in range(timeout_retries + 1):
+        try:
+            completed = _run_cli_version_probe(
+                executable, timeout_seconds=timeout_seconds
+            )
+            break
+        except subprocess.TimeoutExpired as exc:
+            if attempt == timeout_retries:
+                raise RuntimeError(
+                    "Copilot CLI version probe timed out before inference"
+                ) from exc
+        except Exception as exc:
+            raise RuntimeError(
+                "Copilot CLI version probe failed before inference"
+            ) from exc
+    if completed is None:
+        raise RuntimeError("Copilot CLI version probe did not complete")
     version = (completed.stdout or completed.stderr).strip().splitlines()
     if completed.returncode != 0 or not version:
         raise RuntimeError("Copilot CLI version probe failed")
