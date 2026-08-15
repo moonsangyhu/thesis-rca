@@ -333,12 +333,12 @@
 - **수정 파일**: `experiments/shared/infra.py:1`, `tests/test_infra.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — infra 적대 unit 5개와 실제 K8s/Prometheus/Loki preflight 통과. 전체 검증·독립 리뷰 후 primary8 시작 예정
 
-### 38. paid 본실험의 quota gate를 incident account binding으로 대체 — 2026-08-16
+### 38. paid 본실험의 quota gate를 startup account binding으로 대체 — 2026-08-16
 
 - **수정 에이전트**: @Codex
 - **증상/문제**: primary8 startup의 비추론 SDK quota 조회가 60초씩 두 번 timeout해 artifact/inference/mutation/AIC 0으로 시작 전 중단됐다. primary6에서도 같은 per-call 조회가 30초 timeout을 냈다.
 - **원인**: paid-overage 승인 뒤에도 2,160 model call마다 별도 SDK account/quota client를 시작해 비결정적 외부 failure surface를 유지했다.
-- **수정 내용**: paid 본실험은 server quota를 조회하지 않고 SDK `useLoggedInUser`의 active GitHub login을 campaign 시작과 60 incident 경계에서 `gh api user`로 결합한다. manifest v3에 quota 미조회 사유·active account·null balance를 기록한다. Terra/model/tool/skill/usage/charged receipt와 30 AIC session guard는 유지하며 legacy zero-overage/pilot quota 경로는 변경하지 않는다.
+- **수정 내용**: paid 본실험은 server quota를 조회하지 않고 SDK `useLoggedInUser`의 active GitHub login을 campaign 시작 시 `gh api user`로 결합한다. manifest에 quota 미조회 사유·active account·null balance를 기록한다. Terra/model/tool/skill/usage/charged receipt와 30 AIC session guard는 유지하며 legacy zero-overage/pilot quota 경로는 변경하지 않는다.
 - **수정 파일**: `experiments/shared/copilot_identity.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/config.py:1`, `tests/test_copilot_identity.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — identity unit 5개, main wiring 통합 1개, storage/run 23개 통과. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정
 
@@ -350,3 +350,12 @@
 - **수정 내용**: paid main은 loader/native package JSON의 name/version과 유일한 binary mapping을 검증하고 native binary SHA-256을 직접 계산한다. manifest v4와 call ledger에 이 결합 identity 및 local source를 기록한다. model inference나 CLI daemon/network는 사용하지 않는다.
 - **수정 파일**: `experiments/v2_3/run.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/config.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — local build unit 2개, main wiring 통합 및 실제 package/native SHA provenance 확인 통과. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정
+
+### 40. incident별 account API 재검증 제거 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary10은 startup account·manifest·preflight 뒤 첫 incident account API가 nonzero로 실패해 result/raw/ledger/charge/mutation 0으로 중단됐다.
+- **원인**: 사용자 승인 paid mode에서도 estimand와 무관한 GitHub REST account 조회를 60 incident마다 반복해 외부 failure surface를 남겼다.
+- **수정 내용**: active account는 campaign 시작 시 한 번만 manifest에 봉인하고 incident 경계는 process-local authorization만 재검증한다. 실제 SDK call의 authentication, Terra/model/tool/skill/usage/charge receipt와 session limit은 유지한다.
+- **수정 파일**: `experiments/v2_3/main_campaign.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — main wiring integration에서 identity 1회·quota 0회·incident network identity event 0을 검증. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정

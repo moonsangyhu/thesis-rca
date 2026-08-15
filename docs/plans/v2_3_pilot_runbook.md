@@ -1,6 +1,6 @@
 # V2.3 Terra 파일럿 실행 Runbook
 
-> 상태: 2026-08-12 사용자가 추가 과금 가능성을 실행 차단 사유에서 제외하도록 명시적으로 변경했다. F7 trial 1 설계와 캠페인/세션 AIC 상한은 유지한다. 2026-08-16 paid 본실험은 server quota를 조회하지 않고 active GitHub account를 incident 경계에서 결합한다.
+> 상태: 2026-08-12 사용자가 추가 과금 가능성을 실행 차단 사유에서 제외하도록 명시적으로 변경했다. F7 trial 1 설계와 캠페인/세션 AIC 상한은 유지한다. 2026-08-16 paid 본실험은 server quota를 조회하지 않고 active GitHub account를 campaign 시작 시 봉인한다.
 
 ## 1. 파일럿 고정 범위
 
@@ -22,7 +22,7 @@
 두 상호 배타적 실행 모드를 지원한다.
 
 - `zero-overage-evidence`: 기존 관리자 증빙 3종과 서버 overage=false를 요구한다.
-- `paid-overage-user-authorized`: `--allow-paid-overage`, `THESIS_V23_PAID_OVERAGE_AUTHORIZED=1`, 사용자 승인 gate를 함께 요구한다. 본실험은 SDK가 사용하는 active GitHub login을 시작 및 incident 경계에서 확인하고 server quota는 조회하지 않는다. 별도 pilot의 기존 quota provenance 경로는 유지한다.
+- `paid-overage-user-authorized`: `--allow-paid-overage`, `THESIS_V23_PAID_OVERAGE_AUTHORIZED=1`, 사용자 승인 gate를 함께 요구한다. 본실험은 SDK가 사용하는 active GitHub login을 campaign 시작 시 확인하고 server quota는 조회하지 않는다. 별도 pilot의 기존 quota provenance 경로는 유지한다.
 
 현재 캠페인은 사용자의 2026-08-12 지시에 따라 두 번째 모드로 실행한다. 이는 tool/MCP/skill 차단, 30 AIC 세션 cap, 360 AIC 파일럿 campaign cap, durable charge receipt, 실패 후 campaign abort를 변경하지 않는다.
 

@@ -12,7 +12,7 @@ from experiments.v2_3.main_campaign import run_authorized_main
 
 
 class MainCampaignWiringTests(unittest.TestCase):
-    def test_paid_main_records_startup_and_incident_account_without_quota(self):
+    def test_paid_main_records_startup_account_without_quota(self):
         authorization = LiveAuthorization.require_paid_overage(
             approval_id="paid-overage-20260812",
             environment={
@@ -23,10 +23,6 @@ class MainCampaignWiringTests(unittest.TestCase):
         startup = CopilotAccountIdentity(
             login="moonsangyhu", source="gh-api-active-user",
             observed_at=datetime(2026, 8, 16, 1, tzinfo=timezone.utc).isoformat(),
-        )
-        boundary = CopilotAccountIdentity(
-            login="moonsangyhu", source="gh-api-active-user",
-            observed_at=datetime(2026, 8, 16, 2, tzinfo=timezone.utc).isoformat(),
         )
         backend = SimpleNamespace(
             executable="/opt/bin/copilot", sdk_sha256="a" * 64,
@@ -41,7 +37,7 @@ class MainCampaignWiringTests(unittest.TestCase):
 
         replacements = {
             "experiments.shared.copilot_sdk.CopilotSDKBackend": MagicMock(return_value=backend),
-            "experiments.shared.copilot_identity.inspect_active_gh_account": MagicMock(side_effect=(startup, boundary)),
+            "experiments.shared.copilot_identity.inspect_active_gh_account": MagicMock(return_value=startup),
             "experiments.shared.copilot_quota.inspect_copilot_quota": MagicMock(side_effect=AssertionError("quota must not run")),
             "experiments.shared.csv_io.load_ground_truth": MagicMock(return_value=ground_truth),
             "experiments.shared.infra.preflight_check": MagicMock(return_value=True),
@@ -87,7 +83,7 @@ class MainCampaignWiringTests(unittest.TestCase):
         mocks["experiments.shared.copilot_quota.inspect_copilot_quota"].assert_not_called()
         self.assertEqual(
             mocks["experiments.shared.copilot_identity.inspect_active_gh_account"].call_count,
-            2,
+            1,
         )
         manifest = store.write_manifest.call_args.args[0]
         self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-4")
@@ -102,15 +98,10 @@ class MainCampaignWiringTests(unittest.TestCase):
         self.assertEqual(
             manifest["cli_version_source"], "local-package-and-native-sha256"
         )
-        identity_events = [
-            call for call in store.append_event.call_args_list
-            if call.args and call.args[0] == "account_identity_verified"
-        ]
-        self.assertEqual(len(identity_events), 1)
-        self.assertEqual(identity_events[0].kwargs, {
-            "fault_id": "F1", "trial": 1, "login": "moonsangyhu",
-            "source": "gh-api-active-user", "observed_at": boundary.observed_at,
-        })
+        self.assertFalse(any(
+            call.args and call.args[0] == "account_identity_verified"
+            for call in store.append_event.call_args_list
+        ))
 
 
 if __name__ == "__main__":

@@ -171,16 +171,6 @@ def run_authorized_main(
     for fault_id in FAULTS:
         for trial in TRIALS:
             authorization.revalidate()
-            refreshed_account = account_check()
-            if refreshed_account.login != account.login:
-                raise RuntimeError("active GitHub account changed during campaign")
-            store.append_event(
-                "account_identity_verified",
-                fault_id=fault_id, trial=trial,
-                login=refreshed_account.login,
-                source=refreshed_account.source,
-                observed_at=refreshed_account.observed_at,
-            )
             store.append_event(
                 "incident_scheduled", fault_id=fault_id, trial=trial,
                 ordinal=completed + 1,
