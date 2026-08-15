@@ -33,3 +33,13 @@ INJECTION_WAIT = {
     "F11": 120,  # NetworkDelay: wait for latency to propagate
     "F12": 120,  # NetworkLoss: wait for packet loss effects
 }
+
+# F4 trial 3 is calibrated to the 16 GiB yms-proxmox-04 worker.  The stressor
+# must outlive the F4 observation window so validation cannot sample a recovered
+# node.  Keep these values as a single contract shared by injection, validation,
+# recovery, tests, and lab documentation.
+F4_T3_STRESS_BYTES = "13G"
+F4_T3_STRESS_TIMEOUT_SECONDS = 300
+F4_T3_STRESS_VERSION = "0.19.02"
+F4_T3_STRESS_RECEIPT_FILE = "/tmp/v23-f4t3-stress.receipt"
+F4_T3_STRESS_LOG_FILE = "/tmp/v23-f4t3-stress.log"

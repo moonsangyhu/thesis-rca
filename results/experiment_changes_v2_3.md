@@ -269,3 +269,12 @@
 - **수정 내용**: root settle 뒤 app pre-state를 다시 읽고 identity·원래 suspend shape/value가 동일하며 resourceVersion만 달라졌는지 검증한다. 새 full hierarchy receipt를 mutation 전에 `flux_app_recovery_receipt_refreshed`로 fsync하고, runner 반환값·recovery context를 이 정본에 결합한다. emergency restore도 active refresh receipt를 우선 선택하며 duplicate/malformed/unbound receipt를 fail-close한다. 본실험 artifact 경로를 git ignore에 추가해 clean-revision gate와 원시 provenance 보존을 양립시켰다.
 - **수정 파일**: `.gitignore:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/flux_restore.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_flux_restore.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — targeted test 44개 통과; 전체 test/dry-run·commit-push 후 새 파일럿 대기
+
+### 31. F4 trial 3 메모리 고갈 주입의 실행·관측 결합 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 두 번째 본실험은 17 incidents·51 rows·612 calls 뒤 F4 t3에서 node disruption을 관측하지 못해 fail-closed 중단됐다.
+- **원인**: worker03에 `stress-ng`가 없었고 background shell은 실제 child 실패를 숨겼다. 설치 뒤에도 percentage 방식은 총 6.35 GiB만 할당해 16 GiB 노드에 압력을 만들지 못했다.
+- **수정 내용**: worker03에 `stress-ng=0.19.02-1`을 설치하고, injector가 binary/version/기존-process 부재와 stale receipt/temp/log 제거·fsync, 13 GiB 절대 총량·`--vm-keep`·PID/start tick/cmdline hash receipt를 강제하도록 변경했다. production stress 300초가 validation wait 180초를 초과하도록 단일 config 계약으로 묶었다. launch identity는 node-local mode-0600 temp file fsync→atomic rename으로 보존하고 sealed preflight와 launch receipt를 runner 반환값에 병합한다. validator는 receipt와 실제 Ready/MemoryPressure를 함께 검사하며 recovery는 동일 process만 SSH 재시도로 종료한다. receipt 없는/stale PID crash window도 모든 stress process 부재 전 GREEN을 금지한다. production-command live probe는 약 40초 내 Ready=Unknown과 validator PASS를 확인했고, 첫 반환 병합 누락은 fail-closed 후 emergency recovery 20회·health PASS로 복구했다.
+- **수정 파일**: `scripts/fault_inject/injector.py:1`, `experiments/v2_3/injection_validator.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted/전체 test와 offline dry-run 검증 후 새 campaign으로 처음부터 재실행 예정

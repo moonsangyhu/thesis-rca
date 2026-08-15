@@ -692,6 +692,187 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(result["original_cpu_request"], "100m")
         self.assertEqual(result["cpu_limit"], "10m")
 
+    def test_f4_memory_injector_uses_absolute_bytes_and_requires_pid_receipt(self):
+        from scripts.fault_inject.injector import FaultInjector
+
+        with patch(
+            "scripts.fault_inject.injector.ssh_node",
+            return_value=(
+                "__V23_STRESS_NG_PID__=4321\n"
+                "__V23_STRESS_NG_START_TICKS__=8765\n"
+                f"__V23_STRESS_NG_CMDLINE_SHA256__={'c' * 64}\n"
+            ),
+        ) as ssh:
+            result = FaultInjector()._inject_f4_node_notready(
+                "worker03", 3, {}, {
+                    "stress_ng_version": "0.19.02",
+                    "stress_ng_preexisting": False,
+                    "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+                }
+            )
+        command = ssh.call_args.args[1]
+        self.assertIn("command -v stress-ng", command)
+        self.assertIn("--vm-bytes 13G", command)
+        self.assertIn("--vm-keep", command)
+        self.assertIn("sync -f", command)
+        self.assertIn("read rpid rstart rhash", command)
+        self.assertEqual(result["stress_ng_pid"], 4321)
+        self.assertEqual(result["stress_ng_start_ticks"], 8765)
+        self.assertEqual(result["stress_memory_bytes"], "13G")
+
+        with patch(
+            "scripts.fault_inject.injector.ssh_node",
+            return_value="bash: stress-ng: command not found\n",
+        ):
+            with self.assertRaisesRegex(RuntimeError, "launch receipt"):
+                FaultInjector()._inject_f4_node_notready(
+                    "worker03", 3, {}, {
+                        "stress_ng_version": "0.19.02",
+                        "stress_ng_preexisting": False,
+                        "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+                    }
+                )
+
+    def test_f4_inject_preserves_sealed_preflight_for_runner_recovery(self):
+        from scripts.fault_inject.injector import FaultInjector
+
+        sealed = {
+            "fault_id": "F4", "trial": 3, "target_service": "worker03",
+            "node": "yms-proxmox-04", "stress_ng_preexisting": False,
+            "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+        }
+        injector = FaultInjector()
+        injector._injectors["F4"] = lambda target, trial, gt, ctx: {
+            "action": "node_disruption", "node": ctx["node"],
+            "stress_ng_pid": 4321,
+        }
+        with patch(
+            "scripts.fault_inject.injector.load_trial",
+            return_value={
+                "target_service": "worker03", "injection_method": "memory",
+                "fault_name": "NodeNotReady",
+            },
+        ):
+            result = injector.inject("F4", 3, recovery_context=sealed)
+        self.assertIs(result["stress_ng_preexisting"], False)
+        self.assertEqual(result["stress_receipt_file"], sealed["stress_receipt_file"])
+        self.assertEqual(result["stress_ng_pid"], 4321)
+
+    def test_f4_memory_recovery_retries_and_kills_only_sealed_pid(self):
+        from scripts.stabilize.recovery import Recovery
+
+        ctx = {
+            "node": "yms-proxmox-04", "stress_ng_preexisting": False,
+            "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+            "stress_ng_pid": 4321, "stress_ng_start_ticks": 8765,
+        }
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            side_effect=[
+                "Connection timed out during banner exchange",
+                "__V23_STRESS_RECOVERY__=exact-clean\n",
+            ],
+        ) as ssh, patch("scripts.stabilize.recovery.kubectl"), patch(
+            "scripts.stabilize.recovery.time.sleep"
+        ):
+            result = Recovery()._recover_f4(3, ctx)
+        self.assertTrue(result["stress_cleanup_verified"])
+        self.assertEqual(result["attempts"], 2)
+        self.assertIn('"$pid" != "4321"', ssh.call_args.args[1])
+        self.assertNotIn("pkill -9 stress-ng", ssh.call_args.args[1])
+
+    def test_f4_memory_crash_recovery_uses_durable_node_receipt(self):
+        from scripts.stabilize.recovery import Recovery
+
+        ctx = {
+            "node": "yms-proxmox-04", "stress_ng_preexisting": False,
+            "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+        }
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            return_value="__V23_STRESS_RECOVERY__=exact-clean\n",
+        ) as ssh, patch("scripts.stabilize.recovery.kubectl"), patch(
+            "scripts.stabilize.recovery.time.sleep"
+        ):
+            result = Recovery()._recover_f4(3, ctx)
+        self.assertTrue(result["stress_cleanup_verified"])
+        command = ssh.call_args.args[1]
+        self.assertIn("read pid sealed_start sealed_hash", command)
+        self.assertNotIn('[ -n "4321" ]', command)
+
+    def test_f4_memory_missing_receipt_waits_for_process_absence(self):
+        from scripts.stabilize.recovery import Recovery
+
+        ctx = {
+            "node": "yms-proxmox-04", "stress_ng_preexisting": False,
+            "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+        }
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            side_effect=[
+                "__V23_STRESS_RECOVERY__=awaiting-unsealed\n",
+                "__V23_STRESS_RECOVERY__=no-receipt-no-process\n",
+            ],
+        ) as ssh, patch("scripts.stabilize.recovery.kubectl"), patch(
+            "scripts.stabilize.recovery.time.sleep"
+        ):
+            result = Recovery()._recover_f4(3, ctx)
+        self.assertEqual(result["attempts"], 2)
+        self.assertIn("pgrep '^stress-ng'", ssh.call_args.args[1])
+
+    def test_f4_memory_stale_receipt_cannot_hide_new_residual_process(self):
+        from scripts.stabilize.recovery import Recovery
+
+        ctx = {
+            "node": "yms-proxmox-04", "stress_ng_preexisting": False,
+            "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+        }
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            side_effect=[
+                "__V23_STRESS_RECOVERY__=awaiting-residual\n",
+                "__V23_STRESS_RECOVERY__=exact-clean\n",
+            ],
+        ) as ssh, patch("scripts.stabilize.recovery.kubectl"), patch(
+            "scripts.stabilize.recovery.time.sleep"
+        ):
+            result = Recovery()._recover_f4(3, ctx)
+        self.assertEqual(result["attempts"], 2)
+        self.assertIn("awaiting-residual", ssh.call_args.args[1])
+
+    def test_f4_memory_preflight_requires_version_and_no_existing_process(self):
+        from scripts.fault_inject.injector import FaultInjector
+
+        with patch(
+            "scripts.fault_inject.injector.load_trial",
+            return_value={"target_service": "worker03"},
+        ), patch(
+            "scripts.fault_inject.injector.ssh_node",
+            return_value="__V23_STRESS_NG_PREFLIGHT__=0.19.02\n",
+        ) as ssh:
+            context = FaultInjector().prepare_recovery_context("F4", 3)
+        self.assertEqual(context["stress_ng_version"], "0.19.02")
+        self.assertIs(context["stress_ng_preexisting"], False)
+        self.assertEqual(
+            context["stress_receipt_file"], "/tmp/v23-f4t3-stress.receipt"
+        )
+        preflight_command = ssh.call_args.args[1]
+        self.assertIn("sudo rm -f /tmp/v23-f4t3-stress.receipt", preflight_command)
+        self.assertIn("sudo sync -f /tmp", preflight_command)
+        self.assertLess(
+            preflight_command.index("rm -f"),
+            preflight_command.index("__V23_STRESS_NG_PREFLIGHT__"),
+        )
+
+        with patch(
+            "scripts.fault_inject.injector.load_trial",
+            return_value={"target_service": "worker03"},
+        ), patch(
+            "scripts.fault_inject.injector.ssh_node", return_value=""
+        ):
+            with self.assertRaisesRegex(RuntimeError, "preflight"):
+                FaultInjector().prepare_recovery_context("F4", 3)
+
     def test_f7_partial_mutation_error_keeps_pre_state_for_recovery(self):
         recovery = FakeRecovery()
         injector = FakeInjector(error=TimeoutError("applied then timed out"))
