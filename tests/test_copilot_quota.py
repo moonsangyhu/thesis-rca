@@ -6,7 +6,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from experiments.shared.copilot_quota import (
-    CopilotQuotaError, inspect_copilot_quota, verify_zero_overage_quota,
+    CopilotQuotaError, _run_quota_probe, inspect_copilot_quota,
+    verify_zero_overage_quota,
 )
 
 
@@ -43,7 +44,7 @@ def response(**overrides):
 
 class CopilotQuotaTests(unittest.TestCase):
     @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
-    @patch("experiments.shared.copilot_quota.subprocess.run")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
     def test_exact_zero_overage_snapshot_passes_with_reserve(self, run, _which):
         run.return_value = subprocess.CompletedProcess(
             args=[], returncode=0, stdout=response(), stderr=""
@@ -58,11 +59,11 @@ class CopilotQuotaTests(unittest.TestCase):
         self.assertEqual(snapshot.remaining_aic, 15900)
         self.assertFalse(snapshot.overage_permitted)
         self.assertEqual(snapshot.overage_count, 0)
-        self.assertIn("account.getQuota", run.call_args.kwargs["input"])
         self.assertEqual(run.call_args.args[0][1:3], ["--input-type=module", "-"])
+        self.assertEqual(run.call_args.kwargs["timeout_seconds"], 60)
 
     @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
-    @patch("experiments.shared.copilot_quota.subprocess.run")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
     def test_server_overage_permission_fails_closed(self, run, _which):
         for field in (
             "usageAllowedWithExhaustedQuota",
@@ -80,7 +81,7 @@ class CopilotQuotaTests(unittest.TestCase):
                 )
 
     @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
-    @patch("experiments.shared.copilot_quota.subprocess.run")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
     def test_explicit_paid_overage_mode_records_policy_without_blocking(self, run, _which):
         run.return_value = subprocess.CompletedProcess(
             args=[], returncode=0,
@@ -102,7 +103,7 @@ class CopilotQuotaTests(unittest.TestCase):
         self.assertTrue(snapshot.overage_allowed_with_exhausted_quota)
 
     @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
-    @patch("experiments.shared.copilot_quota.subprocess.run")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
     def test_overage_usage_and_insufficient_reserve_fail_closed(self, run, _which):
         cases = (
             (response(overage=1), "additional usage"),
@@ -123,7 +124,7 @@ class CopilotQuotaTests(unittest.TestCase):
                 )
 
     @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
-    @patch("experiments.shared.copilot_quota.subprocess.run")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
     def test_malformed_or_failed_probe_fails_closed(self, run, _which):
         for completed in (
             subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="x"),
@@ -138,7 +139,7 @@ class CopilotQuotaTests(unittest.TestCase):
                 )
 
     @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
-    @patch("experiments.shared.copilot_quota.subprocess.run")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
     def test_personal_or_mismatched_account_fails_closed(self, run, _which):
         payload = json.loads(response())
         for field, value in (
@@ -159,6 +160,72 @@ class CopilotQuotaTests(unittest.TestCase):
                     "/opt/bin/copilot", expected_login="researcher", required_remaining_aic=390,
                     sdk_path=Path(__file__),
                 )
+
+    @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
+    def test_timeout_is_retried_once_with_fresh_probe(self, run, _which):
+        run.side_effect = (
+            subprocess.TimeoutExpired(cmd=["node"], timeout=60),
+            subprocess.CompletedProcess(
+                args=[], returncode=0, stdout=response(), stderr=""
+            ),
+        )
+        snapshot = inspect_copilot_quota(
+            "/opt/bin/copilot", expected_login="researcher",
+            allow_paid_overage=True, sdk_path=Path(__file__),
+        )
+        self.assertEqual(snapshot.login, "researcher")
+        self.assertEqual(run.call_count, 2)
+
+    @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
+    def test_second_timeout_fails_closed(self, run, _which):
+        run.side_effect = subprocess.TimeoutExpired(cmd=["node"], timeout=60)
+        with self.assertRaisesRegex(CopilotQuotaError, "timed out"):
+            inspect_copilot_quota(
+                "/opt/bin/copilot", expected_login="researcher",
+                allow_paid_overage=True, sdk_path=Path(__file__),
+            )
+        self.assertEqual(run.call_count, 2)
+
+    @patch("experiments.shared.copilot_quota.shutil.which", return_value="/usr/bin/node")
+    @patch("experiments.shared.copilot_quota._run_quota_probe")
+    def test_non_timeout_process_error_is_wrapped_without_retry(self, run, _which):
+        run.side_effect = OSError("boom")
+        with self.assertRaisesRegex(CopilotQuotaError, "failed before inference"):
+            inspect_copilot_quota(
+                "/opt/bin/copilot", expected_login="researcher",
+                allow_paid_overage=True, sdk_path=Path(__file__),
+            )
+        self.assertEqual(run.call_count, 1)
+
+    @patch("experiments.shared.copilot_quota.os.killpg")
+    @patch("experiments.shared.copilot_quota.subprocess.Popen")
+    def test_probe_timeout_kills_the_process_group(self, popen, killpg):
+        process = popen.return_value
+        process.pid = 4321
+        process.communicate.side_effect = (
+            subprocess.TimeoutExpired(cmd=["node"], timeout=3),
+            ("", ""),
+        )
+        with self.assertRaises(subprocess.TimeoutExpired):
+            _run_quota_probe(
+                ["node"], cwd="/tmp", env={}, timeout_seconds=3
+            )
+        killpg.assert_called_once_with(4321, 9)
+        self.assertTrue(popen.call_args.kwargs["start_new_session"])
+
+    @patch("experiments.shared.copilot_quota.os.killpg")
+    @patch("experiments.shared.copilot_quota.subprocess.Popen")
+    def test_probe_interruption_also_kills_the_process_group(self, popen, killpg):
+        process = popen.return_value
+        process.pid = 4322
+        process.communicate.side_effect = (KeyboardInterrupt(), ("", ""))
+        with self.assertRaises(KeyboardInterrupt):
+            _run_quota_probe(
+                ["node"], cwd="/tmp", env={}, timeout_seconds=3
+            )
+        killpg.assert_called_once_with(4322, 9)
 
 
 if __name__ == "__main__":
