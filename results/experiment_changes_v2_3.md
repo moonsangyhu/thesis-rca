@@ -287,3 +287,12 @@
 - **수정 내용**: 엄격 skill schema는 유지하면서 개별 불변식 실패를 비민감 reason code로 분류한다. 해당 control-metadata 오류에만 최대 1회 재시도하고, 두 subprocess의 charged receipt를 모두 fsync하며 실패 시도 AIC/premium을 논리 호출 ledger에 합산한다. 두 번째 실패와 다른 모든 parser/tool/model/usage 오류는 기존처럼 즉시 중단한다. primary3는 3행/36 validated calls/37 charged attempts, recovery GREEN인 불완전 attrition으로 보존한다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/v2_3/live_caller.py:1`, `tests/test_copilot_cli.py:1`, `tests/test_v2_3_live_caller.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — targeted 33개·전체 204개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 및 독립 적대 검토(12 logical/13 charged, AIC cumulative 일치) 통과. 새 campaign으로 처음부터 재실행 예정
+
+### 33. Copilot 공식 SDK empty-mode 생성시점 격리 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 네 번째 본실험도 F1 t1에서 builtin skill 2개가 동시에 `enabled=true`로 반복 관측되어 11 logical attempts·15 charged attempts 뒤 중단됐다. result/raw/call ledger는 0이고 21.06225 AIC의 charged provenance와 recovery GREEN만 남았다.
+- **원인**: CLI prompt mode는 session 생성 요청에 `enableSkills=false`를 전달하지 않고 post-create `options.update(disabledSkills=...)`를 수행한다. 실제 RCA generator/judge 프롬프트에서 전체 builtin 집합이 간헐적으로 enabled로 로드돼 이 비활성화 경합이 재현됐다.
+- **수정 내용**: V2.3 live backend를 공식 Copilot SDK `mode="empty"`로 교체해 `session.create`에 empty tool allowlist, `enableSkills=false`, config discovery/custom instructions/MCP/custom agents/remote/memory/file hooks/host git/session store 비활성과 30 AIC limit을 결합했다. 해시 고정 Node runner와 격리 home/cwd를 사용하며 native empty skill metadata, Terra tool metadata, root usage의 tool count 0, exact prompt/session/model/usage를 검증한다. strict parse 전에 기존 17-field charged journal schema로 receipt를 fsync하고, outer timeout은 새 process group 전체를 kill/wait한다. manifest schema는 pilot v5/main v2로 올려 SDK·runner SHA-256을 기록한다.
+- **수정 파일**: `experiments/shared/copilot_sdk.py:1`, `experiments/shared/copilot_sdk_runner.mjs:1`, `experiments/v2_3/config.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/run.py:1`, `tests/test_copilot_sdk.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 대표 RCA generator 10회·judge 10회 모두 skills/tools 0과 완전 usage로 통과(16.1139 AIC), 전체 210개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, Python/Node syntax와 `git diff --check` 및 독립 적대 재리뷰 통과. 새 campaign으로 처음부터 재실행 예정
