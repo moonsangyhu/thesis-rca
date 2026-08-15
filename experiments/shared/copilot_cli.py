@@ -26,6 +26,7 @@ RETRYABLE_SKILL_METADATA_FAILURE_CODES = frozenset({
     "duplicate_name", "description_type", "source", "user_invocable_type",
     "enabled_state", "path_type", "argument_hint_type",
 })
+RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE = "sdk_auth_session_creation_zero_usage"
 
 
 class CopilotCLIError(RuntimeError):
@@ -37,11 +38,15 @@ class CopilotCLIError(RuntimeError):
         receipt: dict,
         *,
         retryable_control_metadata: bool = False,
+        retryable_zero_usage_authentication: bool = False,
         failure_code: str | None = None,
     ):
         super().__init__(message)
         self.receipt = dict(receipt)
         self.retryable_control_metadata = retryable_control_metadata
+        self.retryable_zero_usage_authentication = (
+            retryable_zero_usage_authentication
+        )
         self.failure_code = failure_code
 
 

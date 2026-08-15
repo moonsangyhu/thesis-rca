@@ -359,3 +359,12 @@
 - **수정 내용**: active account는 campaign 시작 시 한 번만 manifest에 봉인하고 incident 경계는 process-local authorization만 재검증한다. 실제 SDK call의 authentication, Terra/model/tool/skill/usage/charge receipt와 session limit은 유지한다.
 - **수정 파일**: `experiments/v2_3/main_campaign.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — main wiring integration에서 identity 1회·quota 0회·incident network identity event 0을 검증. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정
+
+### 41. SDK 추론 전 zero-usage 인증 실패 단일 재시도 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary11은 F1 t1에서 성공한 SDK 호출 3건 뒤 네 번째 세션이 logged-in authentication 정보를 얻지 못해 중단됐다. result/raw/call ledger는 0, attempt 3건, charged 4건이며 성공 사용량은 1.97535 AIC다. 실패 receipt 1건은 기존 parser에서 usage unknown이었다.
+- **원인**: SDK가 model call 전에 `Session was not created with authentication info or custom provider`를 냈고 routine shutdown은 premium/nano-AIU/API duration/model metrics가 모두 0이었다. 기존 backend는 성공 `assistant.usage`만 durable usage로 해석해 이 명시적인 zero-usage failure를 제한 재시도할 수 없었다.
+- **수정 내용**: exact empty-mode binding·UUID·byte-exact authentication error·routine zero-usage shutdown·model/user/tool event 부재를 하나의 failure code로 봉인한다. required/optional event의 cardinality·canonical 순서와 optional UUID/timezone/ephemeral/data/parent linkage도 exact 검증한다. 해당 경우만 charged receipt에 AIC/premium/output tokens 0을 기록하고 fresh SDK session으로 최대 1회 재시도한다. 두 번째 실패와 schema/binding/message/order/usage/API/model/tool drift는 즉시 fail-closed하며, 각 subprocess receipt와 성공 논리 call의 합산 provenance를 유지한다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/shared/copilot_sdk.py:1`, `experiments/v2_3/live_caller.py:1`, `tests/test_copilot_sdk.py:1`, `tests/test_v2_3_live_caller.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — SDK/live-caller 23개, V2.3 관련 136개와 SDK 9개, 180행/2,160호출 무파일·무외부호출 dry-run 통과. 전체 240개 suite는 변경과 무관한 control-plane socket/process timing 2개만 실패(238 통과; process test 단독 재실행 통과, adapter socket timeout 재현). 독립 재리뷰·clean commit-push 후 fresh campaign 재실행 예정

@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 23건
-- 심각(실험 무효화): 19건
+- 총 이슈: 24건
+- 심각(실험 무효화): 20건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -310,3 +310,14 @@
 - **근본 원인**: billing/account는 estimand가 아니고 사용자도 paid-overage를 차단 사유에서 제외했지만, 60 incident마다 GitHub REST API를 호출해 새로운 외부 failure surface를 추가했다. 실제 SDK 호출은 자체 인증과 strict Terra/usage/receipt 검증을 이미 수행한다.
 - **수정 내용**: active GitHub account는 campaign 시작 시 한 번만 확인해 manifest에 봉인한다. incident 경계에서는 process-local authorization만 재검증하고 네트워크 account API는 호출하지 않는다. SDK 인증·Terra/model/tool/skill/usage/charged receipt와 30 AIC session limit은 각 call에서 계속 fail-close한다.
 - **현재 영향**: main wiring 통합 테스트가 identity 1회, quota 0회, pre_call_guard 없음과 startup manifest provenance를 검증한다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 재실행한다.
+
+### [ISS-024] SDK logged-in session의 추론 전 인증 생성 실패
+
+- **카테고리**: external interface / experiment harness
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary11`은 F1 trial 1에서 generator 1회와 judge 2회를 완료한 뒤 네 번째 SDK subprocess가 인증 세션 생성에 실패했다. result/raw/call ledger는 0이므로 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회. 같은 incident의 앞선 3회 호출은 Terra·exit 0·완전 usage로 성공했다.
+- **관찰한 사실**: attempt ledger 3건, charged receipt 4건이며 성공 3건의 알려진 합계는 1.97535 AIC다. 실패 subprocess는 exit 1과 exact `session.error(authentication)`을 냈고 `assistant.usage`·model call 없이 routine `session.shutdown`에서 premium 0, nano-AIU 0, API duration 0, model metrics empty를 기록했다. 기존 receipt는 이 shutdown을 해석하지 못해 AIC 1건을 unknown으로 남겼다. campaign은 `incident_failed(LiveCallerError)→flux_restored→recovery_green`으로 종료됐고 6/6 node, Boutique 12/12, Flux 5/5, Prometheus/Loki가 GREEN이다.
+- **근본 원인**: SDK의 `useLoggedInUser=true` 세션 생성이 앞선 정상 호출 뒤 일시적으로 인증 정보를 얻지 못했다. 사용자 계정 전체의 지속 실패는 같은 incident의 직전 성공 3건과 모순되며, 모델 추론·도구 실행·사용량 발생 전 실패라는 점은 shutdown metrics로 직접 확인된다.
+- **수정 내용**: exact empty-mode request binding, UUID session, byte-exact 인증 오류 2종, routine shutdown의 0 AIC·0 premium·0 API duration·empty model metrics·0 system/conversation/tool token과 model/user/tool event 부재가 모두 맞을 때만 known-zero receipt로 분류한다. lifecycle 순서, required singleton, optional event 최대 1개, 각 optional event의 UUID/timezone/ephemeral/empty-data/parent linkage도 검증한다. 이 failure code만 fresh SDK session으로 최대 1회 재시도한다. 두 번째 동일 실패, binding/schema/message/order drift, duplicate/malformed optional event, nonzero usage/API activity, model/tool/user event, 일반 인증·model·parser·usage 오류는 즉시 campaign을 중단한다. 첫 실패와 재시도는 각각 charged receipt로 보존하고 논리 call usage에는 정확히 합산한다.
+- **현재 영향**: SDK/live-caller 23개와 V2.3 관련 136개·SDK 9개 회귀, 180행/2,160호출 무파일·무외부호출 dry-run이 통과했다. 전체 240개 suite에서는 변경과 무관한 control-plane socket/process timing 테스트 2개가 실패했고 나머지 238개는 통과했으며, 실패 1개는 단독 재실행에서 통과하고 adapter socket 1개는 동일 timeout을 재현했다. 독립 리뷰·clean commit-push 뒤 fresh campaign으로 처음부터 재실행한다.

@@ -20,6 +20,7 @@ from typing import Callable
 from .copilot_cli import (
     DEFAULT_COPILOT_MODEL,
     MIN_COPILOT_SESSION_AIC,
+    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
     CopilotCLIError,
     CopilotCLIResponse,
 )
@@ -27,6 +28,15 @@ from .copilot_cli import (
 
 SDK_RUNNER_SCHEMA = 1
 SDK_REASONING_EFFORT = "medium"
+ZERO_USAGE_AUTH_MESSAGE = (
+    "Execution failed: Error: Session was not created with authentication info "
+    "or custom provider"
+)
+ZERO_USAGE_AUTH_EVENT_TYPES = frozenset({
+    "thesis.sdk.binding", "pending_messages.modified", "session.error",
+    "thesis.sdk.error", "assistant.idle", "session.idle", "session.shutdown",
+    "session.background_tasks_changed",
+})
 ALLOWED_SDK_EVENT_TYPES = frozenset({
     "thesis.sdk.binding", "thesis.sdk.result",
     "session.start", "pending_messages.modified", "session.skills_loaded",
@@ -199,10 +209,26 @@ class CopilotSDKBackend:
         )
         self._observe_charge(receipt)
         if completed.returncode != 0:
+            retryable_zero_usage_authentication = (
+                self._is_retryable_zero_usage_auth_failure(
+                    stdout,
+                    expected_prompt=prompt,
+                    expected_system_prompt=system_prompt,
+                    expected_max_tokens=max_tokens,
+                    expected_nonce=request_nonce,
+                )
+            )
             detail = (stderr or stdout).strip()[-2000:]
             raise CopilotCLIError(
                 f"Copilot SDK failed with exit code {completed.returncode}: {detail}",
                 receipt,
+                retryable_zero_usage_authentication=(
+                    retryable_zero_usage_authentication
+                ),
+                failure_code=(
+                    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE
+                    if retryable_zero_usage_authentication else None
+                ),
             )
         try:
             parsed = self._parse_output(
@@ -331,6 +357,15 @@ class CopilotSDKBackend:
             and isinstance(premium, (int, float)) and not isinstance(premium, bool)
             and math.isfinite(premium) and premium >= 0
         )
+        if not complete and cls._has_exact_zero_usage_auth_shutdown(output):
+            return {
+                "actual_model": None,
+                "session_id": session_id,
+                "output_tokens": 0,
+                "ai_credits": 0.0,
+                "premium_requests": 0.0,
+                "usage_metadata_complete": True,
+            }
         return {
             "actual_model": actual_model,
             "session_id": session_id,
@@ -339,6 +374,266 @@ class CopilotSDKBackend:
             "premium_requests": float(premium) if complete else None,
             "usage_metadata_complete": complete,
         }
+
+    @classmethod
+    def _has_exact_zero_usage_auth_shutdown(cls, output: str) -> bool:
+        """Recognize only the SDK's sealed pre-inference authentication failure."""
+        try:
+            records = cls._json_lines(output)
+        except RuntimeError:
+            return False
+        errors = [r for r in records if r.get("type") == "session.error"]
+        runner_errors = [r for r in records if r.get("type") == "thesis.sdk.error"]
+        shutdowns = [r for r in records if r.get("type") == "session.shutdown"]
+        bindings = [r for r in records if r.get("type") == "thesis.sdk.binding"]
+        if any(len(items) != 1 for items in (errors, runner_errors, shutdowns, bindings)):
+            return False
+        if any(r.get("type") not in ZERO_USAGE_AUTH_EVENT_TYPES for r in records):
+            return False
+
+        event_types = [r.get("type") for r in records]
+        required_order = (
+            "thesis.sdk.binding", "session.error", "thesis.sdk.error",
+            "session.shutdown",
+        )
+        if any(event_types.count(event_type) != 1 for event_type in required_order):
+            return False
+        positions = [event_types.index(event_type) for event_type in required_order]
+        if positions != sorted(positions):
+            return False
+        optional_order = (
+            "pending_messages.modified", "assistant.idle", "session.idle",
+            "session.background_tasks_changed",
+        )
+        if any(event_types.count(event_type) > 1 for event_type in optional_order):
+            return False
+        allowed_sequences = (
+            ("thesis.sdk.binding", "pending_messages.modified", "session.error",
+             "thesis.sdk.error", "assistant.idle", "session.idle",
+             "session.shutdown", "session.background_tasks_changed"),
+        )
+        full_sequence = allowed_sequences[0]
+        projected = tuple(event_type for event_type in full_sequence if event_type in event_types)
+        if tuple(event_types) != projected:
+            return False
+
+        binding = bindings[0]
+        if not cls._valid_zero_usage_binding_shape(binding):
+            return False
+
+        error = errors[0]
+        runner_error = runner_errors[0]
+        shutdown = shutdowns[0]
+        if not cls._valid_event_envelope(error, "session.error", ephemeral=False):
+            return False
+        if not cls._valid_event_envelope(shutdown, "session.shutdown", ephemeral=False):
+            return False
+        if error["data"] != {
+            "errorType": "authentication", "message": ZERO_USAGE_AUTH_MESSAGE,
+        }:
+            return False
+        if (
+            set(runner_error) != {"type", "schema_version", "message"}
+            or runner_error.get("type") != "thesis.sdk.error"
+            or not isinstance(runner_error.get("schema_version"), int)
+            or isinstance(runner_error.get("schema_version"), bool)
+            or runner_error["schema_version"] != SDK_RUNNER_SCHEMA
+            or runner_error.get("message") != ZERO_USAGE_AUTH_MESSAGE
+        ):
+            return False
+        if shutdown.get("parentId") != error.get("id"):
+            return False
+        pending = next(
+            (r for r in records if r.get("type") == "pending_messages.modified"),
+            None,
+        )
+        assistant_idle = next(
+            (r for r in records if r.get("type") == "assistant.idle"), None,
+        )
+        session_idle = next(
+            (r for r in records if r.get("type") == "session.idle"), None,
+        )
+        background = next(
+            (r for r in records
+             if r.get("type") == "session.background_tasks_changed"),
+            None,
+        )
+        for record, event_type, expected_parent in (
+            (pending, "pending_messages.modified", error.get("parentId")),
+            (assistant_idle, "assistant.idle", error.get("id")),
+            (session_idle, "session.idle", error.get("id")),
+            (background, "session.background_tasks_changed", shutdown.get("id")),
+        ):
+            if record is not None and (
+                not cls._valid_event_envelope(
+                    record, event_type, ephemeral=True,
+                )
+                or record.get("data") != {}
+                or record.get("parentId") != expected_parent
+            ):
+                return False
+        data = shutdown["data"]
+        code_changes = data.get("codeChanges") if isinstance(data, dict) else None
+        numeric_zero_fields = (
+            "totalPremiumRequests", "totalNanoAiu", "totalApiDurationMs",
+            "systemTokens", "conversationTokens", "toolDefinitionsTokens",
+        )
+        return bool(
+            isinstance(data, dict)
+            and set(data) == {
+                "shutdownType", "totalPremiumRequests", "totalNanoAiu",
+                "totalApiDurationMs", "sessionStartTime", "codeChanges",
+                "modelMetrics", "currentTokens", "systemTokens",
+                "conversationTokens", "toolDefinitionsTokens",
+            }
+            and data["shutdownType"] == "routine"
+            and all(
+                isinstance(data[field], (int, float))
+                and not isinstance(data[field], bool)
+                and math.isfinite(data[field])
+                and data[field] == 0
+                for field in numeric_zero_fields
+            )
+            and isinstance(data["sessionStartTime"], int)
+            and not isinstance(data["sessionStartTime"], bool)
+            and data["sessionStartTime"] > 0
+            and isinstance(data["currentTokens"], int)
+            and not isinstance(data["currentTokens"], bool)
+            and data["currentTokens"] >= 0
+            and isinstance(code_changes, dict)
+            and set(code_changes) == {
+                "linesAdded", "linesRemoved", "filesModified",
+            }
+            and all(
+                isinstance(code_changes[field], int)
+                and not isinstance(code_changes[field], bool)
+                and code_changes[field] == 0
+                for field in ("linesAdded", "linesRemoved")
+            )
+            and code_changes["filesModified"] == []
+            and data["modelMetrics"] == {}
+        )
+
+    @staticmethod
+    def _valid_zero_usage_binding_shape(binding: dict) -> bool:
+        expected_keys = {
+            "type", "schema_version", "session_id", "mode", "model",
+            "reasoning_effort", "available_tools", "excluded_tools", "tools",
+            "enable_skills", "enable_config_discovery",
+            "skip_custom_instructions", "mcp_servers", "custom_agents",
+            "remote_session", "max_output_tokens", "max_ai_credits",
+            "request_nonce", "system_prompt_sha256", "user_prompt_sha256",
+        }
+        try:
+            session_id = uuid.UUID(binding["session_id"])
+            request_nonce = uuid.UUID(binding["request_nonce"])
+        except (ValueError, TypeError, AttributeError, KeyError):
+            return False
+        hashes = (binding.get("system_prompt_sha256"), binding.get("user_prompt_sha256"))
+        return bool(
+            set(binding) == expected_keys
+            and binding["type"] == "thesis.sdk.binding"
+            and isinstance(binding["schema_version"], int)
+            and not isinstance(binding["schema_version"], bool)
+            and binding["schema_version"] == SDK_RUNNER_SCHEMA
+            and session_id.version == 4
+            and str(session_id) == binding["session_id"].lower()
+            and request_nonce.version == 4
+            and str(request_nonce) == binding["request_nonce"].lower()
+            and binding["mode"] == "empty"
+            and isinstance(binding["model"], str) and bool(binding["model"])
+            and binding["reasoning_effort"] == SDK_REASONING_EFFORT
+            and binding["available_tools"] == []
+            and binding["excluded_tools"] == []
+            and binding["tools"] == []
+            and binding["enable_skills"] is False
+            and binding["enable_config_discovery"] is False
+            and binding["skip_custom_instructions"] is True
+            and binding["mcp_servers"] == []
+            and binding["custom_agents"] == []
+            and binding["remote_session"] == "off"
+            and isinstance(binding["max_output_tokens"], int)
+            and not isinstance(binding["max_output_tokens"], bool)
+            and binding["max_output_tokens"] > 0
+            and isinstance(binding["max_ai_credits"], int)
+            and not isinstance(binding["max_ai_credits"], bool)
+            and binding["max_ai_credits"] >= MIN_COPILOT_SESSION_AIC
+            and all(
+                isinstance(value, str) and len(value) == 64
+                and all(character in "0123456789abcdef" for character in value)
+                for value in hashes
+            )
+        )
+
+    @staticmethod
+    def _valid_event_envelope(
+        record: dict, event_type: str, *, ephemeral: bool,
+    ) -> bool:
+        expected_keys = {"id", "timestamp", "parentId", "type", "data"}
+        if ephemeral:
+            expected_keys.add("ephemeral")
+        if set(record) != expected_keys or record.get("type") != event_type:
+            return False
+        try:
+            event_id = uuid.UUID(record["id"])
+            parent_id = uuid.UUID(record["parentId"])
+            timestamp = datetime.fromisoformat(record["timestamp"])
+        except (ValueError, TypeError, AttributeError, KeyError):
+            return False
+        return bool(
+            event_id.version == 4 and str(event_id) == record["id"].lower()
+            and parent_id.version == 4
+            and str(parent_id) == record["parentId"].lower()
+            and timestamp.tzinfo is not None
+            and isinstance(record["data"], dict)
+            and (not ephemeral or record.get("ephemeral") is True)
+        )
+
+    def _is_retryable_zero_usage_auth_failure(
+        self, output: str, *, expected_prompt: str,
+        expected_system_prompt: str, expected_max_tokens: int,
+        expected_nonce: str,
+    ) -> bool:
+        if not self._has_exact_zero_usage_auth_shutdown(output):
+            return False
+        try:
+            records = self._json_lines(output)
+            binding = next(
+                r for r in records if r.get("type") == "thesis.sdk.binding"
+            )
+            session_id = binding.get("session_id")
+            parsed_session_id = uuid.UUID(session_id)
+        except (RuntimeError, StopIteration, ValueError, TypeError, AttributeError):
+            return False
+        return bool(
+            parsed_session_id.version == 4
+            and binding == {
+                "type": "thesis.sdk.binding",
+                "schema_version": SDK_RUNNER_SCHEMA,
+                "session_id": session_id,
+                "mode": "empty",
+                "model": self.model,
+                "reasoning_effort": SDK_REASONING_EFFORT,
+                "available_tools": [],
+                "excluded_tools": [],
+                "tools": [],
+                "enable_skills": False,
+                "enable_config_discovery": False,
+                "skip_custom_instructions": True,
+                "mcp_servers": [],
+                "custom_agents": [],
+                "remote_session": "off",
+                "max_output_tokens": expected_max_tokens,
+                "max_ai_credits": self.max_ai_credits,
+                "request_nonce": expected_nonce,
+                "system_prompt_sha256": hashlib.sha256(
+                    expected_system_prompt.encode()
+                ).hexdigest(),
+                "user_prompt_sha256": hashlib.sha256(
+                    expected_prompt.encode()
+                ).hexdigest(),
+            }
+        )
 
     def _parse_output(
         self, output: str, *, expected_prompt: str, expected_system_prompt: str,

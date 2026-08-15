@@ -8,8 +8,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
-from experiments.shared.copilot_cli import CopilotCLIError
-from experiments.shared.copilot_sdk import CopilotSDKBackend
+from experiments.shared.copilot_cli import (
+    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE, CopilotCLIError,
+)
+from experiments.shared.copilot_sdk import (
+    ZERO_USAGE_AUTH_MESSAGE, CopilotSDKBackend,
+)
 from experiments.v2_3.live_runner import ChargedCallJournal
 
 
@@ -88,6 +92,53 @@ def valid_output(nonce: str, prompt: str, system_prompt: str) -> str:
     return "\n".join(json.dumps(record) for record in records)
 
 
+def zero_usage_auth_output(nonce: str, prompt: str, system_prompt: str) -> str:
+    session_id = str(uuid.uuid4())
+    error_id = str(uuid.uuid4())
+    parent_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    records = [
+        {
+            "type": "thesis.sdk.binding", "schema_version": 1,
+            "session_id": session_id, "mode": "empty",
+            "model": "gpt-5.6-terra", "reasoning_effort": "medium",
+            "available_tools": [], "excluded_tools": [], "tools": [],
+            "enable_skills": False, "enable_config_discovery": False,
+            "skip_custom_instructions": True, "mcp_servers": [],
+            "custom_agents": [], "remote_session": "off",
+            "max_output_tokens": 128, "max_ai_credits": 30,
+            "request_nonce": nonce,
+            "system_prompt_sha256": hashlib.sha256(system_prompt.encode()).hexdigest(),
+            "user_prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
+        },
+        {
+            "id": error_id, "timestamp": now, "parentId": parent_id,
+            "type": "session.error",
+            "data": {
+                "errorType": "authentication", "message": ZERO_USAGE_AUTH_MESSAGE,
+            },
+        },
+        {
+            "type": "thesis.sdk.error", "schema_version": 1,
+            "message": ZERO_USAGE_AUTH_MESSAGE,
+        },
+        {
+            "id": str(uuid.uuid4()), "timestamp": now, "parentId": error_id,
+            "type": "session.shutdown",
+            "data": {
+                "shutdownType": "routine", "totalPremiumRequests": 0,
+                "totalNanoAiu": 0, "totalApiDurationMs": 0,
+                "sessionStartTime": 1, "codeChanges": {
+                    "linesAdded": 0, "linesRemoved": 0, "filesModified": [],
+                },
+                "modelMetrics": {}, "currentTokens": 3, "systemTokens": 0,
+                "conversationTokens": 0, "toolDefinitionsTokens": 0,
+            },
+        },
+    ]
+    return "\n".join(json.dumps(record) for record in records)
+
+
 class CopilotSDKBackendTest(unittest.TestCase):
     def backend(self, temp_dir: str, **kwargs) -> CopilotSDKBackend:
         root = Path(temp_dir)
@@ -140,6 +191,125 @@ class CopilotSDKBackendTest(unittest.TestCase):
         self.assertEqual(len(receipts), 1)
         self.assertTrue(receipts[0]["usage_metadata_complete"])
         self.assertIn(backend.runner_sha256, receipts[0]["cli_executable"])
+
+    @patch("experiments.shared.copilot_sdk.shutil.which")
+    @patch.object(CopilotSDKBackend, "_run_runner")
+    def test_exact_zero_usage_auth_failure_is_journaled_and_retryable(
+        self, run, which,
+    ):
+        which.side_effect = lambda name: f"/opt/bin/{name}"
+        prompt, system = "diagnose", "return JSON"
+
+        def failed(command, request_json, cwd, env):
+            request = json.loads(request_json)
+            return subprocess.CompletedProcess(
+                command, 1,
+                zero_usage_auth_output(
+                    request["request_nonce"], prompt, system,
+                ), "",
+            ), False
+
+        run.side_effect = failed
+        receipts = []
+        with tempfile.TemporaryDirectory() as temp_dir:
+            backend = self.backend(temp_dir, charge_observer=receipts.append)
+            with self.assertRaises(CopilotCLIError) as raised:
+                backend.call(prompt, system, 128)
+
+        self.assertTrue(raised.exception.retryable_zero_usage_authentication)
+        self.assertEqual(
+            raised.exception.failure_code,
+            RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
+        )
+        self.assertEqual(len(receipts), 1)
+        self.assertTrue(receipts[0]["usage_metadata_complete"])
+        self.assertIsNone(receipts[0]["actual_model"])
+        self.assertEqual(receipts[0]["output_tokens"], 0)
+        self.assertEqual(receipts[0]["ai_credits"], 0.0)
+        self.assertEqual(receipts[0]["premium_requests"], 0.0)
+
+    @patch("experiments.shared.copilot_sdk.shutil.which")
+    def test_zero_usage_auth_retry_requires_exact_shutdown_and_binding(self, which):
+        which.side_effect = lambda name: f"/opt/bin/{name}"
+        prompt, system, nonce = "diagnose", "return JSON", str(uuid.uuid4())
+        with tempfile.TemporaryDirectory() as temp_dir:
+            backend = self.backend(temp_dir)
+            baseline = [
+                json.loads(line) for line in
+                zero_usage_auth_output(nonce, prompt, system).splitlines()
+            ]
+            mutations = []
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "session.shutdown")[
+                "data"
+            ]["totalNanoAiu"] = True
+            mutations.append(("bool usage", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "session.shutdown")[
+                "data"
+            ]["totalApiDurationMs"] = 1
+            mutations.append(("api activity", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "session.error")["data"][
+                "message"
+            ] = "authentication failed"
+            mutations.append(("message drift", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "thesis.sdk.binding")[
+                "request_nonce"
+            ] = str(uuid.uuid4())
+            mutations.append(("binding drift", altered))
+            altered = json.loads(json.dumps(baseline))
+            altered.insert(1, {"type": "model.call_start", "data": {}})
+            mutations.append(("model started", altered))
+            altered = json.loads(json.dumps(baseline))
+            altered.insert(1, {"type": "tool.execution_start", "data": {}})
+            mutations.append(("tool started", altered))
+            altered = json.loads(json.dumps(baseline))
+            altered.reverse()
+            mutations.append(("reordered lifecycle", altered))
+            altered = json.loads(json.dumps(baseline))
+            altered.insert(3, {"type": "assistant.idle", "arbitrary": True})
+            mutations.append(("malformed idle", altered))
+            altered = json.loads(json.dumps(baseline))
+            idle = {
+                "id": str(uuid.uuid4()),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "parentId": next(
+                    r for r in altered if r["type"] == "session.error"
+                )["id"],
+                "ephemeral": True, "type": "assistant.idle", "data": {},
+            }
+            altered[2:2] = [idle, json.loads(json.dumps(idle))]
+            mutations.append(("duplicate idle", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "thesis.sdk.binding")[
+                "schema_version"
+            ] = True
+            mutations.append(("binding boolean schema", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "thesis.sdk.error")[
+                "schema_version"
+            ] = True
+            mutations.append(("runner error boolean schema", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "session.shutdown")[
+                "data"
+            ]["codeChanges"]["linesAdded"] = False
+            mutations.append(("boolean code changes", altered))
+
+            for label, records in mutations:
+                output = "\n".join(json.dumps(r) for r in records)
+                with self.subTest(label=label):
+                    self.assertFalse(
+                        backend._is_retryable_zero_usage_auth_failure(
+                            output,
+                            expected_prompt=prompt,
+                            expected_system_prompt=system,
+                            expected_max_tokens=128,
+                            expected_nonce=nonce,
+                        )
+                    )
 
     @patch("experiments.shared.copilot_sdk.shutil.which")
     def test_parser_rejects_skill_tool_and_usage_drift(self, which):
