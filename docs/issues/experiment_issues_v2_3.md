@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 20건
-- 심각(실험 무효화): 16건
+- 총 이슈: 21건
+- 심각(실험 무효화): 17건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -277,3 +277,14 @@
 - **근본 원인**: shared preflight의 read-only kubectl 두 호출이 `subprocess.run(..., timeout=10)`에 고정됐고 TimeoutExpired를 bool failure로 정규화하지 않아 실행기 밖으로 raw exception이 누출됐다.
 - **수정 내용**: read-only kubectl check를 독립 process group에서 30초간 실행하고 timeout일 때 group kill/wait 후 정확히 1회 재시도한다. 두 번째 timeout·process 생성 실패는 `None`으로 정규화해 preflight가 false로 fail-closed하며 KeyboardInterrupt/SystemExit은 cleanup 뒤 보존한다. 같은 helper를 legacy health check에도 적용한다.
 - **현재 영향**: timeout/second-timeout/interruption/invalid-input/preflight-failure 적대 unit 5개와 실제 lab preflight가 통과했다. 전체 검증·독립 리뷰·clean commit-push 후 primary8을 시작한다.
+
+### [ISS-021] paid mode의 per-call SDK quota 조회가 실행 안정성을 지배
+
+- **카테고리**: external interface / experiment harness
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary8`은 최초 account/quota binding이 60초 timeout 2회로 실패해 시작되지 않았다. artifact·event·inference·K8s mutation·AIC는 모두 0이다.
+- **발생 빈도**: primary6의 call 전 30초 timeout 1회와 primary8의 startup 60초 timeout 2회. 앞선 연속 진단 10회는 성공했으므로 지속적인 인증 실패가 아니라 비결정적 SDK account service 지연이다.
+- **관찰한 사실**: timeout 뒤 Copilot/Node 잔류 process는 없었고 6/6 node pressure false, Boutique 12/12로 lab은 변경되지 않았다. 동일 active GitHub account는 `gh api user`에서 승인 login으로 확인됐다.
+- **근본 원인**: 사용자가 paid-overage를 허용한 뒤에도 본실험이 model call마다 별도의 SDK client를 시작해 `account.getQuota`를 재조회했다. 이 조회는 estimand나 inference isolation과 무관하지만 2,160개 call 각각에 외부 failure surface와 수초~수십초 지연을 추가했다.
+- **수정 내용**: paid-overage 본실험에서는 server quota를 실행 gate/provenance로 사용하지 않는다. SDK가 `useLoggedInUser=true`로 사용하는 active GitHub login을 model-free `gh api user`로 campaign 시작과 각 incident 경계에서 확인한다. manifest는 quota 미조회 사유와 active-account provenance를 명시하고 balance를 `null`로 기록한다. 각 model call의 Terra/model/tool/skill/usage/charge receipt 검증과 30 AIC session limit은 유지한다. legacy zero-overage와 별도 pilot의 strict quota gate는 변경하지 않는다.
+- **현재 영향**: identity probe unit 5개와 main wiring 통합 1개가 통과했다. 통합 검증은 quota 0회, startup+incident identity 2회, manifest v3의 null billing timestamp/quota 미조회 provenance와 durable incident event를 직접 확인한다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 재실행한다.

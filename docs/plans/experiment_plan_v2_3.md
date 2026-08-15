@@ -344,7 +344,7 @@ GitHub의 조직용 usage-based billing은 included pool 소진 후 paid usage�
 5. Copilot CLI 1.0.78이 허용하는 최소 세션 상한인 `--max-ai-credits 30`을 적용한다. 이는 예상 단일-call 사용량이 아니라 runaway 방지용 보조장치이며 paid-usage 비활성화를 대체하지 않는다. adapter는 각 subprocess 전에 `누적 AIC + 30 <= 360`을 검사해 세션 최악 상한을 예약하므로 campaign 360 AIC를 사후 초과하지 않는다.
 6. 공식 SDK의 model-free `account.getQuota`에서 현재 계정의 `premium_interactions`를 확인한다. `usageAllowedWithExhaustedQuota=false`, `overageAllowedWithExhaustedQuota=false`, overage와 overage entitlement 0, active token-based quota, `remaining >= campaign max + session max`를 K8s import 전과 각 Copilot subprocess 전에 모두 만족해야 한다.
 
-2026-08-12 사용자 결정으로 현재 실행에는 상호 배타적인 `paid-overage-user-authorized` 모드를 적용한다. 이 모드에서는 관리자 zero-overage 증거 대신 명시적 CLI/process gate를 봉인하고, 공식 SDK quota를 매 호출 전 조회해 실제 overage 허용값을 provenance로 보존한다. 계정·Business seat binding, 세션/campaign AIC cap, durable charge journal과 실패 후 중단은 그대로 유지한다.
+2026-08-12 사용자 결정으로 현재 실행에는 상호 배타적인 `paid-overage-user-authorized` 모드를 적용한다. 2026-08-16 본실험 경로는 비결정적인 SDK quota 조회를 제거하고, SDK `useLoggedInUser`가 사용하는 active GitHub login을 시작 및 incident 경계에서 검증한다. manifest는 server quota 미조회 사유를 명시한다. 30 AIC session limit, Terra/model/tool/skill isolation, durable charge journal과 실패 후 중단은 그대로 유지한다. 위 6항은 legacy zero-overage 경로에만 적용한다.
 
 2026-08-12 후속 사용자 결정으로 본실험은 campaign AIC 상한을 중단 조건으로 사용하지 않는다. 본실험 manifest의 `max_campaign_aic`는 `null`로 기록하며, 매 subprocess의 Copilot CLI 30 AIC 상한, 실제 AIC durable receipt, account/Business seat/model/session/tool isolation, 실패 후 campaign 중단은 유지한다. 이 결정은 비용 제약만 해제하며 60 incident·2,160 call의 사전 지정 표본이나 안전·유효성 gate를 축소하지 않는다. 파일럿 이후 본실험용 cluster-resource collector가 추가되므로 변경된 clean commit에서 F7 t1 36-call 파일럿을 다시 수행해 context·AIC·recovery를 확인한 후 본실험을 시작한다.
 

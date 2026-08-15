@@ -332,3 +332,12 @@
 - **수정 내용**: kubectl check를 독립 process group·30초 timeout으로 실행하고 timeout에만 group kill/wait 뒤 한 번 재시도한다. 최종 timeout/process 생성 실패는 preflight false로 fail-closed하고 interruption은 cleanup 뒤 보존한다.
 - **수정 파일**: `experiments/shared/infra.py:1`, `tests/test_infra.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — infra 적대 unit 5개와 실제 K8s/Prometheus/Loki preflight 통과. 전체 검증·독립 리뷰 후 primary8 시작 예정
+
+### 38. paid 본실험의 quota gate를 incident account binding으로 대체 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary8 startup의 비추론 SDK quota 조회가 60초씩 두 번 timeout해 artifact/inference/mutation/AIC 0으로 시작 전 중단됐다. primary6에서도 같은 per-call 조회가 30초 timeout을 냈다.
+- **원인**: paid-overage 승인 뒤에도 2,160 model call마다 별도 SDK account/quota client를 시작해 비결정적 외부 failure surface를 유지했다.
+- **수정 내용**: paid 본실험은 server quota를 조회하지 않고 SDK `useLoggedInUser`의 active GitHub login을 campaign 시작과 60 incident 경계에서 `gh api user`로 결합한다. manifest v3에 quota 미조회 사유·active account·null balance를 기록한다. Terra/model/tool/skill/usage/charged receipt와 30 AIC session guard는 유지하며 legacy zero-overage/pilot quota 경로는 변경하지 않는다.
+- **수정 파일**: `experiments/shared/copilot_identity.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/config.py:1`, `tests/test_copilot_identity.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — identity unit 5개, main wiring 통합 1개, storage/run 23개 통과. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정

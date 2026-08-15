@@ -27,8 +27,8 @@ def run_authorized_main(
     project_root = Path(__file__).resolve().parents[2]
 
     # Local imports keep offline/dry-run imports free of live dependencies.
+    from experiments.shared.copilot_identity import inspect_active_gh_account
     from experiments.shared.copilot_sdk import CopilotSDKBackend
-    from experiments.shared.copilot_quota import inspect_copilot_quota
     from experiments.shared.csv_io import load_ground_truth
     from experiments.shared.infra import preflight_check
     from scripts.fault_inject import FaultInjector
@@ -62,16 +62,12 @@ def run_authorized_main(
         billing_execution_authorized=True,
     )
 
-    def quota_check():
-        return inspect_copilot_quota(
-            backend.executable,
+    def account_check():
+        return inspect_active_gh_account(
             expected_login=COPILOT_ACCOUNT_LOGIN,
-            required_remaining_aic=0,
-            allow_paid_overage=True,
         )
 
-    quota = quota_check()
-    backend.pre_call_guard = quota_check
+    account = account_check()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
     resolved_chroma = Path(chroma_dir).resolve(strict=True)
@@ -93,13 +89,18 @@ def run_authorized_main(
         "created_at": datetime.now(timezone.utc).isoformat(),
         "billing_authorization_mode": authorization.billing_mode,
         "approval_id": authorization.approval_id,
-        "account_scope": f"github:{quota.login}",
-        "billing_confirmed_at": quota.observed_at,
+        "account_scope": f"github:{account.login}",
+        "billing_confirmed_at": None,
         "billing_confirmed_by": "user",
         "billing_confirmation_method": "explicit-paid-overage-authorization",
-        "included_aic_balance_before": quota.remaining_aic,
-        "aic_balance_observed_at": quota.observed_at,
-        "server_quota": quota.to_dict(),
+        "billing_confirmation_timestamp_status": "not-recorded-in-authorization-seal",
+        "included_aic_balance_before": None,
+        "aic_balance_observed_at": None,
+        "server_quota": {
+            "status": "not-queried-paid-overage-mode",
+            "reason": "explicit-user-authorization",
+        },
+        "active_account": account.to_dict(),
         "max_campaign_aic": None,
         "copilot_session_max_aic": COPILOT_SESSION_MAX_AIC,
         "projected_main_aic_from_pilot": 4055,
@@ -169,6 +170,16 @@ def run_authorized_main(
     for fault_id in FAULTS:
         for trial in TRIALS:
             authorization.revalidate()
+            refreshed_account = account_check()
+            if refreshed_account.login != account.login:
+                raise RuntimeError("active GitHub account changed during campaign")
+            store.append_event(
+                "account_identity_verified",
+                fault_id=fault_id, trial=trial,
+                login=refreshed_account.login,
+                source=refreshed_account.source,
+                observed_at=refreshed_account.observed_at,
+            )
             store.append_event(
                 "incident_scheduled", fault_id=fault_id, trial=trial,
                 ordinal=completed + 1,
