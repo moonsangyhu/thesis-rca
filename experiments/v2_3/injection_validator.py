@@ -3,8 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+import subprocess
 
 from .live_runner import F7InjectionValidator, PilotError
+from scripts.fault_inject.config import (
+    F4_T3_STRESS_BYTES,
+    F4_T3_STRESS_TIMEOUT_SECONDS,
+    INJECTION_WAIT,
+)
 
 
 EXPECTED_ACTIONS = {
@@ -116,6 +122,25 @@ class LiveInjectionValidator:
 
     def _validate_f4(self, trial: int, target: str, result: dict) -> dict:
         node = result.get("node")
+        if trial == 3:
+            pid = result.get("stress_ng_pid")
+            start_ticks = result.get("stress_ng_start_ticks")
+            cmdline_hash = result.get("stress_ng_cmdline_sha256")
+            if not isinstance(pid, int) or isinstance(pid, bool) or pid <= 1:
+                raise PilotError("F4 memory stress launch receipt is invalid")
+            if (
+                not isinstance(start_ticks, int) or isinstance(start_ticks, bool)
+                or start_ticks <= 0
+                or not isinstance(cmdline_hash, str) or len(cmdline_hash) != 64
+                or any(c not in "0123456789abcdef" for c in cmdline_hash)
+            ):
+                raise PilotError("F4 memory stress process receipt is invalid")
+            if (
+                result.get("stress_memory_bytes") != F4_T3_STRESS_BYTES
+                or result.get("stress_timeout_seconds") != F4_T3_STRESS_TIMEOUT_SECONDS
+                or F4_T3_STRESS_TIMEOUT_SECONDS <= INJECTION_WAIT["F4"]
+            ):
+                raise PilotError("F4 memory stress amount is invalid")
         observed = self.load("node", str(node), "")
         conditions = {
             item.get("type"): item.get("status")
@@ -130,7 +155,29 @@ class LiveInjectionValidator:
             disrupted = disrupted or observed.get("spec", {}).get("unschedulable") is True
         if not node or not disrupted:
             raise PilotError("F4 node disruption was not observed")
-        return {"node": node, "node_disrupted": True}
+        details = {"node": node, "node_disrupted": True}
+        if trial == 3:
+            command = (
+                f"pid={pid}; test -r /proc/$pid/stat; "
+                f"test \"$(awk '{{print $22}}' /proc/$pid/stat)\" = \"{start_ticks}\"; "
+                f"test \"$(sha256sum /proc/$pid/cmdline | awk '{{print $1}}')\" "
+                f"= \"{cmdline_hash}\"; echo __V23_STRESS_NG_IDENTITY__=live"
+            )
+            try:
+                probe = self.ssh_probe(str(node), command)
+            except (TimeoutError, subprocess.TimeoutExpired):
+                probe = "connection timed out"
+            if "__V23_STRESS_NG_IDENTITY__=live" in probe:
+                details["stress_process_probe"] = "live"
+            elif conditions.get("Ready") != "True" and any(
+                marker in probe.lower() for marker in (
+                    "timed out", "timeout", "no route to host", "connection refused"
+                )
+            ):
+                details["stress_process_probe"] = "node_unreachable"
+            else:
+                raise PilotError("F4 memory stress process identity was not observed")
+        return details
 
     def _validate_f5(self, trial: int, target: str, result: dict) -> dict:
         if trial == 3:

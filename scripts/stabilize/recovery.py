@@ -10,7 +10,12 @@ from scripts.fault_inject.base import (
     kubectl, kubectl_apply, kubectl_delete, kubectl_patch,
     kubectl_get_json, ssh_node,
 )
-from scripts.fault_inject.config import NAMESPACE, WORKER_NODES
+from scripts.fault_inject.config import (
+    F4_T3_STRESS_LOG_FILE,
+    F4_T3_STRESS_RECEIPT_FILE,
+    NAMESPACE,
+    WORKER_NODES,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -209,7 +214,7 @@ class Recovery:
                 "sudo iptables -D OUTPUT -p tcp --dport 6443 -j DROP",
             ],
             3: [
-                "sudo pkill -9 stress-ng",
+                None,
             ],
             4: [
                 "sudo rm -f /tmp/diskfill",
@@ -219,6 +224,9 @@ class Recovery:
                 "sudo systemctl restart kubelet",
             ],
         }
+
+        if trial == 3:
+            return self._recover_f4_memory_stress(node, ctx)
 
         commands = recovery_commands.get(trial, ["sudo systemctl start kubelet"])
         outputs = []
@@ -230,6 +238,81 @@ class Recovery:
         time.sleep(30)  # Wait for node to rejoin
 
         return {"action": "restore_node", "node": node, "outputs": outputs}
+
+    def _recover_f4_memory_stress(self, node: str, ctx: dict) -> dict:
+        """Retry an exact pidfile-bound stress cleanup until the node answers."""
+        if (
+            ctx.get("stress_ng_preexisting") is not False
+            or ctx.get("stress_receipt_file") != F4_T3_STRESS_RECEIPT_FILE
+        ):
+            raise RuntimeError("F4 memory recovery receipt is incomplete")
+        pid = ctx.get("stress_ng_pid")
+        start_ticks = ctx.get("stress_ng_start_ticks")
+        expected_pid = str(pid) if isinstance(pid, int) and pid > 1 else ""
+        expected_start = (
+            str(start_ticks) if isinstance(start_ticks, int) and start_ticks > 0 else ""
+        )
+        command = (
+            "sudo sh -c 'set -eu; "
+            f"receipt={F4_T3_STRESS_RECEIPT_FILE}; "
+            "if [ ! -s \"$receipt\" ]; then "
+            "if pgrep '^stress-ng' >/dev/null; then "
+            "echo __V23_STRESS_RECOVERY__=awaiting-unsealed; exit 0; fi; "
+            f"rm -f \"$receipt\" \"$receipt\".tmp.* {F4_T3_STRESS_LOG_FILE}; "
+            "echo __V23_STRESS_RECOVERY__=no-receipt-no-process; exit 0; fi; "
+            "read pid sealed_start sealed_hash extra <\"$receipt\"; "
+            "case \"$pid\" in *[!0-9]*|\"\") exit 41;; esac; "
+            "case \"$sealed_start\" in *[!0-9]*|\"\") exit 45;; esac; "
+            "case \"$sealed_hash\" in *[!0-9a-f]*|\"\") exit 46;; esac; "
+            "test ${#sealed_hash} -eq 64; test -z \"${extra:-}\"; "
+            f"if [ -n \"{expected_pid}\" ] && [ \"$pid\" != \"{expected_pid}\" ]; "
+            "then echo __V23_STRESS_RECOVERY__=identity-mismatch; exit 42; fi; "
+            f"if [ -n \"{expected_start}\" ] && [ \"$sealed_start\" != \"{expected_start}\" ]; "
+            "then echo __V23_STRESS_RECOVERY__=identity-mismatch; exit 43; fi; "
+            "if [ -r /proc/$pid/stat ]; then "
+            "start=$(awk \"{print \\$22}\" /proc/$pid/stat); "
+            "if [ \"$start\" != \"$sealed_start\" ]; "
+            "then echo __V23_STRESS_RECOVERY__=identity-mismatch; exit 43; fi; "
+            "live_hash=$(sha256sum /proc/$pid/cmdline | awk \"{print \\$1}\"); "
+            "if [ \"$live_hash\" != \"$sealed_hash\" ]; then "
+            "echo __V23_STRESS_RECOVERY__=identity-mismatch; exit 47; fi; "
+            "cmd=$(tr \"\\000\" \" \" </proc/$pid/cmdline); "
+            "case \"$cmd\" in *\"stress-ng --vm 2 --vm-bytes 13G --vm-keep "
+            "--timeout 300s\"*) ;; *) "
+            "echo __V23_STRESS_RECOVERY__=identity-mismatch; exit 44;; esac; "
+            "children=$(pgrep -P \"$pid\" || true); "
+            "if [ -n \"$children\" ]; then kill -9 $children 2>/dev/null || true; fi; "
+            "kill -9 \"$pid\" 2>/dev/null || true; "
+            "fi; "
+            "if pgrep '^stress-ng' >/dev/null; then "
+            "echo __V23_STRESS_RECOVERY__=awaiting-residual; exit 0; fi; "
+            f"rm -f \"$receipt\" \"$receipt\".tmp.* {F4_T3_STRESS_LOG_FILE}; "
+            "echo __V23_STRESS_RECOVERY__=exact-clean'"
+        )
+        outputs = []
+        for _ in range(30):
+            try:
+                output = ssh_node(node, command, timeout=8)
+            except Exception as exc:
+                output = f"ssh-retry:{type(exc).__name__}"
+            outputs.append(output)
+            if "__V23_STRESS_RECOVERY__=identity-mismatch" in output:
+                raise RuntimeError("F4 memory stress recovery identity mismatch")
+            if any(marker in output for marker in (
+                "__V23_STRESS_RECOVERY__=exact-clean",
+                "__V23_STRESS_RECOVERY__=no-receipt-no-process",
+            )):
+                kubectl("uncordon", node, namespace="")
+                time.sleep(30)
+                return {
+                    "action": "restore_node_memory_stress",
+                    "node": node,
+                    "stress_cleanup_verified": True,
+                    "attempts": len(outputs),
+                    "outputs": outputs,
+                }
+            time.sleep(5)
+        raise RuntimeError("F4 memory stress recovery did not reach the node")
 
     def _recover_f5(self, trial: int, ctx: dict) -> dict:
         """Delete faulty PVC/PV resources."""

@@ -2,10 +2,10 @@
 
 ## 요약
 
-- 총 이슈: 9건
-- 심각(실험 무효화): 7건
+- 총 이슈: 15건
+- 심각(실험 무효화): 12건
 - 경고(실행 전 수정): 2건
-- 참고(영향 미미): 0건
+- 참고(영향 미미): 1건
 
 ## 이슈 목록
 
@@ -211,3 +211,14 @@
 - **근본 원인**: hierarchy receipt가 root와 app의 resourceVersion을 root mutation 전에 동시에 봉인했다. runner가 root를 suspend한 뒤 10초 안정화하는 동안 app 객체의 resourceVersion이 바뀌면, app CAS는 오래된 receipt를 사용해 실패한다. app version을 root settle 중 20→21로 변경한 적대 unit에서 stale receipt 실패를 재현했다.
 - **수정 내용**: root receipt를 먼저 봉인·suspend·안정화한 뒤 app pre-state를 다시 읽는다. identity·원래 suspend field shape/value가 초기 receipt와 동일하고 resourceVersion만 달라졌을 때만 전체 hierarchy receipt를 `flux_app_recovery_receipt_refreshed` event로 fsync한 후 app CAS를 수행한다. runner는 반환 receipt를 이 두 번째 정본과 byte-equivalent하게 검증하고 recovery에도 이를 사용한다. SIGKILL emergency restore는 active incident의 refresh event가 있으면 이를 우선 사용하며 중복·malformed·초기 receipt와의 binding 불일치는 거부한다.
 - **현재 영향**: 기존 12행은 operational attrition 증거로 보존한다. 전체 검증과 clean commit 후 새 36-call F7 t1 파일럿을 통과해야만 새 campaign ID로 60-incident 본실험을 처음부터 실행한다.
+
+### [ISS-015] F4 trial 3 stress-ng 의존성 누락과 percentage 할당 과소 주입
+
+- **카테고리**: injection / infra / data
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260815-primary2`은 F1 t1부터 F4 t2까지 17 incidents·51 rows·612 calls를 commit한 뒤 F4 t3에서 중단됐다. 불완전 campaign이므로 V2.3 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회, bounded live probe 2회
+- **관찰한 사실**: worker03(`yms-proxmox-04`)에는 `stress-ng`가 설치되어 있지 않았다. 기존 background 명령은 stderr를 버리고 parent shell 성공만 반환했다. validator는 180초 뒤 Ready=True·MemoryPressure=False를 관측해 모델 호출 전에 차단했다. `incident_failed(PilotError)→flux_restored→recovery_green`이 기록됐고 F4 t3 결과·raw·call은 0건이다. 6/6 node, Boutique 12/12, Flux, Prometheus/Loki와 실험 잔여물 0을 확인했다.
+- **근본 원인**: node-level binary preflight와 durable launch receipt가 없었다. 설치 후 기존 `--vm-bytes 90%` probe는 stress-ng가 당시 가용 7.04 GiB의 90%인 총 6.35 GiB만 할당해 MemAvailable 약 7.1 GiB, Ready=True, MemoryPressure=False에 머물렀다.
+- **수정 내용**: worker03에 Debian `stress-ng=0.19.02-1`을 설치했다. injector는 사전 binary/version/기존-process 부재와 root-owned stale receipt/temp/log의 sudo 제거·fsync를 수행하고, 13 GiB 절대 총량, `--vm-keep`, PID·start tick·cmdline hash launch receipt를 강제한다. production timeout 300초는 고정 validation wait 180초보다 길다. 90초 calibration과 production-command lifecycle probe 모두 약 40초 안에 `Ready=Unknown`·SSH timeout을 만들었다. launch identity는 mode-0600 temp file fsync→atomic rename으로 보존하고 preflight receipt와 launch receipt를 반환값에 병합한다. recovery는 동일 process만 재시도 종료하며 receipt가 없거나 stale PID인 crash window도 모든 `stress-ng*` 부재 전 GREEN을 금지한다. 실제 lifecycle probe의 첫 recovery는 병합 전 반환 계약 누락을 fail-closed로 드러냈고, sealed preflight receipt를 사용한 emergency recovery는 20회 재시도 후 health PASS했다.
+- **현재 영향**: 코드·전체 test·dry-run·clean commit-push 후 새 campaign ID로 60 incidents를 처음부터 재실행해야 한다. 기존 51 rows는 operational attrition 증거로만 보존한다.

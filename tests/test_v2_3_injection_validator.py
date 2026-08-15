@@ -63,6 +63,46 @@ class InjectionValidatorTests(unittest.TestCase):
         with self.assertRaisesRegex(PilotError, "delay"):
             validator.validate("F11", 1, {"target_service": "worker01"}, base)
 
+    def test_f4_memory_pressure_requires_bound_launch_receipt(self):
+        node = {
+            "status": {"conditions": [
+                {"type": "Ready", "status": "Unknown"},
+                {"type": "MemoryPressure", "status": "Unknown"},
+            ]}
+        }
+        validator = LiveInjectionValidator(
+            lambda resource, name, namespace: node,
+            lambda node, command: "Connection timed out during banner exchange",
+        )
+        receipt = {
+            "fault_id": "F4", "trial": 3, "target_service": "worker03",
+            "action": "node_disruption", "node": "yms-proxmox-04",
+            "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
+            "stress_ng_cmdline_sha256": "a" * 64,
+            "stress_memory_bytes": "13G", "stress_timeout_seconds": 300,
+        }
+        self.assertTrue(validator.validate(
+            "F4", 3, {"target_service": "worker03"}, receipt
+        )["node_disrupted"])
+        del receipt["stress_ng_pid"]
+        with self.assertRaisesRegex(PilotError, "launch receipt"):
+            validator.validate("F4", 3, {"target_service": "worker03"}, receipt)
+
+    def test_f4_memory_pressure_rejects_unbound_process_probe(self):
+        node = {"status": {"conditions": [{"type": "Ready", "status": "Unknown"}]}}
+        validator = LiveInjectionValidator(
+            lambda resource, name, namespace: node,
+            lambda node, command: "",
+        )
+        with self.assertRaisesRegex(PilotError, "process identity"):
+            validator.validate("F4", 3, {"target_service": "worker03"}, {
+                "fault_id": "F4", "trial": 3, "target_service": "worker03",
+                "action": "node_disruption", "node": "yms-proxmox-04",
+                "stress_ng_pid": 999999, "stress_ng_start_ticks": 1,
+                "stress_ng_cmdline_sha256": "b" * 64,
+                "stress_memory_bytes": "13G", "stress_timeout_seconds": 300,
+            })
+
 
 if __name__ == "__main__":
     unittest.main()

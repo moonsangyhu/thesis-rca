@@ -14,7 +14,15 @@ from .base import (
     kubectl, kubectl_apply, kubectl_delete, kubectl_patch,
     kubectl_get_json, get_container_image, ssh_node, git_commit_and_push,
 )
-from .config import NAMESPACE, INJECTION_WAIT
+from .config import (
+    F4_T3_STRESS_BYTES,
+    F4_T3_STRESS_LOG_FILE,
+    F4_T3_STRESS_RECEIPT_FILE,
+    F4_T3_STRESS_TIMEOUT_SECONDS,
+    F4_T3_STRESS_VERSION,
+    INJECTION_WAIT,
+    NAMESPACE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +81,14 @@ class FaultInjector:
         if not injector:
             raise ValueError(f"No injector for {fault_id}")
 
-        if fault_id == "F7":
+        if fault_id in {"F4", "F7"}:
             result = injector(target, trial, gt, recovery_context)
         else:
             result = injector(target, trial, gt)
+        if fault_id == "F4" and isinstance(recovery_context, dict):
+            # Preserve the durably sealed pre-mutation identity alongside the
+            # post-launch process receipt.  Runner recovery must receive both.
+            result = {**recovery_context, **result}
         result["fault_id"] = fault_id
         result["trial"] = trial
         result["target_service"] = target
@@ -99,10 +111,33 @@ class FaultInjector:
             }
         if fault_id == "F4":
             nodes = {1: "yms-proxmox-02", 2: "yms-proxmox-03", 3: "yms-proxmox-04", 4: "yms-proxmox-02", 5: "yms-proxmox-03"}
-            return {
+            context = {
                 "fault_id": fault_id, "trial": trial,
                 "target_service": target, "node": nodes[trial],
             }
+            if trial == 3:
+                preflight = ssh_node(
+                    nodes[trial],
+                    "set -eu; command -v stress-ng >/dev/null 2>&1; "
+                    "version=$(stress-ng --version 2>/dev/null | "
+                    "sed -n 's/^stress-ng, version \\([^ ]*\\).*/\\1/p'); "
+                    f"test \"$version\" = \"{F4_T3_STRESS_VERSION}\"; "
+                    "if pgrep '^stress-ng' >/dev/null; then exit 126; fi; "
+                    f"sudo rm -f {F4_T3_STRESS_RECEIPT_FILE} "
+                    f"{F4_T3_STRESS_RECEIPT_FILE}.tmp.* {F4_T3_STRESS_LOG_FILE}; "
+                    "sudo sync -f /tmp; "
+                    f"sudo test ! -e {F4_T3_STRESS_RECEIPT_FILE}; "
+                    "printf '__V23_STRESS_NG_PREFLIGHT__=%s\\n' \"$version\"",
+                )
+                expected = f"__V23_STRESS_NG_PREFLIGHT__={F4_T3_STRESS_VERSION}"
+                if preflight.splitlines().count(expected) != 1:
+                    raise RuntimeError("F4 trial 3 stress-ng preflight failed")
+                context.update({
+                    "stress_ng_version": F4_T3_STRESS_VERSION,
+                    "stress_ng_preexisting": False,
+                    "stress_receipt_file": F4_T3_STRESS_RECEIPT_FILE,
+                })
+            return context
         if fault_id != "F7":
             return {
                 "fault_id": fault_id, "trial": trial,
@@ -238,15 +273,43 @@ class FaultInjector:
 
     # ── F4: NodeNotReady ───────────────────────────────────────────
 
-    def _inject_f4_node_notready(self, target: str, trial: int, gt: dict) -> dict:
+    def _inject_f4_node_notready(
+        self, target: str, trial: int, gt: dict,
+        recovery_context: Optional[dict] = None,
+    ) -> dict:
         """Make a worker node NotReady via SSH."""
+        stress_launch_marker = "__V23_STRESS_NG_PID__="
+        stress_start_marker = "__V23_STRESS_NG_START_TICKS__="
+        stress_hash_marker = "__V23_STRESS_NG_CMDLINE_SHA256__="
+        if trial == 3 and (
+            not isinstance(recovery_context, dict)
+            or recovery_context.get("stress_ng_version") != F4_T3_STRESS_VERSION
+            or recovery_context.get("stress_ng_preexisting") is not False
+            or recovery_context.get("stress_receipt_file") != F4_T3_STRESS_RECEIPT_FILE
+        ):
+            raise RuntimeError("F4 trial 3 sealed recovery preflight is invalid")
         node_actions = {
             1: ("yms-proxmox-02", "sudo systemctl stop kubelet"),
             2: ("yms-proxmox-03", "sudo iptables -A OUTPUT -p tcp --dport 6443 -j DROP"),
             3: (
                 "yms-proxmox-04",
-                "sudo sh -c 'stress-ng --vm 2 --vm-bytes 90% --timeout 300s "
-                ">/dev/null 2>&1 </dev/null &'",
+                "sudo sh -c 'set -eu; umask 077; "
+                "command -v stress-ng >/dev/null 2>&1 || exit 127; "
+                "if pgrep '^stress-ng' >/dev/null; then exit 126; fi; "
+                f"nohup stress-ng --vm 2 --vm-bytes {F4_T3_STRESS_BYTES} "
+                f"--vm-keep --timeout {F4_T3_STRESS_TIMEOUT_SECONDS}s "
+                f">{F4_T3_STRESS_LOG_FILE} 2>&1 </dev/null & pid=$!; "
+                "sleep 1; kill -0 \"$pid\" || exit 1; "
+                "start=$(awk \"{print \\$22}\" /proc/$pid/stat); "
+                "cmdhash=$(sha256sum /proc/$pid/cmdline | awk \"{print \\$1}\"); "
+                f"receipt={F4_T3_STRESS_RECEIPT_FILE}; tmp=${{receipt}}.tmp.$$; "
+                "printf \"%s %s %s\\n\" \"$pid\" \"$start\" \"$cmdhash\" >\"$tmp\"; "
+                "sync -f \"$tmp\"; mv \"$tmp\" \"$receipt\"; sync -f /tmp; "
+                "read rpid rstart rhash <\"$receipt\"; "
+                "test \"$rpid\" = \"$pid\"; test \"$rstart\" = \"$start\"; "
+                "test \"$rhash\" = \"$cmdhash\"; "
+                f"printf \"{stress_launch_marker}%s\\n{stress_start_marker}%s\\n"
+                f"{stress_hash_marker}%s\\n\" \"$pid\" \"$start\" \"$cmdhash\"'",
             ),
             4: ("yms-proxmox-02", "sudo fallocate -l $(($(df --output=avail / | tail -1) * 95 / 100))k /tmp/diskfill"),
             5: ("yms-proxmox-03", "sudo systemctl stop containerd"),
@@ -258,14 +321,45 @@ class FaultInjector:
             kubectl("cordon", node_name, namespace="")
 
         output = ssh_node(node_name, command)
+        stress_ng_pid = None
+        stress_ng_start_ticks = None
+        stress_ng_cmdline_sha256 = None
+        if trial == 3:
+            def marker_value(marker: str) -> str:
+                values = [
+                    line.removeprefix(marker) for line in output.splitlines()
+                    if line.startswith(marker)
+                ]
+                return values[0] if len(values) == 1 else ""
+
+            pid_value = marker_value(stress_launch_marker)
+            start_value = marker_value(stress_start_marker)
+            hash_value = marker_value(stress_hash_marker)
+            if not pid_value.isdigit() or int(pid_value) <= 1:
+                raise RuntimeError("F4 trial 3 stress-ng launch receipt is missing")
+            if not start_value.isdigit() or int(start_value) <= 0:
+                raise RuntimeError("F4 trial 3 stress-ng start receipt is missing")
+            if len(hash_value) != 64 or any(c not in "0123456789abcdef" for c in hash_value):
+                raise RuntimeError("F4 trial 3 stress-ng command receipt is missing")
+            stress_ng_pid = int(pid_value)
+            stress_ng_start_ticks = int(start_value)
+            stress_ng_cmdline_sha256 = hash_value
         logger.info("F4 injected: %s on %s", command, node_name)
 
-        return {
+        result = {
             "action": "node_disruption",
             "node": node_name,
             "command": command,
             "ssh_output": output,
         }
+        if stress_ng_pid is not None:
+            result["stress_ng_pid"] = stress_ng_pid
+            result["stress_ng_start_ticks"] = stress_ng_start_ticks
+            result["stress_ng_cmdline_sha256"] = stress_ng_cmdline_sha256
+            result["stress_memory_bytes"] = F4_T3_STRESS_BYTES
+            result["stress_timeout_seconds"] = F4_T3_STRESS_TIMEOUT_SECONDS
+            result["stress_receipt_file"] = F4_T3_STRESS_RECEIPT_FILE
+        return result
 
     # ── F5: PVCPending ─────────────────────────────────────────────
 
