@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 22건
-- 심각(실험 무효화): 18건
+- 총 이슈: 23건
+- 심각(실험 무효화): 19건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -286,8 +286,8 @@
 - **발생 빈도**: primary6의 call 전 30초 timeout 1회와 primary8의 startup 60초 timeout 2회. 앞선 연속 진단 10회는 성공했으므로 지속적인 인증 실패가 아니라 비결정적 SDK account service 지연이다.
 - **관찰한 사실**: timeout 뒤 Copilot/Node 잔류 process는 없었고 6/6 node pressure false, Boutique 12/12로 lab은 변경되지 않았다. 동일 active GitHub account는 `gh api user`에서 승인 login으로 확인됐다.
 - **근본 원인**: 사용자가 paid-overage를 허용한 뒤에도 본실험이 model call마다 별도의 SDK client를 시작해 `account.getQuota`를 재조회했다. 이 조회는 estimand나 inference isolation과 무관하지만 2,160개 call 각각에 외부 failure surface와 수초~수십초 지연을 추가했다.
-- **수정 내용**: paid-overage 본실험에서는 server quota를 실행 gate/provenance로 사용하지 않는다. SDK가 `useLoggedInUser=true`로 사용하는 active GitHub login을 model-free `gh api user`로 campaign 시작과 각 incident 경계에서 확인한다. manifest는 quota 미조회 사유와 active-account provenance를 명시하고 balance를 `null`로 기록한다. 각 model call의 Terra/model/tool/skill/usage/charge receipt 검증과 30 AIC session limit은 유지한다. legacy zero-overage와 별도 pilot의 strict quota gate는 변경하지 않는다.
-- **현재 영향**: identity probe unit 5개와 main wiring 통합 1개가 통과했다. 통합 검증은 quota 0회, startup+incident identity 2회, manifest v3의 null billing timestamp/quota 미조회 provenance와 durable incident event를 직접 확인한다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 재실행한다.
+- **수정 내용**: paid-overage 본실험에서는 server quota를 실행 gate/provenance로 사용하지 않는다. SDK가 `useLoggedInUser=true`로 사용하는 active GitHub login을 model-free `gh api user`로 campaign 시작 시 확인한다. manifest는 quota 미조회 사유와 active-account provenance를 명시하고 balance를 `null`로 기록한다. 각 model call의 Terra/model/tool/skill/usage/charge receipt 검증과 30 AIC session limit은 유지한다. legacy zero-overage와 별도 pilot의 strict quota gate는 변경하지 않는다.
+- **현재 영향**: identity probe unit 5개와 main wiring 통합 1개가 통과했다. 통합 검증은 quota 0회, startup identity 1회, manifest v4의 null billing timestamp/quota 미조회 provenance를 직접 확인한다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 재실행한다.
 
 ### [ISS-022] CLI `--version` 실행이 provenance gate를 비결정적으로 중단
 
@@ -299,3 +299,14 @@
 - **근본 원인**: 재현성 provenance를 얻기 위해 native CLI를 실행했지만, 이 subprocess 자체가 daemon/network 상태에 영향을 받았다. self-report 문자열은 설치 package version과 불일치해 단독 provenance로도 약했다.
 - **수정 내용**: paid main은 CLI를 실행하지 않고 loader/native package JSON의 name/version, 유일한 native binary mapping과 binary SHA-256을 로컬 파일에서 검증한다. manifest v4와 call ledger의 `cli_version`에는 두 package identity와 native hash를 함께 기록하고 source를 `local-package-and-native-sha256`으로 명시한다. 별도 pilot의 기존 runtime version probe는 변경하지 않는다.
 - **현재 영향**: local package/native hash unit 2개, main wiring 및 실제 설치 identity 확인을 통과했다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 재실행한다.
+
+### [ISS-023] incident별 GitHub account API 재검증의 외부 실패
+
+- **카테고리**: external interface / experiment harness
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary10`은 startup account·local build·manifest·preflight를 통과한 뒤 첫 incident의 `gh api user`가 nonzero로 실패했다. manifest와 두 startup event 외 result/raw/ledger/charge/K8s mutation은 0이다.
+- **발생 빈도**: 본실험 1회. 같은 campaign startup 조회는 정상 login을 반환했으므로 account mismatch가 아니라 반복 REST API의 비결정적 실패다.
+- **관찰한 사실**: 종료 시점 campaign event는 `authorization_verified→preflight_green`뿐이며 injection/Flux receipt가 없다. 6/6 node, Boutique 12/12, Flux/monitoring 상태는 startup preflight 그대로다.
+- **근본 원인**: billing/account는 estimand가 아니고 사용자도 paid-overage를 차단 사유에서 제외했지만, 60 incident마다 GitHub REST API를 호출해 새로운 외부 failure surface를 추가했다. 실제 SDK 호출은 자체 인증과 strict Terra/usage/receipt 검증을 이미 수행한다.
+- **수정 내용**: active GitHub account는 campaign 시작 시 한 번만 확인해 manifest에 봉인한다. incident 경계에서는 process-local authorization만 재검증하고 네트워크 account API는 호출하지 않는다. SDK 인증·Terra/model/tool/skill/usage/charged receipt와 30 AIC session limit은 각 call에서 계속 fail-close한다.
+- **현재 영향**: main wiring 통합 테스트가 identity 1회, quota 0회, pre_call_guard 없음과 startup manifest provenance를 검증한다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 재실행한다.
