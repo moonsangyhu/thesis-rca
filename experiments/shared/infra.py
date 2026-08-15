@@ -1,12 +1,65 @@
 """Infrastructure checks: preflight, health, port-forward management."""
 import logging
 import os
+import signal
 import subprocess
 import time
 
 logger = logging.getLogger(__name__)
 
 KUBECONFIG = os.environ.get("KUBECONFIG", os.path.expanduser("~/.kube/config-k8s-lab"))
+
+
+def _run_kubectl_check(
+    command: list[str], *, timeout_seconds: int = 30, timeout_retries: int = 1
+) -> subprocess.CompletedProcess[str] | None:
+    """Run a read-only kubectl check with bounded transient retry."""
+    if (
+        isinstance(timeout_seconds, bool)
+        or not isinstance(timeout_seconds, int)
+        or timeout_seconds < 1
+    ):
+        raise ValueError("kubectl check timeout must be a positive integer")
+    if (
+        isinstance(timeout_retries, bool)
+        or not isinstance(timeout_retries, int)
+        or timeout_retries not in (0, 1)
+    ):
+        raise ValueError("kubectl check timeout retries must be zero or one")
+    for attempt in range(timeout_retries + 1):
+        try:
+            process = subprocess.Popen(
+                command,
+                env={**os.environ, "KUBECONFIG": KUBECONFIG},
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                start_new_session=True,
+            )
+        except Exception:
+            return None
+        try:
+            stdout, stderr = process.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.communicate()
+            if attempt < timeout_retries:
+                continue
+            return None
+        except BaseException:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.communicate()
+            raise
+        return subprocess.CompletedProcess(
+            command, process.returncode, stdout=stdout, stderr=stderr
+        )
+    return None
 
 
 def _check_port(port: int) -> bool:
@@ -48,12 +101,10 @@ def preflight_check() -> bool:
     ok = True
 
     # 1. kubectl connectivity
-    r = subprocess.run(
-        ["kubectl", "get", "nodes", "--no-headers"],
-        env={**os.environ, "KUBECONFIG": KUBECONFIG},
-        capture_output=True, text=True, timeout=10,
+    r = _run_kubectl_check(
+        ["kubectl", "get", "nodes", "--no-headers"]
     )
-    if r.returncode == 0:
+    if r is not None and r.returncode == 0:
         node_count = len(r.stdout.strip().split("\n"))
         logger.info("[OK] kubectl: %d nodes reachable", node_count)
     else:
@@ -61,13 +112,11 @@ def preflight_check() -> bool:
         ok = False
 
     # 2. Boutique pods
-    r = subprocess.run(
+    r = _run_kubectl_check(
         ["kubectl", "get", "pods", "-n", "boutique", "--no-headers",
-         "--field-selector=status.phase=Running"],
-        env={**os.environ, "KUBECONFIG": KUBECONFIG},
-        capture_output=True, text=True, timeout=10,
+         "--field-selector=status.phase=Running"]
     )
-    if r.returncode == 0:
+    if r is not None and r.returncode == 0:
         pod_count = len([line for line in r.stdout.strip().split("\n") if line.strip()])
         if pod_count >= 12:
             logger.info("[OK] boutique: %d pods running", pod_count)
@@ -124,13 +173,11 @@ def health_check(fault_id: str, trial: int) -> bool:
             issues.append("Loki")
 
     # Check running pod count
-    r = subprocess.run(
+    r = _run_kubectl_check(
         ["kubectl", "get", "pods", "-n", "boutique", "--no-headers",
-         "--field-selector=status.phase=Running"],
-        env={**os.environ, "KUBECONFIG": KUBECONFIG},
-        capture_output=True, text=True, timeout=10,
+         "--field-selector=status.phase=Running"]
     )
-    if r.returncode == 0:
+    if r is not None and r.returncode == 0:
         pod_count = len([line for line in r.stdout.strip().split("\n") if line.strip()])
         if pod_count < 12:
             logger.warning("[HEALTH] Only %d boutique pods running (need >= 12) before %s t%d",
