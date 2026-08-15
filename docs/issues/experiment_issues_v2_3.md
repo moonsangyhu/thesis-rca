@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 18건
-- 심각(실험 무효화): 15건
+- 총 이슈: 19건
+- 심각(실험 무효화): 16건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 1건
 
@@ -255,3 +255,14 @@
 - **근본 원인**: 각 model call 직전 공식 SDK의 비추론 `account.getQuota`를 새 Node process로 조회하면서 timeout을 30초로 고정했다. 조회 시간 자체가 최대 28초대였고, `subprocess.run`은 timeout 시 SDK가 생성한 자식 process group을 명시적으로 정리하지 않으며 transient timeout 재시도도 없었다.
 - **수정 내용**: quota probe를 새 process group에서 실행하고 60초 timeout 시 group 전체를 SIGKILL·wait한다. timeout에만 fresh 임시 home으로 정확히 1회 재시도하며, 두 번째 timeout·nonzero exit·malformed/account drift는 기존처럼 inference 전에 fail-closed한다. timeout/retry 인자는 bool을 포함한 비정상 값을 거부한다.
 - **현재 영향**: 비추론 연속 조회 10회가 모두 동일 Business account/quota snapshot으로 통과했다. 전체 test·dry-run·독립 리뷰·clean commit-push 뒤 fresh campaign으로 처음부터 재실행한다.
+
+### [ISS-019] Copilot CLI version probe의 15초 timeout
+
+- **카테고리**: infra / external interface
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary7`은 최초 quota/account binding 뒤 `copilot --version` 확인에서 중단됐다. inference·K8s mutation·campaign event·result/raw/ledger/charge는 모두 0이고 빈 artifact 디렉터리만 남았다.
+- **발생 빈도**: 본실험 1회. 수정 후 실제 version probe 연속 10회는 모두 pinned `GitHub Copilot CLI 1.0.78.`을 반환했다.
+- **관찰한 사실**: Python `subprocess.TimeoutExpired`가 15초 version probe에서 발생했다. 종료 직후 6/6 node pressure false, Boutique 12/12, Flux 5/5 Ready·suspend 없음으로 실험 환경이 변경되지 않았음을 확인했다.
+- **근본 원인**: quota probe만 60초 timeout과 제한 재시도를 적용했고, 뒤따르는 별도 CLI version provenance 확인은 기존 `subprocess.run(..., timeout=15)`을 유지했다. 외부 CLI 시작 지연에 대한 동일한 process lifecycle 계약이 적용되지 않았다.
+- **수정 내용**: version probe도 새 process group에서 실행하고 60초 timeout에만 fresh process로 정확히 1회 재시도한다. timeout/interruption은 group 전체를 SIGKILL·wait하고, 두 번째 timeout과 non-timeout 오류는 inference 전에 `RuntimeError`로 정규화한다. invalid timeout/retry 입력은 거부한다.
+- **현재 영향**: targeted storage/run 테스트와 실제 비추론 CLI version 연속 확인을 통과했다. 전체 test·dry-run·독립 리뷰·clean commit-push 뒤 fresh campaign으로 재실행한다.

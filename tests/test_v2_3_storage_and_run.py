@@ -1,5 +1,6 @@
 import csv
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,7 +13,8 @@ from experiments.v2_3.mock import DeterministicMockCaller, clean_fixture
 from experiments.v2_3.mock import run_dry_run, run_mock_campaign
 from experiments.v2_3.run import (
     RealExecutionDisabled, _pilot_budget_manifest_fields, _pilot_identity,
-    _run_authorized_pilot, _verified_git_revision, main,
+    _probe_cli_version, _run_authorized_pilot, _run_cli_version_probe,
+    _verified_git_revision, main,
 )
 from experiments.v2_3.authorization import (
     AuthorizationError, LiveAuthorization, PAID_OVERAGE_MODE,
@@ -221,6 +223,65 @@ class StorageAndRunTests(unittest.TestCase):
             "copilot_session_max_aic": 30,
             "flux_reconciliation_policy": "suspend-flux-root-then-app-during-incident",
         })
+
+    @patch("experiments.v2_3.run._run_cli_version_probe")
+    def test_cli_version_timeout_retries_once(self, probe):
+        probe.side_effect = (
+            subprocess.TimeoutExpired(cmd=["copilot"], timeout=60),
+            subprocess.CompletedProcess(
+                args=[], returncode=0, stdout="Copilot 1.0.78\n", stderr=""
+            ),
+        )
+        self.assertEqual(_probe_cli_version("copilot"), "Copilot 1.0.78")
+        self.assertEqual(probe.call_count, 2)
+
+    @patch("experiments.v2_3.run._run_cli_version_probe")
+    def test_cli_version_second_timeout_fails_closed(self, probe):
+        probe.side_effect = subprocess.TimeoutExpired(
+            cmd=["copilot"], timeout=60
+        )
+        with self.assertRaisesRegex(RuntimeError, "timed out before inference"):
+            _probe_cli_version("copilot")
+        self.assertEqual(probe.call_count, 2)
+
+    @patch("experiments.v2_3.run._run_cli_version_probe")
+    def test_cli_version_non_timeout_error_is_not_retried(self, probe):
+        probe.side_effect = OSError("boom")
+        with self.assertRaisesRegex(RuntimeError, "failed before inference"):
+            _probe_cli_version("copilot")
+        self.assertEqual(probe.call_count, 1)
+
+    @patch("experiments.v2_3.run.os.killpg")
+    @patch("experiments.v2_3.run.subprocess.Popen")
+    def test_cli_version_timeout_kills_process_group(self, popen, killpg):
+        process = popen.return_value
+        process.pid = 9876
+        process.communicate.side_effect = (
+            subprocess.TimeoutExpired(cmd=["copilot"], timeout=3),
+            ("", ""),
+        )
+        with self.assertRaises(subprocess.TimeoutExpired):
+            _run_cli_version_probe("copilot", timeout_seconds=3)
+        killpg.assert_called_once_with(9876, 9)
+        self.assertTrue(popen.call_args.kwargs["start_new_session"])
+
+    @patch("experiments.v2_3.run.os.killpg")
+    @patch("experiments.v2_3.run.subprocess.Popen")
+    def test_cli_version_interruption_kills_process_group(self, popen, killpg):
+        process = popen.return_value
+        process.pid = 9877
+        process.communicate.side_effect = (KeyboardInterrupt(), ("", ""))
+        with self.assertRaises(KeyboardInterrupt):
+            _run_cli_version_probe("copilot", timeout_seconds=3)
+        killpg.assert_called_once_with(9877, 9)
+
+    def test_cli_version_rejects_invalid_timeout_contract(self):
+        for kwargs in (
+            {"timeout_seconds": True}, {"timeout_seconds": 0},
+            {"timeout_retries": True}, {"timeout_retries": 2},
+        ):
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                _probe_cli_version("copilot", **kwargs)
 
     def test_live_server_quota_blocks_before_output_and_cluster_imports(self):
         campaign = "quota-block-before-cluster-20260812"
