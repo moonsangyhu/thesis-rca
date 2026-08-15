@@ -32,6 +32,7 @@ ALLOWED_SDK_EVENT_TYPES = frozenset({
     "session.start", "pending_messages.modified", "session.skills_loaded",
     "session.info", "system.message", "session.tools_updated", "user.message",
     "session.title_changed", "assistant.turn_start", "session.usage_info",
+    "session.usage_checkpoint",
     "model.call_start", "assistant.usage", "assistant.reasoning",
     "assistant.reasoning_delta", "assistant.message_start",
     "assistant.message_delta", "assistant.message", "assistant.turn_end",
@@ -267,12 +268,20 @@ class CopilotSDKBackend:
                 command, process.returncode, stdout, stderr
             ), False
         except subprocess.TimeoutExpired:
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
+            self._kill_process_group(process.pid)
             stdout, stderr = process.communicate()
             return subprocess.CompletedProcess(command, None, stdout, stderr), True
+        except BaseException:
+            self._kill_process_group(process.pid)
+            process.communicate()
+            raise
+
+    @staticmethod
+    def _kill_process_group(pid: int) -> None:
+        try:
+            os.killpg(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
 
     @staticmethod
     def _json_lines(output: str) -> list[dict]:
@@ -344,8 +353,13 @@ class CopilotSDKBackend:
         usages = [r for r in records if r.get("type") == "assistant.usage"]
         messages = [r for r in records if r.get("type") == "assistant.message"]
         user_messages = [r for r in records if r.get("type") == "user.message"]
+        checkpoints = [
+            r for r in records if r.get("type") == "session.usage_checkpoint"
+        ]
         if errors or any(len(items) != 1 for items in (bindings, results, skills, tools, usages, messages, user_messages)):
             raise RuntimeError("Copilot SDK response lifecycle is incomplete or duplicated")
+        if len(checkpoints) > 1:
+            raise RuntimeError("Copilot SDK usage checkpoint is duplicated")
         for record in records:
             event_type = record.get("type")
             if event_type not in ALLOWED_SDK_EVENT_TYPES:
@@ -437,19 +451,47 @@ class CopilotSDKBackend:
         requests = metric.get("requests") if isinstance(metric, dict) else None
         metric_usage = metric.get("usage") if isinstance(metric, dict) else None
         ai_credits = float(nano_aiu) / 1_000_000_000
+        total_user_requests = metrics.get("totalUserRequests") if isinstance(metrics, dict) else None
+        total_nano_aiu = metrics.get("totalNanoAiu") if isinstance(metrics, dict) else None
+        total_premium = metrics.get("totalPremiumRequestCost") if isinstance(metrics, dict) else None
+        request_count = requests.get("count") if isinstance(requests, dict) else None
+        request_cost = requests.get("cost") if isinstance(requests, dict) else None
+        metric_output_tokens = metric_usage.get("outputTokens") if isinstance(metric_usage, dict) else None
         if (
             not isinstance(metrics, dict)
             or metrics.get("currentModel") != self.model
-            or metrics.get("totalUserRequests") != 1
+            or not isinstance(total_user_requests, int)
+            or isinstance(total_user_requests, bool)
+            or total_user_requests != 1
             or set(model_metrics or {}) != {self.model}
-            or not isinstance(requests, dict) or requests.get("count") != 1
-            or requests.get("cost") != premium
+            or not isinstance(requests, dict)
+            or not isinstance(request_count, int)
+            or isinstance(request_count, bool)
+            or request_count != 1
+            or not isinstance(request_cost, (int, float))
+            or isinstance(request_cost, bool)
+            or not math.isfinite(request_cost) or request_cost < 0
+            or request_cost != premium
             or not isinstance(metric_usage, dict)
-            or metric_usage.get("outputTokens") != output_tokens
-            or metrics.get("totalNanoAiu") != nano_aiu
-            or metrics.get("totalPremiumRequestCost") != premium
+            or not isinstance(metric_output_tokens, int)
+            or isinstance(metric_output_tokens, bool)
+            or metric_output_tokens < 0
+            or metric_output_tokens != output_tokens
+            or not isinstance(total_nano_aiu, (int, float))
+            or isinstance(total_nano_aiu, bool)
+            or not math.isfinite(total_nano_aiu) or total_nano_aiu < 0
+            or total_nano_aiu != nano_aiu
+            or not isinstance(total_premium, (int, float))
+            or isinstance(total_premium, bool)
+            or not math.isfinite(total_premium) or total_premium < 0
+            or total_premium != premium
         ):
             raise RuntimeError("Copilot SDK cumulative usage does not match call usage")
+        if checkpoints:
+            self._validate_usage_checkpoint(
+                checkpoints[0], expected_nano_aiu=nano_aiu,
+                expected_premium=premium,
+            )
 
         return CopilotCLIResponse(
             text=response_text,
@@ -488,3 +530,55 @@ class CopilotSDKBackend:
             or not isinstance(record["data"], dict)
         ):
             raise RuntimeError(f"Copilot SDK {event_type} envelope is invalid")
+
+    def _validate_usage_checkpoint(
+        self, record: dict, *, expected_nano_aiu: float,
+        expected_premium: float,
+    ) -> None:
+        if set(record) != {"id", "timestamp", "parentId", "type", "data"}:
+            raise RuntimeError("Copilot SDK usage checkpoint envelope is invalid")
+        try:
+            event_id = uuid.UUID(record["id"])
+            parent_id = uuid.UUID(record["parentId"])
+            timestamp = datetime.fromisoformat(record["timestamp"])
+        except (ValueError, TypeError, AttributeError, KeyError) as exc:
+            raise RuntimeError("Copilot SDK usage checkpoint envelope is invalid") from exc
+        data = record.get("data")
+        cache_state = data.get("modelCacheState") if isinstance(data, dict) else None
+        if (
+            record["type"] != "session.usage_checkpoint"
+            or event_id.version != 4 or str(event_id) != record["id"].lower()
+            or parent_id.version != 4 or str(parent_id) != record["parentId"].lower()
+            or timestamp.tzinfo is None
+            or not isinstance(data, dict)
+            or set(data) != {
+                "modelCacheState", "totalNanoAiu", "totalPremiumRequests",
+            }
+            or not isinstance(data["totalNanoAiu"], (int, float))
+            or isinstance(data["totalNanoAiu"], bool)
+            or not math.isfinite(data["totalNanoAiu"])
+            or data["totalNanoAiu"] < 0
+            or not isinstance(data["totalPremiumRequests"], (int, float))
+            or isinstance(data["totalPremiumRequests"], bool)
+            or not math.isfinite(data["totalPremiumRequests"])
+            or data["totalPremiumRequests"] < 0
+            or data["totalNanoAiu"] != expected_nano_aiu
+            or data["totalPremiumRequests"] != expected_premium
+            or not isinstance(cache_state, list) or len(cache_state) != 1
+        ):
+            raise RuntimeError("Copilot SDK usage checkpoint is invalid")
+        state = cache_state[0]
+        try:
+            cache_expiry = datetime.fromisoformat(state["cacheExpiresAt"])
+        except (ValueError, TypeError, KeyError) as exc:
+            raise RuntimeError("Copilot SDK usage checkpoint cache state is invalid") from exc
+        if (
+            not isinstance(state, dict)
+            or set(state) != {"cacheExpiresAt", "cacheTtlSeconds", "modelId"}
+            or state["modelId"] != self.model
+            or not isinstance(state["cacheTtlSeconds"], int)
+            or isinstance(state["cacheTtlSeconds"], bool)
+            or state["cacheTtlSeconds"] <= 0
+            or cache_expiry.tzinfo is None
+        ):
+            raise RuntimeError("Copilot SDK usage checkpoint cache state is invalid")

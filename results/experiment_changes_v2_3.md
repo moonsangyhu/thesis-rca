@@ -296,3 +296,12 @@
 - **수정 내용**: V2.3 live backend를 공식 Copilot SDK `mode="empty"`로 교체해 `session.create`에 empty tool allowlist, `enableSkills=false`, config discovery/custom instructions/MCP/custom agents/remote/memory/file hooks/host git/session store 비활성과 30 AIC limit을 결합했다. 해시 고정 Node runner와 격리 home/cwd를 사용하며 native empty skill metadata, Terra tool metadata, root usage의 tool count 0, exact prompt/session/model/usage를 검증한다. strict parse 전에 기존 17-field charged journal schema로 receipt를 fsync하고, outer timeout은 새 process group 전체를 kill/wait한다. manifest schema는 pilot v5/main v2로 올려 SDK·runner SHA-256을 기록한다.
 - **수정 파일**: `experiments/shared/copilot_sdk.py:1`, `experiments/shared/copilot_sdk_runner.mjs:1`, `experiments/v2_3/config.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/run.py:1`, `tests/test_copilot_sdk.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 대표 RCA generator 10회·judge 10회 모두 skills/tools 0과 완전 usage로 통과(16.1139 AIC), 전체 210개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, Python/Node syntax와 `git diff --check` 및 독립 적대 재리뷰 통과. 새 campaign으로 처음부터 재실행 예정
+
+### 34. Copilot SDK durable usage checkpoint 결합 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary5 첫 Terra generator가 정상 SDK empty-mode call과 1.56755 AIC receipt를 만들었지만 대형 prompt에서만 emit된 `session.usage_checkpoint`를 unknown capability로 거부했다. 결과/validated ledger는 0이고 exact recovery GREEN이다.
+- **원인**: SDK event allowlist가 transient usage와 최종 metrics만 포함하고 persisted cache/accounting checkpoint schema를 누락했다.
+- **수정 내용**: checkpoint를 최대 1건의 root UUIDv4/timezone event로 제한하고 nano-AIU·premium 합계를 assistant usage·최종 metrics와 교차검증한다. cache state도 Terra 단일 모델, 양수 TTL, timezone expiry와 exact keys를 요구한다. process group cleanup은 timeout뿐 아니라 모든 outer interruption에도 적용한다.
+- **수정 파일**: `experiments/shared/copilot_sdk.py:1`, `tests/test_copilot_sdk.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted 7개와 동일 대형 RCA prompt actual Terra strict smoke, 전체 211개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, syntax/diff-check와 numeric boolean 우회 독립 적대 재리뷰 통과. clean commit-push 후 fresh campaign 재실행 예정
