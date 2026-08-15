@@ -48,7 +48,7 @@ def run_authorized_main(
         AttemptJournal, ChargedCallJournal, MainOutputStore,
         PilotIncidentRunner, RuntimeOnlyRetriever, snapshot_tree,
     )
-    from .run import _probe_cli_version, _verified_git_revision
+    from .run import _local_cli_build_identity, _verified_git_revision
 
     git_revision = _verified_git_revision(project_root)
     output_dir = project_root / "artifacts" / "v2_3_main" / campaign_id
@@ -77,7 +77,7 @@ def run_authorized_main(
     store = MainOutputStore(output_dir)
     charged_journal = ChargedCallJournal(output_dir / "charged_call_ledger.jsonl")
     backend.charge_observer = charged_journal.append
-    cli_version = _probe_cli_version(backend.executable)
+    cli_version = _local_cli_build_identity(backend.executable)
     corpus_version = snapshot_tree(
         (DEBUGGING_DIR, RUNBOOKS_DIR, KNOWN_ISSUES_DIR, resolved_chroma)
     )
@@ -112,6 +112,7 @@ def run_authorized_main(
         "trials": list(TRIALS),
         "corpus_version": corpus_version,
         "cli_version": cli_version,
+        "cli_version_source": "local-package-and-native-sha256",
         "copilot_backend": "official-sdk-empty",
         "copilot_sdk_sha256": backend.sdk_sha256,
         "copilot_sdk_runner_sha256": backend.runner_sha256,

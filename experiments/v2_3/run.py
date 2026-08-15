@@ -8,6 +8,7 @@ Live imports occur only after sealed user/billing authorization gates pass.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -188,6 +189,59 @@ def _probe_cli_version(
     if completed.returncode != 0 or not version:
         raise RuntimeError("Copilot CLI version probe failed")
     return version[0][:200]
+
+
+def _local_cli_build_identity(executable: str) -> str:
+    """Bind the installed loader/native package without executing the CLI."""
+    try:
+        loader = Path(executable).resolve(strict=True)
+        loader_package = json.loads((loader.parent / "package.json").read_text())
+        native_packages = sorted(
+            loader.parent.glob("node_modules/@github/copilot-*/package.json")
+        )
+        if len(native_packages) != 1:
+            raise RuntimeError("native Copilot package is unavailable or ambiguous")
+        native_path = native_packages[0]
+        native_package = json.loads(native_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("Copilot package provenance is unavailable") from exc
+    if loader.name != "npm-loader.js" or not loader.is_file():
+        raise RuntimeError("Copilot loader identity is invalid")
+    for payload in (loader_package, native_package):
+        if not isinstance(payload, dict):
+            raise RuntimeError("Copilot package provenance is invalid")
+        if not isinstance(payload.get("version"), str) or not re.fullmatch(
+            r"\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?", payload["version"]
+        ):
+            raise RuntimeError("Copilot package version is invalid")
+    if loader_package.get("name") != "@github/copilot" or not re.fullmatch(
+        r"@github/copilot-[a-z0-9-]+", str(native_package.get("name"))
+    ):
+        raise RuntimeError("Copilot package identity is invalid")
+    if native_package["name"] != f"@github/{native_path.parent.name}":
+        raise RuntimeError("Copilot native package locator is invalid")
+    if loader_package["version"] != native_package["version"]:
+        raise RuntimeError("Copilot package versions are inconsistent")
+    bins = native_package.get("bin")
+    if not isinstance(bins, dict) or len(bins) != 1:
+        raise RuntimeError("Copilot native binary mapping is invalid")
+    binary_name, relative_binary = next(iter(bins.items()))
+    if binary_name != native_package["name"].removeprefix("@github/"):
+        raise RuntimeError("Copilot native binary mapping is invalid")
+    if not isinstance(relative_binary, str) or Path(relative_binary).is_absolute():
+        raise RuntimeError("Copilot native binary mapping is invalid")
+    try:
+        binary = (native_path.parent / relative_binary).resolve(strict=True)
+        if native_path.parent.resolve() not in binary.parents or not binary.is_file():
+            raise RuntimeError("Copilot native binary path is invalid")
+        native_hash = hashlib.sha256(binary.read_bytes()).hexdigest()
+    except OSError as exc:
+        raise RuntimeError("Copilot native binary provenance is unavailable") from exc
+    return (
+        f"{loader_package['name']}@{loader_package['version']};"
+        f"{native_package['name']}@{native_package['version']};"
+        f"native-sha256={native_hash}"
+    )
 
 
 def _verified_git_revision(project_root: Path) -> str:

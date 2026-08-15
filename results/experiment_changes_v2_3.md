@@ -341,3 +341,12 @@
 - **수정 내용**: paid 본실험은 server quota를 조회하지 않고 SDK `useLoggedInUser`의 active GitHub login을 campaign 시작과 60 incident 경계에서 `gh api user`로 결합한다. manifest v3에 quota 미조회 사유·active account·null balance를 기록한다. Terra/model/tool/skill/usage/charged receipt와 30 AIC session guard는 유지하며 legacy zero-overage/pilot quota 경로는 변경하지 않는다.
 - **수정 파일**: `experiments/shared/copilot_identity.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/config.py:1`, `tests/test_copilot_identity.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `docs/plans/v2_3_pilot_runbook.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — identity unit 5개, main wiring 통합 1개, storage/run 23개 통과. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정
+
+### 39. CLI 실행 없는 package/native build provenance — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary9은 active account 확인 뒤 `copilot --version`이 60초 timeout 2회로 실패해 빈 artifact 외 inference/mutation/AIC 0으로 중단됐다.
+- **원인**: 재현성 문자열 확인을 위해 native CLI process를 실행해 외부 lifecycle failure surface를 만들었고, 과거 self-report 1.0.78은 설치 package 1.0.77과도 불일치했다.
+- **수정 내용**: paid main은 loader/native package JSON의 name/version과 유일한 binary mapping을 검증하고 native binary SHA-256을 직접 계산한다. manifest v4와 call ledger에 이 결합 identity 및 local source를 기록한다. model inference나 CLI daemon/network는 사용하지 않는다.
+- **수정 파일**: `experiments/v2_3/run.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/config.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — local build unit 2개, main wiring 통합 및 실제 package/native SHA provenance 확인 통과. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정
