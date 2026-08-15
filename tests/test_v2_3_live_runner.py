@@ -486,14 +486,16 @@ class LiveRunnerTests(unittest.TestCase):
         app = FakeHierarchyMember("app", calls)
         guard = FluxHierarchyGuard(root, app)
         receipt = guard.prepare_recovery_context()
-        guard.suspend(receipt)
-        result = guard.restore(receipt)
+        observed = []
+        refreshed = guard.suspend_with_receipt_observer(receipt, observed.append)
+        result = guard.restore(refreshed)
         self.assertEqual(calls, [
             "prepare-root", "prepare-app",
-            "suspend-root", "settle-root", "suspend-app",
+            "suspend-root", "settle-root", "prepare-app", "suspend-app",
             "settle-root", "settle-app", "settle-root", "settle-app",
             "restore-app", "restore-root",
         ])
+        self.assertEqual(observed, [refreshed])
         self.assertTrue(result["flux_exact_original"])
 
     def test_flux_hierarchy_restores_root_even_when_app_restore_fails(self):
@@ -520,7 +522,61 @@ class LiveRunnerTests(unittest.TestCase):
         guard = FluxHierarchyGuard(root, app, settle=adversarial_settle)
         receipt = guard.prepare_recovery_context()
         with self.assertRaisesRegex(PilotError, "root drift"):
-            guard.suspend(receipt)
+            guard.suspend_with_receipt_observer(receipt, lambda _: None)
+
+    def test_flux_hierarchy_refreshes_child_receipt_after_root_settle(self):
+        calls = []
+
+        class RefreshingMember(FakeHierarchyMember):
+            def __init__(self, name, calls, resource_version):
+                super().__init__(name, calls)
+                self.resource_version = resource_version
+
+            def prepare_recovery_context(self):
+                self.calls.append(f"prepare-{self.name}")
+                return {
+                    "flux_guard_schema": "v2.3-flux-app-guard-1",
+                    "flux_namespace": "flux-system",
+                    "flux_name": self.name,
+                    "flux_uid": f"uid-{self.name}",
+                    "flux_resource_version": self.resource_version,
+                    "flux_original_suspend_present": False,
+                    "flux_original_suspend": False,
+                }
+
+            def suspend(self, receipt):
+                self.calls.append(f"suspend-{self.name}-{receipt['flux_resource_version']}")
+                if receipt["flux_resource_version"] != self.resource_version:
+                    raise PilotError("stale receipt")
+                return receipt
+
+        root = RefreshingMember("root", calls, "10")
+        app = RefreshingMember("app", calls, "20")
+
+        def settle(*members):
+            calls.extend(f"settle-{member.name}" for member, _ in members)
+            if len(members) == 1:
+                app.resource_version = "21"
+
+        guard = FluxHierarchyGuard(root, app, settle=settle)
+        initial = guard.prepare_recovery_context()
+        observed = []
+        refreshed = guard.suspend_with_receipt_observer(initial, observed.append)
+
+        self.assertEqual(initial["app"]["flux_resource_version"], "20")
+        self.assertEqual(refreshed["app"]["flux_resource_version"], "21")
+        self.assertEqual(observed[0]["app"]["flux_resource_version"], "21")
+        self.assertLess(
+            calls.index("prepare-app", calls.index("suspend-root-10")),
+            calls.index("suspend-app-21"),
+        )
+
+    def test_flux_hierarchy_rejects_suspend_without_durable_observer(self):
+        guard = FluxHierarchyGuard(
+            FakeHierarchyMember("root", []), FakeHierarchyMember("app", [])
+        )
+        with self.assertRaisesRegex(PilotError, "durable receipt observer"):
+            guard.suspend(guard.prepare_recovery_context())
 
     def test_f7_post_injection_validator_binds_identity_and_live_state(self):
         deployment = {

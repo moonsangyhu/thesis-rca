@@ -113,6 +113,34 @@ def _sealed_receipt(events: list[dict], event_name: str, label: str) -> dict:
     return receipts[0]
 
 
+def _effective_flux_receipt(events: list[dict]) -> dict:
+    initial = _sealed_receipt(
+        events, "flux_recovery_receipt_sealed", "Flux"
+    )
+    refreshed = [
+        event for event in events
+        if event.get("event") == "flux_app_recovery_receipt_refreshed"
+    ]
+    if len(refreshed) > 1:
+        raise PilotError("active incident contains duplicate refreshed Flux receipts")
+    if not refreshed:
+        return initial
+    receipt = refreshed[0].get("recovery_context")
+    if not isinstance(receipt, dict):
+        raise PilotError("refreshed Flux recovery receipt is malformed")
+    if (
+        receipt.get("flux_hierarchy_schema")
+        != initial.get("flux_hierarchy_schema")
+        or receipt.get("root") != initial.get("root")
+        or not isinstance(receipt.get("app"), dict)
+        or not FluxHierarchyGuard._same_original_object(
+            initial.get("app", {}), receipt["app"]
+        )
+    ):
+        raise PilotError("refreshed Flux recovery receipt is not bound to initial receipt")
+    return receipt
+
+
 def _active_incident_events(events: list[dict]) -> list[dict]:
     """Ignore receipts belonging to incidents already restored GREEN."""
     boundary = -1
@@ -174,9 +202,7 @@ def restore_campaign(
     resolved = _validated_campaign_dir(campaign_dir)
     events = _durable_events(resolved)
     active_events = _active_incident_events(events)
-    flux_receipt = _sealed_receipt(
-        active_events, "flux_recovery_receipt_sealed", "Flux"
-    )
+    flux_receipt = _effective_flux_receipt(active_events)
     active_guard = guard or build_live_flux_guard()
     if recovery is None:
         from scripts.stabilize import Recovery
