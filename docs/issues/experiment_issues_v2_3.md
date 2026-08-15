@@ -2,9 +2,9 @@
 
 ## 요약
 
-- 총 이슈: 19건
+- 총 이슈: 20건
 - 심각(실험 무효화): 16건
-- 경고(실행 전 수정): 2건
+- 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
 ## 이슈 목록
@@ -266,3 +266,14 @@
 - **근본 원인**: quota probe만 60초 timeout과 제한 재시도를 적용했고, 뒤따르는 별도 CLI version provenance 확인은 기존 `subprocess.run(..., timeout=15)`을 유지했다. 외부 CLI 시작 지연에 대한 동일한 process lifecycle 계약이 적용되지 않았다.
 - **수정 내용**: version probe도 새 process group에서 실행하고 60초 timeout에만 fresh process로 정확히 1회 재시도한다. timeout/interruption은 group 전체를 SIGKILL·wait하고, 두 번째 timeout과 non-timeout 오류는 inference 전에 `RuntimeError`로 정규화한다. invalid timeout/retry 입력은 거부한다.
 - **현재 영향**: targeted storage/run 테스트와 실제 비추론 CLI version 연속 확인을 통과했다. 전체 test·dry-run·독립 리뷰·clean commit-push 뒤 fresh campaign으로 재실행한다.
+
+### [ISS-020] 실행 전 kubectl preflight의 10초 timeout
+
+- **카테고리**: infra
+- **심각도**: warning (P1)
+- **영향**: primary8 launch 직전 root preflight에서 `kubectl get nodes`가 10초 timeout을 냈다. campaign은 시작하지 않았고 inference·artifact·K8s mutation·AIC 사용은 0이다.
+- **발생 빈도**: 실행 전 점검 1회. 직후 직접 조회와 보강된 preflight는 6/6 node, Boutique 12/12, Prometheus/Loki ready로 통과했다.
+- **관찰한 사실**: 동일 K8s API가 timeout 직후 6개 node Ready·Disk/MemoryPressure false를 반환해 클러스터 장애가 아니라 일시적인 API/터널 응답 지연으로 확인됐다.
+- **근본 원인**: shared preflight의 read-only kubectl 두 호출이 `subprocess.run(..., timeout=10)`에 고정됐고 TimeoutExpired를 bool failure로 정규화하지 않아 실행기 밖으로 raw exception이 누출됐다.
+- **수정 내용**: read-only kubectl check를 독립 process group에서 30초간 실행하고 timeout일 때 group kill/wait 후 정확히 1회 재시도한다. 두 번째 timeout·process 생성 실패는 `None`으로 정규화해 preflight가 false로 fail-closed하며 KeyboardInterrupt/SystemExit은 cleanup 뒤 보존한다. 같은 helper를 legacy health check에도 적용한다.
+- **현재 영향**: timeout/second-timeout/interruption/invalid-input/preflight-failure 적대 unit 5개와 실제 lab preflight가 통과했다. 전체 검증·독립 리뷰·clean commit-push 후 primary8을 시작한다.

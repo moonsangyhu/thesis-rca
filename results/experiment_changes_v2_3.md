@@ -323,3 +323,12 @@
 - **수정 내용**: version probe도 독립 process group·60초 timeout·timeout 전용 1회 재시도를 사용한다. timeout/interruption은 group kill/wait, 두 번째 timeout과 일반 프로세스 오류는 inference 전 도메인 오류로 fail-closed한다.
 - **수정 파일**: `experiments/v2_3/run.py:1`, `tests/test_v2_3_storage_and_run.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — storage/run targeted 23개와 실제 비추론 pinned version 연속 조회 10회 통과. 전체 검증·독립 리뷰 후 fresh campaign 재실행 예정
+
+### 37. 실행 전 kubectl check timeout 격리 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary8 launch 전 root preflight의 첫 `kubectl get nodes`가 10초 timeout을 냈다. campaign/artifact/inference/K8s mutation/AIC는 시작 전이라 모두 0이다.
+- **원인**: shared infra의 read-only kubectl check가 짧은 10초 `subprocess.run`과 raw TimeoutExpired 경계에 남아 있었다.
+- **수정 내용**: kubectl check를 독립 process group·30초 timeout으로 실행하고 timeout에만 group kill/wait 뒤 한 번 재시도한다. 최종 timeout/process 생성 실패는 preflight false로 fail-closed하고 interruption은 cleanup 뒤 보존한다.
+- **수정 파일**: `experiments/shared/infra.py:1`, `tests/test_infra.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — infra 적대 unit 5개와 실제 K8s/Prometheus/Loki preflight 통과. 전체 검증·독립 리뷰 후 primary8 시작 예정
