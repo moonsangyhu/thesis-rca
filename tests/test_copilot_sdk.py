@@ -53,6 +53,21 @@ def valid_output(nonce: str, prompt: str, system_prompt: str) -> str:
                 "copilotUsage": {"totalNanoAiu": nano_aiu},
             },
         ),
+        {
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "parentId": str(uuid.uuid4()),
+            "type": "session.usage_checkpoint",
+            "data": {
+                "modelCacheState": [{
+                    "cacheExpiresAt": datetime.now(timezone.utc).isoformat(),
+                    "cacheTtlSeconds": 1800,
+                    "modelId": "gpt-5.6-terra",
+                }],
+                "totalNanoAiu": nano_aiu,
+                "totalPremiumRequests": premium,
+            },
+        },
         {"type": "assistant.message", "data": {"content": '{"ok":true}'}},
         {
             "type": "thesis.sdk.result", "schema_version": 1,
@@ -149,6 +164,32 @@ class CopilotSDKBackendTest(unittest.TestCase):
             altered = json.loads(json.dumps(baseline))
             next(r for r in altered if r["type"] == "thesis.sdk.result")["metrics"]["totalNanoAiu"] += 1
             mutations.append(("usage", altered))
+            altered = json.loads(json.dumps(baseline))
+            next(r for r in altered if r["type"] == "session.usage_checkpoint")["data"]["totalNanoAiu"] += 1
+            mutations.append(("checkpoint", altered))
+            for field in ("totalNanoAiu", "totalPremiumRequests"):
+                altered = json.loads(json.dumps(baseline))
+                next(
+                    r for r in altered
+                    if r["type"] == "session.usage_checkpoint"
+                )["data"][field] = True
+                mutations.append((f"checkpoint bool {field}", altered))
+            for path in (
+                ("totalUserRequests",),
+                ("totalNanoAiu",),
+                ("totalPremiumRequestCost",),
+                ("modelMetrics", "gpt-5.6-terra", "requests", "count"),
+                ("modelMetrics", "gpt-5.6-terra", "requests", "cost"),
+                ("modelMetrics", "gpt-5.6-terra", "usage", "outputTokens"),
+            ):
+                altered = json.loads(json.dumps(baseline))
+                target = next(
+                    r for r in altered if r["type"] == "thesis.sdk.result"
+                )["metrics"]
+                for key in path[:-1]:
+                    target = target[key]
+                target[path[-1]] = True
+                mutations.append((f"metrics bool {'.'.join(path)}", altered))
             for label, records in mutations:
                 with self.subTest(label=label), self.assertRaises(RuntimeError):
                     backend._parse_output(
@@ -215,6 +256,24 @@ class CopilotSDKBackendTest(unittest.TestCase):
         self.assertEqual(completed.stdout, "partial usage")
         killpg.assert_called_once_with(4321, 9)
         self.assertTrue(popen.call_args.kwargs["start_new_session"])
+
+    @patch("experiments.shared.copilot_sdk.os.killpg")
+    @patch("experiments.shared.copilot_sdk.subprocess.Popen")
+    @patch("experiments.shared.copilot_sdk.shutil.which")
+    def test_keyboard_interrupt_also_kills_sdk_process_group(
+        self, which, popen, killpg
+    ):
+        which.side_effect = lambda name: f"/opt/bin/{name}"
+        process = popen.return_value
+        process.pid = 4322
+        process.communicate.side_effect = [KeyboardInterrupt(), ("", "")]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            backend = self.backend(temp_dir)
+            with self.assertRaises(KeyboardInterrupt):
+                backend._run_runner(
+                    ["node", "runner"], "{}", Path(temp_dir), {},
+                )
+        killpg.assert_called_once_with(4322, 9)
 
     @patch("experiments.shared.copilot_sdk.shutil.which")
     @patch.object(CopilotSDKBackend, "_run_runner")

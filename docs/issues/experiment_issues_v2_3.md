@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 16건
-- 심각(실험 무효화): 13건
+- 총 이슈: 17건
+- 심각(실험 무효화): 14건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 1건
 
@@ -233,3 +233,14 @@
 - **근본 원인**: 로컬 CLI 1.0.78 prompt mode는 session 생성 요청에 `enableSkills=false`를 전달하지 않고, 세션 생성 뒤 `options.update(... disabledSkills ...)`를 호출하며 이 실패도 log만 남기고 계속한다. 실제 RCA prompt에서 전체 builtin 집합이 간헐적으로 enabled로 관측된 사실과 결합하면 post-create 비활성화가 초기 skill load보다 늦어지는 경쟁으로 판단한다. 반면 공식 Copilot SDK `mode="empty"`는 `session.create` 자체에 `enableSkills=false`와 empty tool allowlist를 전달한다.
 - **수정 내용**: CLI prompt-mode backend의 재시도에 의존하지 않고 V2.3 live 경로를 공식 Copilot SDK empty-mode backend로 교체한다. 매 call은 격리 home/cwd, `availableTools=[]`, `tools=[]`, `enableSkills=false`, config discovery/custom instructions/MCP/custom agents/remote/session store/file hooks/host git/memory 비활성, 30 AIC session limit을 session creation에 결합한다. native `session.skills_loaded=[]`, `session.tools_updated`의 pinned Terra model, root usage의 `availableToolCount=0`·`numToolCalls=0`, exact model/prompt/usage/session과 해시 고정 runner를 모두 검증하고 charge receipt는 strict parse 전에 보존한다.
 - **현재 영향**: 공식 SDK 기능 smoke와 대표 RCA generator 10회·judge 10회가 모두 Terra·skills 0·tools 0·완전 usage로 통과했다. 20회 workload 진단 사용량은 16.1139 AIC다. 전체 회귀검증·독립 리뷰·clean commit-push 후 새 campaign ID로 처음부터 재실행한다.
+
+### [ISS-017] Copilot SDK 대형 prompt의 durable usage checkpoint 미등록
+
+- **카테고리**: code / external interface / data
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary5`은 F1 t1 injection·수집·retrieval 뒤 첫 generator call에서 중단됐다. result/raw/attempt/call ledger는 0이고 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회, 동일 대형 RCA prompt 진단 4회 연속 재현
+- **관찰한 사실**: 첫 SDK call은 Terra, skills 0, tool count 0, 완전 usage와 1.56755 AIC를 charged ledger 1건에 보존했다. strict event allowlist가 `session.usage_checkpoint`를 거부했다. 단순 JSON smoke에서는 이 event가 없었으나 5천 token급 RCA prompt에서는 매번 발생했다. native event는 `assistant.usage`와 같은 `totalNanoAiu`·premium 합계, Terra cache expiry/TTL을 담는 persisted root event였다. `incident_failed(LiveCallerError)→flux_restored→recovery_green` 뒤 6/6 node pressure false, Boutique 12/12, Flux 5/5, Prometheus/Loki ready를 확인했다.
+- **근본 원인**: 공식 SDK empty-mode 전환 시 live event allowlist에 transient `assistant.usage`와 최종 metrics는 포함했지만, 대형 prompt의 cache/accounting window를 durable하게 기록하는 정상 `session.usage_checkpoint`를 포함하지 않았다. capability 노출이 아니라 billing provenance schema 누락이다.
+- **수정 내용**: checkpoint는 최대 1건의 persisted root UUIDv4/timezone event만 허용한다. exact data의 `totalNanoAiu`·`totalPremiumRequests`를 assistant usage와 최종 session metrics에 교차결합하고, model cache state는 pinned Terra·양수 TTL·timezone expiry의 단일 entry만 허용한다. duplicate/extra/malformed/model/usage drift는 fail-closed한다. 또한 KeyboardInterrupt/SystemExit 등 outer interruption에서도 Node와 SDK-spawned CLI process group을 kill/wait한다.
+- **현재 영향**: 동일 대형 RCA generator strict smoke가 Terra·정상 schema·완전 receipt로 통과했다. 전체 검증·독립 리뷰·clean commit-push 후 fresh campaign으로 처음부터 재실행한다.
