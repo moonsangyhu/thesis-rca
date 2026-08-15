@@ -278,3 +278,12 @@
 - **수정 내용**: worker03에 `stress-ng=0.19.02-1`을 설치하고, injector가 binary/version/기존-process 부재와 stale receipt/temp/log 제거·fsync, 13 GiB 절대 총량·`--vm-keep`·PID/start tick/cmdline hash receipt를 강제하도록 변경했다. production stress 300초가 validation wait 180초를 초과하도록 단일 config 계약으로 묶었다. launch identity는 node-local mode-0600 temp file fsync→atomic rename으로 보존하고 sealed preflight와 launch receipt를 runner 반환값에 병합한다. validator는 receipt와 실제 Ready/MemoryPressure를 함께 검사하며 recovery는 동일 process만 SSH 재시도로 종료한다. receipt 없는/stale PID crash window도 모든 stress process 부재 전 GREEN을 금지한다. production-command live probe는 약 40초 내 Ready=Unknown과 validator PASS를 확인했고, 첫 반환 병합 누락은 fail-closed 후 emergency recovery 20회·health PASS로 복구했다.
 - **수정 파일**: `scripts/fault_inject/injector.py:1`, `experiments/v2_3/injection_validator.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — targeted/전체 test와 offline dry-run 검증 후 새 campaign으로 처음부터 재실행 예정
+
+### 32. Copilot skill control-metadata 단일 재시도와 사용량 합산 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 세 번째 본실험은 F1 t1의 3행·36 calls를 commit한 뒤 F1 t2 첫 호출에서 `session.skills_loaded` 개별 항목 검증이 비결정적으로 실패했다.
+- **원인**: 실패 stdout은 durable hash만 남아 정확한 변형 필드는 미확정이다. 공식 CLI schema 대조와 추가 82회 sanitized 진단에서는 모두 동일 exact metadata가 관찰돼 지속 schema drift나 backend 누적은 재현되지 않았다.
+- **수정 내용**: 엄격 skill schema는 유지하면서 개별 불변식 실패를 비민감 reason code로 분류한다. 해당 control-metadata 오류에만 최대 1회 재시도하고, 두 subprocess의 charged receipt를 모두 fsync하며 실패 시도 AIC/premium을 논리 호출 ledger에 합산한다. 두 번째 실패와 다른 모든 parser/tool/model/usage 오류는 기존처럼 즉시 중단한다. primary3는 3행/36 validated calls/37 charged attempts, recovery GREEN인 불완전 attrition으로 보존한다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/v2_3/live_caller.py:1`, `tests/test_copilot_cli.py:1`, `tests/test_v2_3_live_caller.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted 33개·전체 204개 테스트, 180행/2,160호출 무파일·무외부호출 dry-run, `git diff --check` 및 독립 적대 검토(12 logical/13 charged, AIC cumulative 일치) 통과. 새 campaign으로 처음부터 재실행 예정

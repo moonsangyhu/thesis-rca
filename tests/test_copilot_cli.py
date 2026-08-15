@@ -6,7 +6,9 @@ import uuid
 from datetime import datetime, timezone
 from unittest.mock import patch
 
-from experiments.shared.copilot_cli import CopilotCLIBackend, CopilotCLIError
+from experiments.shared.copilot_cli import (
+    CopilotCLIBackend, CopilotCLIError, RetryableCopilotMetadataError,
+)
 from experiments.shared.llm_client import BaseLLMClient
 
 
@@ -580,18 +582,26 @@ class CopilotCLIBackendTest(unittest.TestCase):
         self.assertEqual(
             backend._parse_jsonl(output).session_id, "session-disabled-skills"
         )
-        for mutation in ("enabled", "source", "name"):
+        for mutation in ("enabled", "source", "path"):
             altered = json.loads(json.dumps(metadata))
             if mutation == "enabled":
                 altered["data"]["skills"][0]["enabled"] = True
             elif mutation == "source":
                 altered["data"]["skills"][0]["source"] = "personal-copilot"
-            else:
-                altered["data"]["skills"][0]["name"] = "unknown"
-            with self.subTest(mutation=mutation), self.assertRaisesRegex(
-                RuntimeError, "skills metadata"
-            ):
+            elif mutation == "path":
+                altered["data"]["skills"][0]["path"] = None
+            with self.subTest(mutation=mutation), self.assertRaises(
+                RetryableCopilotMetadataError
+            ) as caught:
                 backend._parse_jsonl(json.dumps(altered))
+            self.assertIn(
+                caught.exception.failure_code,
+                {"enabled_state", "source", "path_type"},
+            )
+        altered = json.loads(json.dumps(metadata))
+        altered["data"]["skills"][0]["name"] = "unknown"
+        with self.assertRaisesRegex(RuntimeError, "does not match disabled inventory"):
+            backend._parse_jsonl(json.dumps(altered))
 
         without_metadata = "\n".join([
             event("assistant.message", {

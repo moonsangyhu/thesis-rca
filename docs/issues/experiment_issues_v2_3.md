@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 15건
-- 심각(실험 무효화): 12건
+- 총 이슈: 16건
+- 심각(실험 무효화): 13건
 - 경고(실행 전 수정): 2건
 - 참고(영향 미미): 1건
 
@@ -222,3 +222,14 @@
 - **근본 원인**: node-level binary preflight와 durable launch receipt가 없었다. 설치 후 기존 `--vm-bytes 90%` probe는 stress-ng가 당시 가용 7.04 GiB의 90%인 총 6.35 GiB만 할당해 MemAvailable 약 7.1 GiB, Ready=True, MemoryPressure=False에 머물렀다.
 - **수정 내용**: worker03에 Debian `stress-ng=0.19.02-1`을 설치했다. injector는 사전 binary/version/기존-process 부재와 root-owned stale receipt/temp/log의 sudo 제거·fsync를 수행하고, 13 GiB 절대 총량, `--vm-keep`, PID·start tick·cmdline hash launch receipt를 강제한다. production timeout 300초는 고정 validation wait 180초보다 길다. 90초 calibration과 production-command lifecycle probe 모두 약 40초 안에 `Ready=Unknown`·SSH timeout을 만들었다. launch identity는 mode-0600 temp file fsync→atomic rename으로 보존하고 preflight receipt와 launch receipt를 반환값에 병합한다. recovery는 동일 process만 재시도 종료하며 receipt가 없거나 stale PID인 crash window도 모든 `stress-ng*` 부재 전 GREEN을 금지한다. 실제 lifecycle probe의 첫 recovery는 병합 전 반환 계약 누락을 fail-closed로 드러냈고, sealed preflight receipt를 사용한 emergency recovery는 20회 재시도 후 health PASS했다.
 - **현재 영향**: 코드·전체 test·dry-run·clean commit-push 후 새 campaign ID로 60 incidents를 처음부터 재실행해야 한다. 기존 51 rows는 operational attrition 증거로만 보존한다.
+
+### [ISS-016] Copilot disabled-skill metadata의 비결정적 단일 항목 거부
+
+- **카테고리**: code / external interface / data
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary3`은 F1 t1의 1 incident·3 rows·36 calls를 commit한 뒤 F1 t2 첫 generator에서 중단됐다. 불완전 campaign이므로 V2.3 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회. 이후 격리 backend 50회와 동일 backend 반복 32회 진단에서는 재현되지 않았다.
+- **관찰한 사실**: F1 t2 subprocess는 exit 0, actual model `gpt-5.6-terra`, 완전한 usage metadata와 AIC 2.50295를 37번째 charged receipt에 기록했다. strict parser는 `session.skills_loaded`의 개별 skill 불변식에서 거부했고 validated attempt/call/result/raw는 F1 t1 경계인 36/36/3/3에 머물렀다. `incident_failed(LiveCallerError)→flux_restored→recovery_green` 뒤 6/6 node, Boutique 12/12, Flux, Prometheus/Loki가 GREEN이다. 원 stdout은 hash만 남아 어떤 개별 필드가 달랐는지는 사후 복원할 수 없다. 로컬 CLI 1.0.78 공식 schema는 required 5필드와 optional string `path`/`argumentHint`를 정의하며 null은 허용하지 않는다. 추가 82회 진단의 sanitized metadata는 모두 동일한 builtin 2개, exact keys/types, `enabled=false`, `userInvocable=false`였다.
+- **근본 원인**: 한 번의 외부 CLI control-metadata 변형 또는 출력 이상으로 좁혀지지만, 원문이 보존되지 않아 정확한 필드는 미확정이다. 지속 schema drift나 backend 상태 누적은 82회 연속 재현 실패로 지지되지 않는다.
+- **수정 내용**: strict schema와 tool/skill 차단을 완화하지 않는다. 개별 skill 거부는 값 대신 `extra_keys`·`path_type` 같은 비민감 reason code로 분해한다. 이 오류만 논리 호출당 최대 1회 재시도하며 각 subprocess의 charged receipt는 별도로 fsync하고 실패 시도 AIC/premium을 성공한 논리 호출 ledger에 합산한다. 두 번째 metadata 이상, usage 불명확, tool/MCP/remote/model/일반 JSONL 오류는 즉시 campaign을 중단한다.
+- **현재 영향**: primary3와 37번째 charge는 operational attrition으로 보존한다. 수정·전체 검증·clean commit-push 후 새 campaign ID로 60 incidents를 처음부터 재실행한다.
