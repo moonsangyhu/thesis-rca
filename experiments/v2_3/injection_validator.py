@@ -8,6 +8,7 @@ import subprocess
 from .live_runner import F7InjectionValidator, PilotError
 from scripts.fault_inject.config import (
     F4_T3_STRESS_BYTES,
+    F4_T3_OBSERVATION_WAIT_SECONDS,
     F4_T3_STRESS_TIMEOUT_SECONDS,
     INJECTION_WAIT,
 )
@@ -137,8 +138,14 @@ class LiveInjectionValidator:
                 raise PilotError("F4 memory stress process receipt is invalid")
             if (
                 result.get("stress_memory_bytes") != F4_T3_STRESS_BYTES
+                or isinstance(result.get("stress_timeout_seconds"), bool)
+                or not isinstance(result.get("stress_timeout_seconds"), int)
                 or result.get("stress_timeout_seconds") != F4_T3_STRESS_TIMEOUT_SECONDS
-                or F4_T3_STRESS_TIMEOUT_SECONDS <= INJECTION_WAIT["F4"]
+                or isinstance(result.get("wait_seconds"), bool)
+                or not isinstance(result.get("wait_seconds"), int)
+                or result.get("wait_seconds") != F4_T3_OBSERVATION_WAIT_SECONDS
+                or F4_T3_STRESS_TIMEOUT_SECONDS
+                <= F4_T3_OBSERVATION_WAIT_SECONDS
             ):
                 raise PilotError("F4 memory stress amount is invalid")
         observed = self.load("node", str(node), "")
@@ -147,8 +154,6 @@ class LiveInjectionValidator:
             for item in observed.get("status", {}).get("conditions", [])
         }
         disrupted = conditions.get("Ready") != "True"
-        if trial == 3:
-            disrupted = disrupted or conditions.get("MemoryPressure") == "True"
         if trial == 4:
             disrupted = disrupted or conditions.get("DiskPressure") == "True"
         if trial == 1:

@@ -44,8 +44,12 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
 
 - `yms-proxmox-04`에는 Debian package `stress-ng=0.19.02-1`이 필요하다.
 - V2.3은 percentage 기반 할당을 사용하지 않는다. 이 노드의 16 GiB 형상에서
-  `--vm 2 --vm-bytes 13G --vm-keep --timeout 300s`를 사용한다. 300초는
-  고정 validation wait 180초보다 길다. PID·start tick·cmdline hash receipt와
+  `--vm 2 --vm-bytes 13G --vm-keep --timeout 180s`를 사용한다. F4 trial 3은
+  전용 observation wait 60초를 사용하고 `Ready!=True`를 요구한다. runner는
+  injection 시작부터 full collector 종료까지 monotonic elapsed가 175초 미만인지
+  검증해 stressor deadline 안에서 evidence snapshot이 끝난 경우만 inference한다.
+  이후 36회 모델 호출 중 자율 종료시켜 SSH exact recovery 여유를 확보한다.
+  PID·start tick·cmdline hash receipt와
   실제 `MemoryPressure=True` 또는 `Ready!=True`를 모두 검증한다.
 - binary 또는 launch receipt가 없으면 모델 호출 전에 fail-closed한다.
 - launch identity(PID·start tick·cmdline hash)는 worker03의 mode-0600 임시 파일을

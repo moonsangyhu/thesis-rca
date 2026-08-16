@@ -6,6 +6,7 @@ import json
 import hashlib
 import math
 import os
+import time
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Callable
@@ -14,6 +15,10 @@ from datetime import datetime, timezone
 from .authorization import LiveAuthorization
 from .conditions import ConditionAssembler, latin_square_schedule, schedule_hash
 from .config import PILOT_FAULT_ID, PILOT_TRIAL
+from scripts.fault_inject.config import (
+    F4_T3_EVIDENCE_DEADLINE_MARGIN_SECONDS,
+    F4_T3_STRESS_TIMEOUT_SECONDS,
+)
 from .engine import RCAEngineV2_3
 from .ledger import CallLedgerEntry
 from .retrieval import BlindProcedure, BlindProcedureBuilder, RetrievalChunk
@@ -31,6 +36,30 @@ class FluxCASConflict(PilotError):
 
 class RecoveryFailure(PilotError):
     pass
+
+
+def validate_f4_t3_evidence_deadline(
+    fault_id: str, trial: int, elapsed_seconds: float,
+) -> dict | None:
+    """Prove the full F4-t3 snapshot completed before stress termination."""
+    if (fault_id, trial) != ("F4", 3):
+        return None
+    deadline = (
+        F4_T3_STRESS_TIMEOUT_SECONDS
+        - F4_T3_EVIDENCE_DEADLINE_MARGIN_SECONDS
+    )
+    if (
+        isinstance(elapsed_seconds, bool)
+        or not isinstance(elapsed_seconds, (int, float))
+        or not math.isfinite(elapsed_seconds)
+        or elapsed_seconds < 0
+        or elapsed_seconds >= deadline
+    ):
+        raise PilotError("F4 trial 3 evidence collection exceeded treatment deadline")
+    return {
+        "elapsed_seconds": round(float(elapsed_seconds), 6),
+        "deadline_seconds": deadline,
+    }
 
 
 class FluxAppGuard:
@@ -881,10 +910,13 @@ class PilotIncidentRunner:
             injection_attempted = True
             if hasattr(self.store, "append_event"):
                 self.store.append_event("injection_started", fault_id=fault_id, trial=trial)
+            injection_started_monotonic = time.monotonic()
             injection_result = self.injector.inject(
                 fault_id, trial, recovery_context=prepared_recovery
             )
-            wait_seconds = int(injection_result.get("wait_seconds", 0))
+            wait_seconds = injection_result.get("wait_seconds")
+            if isinstance(wait_seconds, bool) or not isinstance(wait_seconds, int):
+                raise PilotError("invalid injection wait interval")
             if not 0 <= wait_seconds <= 600:
                 raise PilotError("invalid injection wait interval")
             self.sleep_fn(wait_seconds)
@@ -896,6 +928,17 @@ class PilotIncidentRunner:
             if hasattr(self.store, "append_event"):
                 self.store.append_event("injection_verified", **injection_validation)
             collected = self.collector.collect_observability_only(window_minutes=5)
+            evidence_timing = validate_f4_t3_evidence_deadline(
+                fault_id, trial, time.monotonic() - injection_started_monotonic
+            )
+            if evidence_timing is not None:
+                if hasattr(self.store, "append_event"):
+                    self.store.append_event(
+                        "evidence_collection_verified",
+                        fault_id=fault_id,
+                        trial=trial,
+                        **evidence_timing,
+                    )
             signals = json.loads(json.dumps(collected, ensure_ascii=False, default=str))
             runtime_context = self.renderer.render(signals)
             base_lexicon = build_forbidden_lexicon(
