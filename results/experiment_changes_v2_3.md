@@ -512,3 +512,12 @@
 - **수정 내용**: production fault marker를 `fault_id=F4`/`fault F-4`/`F4_t5`처럼 fault field 또는 scheduled trial과 결합된 Unicode-aware regex로 제한하고, 일반 scanner의 raw marker 기능과 `fault injection`/`experiment marker` 차단은 유지한다. `LeakageDetected`는 source text 없이 stage·category·kind·term hash와 context/lexicon hash를 제공하며 runner는 failure event에 이 진단을 fsync한 뒤 mandatory recovery를 수행한다. scanner version을 `v2.3-nfkc-alias-ngram-3`으로 갱신했다.
 - **수정 파일**: `experiments/v2_3/scanner.py:1`, `experiments/v2_3/retrieval.py:1`, `experiments/v2_3/conditions.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/mock.py:1`, `tests/test_v2_3_scanner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — targeted 77 PASS, 전체 275 PASS, dry-run 180/2,160 external0/fs0, pycompile·diff-check PASS. Primary18은 `incident_failed→flux_restored→recovery_green` 후 nodes6/6·Boutique12/12·Flux5/5·Prometheus/Loki·Failed pod0 GREEN을 확인했으며 fresh campaign 재실행 예정.
+
+### 58. compact label separator 변형의 masker/scanner 정합 — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary19는 19 incidents·57 rows/raw·684 calls를 commit한 뒤 F4-t5 `retrieved_procedure`에서 모델 호출 전에 leakage fail-close됐다. 안전 진단은 canonical/alias의 동일 compact term hash를 기록했고 이는 normalized `nodenotready`와 exact 일치했다.
+- **원인**: scanner는 punctuation/spacing 제거 후 `NodeNotReady`와 `node not ready`를 동일하게 탐지했지만 procedure masker는 single-token 원형만 마스킹해 separator 변형을 남겼다.
+- **수정 내용**: non-regex masker가 scanner와 동일한 boundaryless compact minimum 및 문자 사이 Unicode separator 허용 규칙을 사용하도록 맞췄다. `NodeNotReady`의 spaced/embedded corpus 표현을 마스킹하고, 동일 term의 category precedence를 deterministic하게 고정해 removed-span provenance와 post-mask scanner clean을 검증한다. masker version은 `v2.3-procedure-mask-4`로 올렸다.
+- **수정 파일**: `experiments/v2_3/retrieval.py:1`, `tests/test_v2_3_retrieval.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — targeted 78 PASS, 전체 276 PASS, dry-run 180/2,160 external0/fs0, pycompile·diff-check PASS. Primary19 F4-t5는 calls/AIC 증가 없이 exact Flux restore·recovery_green 후 종료됐으며 fresh campaign 재실행 예정.

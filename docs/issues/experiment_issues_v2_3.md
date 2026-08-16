@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 35건
-- 심각(실험 무효화): 31건
+- 총 이슈: 36건
+- 심각(실험 무효화): 32건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -443,3 +443,14 @@
 - **근본 원인**: production lexicon이 harness marker로 단독 두 글자 `F4`를 사용했고 scanner는 punctuation을 경계로 취급했다. 따라서 UUID·pod/container hash 등에 우연히 독립 토큰으로 나타난 `-f4-`도 fault identity 누출로 판정할 수 있다. 이 false-positive는 synthetic runtime에서 재현했다. 다만 Primary18 당시 원문 scan report가 없으므로 이 경계가 그 실행의 직접 match였다는 것은 유력한 추론이며 확정 사실로 취급하지 않는다. 복구 뒤 새 5분 window replay는 runtime/procedure 모두 match 0이어서 당시 snapshot을 대체하지 못한다.
 - **수정 내용**: production harness marker를 단독 `F4`가 아니라 구조가 결합된 `fault_id=F4`, `fault F-4`, scheduled `F4_t5` Unicode/punctuation 변형 regex로 제한한다. `fault injection`과 `experiment marker`는 계속 독립 차단한다. 일반 scanner의 명시적 raw marker 기능은 유지한다. `LeakageDetected`는 stage와 scanner/lexicon/context hash, category/kind, forbidden term SHA-256만 제공하고 원문·term은 제공하지 않으며, runner가 이를 `incident_failed` event에 fsync한 뒤 mandatory recovery를 계속 수행한다. scanner provenance version은 `v2.3-nfkc-alias-ngram-3`으로 올린다.
 - **현재 영향**: targeted 77 PASS, 전체 275 PASS, dry-run 180 rows/2,160 calls·external0·filesystem0, pycompile·diff-check를 통과했다. 독립 리뷰·append-only changelog·clean commit-push 후 새 campaign ID로 처음부터 재실행한다.
+
+### [ISS-036] compact label의 separator 변형이 procedure masker를 우회
+
+- **카테고리**: data / code / measurement validity
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260817-primary19`는 F1~F3 전부와 F4 t1~t4까지 19 incidents·57 rows/raw·684 validated calls를 commit한 뒤 F4 t5에서 모델 호출 전에 중단됐다. 불완전 campaign 전체는 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회. 해당 incident의 attempt/call/charged 증가는 0이다.
+- **관찰한 사실**: F4-t3는 attempt 3의 42.941716초에 live stress identity와 `MemAvailable=1,080,553,472 bytes`를 검증했고 full collector를 104.084429초(<175초)에 완료한 뒤 exact cleanup·commit했다. F4-t4는 injection post available 4,460,826,624 bytes, allocation 32,865,686,938 bytes와 `DiskPressure=True`를 검증해 exact cleanup·commit했다. F4-t5는 yms-proxmox-03의 node disruption을 검증한 뒤 `retrieved_procedure` stage에서 `canonical_labels`와 `aliases`의 동일 normalized term hash `47b8c51c…1cf5bdf0`, kind `compact_substring`으로 fail-closed했다. 이 hash는 ground-truth의 normalized `nodenotready`와 exact 일치한다. event는 `incident_failed→flux_restored(exact original/CAS)→recovery_green`이며 commit boundary는 19/60, rows/raw 57/57, attempt/call/charged 684/684/684, 누적 AIC 330.9618이다.
+- **근본 원인**: scanner는 separator를 제거한 compact 비교로 `NodeNotReady`와 `node not ready`를 동일 금지어로 탐지하지만, procedure masker는 single-token `NodeNotReady`를 contiguous form으로만 마스킹했다. 따라서 corpus의 spaced/punctuated serialization이 masker를 통과한 뒤 최종 scanner에서 차단됐다. 이는 실제 ground-truth label 누출을 올바르게 fail-close한 것이며 ISS-035의 짧은 harness-ID false-positive와 다른 원인이다.
+- **수정 내용**: masker의 non-regex forbidden term을 scanner와 같은 boundaryless compact semantics로 결합한다. 일반 term은 compact length 4 이상, harness/field value는 2 이상일 때 각 문자 사이 Unicode punctuation/spacing/underscore를 허용하고 접두·접미 문자열 내부에서도 마스킹한다. 동일 normalized term이 여러 category에 있으면 lexicon category 순서로 deterministic precedence를 고정한다. `NodeNotReady`의 spaced/embedded 변형 회귀에서 removed-span provenance, masked procedure hash, 최종 scanner 0건을 함께 검증하고 masker provenance를 `v2.3-procedure-mask-4`로 올린다.
+- **현재 영향**: targeted 78 PASS, 전체 276 PASS, dry-run 180 rows/2,160 calls·external0·filesystem0, pycompile·diff-check PASS다. append-only changelog·독립 리뷰·clean commit-push 후 새 campaign ID로 처음부터 재실행한다.

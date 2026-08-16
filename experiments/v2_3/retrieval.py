@@ -12,7 +12,7 @@ from .scanner import (
     LeakageScanner, minimum_token_ngrams, normalize, sha256_text,
 )
 
-MASKER_VERSION = "v2.3-procedure-mask-3"
+MASKER_VERSION = "v2.3-procedure-mask-4"
 
 
 @dataclass(frozen=True)
@@ -189,10 +189,18 @@ class BlindProcedureBuilder:
                     (category, gram)
                     for gram in minimum_token_ngrams(tokens, minimum)
                 )
+        category_rank = {
+            category: index
+            for index, category in enumerate(lexicon.categories())
+        }
         ordered_terms = sorted(
             regex_terms + list(mask_terms),
-            key=lambda item: len(normalize(item[1])),
-            reverse=True,
+            key=lambda item: (
+                -len(normalize(item[1])),
+                category_rank[item[0]],
+                normalize(item[1]),
+                item[1],
+            ),
         )
         for category, raw_term in ordered_terms:
             if raw_term.startswith("re:"):
@@ -201,12 +209,29 @@ class BlindProcedureBuilder:
                 tokens = normalize(raw_term).split()
                 if not tokens:
                     continue
-                pattern = re.compile(
-                    r"(?<![^\W_])"
-                    + r"[\W_]*".join(map(re.escape, tokens))
-                    + r"(?![^\W_])",
-                    re.IGNORECASE,
+                compact_term = "".join(tokens)
+                compact_minimum = (
+                    2 if category in {"harness_markers", "field_values"} else 4
                 )
+                compact_semantics = len(compact_term) >= compact_minimum
+                if compact_semantics:
+                    # The scanner deliberately treats punctuation/spacing
+                    # insertion as equivalent to the compact forbidden term.
+                    # Apply the same rule while masking so a corpus phrase
+                    # such as ``node not ready`` cannot survive when the
+                    # forbidden label is serialized as ``NodeNotReady``.
+                    body = r"[\W_]*".join(map(re.escape, compact_term))
+                else:
+                    body = r"[\W_]*".join(map(re.escape, tokens))
+                if compact_semantics:
+                    # Scanner compact_substring is intentionally boundaryless;
+                    # masking must cover the same embedded/concatenated forms.
+                    pattern = re.compile(body, re.IGNORECASE)
+                else:
+                    pattern = re.compile(
+                        r"(?<![^\W_])" + body + r"(?![^\W_])",
+                        re.IGNORECASE,
+                    )
 
             for match in pattern.finditer(value):
                 span = (match.start(), match.end())

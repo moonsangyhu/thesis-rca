@@ -96,6 +96,37 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(removals, [])
         self.assertIn("91af7e0", sanitized)
 
+    def test_procedure_masks_separator_variant_of_compact_label(self):
+        from experiments.v2_3.scanner import ForbiddenLexicon, LeakageScanner
+
+        lexicon = ForbiddenLexicon(
+            canonical_labels=("NodeNotReady",),
+            aliases=("NodeNotReady",),
+        )
+        for source in (
+            "Check whether the node not ready state persists.",
+            "prefixNodeNotReadySuffix",
+            "xnode not readyy",
+        ):
+            with self.subTest(source=source):
+                result = BlindProcedureBuilder().build(
+                    runtime_context="node heartbeat and runtime warnings",
+                    runtime_query="node heartbeat and runtime warnings",
+                    chunks=(RetrievalChunk("node-runbook", source, 0.9, 0, len(source)),),
+                    corpus_version="corpus-1",
+                    lexicon=lexicon,
+                )
+                self.assertIn("[MASKED]", result.text)
+                self.assertEqual(
+                    LeakageScanner().scan(result.text, lexicon).match_count, 0
+                )
+                matching = [
+                    item for item in result.provenance["removed_spans"]
+                    if item["term"] == "nodenotready"
+                ]
+                self.assertEqual(len(matching), 1)
+                self.assertEqual(matching[0]["category"], "canonical_labels")
+
     def test_masking_records_retrieval_and_removed_span_provenance(self):
         source = "Inspect secret-workload, then kubectl patch deployment secret-workload."
         result = BlindProcedureBuilder().build(
