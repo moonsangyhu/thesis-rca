@@ -44,13 +44,18 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
 
 - `yms-proxmox-04`에는 Debian package `stress-ng=0.19.02-1`이 필요하다.
 - V2.3은 percentage 기반 할당을 사용하지 않는다. 이 노드의 16 GiB 형상에서
-  `--vm 2 --vm-bytes 13G --vm-keep --timeout 180s`를 사용한다. F4 trial 3은
+  `--vm 2 --vm-bytes 14G --vm-keep --timeout 180s`를 사용한다. F4 trial 3은
   전용 observation wait 60초를 사용하고 `Ready!=True`를 요구한다. runner는
   injection 시작부터 full collector 종료까지 monotonic elapsed가 175초 미만인지
   검증해 stressor deadline 안에서 evidence snapshot이 끝난 경우만 inference한다.
   이후 36회 모델 호출 중 자율 종료시켜 SSH exact recovery 여유를 확보한다.
   PID·start tick·cmdline hash receipt와
-  실제 `MemoryPressure=True` 또는 `Ready!=True`를 모두 검증한다.
+  실제 `Ready!=True`를 필수로 검증한다. `MemoryPressure`는 보조 관측값일
+  뿐 처치 성립을 대신하지 않는다.
+- 2026-08-16 model-free calibration에서 13 GiB/180초는 123초 동안에도
+  `Ready=True`여서 처치가 성립하지 않았고, 14 GiB/90초는 52.034초에
+  `Ready=False`를 만들면서 exact cleanup 1회로 복구됐다. 따라서 14 GiB가
+  현재 16 GiB worker에서 시험한 정수 GiB 후보 중 가장 작은 유효값이다.
 - binary 또는 launch receipt가 없으면 모델 호출 전에 fail-closed한다.
 - launch identity(PID·start tick·cmdline hash)는 worker03의 mode-0600 임시 파일을
   fsync한 뒤 atomic rename한다. emergency recovery는 이 node-local receipt를

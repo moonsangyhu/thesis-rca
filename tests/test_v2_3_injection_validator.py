@@ -79,7 +79,7 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "13G", "stress_timeout_seconds": 180,
+            "stress_memory_bytes": "14G", "stress_timeout_seconds": 180,
             "wait_seconds": 60,
         }
         self.assertTrue(validator.validate(
@@ -95,7 +95,7 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "13G", "stress_timeout_seconds": 180,
+            "stress_memory_bytes": "14G", "stress_timeout_seconds": 180,
             "wait_seconds": 60,
         }
         ready_under_pressure = {"status": {"conditions": [
@@ -148,7 +148,7 @@ class InjectionValidatorTests(unittest.TestCase):
                 "action": "node_disruption", "node": "yms-proxmox-04",
                 "stress_ng_pid": 999999, "stress_ng_start_ticks": 1,
                 "stress_ng_cmdline_sha256": "b" * 64,
-                "stress_memory_bytes": "13G", "stress_timeout_seconds": 180,
+                "stress_memory_bytes": "14G", "stress_timeout_seconds": 180,
                 "wait_seconds": 60,
             })
 

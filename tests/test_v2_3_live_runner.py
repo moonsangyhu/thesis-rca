@@ -869,14 +869,14 @@ class LiveRunnerTests(unittest.TestCase):
             )
         command = ssh.call_args.args[1]
         self.assertIn("command -v stress-ng", command)
-        self.assertIn("--vm-bytes 13G", command)
+        self.assertIn("--vm-bytes 14G", command)
         self.assertIn("--timeout 180s", command)
         self.assertIn("--vm-keep", command)
         self.assertIn("sync -f", command)
         self.assertIn("read rpid rstart rhash", command)
         self.assertEqual(result["stress_ng_pid"], 4321)
         self.assertEqual(result["stress_ng_start_ticks"], 8765)
-        self.assertEqual(result["stress_memory_bytes"], "13G")
+        self.assertEqual(result["stress_memory_bytes"], "14G")
         self.assertEqual(result["stress_timeout_seconds"], 180)
 
         with patch(
