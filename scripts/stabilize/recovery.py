@@ -13,6 +13,7 @@ from scripts.fault_inject.base import (
 from scripts.fault_inject.config import (
     F4_T3_STRESS_BYTES,
     F4_T3_STRESS_LOG_FILE,
+    F4_T3_NODE_NAME,
     F4_T3_STRESS_RECEIPT_FILE,
     F4_T3_STRESS_TIMEOUT_SECONDS,
     F4_T3_STRESS_VM_WORKERS,
@@ -245,6 +246,8 @@ class Recovery:
     def _recover_f4_memory_stress(self, node: str, ctx: dict) -> dict:
         """Retry an exact pidfile-bound stress cleanup until the node answers."""
         if (
+            node != F4_T3_NODE_NAME
+            or
             ctx.get("stress_ng_preexisting") is not False
             or ctx.get("stress_receipt_file") != F4_T3_STRESS_RECEIPT_FILE
             or isinstance(ctx.get("stress_vm_workers"), bool)

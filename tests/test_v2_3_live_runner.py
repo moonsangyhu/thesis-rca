@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.live_runner import (
     F4DisruptionNotObserved,
+    F4ObservationTimeout,
     AttemptJournal, ChargedCallJournal, F7InjectionValidator, FluxAppGuard,
     FluxCASConflict, FluxHierarchyGuard, PilotError, PilotIncidentRunner, RecoveryFailure,
     RuntimeEvidenceRenderer, RuntimeOnlyRetriever,
@@ -1021,9 +1022,59 @@ class LiveRunnerTests(unittest.TestCase):
             )
         self.assertEqual(clock[0], 60.0)
 
+    def test_f4_memory_observation_timeout_is_bounded_and_audited(self):
+        clock = [40.0]
+        events = []
+        attempts = [0]
+
+        def validate(*_args):
+            attempts[0] += 1
+            if attempts[0] == 1:
+                clock[0] = 45.0
+                raise F4ObservationTimeout("F4 node observation timed out")
+            return {"status": "verified", "node_disrupted": True}
+
+        result = validate_injection_in_observation_window(
+            fault_id="F4", trial=3,
+            ground_truth={"target_service": "worker03"},
+            injection_result={"wait_seconds": 60},
+            injection_validator=SimpleNamespace(validate=validate),
+            injection_started_monotonic=0.0,
+            sleep_fn=lambda seconds: clock.__setitem__(0, clock[0] + seconds),
+            monotonic_fn=lambda: clock[0],
+            observation_event_fn=events.append,
+        )
+        self.assertEqual(result["status"], "verified")
+        self.assertEqual([event["outcome"] for event in events], [
+            "observation-timeout", "verified",
+        ])
+        self.assertEqual([event["attempt"] for event in events], [1, 2])
+
+    def test_f4_memory_observation_event_failure_aborts_retry(self):
+        clock = [40.0]
+        validator = SimpleNamespace(
+            validate=lambda *_: (_ for _ in ()).throw(
+                F4DisruptionNotObserved("not observed")
+            )
+        )
+        with self.assertRaisesRegex(OSError, "event fsync failed"):
+            validate_injection_in_observation_window(
+                fault_id="F4", trial=3,
+                ground_truth={"target_service": "worker03"},
+                injection_result={"wait_seconds": 60},
+                injection_validator=validator,
+                injection_started_monotonic=0.0,
+                sleep_fn=lambda seconds: clock.__setitem__(0, clock[0] + seconds),
+                monotonic_fn=lambda: clock[0],
+                observation_event_fn=lambda _: (_ for _ in ()).throw(
+                    OSError("event fsync failed")
+                ),
+            )
+
     def test_f4_memory_observation_window_does_not_retry_other_errors(self):
         clock = [0.0]
         calls = []
+        events = []
 
         def sleep(seconds):
             calls.append(seconds)
@@ -1044,8 +1095,30 @@ class LiveRunnerTests(unittest.TestCase):
                 injection_started_monotonic=0.0,
                 sleep_fn=sleep,
                 monotonic_fn=lambda: clock[0],
+                observation_event_fn=events.append,
             )
         self.assertEqual(calls, [40.0])
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["outcome"], "fatal-validation-error")
+
+    def test_f4_memory_observation_invalid_result_is_not_verified(self):
+        clock = [40.0]
+        events = []
+        with self.assertRaisesRegex(PilotError, "did not PASS"):
+            validate_injection_in_observation_window(
+                fault_id="F4", trial=3,
+                ground_truth={"target_service": "worker03"},
+                injection_result={"wait_seconds": 60},
+                injection_validator=SimpleNamespace(
+                    validate=lambda *_: {"status": "bad"}
+                ),
+                injection_started_monotonic=0.0,
+                sleep_fn=lambda seconds: clock.__setitem__(0, clock[0] + seconds),
+                monotonic_fn=lambda: clock[0],
+                observation_event_fn=events.append,
+            )
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["outcome"], "invalid-result")
 
     def test_f4_memory_observation_window_rejects_late_start_and_success(self):
         for initial_elapsed in (61.0, 70.0, float("nan"), -1.0):

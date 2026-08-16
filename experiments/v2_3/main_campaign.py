@@ -33,6 +33,7 @@ def run_authorized_main(
     from experiments.shared.infra import preflight_check
     from scripts.fault_inject import FaultInjector
     from scripts.fault_inject.base import kubectl_get_json, ssh_node
+    from scripts.fault_inject.config import F4_T3_NODE_NAME
     from scripts.stabilize import Recovery
     from scripts.stabilize.state_validator import StateValidator
     from src.collector import SignalCollector
@@ -146,7 +147,12 @@ def run_authorized_main(
     )
     validator = LiveInjectionValidator(
         lambda resource, name, namespace: kubectl_get_json(
-            resource, name, namespace=namespace
+            resource,
+            name,
+            namespace=namespace,
+            timeout=(
+                5 if (resource, name) == ("node", F4_T3_NODE_NAME) else 60
+            ),
         ),
         lambda node, command: ssh_node(node, command, timeout=15),
     )

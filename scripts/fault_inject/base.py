@@ -88,13 +88,18 @@ def get_container_image(deployment: str, container: str = "", namespace: str = N
     return ""
 
 
-def kubectl_get_json(resource: str, name: str = "", namespace: str = NAMESPACE) -> dict:
+def kubectl_get_json(
+    resource: str,
+    name: str = "",
+    namespace: str = NAMESPACE,
+    timeout: int = 60,
+) -> dict:
     """Get resource as JSON."""
     args = ["get", resource]
     if name:
         args.append(name)
     args += ["-o", "json"]
-    output = kubectl(*args, namespace=namespace)
+    output = kubectl(*args, namespace=namespace, timeout=timeout)
     if output:
         try:
             return json.loads(output)
