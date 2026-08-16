@@ -413,3 +413,12 @@
 - **수정 내용**: shared `F4_T3_STRESS_VM_WORKERS=1`을 추가해 총 요청량을 14 GiB로 일치시키고, durable preflight/result receipt·validator·exact recovery command에 worker 수를 결합한다. malformed/missing worker count는 inference와 recovery 전에 fail-closed한다.
 - **수정 파일**: `scripts/fault_inject/config.py:1`, `scripts/fault_inject/injector.py:1`, `experiments/v2_3/injection_validator.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_injection_validator.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 회귀·dry-run·독립 리뷰·clean commit-push 뒤 model-free full-collector/recovery live probe 재실행 예정.
+
+### 47. F4-t3 transient NotReady bounded observation latch — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: worker 1개·14 GiB/180초 full probe는 60초 단일 시점의 Ready=True로 안전 중단됐지만, 같은 구성의 후속 probe는 51.191초 Ready=False와 live process identity를 관측하고 full collector를 52.685초에 완료했다.
+- **원인**: Node Ready가 stress 동안 단조롭게 유지되지 않는데 runner가 60초 한 점만 읽어 transient NotReady를 놓쳤다.
+- **수정 내용**: F4-t3에만 40–60초, 2초 간격 bounded observation window를 적용한다. `F4DisruptionNotObserved`만 deadline까지 재시도하고 최초 NotReady를 latch하며, 다른 validator 오류는 즉시 중단한다. poll 시작과 validation 완료 elapsed를 event provenance에 포함하고 성공 완료도 60초를 넘으면 거부하며 기존 full-collector<175초·exact recovery gate를 유지한다.
+- **수정 파일**: `scripts/fault_inject/config.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted/전체 회귀·독립 리뷰·clean commit-push 뒤 production window로 model-free full lifecycle probe 재실행 예정.

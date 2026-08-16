@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 import subprocess
 
-from .live_runner import F7InjectionValidator, PilotError
+from .live_runner import F4DisruptionNotObserved, F7InjectionValidator, PilotError
 from scripts.fault_inject.config import (
     F4_T3_STRESS_BYTES,
     F4_T3_OBSERVATION_WAIT_SECONDS,
@@ -163,6 +163,8 @@ class LiveInjectionValidator:
         if trial == 1:
             disrupted = disrupted or observed.get("spec", {}).get("unschedulable") is True
         if not node or not disrupted:
+            if trial == 3:
+                raise F4DisruptionNotObserved("F4 node disruption was not observed")
             raise PilotError("F4 node disruption was not observed")
         details = {"node": node, "node_disrupted": True}
         if trial == 3:
