@@ -39,11 +39,11 @@ INJECTION_WAIT = {
 # for SSH-based exact recovery before the 36 model calls complete.  Keep these
 # values as one contract shared by injection, validation, recovery, tests, and
 # lab documentation.
-F4_T3_STRESS_BYTES = "14G"
+F4_T3_STRESS_BYTES = "15G"
 F4_T3_STRESS_VM_WORKERS = 1
 F4_T3_NODE_NAME = "yms-proxmox-04"
 F4_T3_OBSERVATION_START_SECONDS = 40
-F4_T3_OBSERVATION_WAIT_SECONDS = 60
+F4_T3_OBSERVATION_WAIT_SECONDS = 120
 F4_T3_OBSERVATION_POLL_SECONDS = 2
 F4_T3_STRESS_TIMEOUT_SECONDS = 180
 F4_T3_EVIDENCE_DEADLINE_MARGIN_SECONDS = 5

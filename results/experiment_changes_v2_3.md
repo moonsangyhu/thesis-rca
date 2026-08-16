@@ -431,3 +431,12 @@
 - **수정 내용**: receipt node를 shared yms-proxmox-04 정본에 load/SSH 전에 결합하고 해당 named-node read만 5초로 제한한다. 실제 timeout과 not-observed만 40–60초 window 안에서 재시도한다. 매 poll의 attempt/start/completion/outcome을 retryable·fatal·invalid·verified 모두 반환/재시도 전에 fsync한다. kind=Node, exact name, nonempty UID, conditions list, unique Ready와 허용 status를 강제해 empty/malformed/wrong/duplicate 응답은 즉시 거부한다.
 - **수정 파일**: `scripts/fault_inject/base.py:1`, `scripts/fault_inject/config.py:1`, `scripts/fault_inject/injector.py:1`, `scripts/stabilize/recovery.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/injection_validator.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 회귀·독립 리뷰·clean commit-push 뒤 production-window model-free lifecycle probe 재실행 예정.
+
+### 49. F4-t3 처치량과 observation deadline 실측 확정 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 14 GiB production-window probe는 40–58.6초 10회 모두 Ready=True로 실패했고, 첫 15 GiB probe도 60초까지 전환을 보지 못했다. 모든 실패는 inference 전 중단·exact recovery GREEN·model/AIC/result write 0이었다.
+- **원인**: memory-pressure onset이 run마다 변동하며 60초 deadline이 늦은 전환을 배제했다. 처치 duration은 이미 180초라 deadline 확대가 노드 stress 시간을 늘리지는 않는다.
+- **수정 내용**: worker 1개와 timeout180은 유지하고 절대 byte를 15 GiB, observation window를 40–120초/2초 polling으로 확정한다. 독립 model-free calibration 2회에서 Ready=False onset 45.079초·65.334초, full collector 46.475초·66.833초, exact recovery 3회·4회 GREEN을 확인했다. full collector<175초 gate는 유지한다.
+- **수정 파일**: `scripts/fault_inject/config.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 회귀·독립 리뷰·clean commit-push 뒤 정본 production helper로 model-free full lifecycle probe 1회 통과를 fresh main campaign gate로 둔다.
