@@ -54,6 +54,7 @@ class FluxEmergencyRestoreTests(unittest.TestCase):
             "flux_guard_schema": "v2.3-flux-app-guard-1",
             "flux_namespace": "flux-system", "flux_name": "app",
             "flux_uid": "uid-1", "flux_resource_version": "10",
+            "flux_original_spec_sha256": "a" * 64,
             "flux_original_suspend_present": False,
             "flux_original_suspend": False,
         }
@@ -113,7 +114,7 @@ class FluxEmergencyRestoreTests(unittest.TestCase):
                 )
             self.assertEqual(guard.receipts, [refreshed])
 
-    def test_duplicate_refreshed_child_receipt_is_rejected(self):
+    def test_restore_uses_last_bounded_refreshed_child_receipt(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             project = Path(temp_dir)
             campaign, initial = self.make_campaign(project)
@@ -125,23 +126,87 @@ class FluxEmergencyRestoreTests(unittest.TestCase):
             events = campaign / "campaign_events.jsonl"
             records = [json.loads(line) for line in events.read_text().splitlines()]
             records[0]["recovery_context"] = hierarchy
+            second = json.loads(json.dumps(hierarchy))
+            second["app"]["flux_resource_version"] = "11"
+            third = json.loads(json.dumps(hierarchy))
+            third["app"]["flux_resource_version"] = "12"
             records.extend([{
                 "event": "flux_app_recovery_receipt_refreshed",
-                "recovery_context": hierarchy,
+                "recovery_context": second,
             }, {
                 "event": "flux_app_recovery_receipt_refreshed",
-                "recovery_context": hierarchy,
+                "recovery_context": third,
             }])
             events.write_text(
                 "\n".join(json.dumps(record) for record in records) + "\n"
             )
+            guard = FakeEmergencyGuard()
             with patch("experiments.v2_3.flux_restore.PROJECT_ROOT", project):
-                with self.assertRaisesRegex(PilotError, "duplicate refreshed"):
+                restore_campaign(
+                    campaign, guard=guard, recovery=FakeEmergencyRecovery()
+                )
+            self.assertEqual(guard.receipts, [third])
+
+    def test_restore_rejects_refreshed_receipts_beyond_retry_limit(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project = Path(temp_dir)
+            campaign, initial = self.make_campaign(project)
+            hierarchy = {
+                "flux_hierarchy_schema": "v2.3-flux-hierarchy-1",
+                "root": {**initial, "flux_name": "flux-system"},
+                "app": initial,
+            }
+            events = campaign / "campaign_events.jsonl"
+            records = [json.loads(line) for line in events.read_text().splitlines()]
+            records[0]["recovery_context"] = hierarchy
+            for version in range(11, 15):
+                receipt = json.loads(json.dumps(hierarchy))
+                receipt["app"]["flux_resource_version"] = str(version)
+                records.append({
+                    "event": "flux_app_recovery_receipt_refreshed",
+                    "recovery_context": receipt,
+                })
+            events.write_text(
+                "\n".join(json.dumps(record) for record in records) + "\n"
+            )
+            with patch("experiments.v2_3.flux_restore.PROJECT_ROOT", project):
+                with self.assertRaisesRegex(PilotError, "retry limit"):
                     restore_campaign(
-                        campaign,
-                        guard=FakeEmergencyGuard(),
+                        campaign, guard=FakeEmergencyGuard(),
                         recovery=FakeEmergencyRecovery(),
                     )
+
+    def test_restore_rejects_duplicate_or_regressing_refreshed_versions(self):
+        for versions in (("11", "11"), ("12", "11")):
+            with self.subTest(versions=versions), tempfile.TemporaryDirectory() as temp_dir:
+                project = Path(temp_dir)
+                campaign, initial = self.make_campaign(project)
+                hierarchy = {
+                    "flux_hierarchy_schema": "v2.3-flux-hierarchy-1",
+                    "root": {**initial, "flux_name": "flux-system"},
+                    "app": initial,
+                }
+                events = campaign / "campaign_events.jsonl"
+                records = [
+                    json.loads(line) for line in events.read_text().splitlines()
+                ]
+                records[0]["recovery_context"] = hierarchy
+                for version in versions:
+                    receipt = json.loads(json.dumps(hierarchy))
+                    receipt["app"]["flux_resource_version"] = version
+                    records.append({
+                        "event": "flux_app_recovery_receipt_refreshed",
+                        "recovery_context": receipt,
+                    })
+                events.write_text(
+                    "\n".join(json.dumps(record) for record in records) + "\n"
+                )
+                with patch("experiments.v2_3.flux_restore.PROJECT_ROOT", project):
+                    with self.assertRaisesRegex(PilotError, "did not advance"):
+                        restore_campaign(
+                            campaign, guard=FakeEmergencyGuard(),
+                            recovery=FakeEmergencyRecovery(),
+                        )
 
     def test_nonexact_external_state_is_preserved_and_fails_closed(self):
         with tempfile.TemporaryDirectory() as temp_dir:

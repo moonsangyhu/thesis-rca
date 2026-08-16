@@ -1,6 +1,7 @@
 import tempfile
 import unittest
 import hashlib
+import json
 from unittest.mock import patch
 from pathlib import Path
 from types import SimpleNamespace
@@ -8,7 +9,7 @@ from types import SimpleNamespace
 from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.live_runner import (
     AttemptJournal, ChargedCallJournal, F7InjectionValidator, FluxAppGuard,
-    FluxHierarchyGuard, PilotError, PilotIncidentRunner, RecoveryFailure,
+    FluxCASConflict, FluxHierarchyGuard, PilotError, PilotIncidentRunner, RecoveryFailure,
     RuntimeEvidenceRenderer, RuntimeOnlyRetriever,
 )
 from experiments.v2_3.mock import DeterministicMockCaller
@@ -83,6 +84,7 @@ class FakeFluxGuard:
             "flux_guard_schema": "v2.3-flux-app-guard-1",
             "flux_namespace": "flux-system", "flux_name": "app",
             "flux_uid": "uid-1", "flux_resource_version": "1",
+            "flux_original_spec_sha256": "a" * 64,
             "flux_original_suspend_present": False,
             "flux_original_suspend": False,
         }
@@ -338,6 +340,40 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(flux.calls, ["prepare", "suspend", "restore"])
         self.assertEqual(runner.injector.calls, [])
 
+    def test_failed_observed_cas_uses_latest_durable_receipt_for_normal_restore(self):
+        class ObservedFailureGuard:
+            def __init__(self):
+                self.restored = None
+
+            def prepare_recovery_context(self):
+                return {
+                    "flux_hierarchy_schema": "v2.3-flux-hierarchy-1",
+                    "root": {"flux_resource_version": "1"},
+                    "app": {"flux_resource_version": "1"},
+                }
+
+            def suspend_with_receipt_observer(self, context, observer):
+                for version in ("2", "3"):
+                    receipt = json.loads(json.dumps(context))
+                    receipt["app"]["flux_resource_version"] = version
+                    observer(receipt)
+                raise PilotError("retry limit")
+
+            def restore(self, context):
+                self.restored = context
+                return {
+                    "flux_restored": True, "flux_exact_original": True,
+                    "flux_suspend_present": False,
+                    "flux_restore_action": "cas-restored",
+                }
+
+        flux = ObservedFailureGuard()
+        runner, _ = self.make_runner(flux_guard=flux)
+        with self.assertRaisesRegex(PilotError, "retry limit"):
+            runner.run("F7", 1, GROUND_TRUTH)
+        self.assertEqual(flux.restored["app"]["flux_resource_version"], "3")
+        self.assertEqual(runner.injector.calls, [])
+
     def test_flux_guard_cannot_alter_sealed_receipt(self):
         flux = FakeFluxGuard()
 
@@ -480,6 +516,50 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertFalse(restored["flux_restored"])
         self.assertEqual(restored["flux_restore_action"], "external-change-preserved")
 
+    def test_flux_guard_classifies_failed_patch_with_unchanged_state_as_cas_race(self):
+        state = {
+            "metadata": {
+                "namespace": "flux-system", "name": "app",
+                "uid": "uid-1", "resourceVersion": "10",
+            },
+            "spec": {"interval": "10m"},
+        }
+
+        def load():
+            import copy
+            return copy.deepcopy(state)
+
+        def lose_cas(_value, resource_version):
+            self.assertEqual(resource_version, "10")
+            state["metadata"]["resourceVersion"] = "11"
+            return {}
+
+        guard = FluxAppGuard(load, lose_cas)
+        with self.assertRaisesRegex(FluxCASConflict, "resourceVersion race"):
+            guard.suspend(guard.prepare_recovery_context())
+        self.assertNotIn("suspend", state["spec"])
+
+    def test_flux_guard_does_not_retry_unrelated_spec_drift(self):
+        state = {
+            "metadata": {
+                "namespace": "flux-system", "name": "app",
+                "uid": "uid-1", "resourceVersion": "10",
+            },
+            "spec": {"interval": "10m"},
+        }
+
+        def load():
+            import copy
+            return copy.deepcopy(state)
+
+        guard = FluxAppGuard(load, lambda *_: {})
+        receipt = guard.prepare_recovery_context()
+        state["metadata"]["resourceVersion"] = "11"
+        state["spec"]["interval"] = "1m"
+        with self.assertRaises(PilotError) as raised:
+            guard.suspend(receipt)
+        self.assertNotIsInstance(raised.exception, FluxCASConflict)
+
     def test_flux_hierarchy_suspends_root_then_app_and_restores_reverse(self):
         calls = []
         root = FakeHierarchyMember("root", calls)
@@ -540,6 +620,7 @@ class LiveRunnerTests(unittest.TestCase):
                     "flux_name": self.name,
                     "flux_uid": f"uid-{self.name}",
                     "flux_resource_version": self.resource_version,
+                    "flux_original_spec_sha256": "a" * 64,
                     "flux_original_suspend_present": False,
                     "flux_original_suspend": False,
                 }
@@ -570,6 +651,81 @@ class LiveRunnerTests(unittest.TestCase):
             calls.index("prepare-app", calls.index("suspend-root-10")),
             calls.index("suspend-app-21"),
         )
+
+    def test_flux_hierarchy_reseals_and_retries_unchanged_app_cas_races(self):
+        calls = []
+        root = FakeHierarchyMember("root", calls)
+
+        class RacingApp(FakeHierarchyMember):
+            def __init__(self):
+                super().__init__("app", calls)
+                self.resource_version = 20
+                self.conflicts = 2
+
+            def prepare_recovery_context(self):
+                self.calls.append("prepare-app")
+                return {
+                    "flux_guard_schema": "v2.3-flux-app-guard-1",
+                    "flux_namespace": "flux-system", "flux_name": "app",
+                    "flux_uid": "uid-app",
+                    "flux_resource_version": str(self.resource_version),
+                    "flux_original_spec_sha256": "a" * 64,
+                    "flux_original_suspend_present": False,
+                    "flux_original_suspend": False,
+                }
+
+            def suspend(self, receipt):
+                self.calls.append(f"suspend-app-{receipt['flux_resource_version']}")
+                if self.conflicts:
+                    self.conflicts -= 1
+                    self.resource_version += 1
+                    raise FluxCASConflict("status writer advanced resourceVersion")
+                return receipt
+
+        app = RacingApp()
+        guard = FluxHierarchyGuard(root, app, settle=lambda *_: None)
+        initial = guard.prepare_recovery_context()
+        observed = []
+        result = guard.suspend_with_receipt_observer(initial, observed.append)
+
+        self.assertEqual(
+            [item["app"]["flux_resource_version"] for item in observed],
+            ["20", "21", "22"],
+        )
+        self.assertEqual(result, observed[-1])
+
+    def test_flux_hierarchy_stops_after_bounded_app_cas_conflicts(self):
+        calls = []
+        root = FakeHierarchyMember("root", calls)
+
+        class AlwaysRacingApp(FakeHierarchyMember):
+            def __init__(self):
+                super().__init__("app", calls)
+                self.resource_version = 20
+
+            def prepare_recovery_context(self):
+                return {
+                    "flux_guard_schema": "v2.3-flux-app-guard-1",
+                    "flux_namespace": "flux-system", "flux_name": "app",
+                    "flux_uid": "uid-app",
+                    "flux_resource_version": str(self.resource_version),
+                    "flux_original_spec_sha256": "a" * 64,
+                    "flux_original_suspend_present": False,
+                    "flux_original_suspend": False,
+                }
+
+            def suspend(self, receipt):
+                self.resource_version += 1
+                raise FluxCASConflict("continuous race")
+
+        app = AlwaysRacingApp()
+        guard = FluxHierarchyGuard(root, app, settle=lambda *_: None)
+        observed = []
+        with self.assertRaisesRegex(PilotError, "retry limit"):
+            guard.suspend_with_receipt_observer(
+                guard.prepare_recovery_context(), observed.append
+            )
+        self.assertEqual(len(observed), FluxHierarchyGuard.MAX_APP_CAS_ATTEMPTS)
 
     def test_flux_hierarchy_rejects_suspend_without_durable_observer(self):
         guard = FluxHierarchyGuard(
