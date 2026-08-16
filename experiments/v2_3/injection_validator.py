@@ -5,10 +5,16 @@ from __future__ import annotations
 from collections.abc import Callable
 import subprocess
 
-from .live_runner import F4DisruptionNotObserved, F7InjectionValidator, PilotError
+from .live_runner import (
+    F4DisruptionNotObserved,
+    F4ObservationTimeout,
+    F7InjectionValidator,
+    PilotError,
+)
 from scripts.fault_inject.config import (
     F4_T3_STRESS_BYTES,
     F4_T3_OBSERVATION_WAIT_SECONDS,
+    F4_T3_NODE_NAME,
     F4_T3_STRESS_TIMEOUT_SECONDS,
     F4_T3_STRESS_VM_WORKERS,
     INJECTION_WAIT,
@@ -125,6 +131,8 @@ class LiveInjectionValidator:
     def _validate_f4(self, trial: int, target: str, result: dict) -> dict:
         node = result.get("node")
         if trial == 3:
+            if node != F4_T3_NODE_NAME:
+                raise PilotError("F4 memory stress node identity is invalid")
             pid = result.get("stress_ng_pid")
             start_ticks = result.get("stress_ng_start_ticks")
             cmdline_hash = result.get("stress_ng_cmdline_sha256")
@@ -152,10 +160,38 @@ class LiveInjectionValidator:
                 <= F4_T3_OBSERVATION_WAIT_SECONDS
             ):
                 raise PilotError("F4 memory stress amount is invalid")
-        observed = self.load("node", str(node), "")
+        try:
+            observed = self.load("node", str(node), "")
+        except (TimeoutError, subprocess.TimeoutExpired) as exc:
+            if trial == 3:
+                raise F4ObservationTimeout(
+                    "F4 node observation timed out"
+                ) from exc
+            raise PilotError("F4 node observation timed out") from exc
+        metadata = observed.get("metadata", {}) if isinstance(observed, dict) else {}
+        raw_conditions = (
+            observed.get("status", {}).get("conditions")
+            if isinstance(observed, dict) else None
+        )
+        ready_items = (
+            [item for item in raw_conditions
+             if isinstance(item, dict) and item.get("type") == "Ready"]
+            if isinstance(raw_conditions, list) else []
+        )
+        if (
+            not isinstance(observed, dict)
+            or observed.get("kind") != "Node"
+            or metadata.get("name") != node
+            or not isinstance(metadata.get("uid"), str)
+            or not metadata.get("uid")
+            or not isinstance(raw_conditions, list)
+            or len(ready_items) != 1
+            or ready_items[0].get("status") not in {"True", "False", "Unknown"}
+        ):
+            raise PilotError("F4 node observation schema is invalid")
         conditions = {
             item.get("type"): item.get("status")
-            for item in observed.get("status", {}).get("conditions", [])
+            for item in raw_conditions if isinstance(item, dict)
         }
         disrupted = conditions.get("Ready") != "True"
         if trial == 4:

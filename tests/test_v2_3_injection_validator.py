@@ -1,7 +1,19 @@
 import unittest
+import subprocess
 
 from experiments.v2_3.injection_validator import LiveInjectionValidator
-from experiments.v2_3.live_runner import PilotError
+from experiments.v2_3.live_runner import F4ObservationTimeout, PilotError
+
+
+def node_state(ready: str, memory: str = "False") -> dict:
+    return {
+        "kind": "Node",
+        "metadata": {"name": "yms-proxmox-04", "uid": "node-uid-04"},
+        "status": {"conditions": [
+            {"type": "Ready", "status": ready},
+            {"type": "MemoryPressure", "status": memory},
+        ]},
+    }
 
 
 class InjectionValidatorTests(unittest.TestCase):
@@ -64,12 +76,7 @@ class InjectionValidatorTests(unittest.TestCase):
             validator.validate("F11", 1, {"target_service": "worker01"}, base)
 
     def test_f4_memory_pressure_requires_bound_launch_receipt(self):
-        node = {
-            "status": {"conditions": [
-                {"type": "Ready", "status": "Unknown"},
-                {"type": "MemoryPressure", "status": "Unknown"},
-            ]}
-        }
+        node = node_state("Unknown", "Unknown")
         validator = LiveInjectionValidator(
             lambda resource, name, namespace: node,
             lambda node, command: "Connection timed out during banner exchange",
@@ -100,10 +107,7 @@ class InjectionValidatorTests(unittest.TestCase):
             "stress_timeout_seconds": 180,
             "wait_seconds": 60,
         }
-        ready_under_pressure = {"status": {"conditions": [
-            {"type": "Ready", "status": "True"},
-            {"type": "MemoryPressure", "status": "True"},
-        ]}}
+        ready_under_pressure = node_state("True", "True")
         validator = LiveInjectionValidator(
             lambda *_: ready_under_pressure,
             lambda *_: "__V23_STRESS_NG_IDENTITY__=live",
@@ -111,10 +115,7 @@ class InjectionValidatorTests(unittest.TestCase):
         with self.assertRaisesRegex(PilotError, "node disruption"):
             validator.validate("F4", 3, {"target_service": "worker03"}, receipt)
 
-        not_ready = {"status": {"conditions": [
-            {"type": "Ready", "status": "Unknown"},
-            {"type": "MemoryPressure", "status": "Unknown"},
-        ]}}
+        not_ready = node_state("Unknown", "Unknown")
         validator = LiveInjectionValidator(
             lambda *_: not_ready,
             lambda *_: "__V23_STRESS_NG_IDENTITY__=live",
@@ -150,7 +151,7 @@ class InjectionValidatorTests(unittest.TestCase):
                     )
 
     def test_f4_memory_pressure_rejects_unbound_process_probe(self):
-        node = {"status": {"conditions": [{"type": "Ready", "status": "Unknown"}]}}
+        node = node_state("Unknown", "Unknown")
         validator = LiveInjectionValidator(
             lambda resource, name, namespace: node,
             lambda node, command: "",
@@ -165,6 +166,85 @@ class InjectionValidatorTests(unittest.TestCase):
                 "stress_timeout_seconds": 180,
                 "wait_seconds": 60,
             })
+
+    def test_f4_rejects_empty_wrong_or_ambiguous_node_observation(self):
+        receipt = {
+            "fault_id": "F4", "trial": 3, "target_service": "worker03",
+            "action": "node_disruption", "node": "yms-proxmox-04",
+            "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
+            "stress_ng_cmdline_sha256": "a" * 64,
+            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+            "stress_timeout_seconds": 180, "wait_seconds": 60,
+        }
+        malformed = [
+            {},
+            {**node_state("Unknown"), "kind": "Pod"},
+            {**node_state("Unknown"), "metadata": {
+                "name": "other-node", "uid": "node-uid-04"
+            }},
+            {**node_state("Unknown"), "metadata": {
+                "name": "yms-proxmox-04", "uid": ""
+            }},
+            {**node_state("Unknown"), "status": {"conditions": []}},
+            {**node_state("Unknown"), "status": {"conditions": [
+                {"type": "Ready", "status": "Unknown"},
+                {"type": "Ready", "status": "False"},
+            ]}},
+            {**node_state("Unknown"), "status": {"conditions": [
+                {"type": "Ready", "status": "Maybe"},
+            ]}},
+        ]
+        for observed in malformed:
+            with self.subTest(observed=observed):
+                validator = LiveInjectionValidator(
+                    lambda *_args, value=observed: value,
+                    lambda *_: "connection timed out",
+                )
+                with self.assertRaisesRegex(PilotError, "schema"):
+                    validator.validate(
+                        "F4", 3, {"target_service": "worker03"}, receipt
+                    )
+
+    def test_f4_named_node_timeout_has_dedicated_retry_class(self):
+        validator = LiveInjectionValidator(
+            lambda *_: (_ for _ in ()).throw(
+                subprocess.TimeoutExpired(["kubectl"], 5)
+            ),
+            lambda *_: "",
+        )
+        receipt = {
+            "fault_id": "F4", "trial": 3, "target_service": "worker03",
+            "action": "node_disruption", "node": "yms-proxmox-04",
+            "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
+            "stress_ng_cmdline_sha256": "a" * 64,
+            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+            "stress_timeout_seconds": 180, "wait_seconds": 60,
+        }
+        with self.assertRaises(F4ObservationTimeout):
+            validator.validate("F4", 3, {"target_service": "worker03"}, receipt)
+
+    def test_f4_memory_rejects_wrong_node_before_load_or_ssh(self):
+        calls = []
+        validator = LiveInjectionValidator(
+            lambda *_: calls.append("load") or node_state("Unknown"),
+            lambda *_: calls.append("ssh") or "Connection timed out",
+        )
+        base = {
+            "fault_id": "F4", "trial": 3, "target_service": "worker03",
+            "action": "node_disruption",
+            "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
+            "stress_ng_cmdline_sha256": "a" * 64,
+            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+            "stress_timeout_seconds": 180, "wait_seconds": 60,
+        }
+        for bad_node in (None, "", "wrong-node", 123):
+            with self.subTest(node=bad_node):
+                with self.assertRaisesRegex(PilotError, "node identity"):
+                    validator.validate(
+                        "F4", 3, {"target_service": "worker03"},
+                        {**base, "node": bad_node},
+                    )
+        self.assertEqual(calls, [])
 
 
 if __name__ == "__main__":

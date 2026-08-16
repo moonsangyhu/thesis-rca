@@ -102,6 +102,24 @@ class MainCampaignWiringTests(unittest.TestCase):
             call.args and call.args[0] == "account_identity_verified"
             for call in store.append_event.call_args_list
         ))
+        live_validator_factory = mocks[
+            "experiments.v2_3.injection_validator.LiveInjectionValidator"
+        ]
+        resource_loader = live_validator_factory.call_args.args[0]
+        resource_loader("node", "yms-proxmox-04", "")
+        self.assertEqual(
+            mocks["scripts.fault_inject.base.kubectl_get_json"].call_args.kwargs[
+                "timeout"
+            ],
+            5,
+        )
+        resource_loader("deployment", "frontend", "boutique")
+        self.assertEqual(
+            mocks["scripts.fault_inject.base.kubectl_get_json"].call_args.kwargs[
+                "timeout"
+            ],
+            60,
+        )
 
 
 if __name__ == "__main__":

@@ -49,6 +49,10 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   1로 고정해 총 요청량과 receipt의 14 GiB 의미를 일치시킨다. F4 trial 3은
   40–60초 bounded observation window를 2초 간격으로 확인하고 최초
   `Ready!=True`를 latch한다. 60초까지 관측되지 않으면 fail-closed한다. runner는
+  trial 3의 named-node 조회만 5초로 제한하고 timeout/not-observed poll을
+  event journal에 기록한다. Node kind·name·UID·유일한 Ready condition이
+  정확하지 않은 빈/오염 응답은 retry하지 않고 즉시 거부한다. receipt node도
+  shared `yms-proxmox-04` 정본과 일치해야 load/SSH를 시작한다.
   injection 시작부터 full collector 종료까지 monotonic elapsed가 175초 미만인지
   검증해 stressor deadline 안에서 evidence snapshot이 끝난 경우만 inference한다.
   이후 36회 모델 호출 중 자율 종료시켜 SSH exact recovery 여유를 확보한다.

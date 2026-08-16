@@ -422,3 +422,12 @@
 - **수정 내용**: F4-t3에만 40–60초, 2초 간격 bounded observation window를 적용한다. `F4DisruptionNotObserved`만 deadline까지 재시도하고 최초 NotReady를 latch하며, 다른 validator 오류는 즉시 중단한다. poll 시작과 validation 완료 elapsed를 event provenance에 포함하고 성공 완료도 60초를 넘으면 거부하며 기존 full-collector<175초·exact recovery gate를 유지한다.
 - **수정 파일**: `scripts/fault_inject/config.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — targeted/전체 회귀·독립 리뷰·clean commit-push 뒤 production window로 model-free full lifecycle probe 재실행 예정.
+
+### 48. F4-t3 node observation timeout·schema fail-close — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: production-window probe는 첫 node poll 뒤 다음 poll 시작 전에 60초 deadline을 소진해 안전 중단됐다. recovery 8회 GREEN, model/AIC/result write 0이었다. 코드 감사에서는 빈 node `{}`도 Ready=None이라 disruption으로 오인될 수 있었다.
+- **원인**: F4-t3 named-node read가 공용 kubectl 최대 60초 timeout을 사용했고 Node envelope/identity/Ready cardinality를 검증하지 않았다.
+- **수정 내용**: receipt node를 shared yms-proxmox-04 정본에 load/SSH 전에 결합하고 해당 named-node read만 5초로 제한한다. 실제 timeout과 not-observed만 40–60초 window 안에서 재시도한다. 매 poll의 attempt/start/completion/outcome을 retryable·fatal·invalid·verified 모두 반환/재시도 전에 fsync한다. kind=Node, exact name, nonempty UID, conditions list, unique Ready와 허용 status를 강제해 empty/malformed/wrong/duplicate 응답은 즉시 거부한다.
+- **수정 파일**: `scripts/fault_inject/base.py:1`, `scripts/fault_inject/config.py:1`, `scripts/fault_inject/injector.py:1`, `scripts/stabilize/recovery.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/injection_validator.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 회귀·독립 리뷰·clean commit-push 뒤 production-window model-free lifecycle probe 재실행 예정.

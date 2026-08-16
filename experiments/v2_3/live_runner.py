@@ -37,6 +37,10 @@ class F4DisruptionNotObserved(PilotError):
     """Retryable only inside the bounded F4-t3 observation window."""
 
 
+class F4ObservationTimeout(PilotError):
+    """A bounded named-node read timed out inside the F4-t3 window."""
+
+
 class FluxCASConflict(PilotError):
     """A retryable resourceVersion race with unchanged original Flux state."""
 
@@ -78,6 +82,7 @@ def validate_injection_in_observation_window(
     injection_started_monotonic: float,
     sleep_fn: Callable[[float], None],
     monotonic_fn: Callable[[], float],
+    observation_event_fn: Callable[[dict], None] | None = None,
 ) -> dict:
     """Validate once, except latch F4-t3's brief NotReady state in 40..60s."""
     wait_seconds = injection_result.get("wait_seconds")
@@ -96,7 +101,9 @@ def validate_injection_in_observation_window(
     if not math.isfinite(elapsed) or elapsed < 0 or elapsed > wait_seconds:
         raise PilotError("F4 trial 3 observation window elapsed before validation")
     sleep_fn(max(0.0, F4_T3_OBSERVATION_START_SECONDS - elapsed))
+    attempt = 0
     while True:
+        attempt += 1
         poll_started = monotonic_fn() - injection_started_monotonic
         if (
             not math.isfinite(poll_started)
@@ -108,25 +115,70 @@ def validate_injection_in_observation_window(
             verified = injection_validator.validate(
                 fault_id, trial, ground_truth, injection_result
             )
-            completed = monotonic_fn() - injection_started_monotonic
-            if (
-                not math.isfinite(completed)
-                or completed < 0
-                or completed > wait_seconds
-            ):
-                raise PilotError(
-                    "F4 trial 3 observation validation exceeded deadline"
-                )
-            return {
-                **verified,
-                "observation_poll_started_seconds": round(poll_started, 6),
-                "observation_latched_seconds": round(completed, 6),
-            }
-        except F4DisruptionNotObserved:
+        except (F4DisruptionNotObserved, F4ObservationTimeout) as exc:
             elapsed = monotonic_fn() - injection_started_monotonic
+            if observation_event_fn is not None:
+                observation_event_fn({
+                    "attempt": attempt,
+                    "poll_started_seconds": round(poll_started, 6),
+                    "completed_seconds": round(elapsed, 6),
+                    "outcome": (
+                        "not-observed"
+                        if isinstance(exc, F4DisruptionNotObserved)
+                        else "observation-timeout"
+                    ),
+                })
             if elapsed >= wait_seconds:
                 raise
             sleep_fn(min(F4_T3_OBSERVATION_POLL_SECONDS, wait_seconds - elapsed))
+            continue
+        except Exception:
+            completed = monotonic_fn() - injection_started_monotonic
+            if observation_event_fn is not None:
+                observation_event_fn({
+                    "attempt": attempt,
+                    "poll_started_seconds": round(poll_started, 6),
+                    "completed_seconds": round(completed, 6),
+                    "outcome": "fatal-validation-error",
+                })
+            raise
+        completed = monotonic_fn() - injection_started_monotonic
+        if (
+            not math.isfinite(completed)
+            or completed < 0
+            or completed > wait_seconds
+        ):
+            if observation_event_fn is not None:
+                observation_event_fn({
+                    "attempt": attempt,
+                    "poll_started_seconds": round(poll_started, 6),
+                    "completed_seconds": round(completed, 6),
+                    "outcome": "late-success-rejected",
+                })
+            raise PilotError(
+                "F4 trial 3 observation validation exceeded deadline"
+            )
+        if not isinstance(verified, dict) or verified.get("status") != "verified":
+            if observation_event_fn is not None:
+                observation_event_fn({
+                    "attempt": attempt,
+                    "poll_started_seconds": round(poll_started, 6),
+                    "completed_seconds": round(completed, 6),
+                    "outcome": "invalid-result",
+                })
+            raise PilotError("post-injection validator did not PASS")
+        if observation_event_fn is not None:
+            observation_event_fn({
+                "attempt": attempt,
+                "poll_started_seconds": round(poll_started, 6),
+                "completed_seconds": round(completed, 6),
+                "outcome": "verified",
+            })
+        return {
+            **verified,
+            "observation_poll_started_seconds": round(poll_started, 6),
+            "observation_latched_seconds": round(completed, 6),
+        }
 
 
 class FluxAppGuard:
@@ -991,6 +1043,15 @@ class PilotIncidentRunner:
                 injection_started_monotonic=injection_started_monotonic,
                 sleep_fn=self.sleep_fn,
                 monotonic_fn=self.monotonic_fn,
+                observation_event_fn=(
+                    lambda details: self.store.append_event(
+                        "injection_observation_poll",
+                        fault_id=fault_id,
+                        trial=trial,
+                        **details,
+                    )
+                    if hasattr(self.store, "append_event") else None
+                ),
             )
             if injection_validation.get("status") != "verified":
                 raise PilotError("post-injection validator did not PASS")

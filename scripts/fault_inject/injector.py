@@ -17,6 +17,7 @@ from .base import (
 from .config import (
     F4_T3_STRESS_BYTES,
     F4_T3_STRESS_LOG_FILE,
+    F4_T3_NODE_NAME,
     F4_T3_OBSERVATION_WAIT_SECONDS,
     F4_T3_STRESS_RECEIPT_FILE,
     F4_T3_STRESS_TIMEOUT_SECONDS,
@@ -116,7 +117,7 @@ class FaultInjector:
                 "interface": self.NETEM_IFACE,
             }
         if fault_id == "F4":
-            nodes = {1: "yms-proxmox-02", 2: "yms-proxmox-03", 3: "yms-proxmox-04", 4: "yms-proxmox-02", 5: "yms-proxmox-03"}
+            nodes = {1: "yms-proxmox-02", 2: "yms-proxmox-03", 3: F4_T3_NODE_NAME, 4: "yms-proxmox-02", 5: "yms-proxmox-03"}
             context = {
                 "fault_id": fault_id, "trial": trial,
                 "target_service": target, "node": nodes[trial],
@@ -302,7 +303,7 @@ class FaultInjector:
             1: ("yms-proxmox-02", "sudo systemctl stop kubelet"),
             2: ("yms-proxmox-03", "sudo iptables -A OUTPUT -p tcp --dport 6443 -j DROP"),
             3: (
-                "yms-proxmox-04",
+                F4_T3_NODE_NAME,
                 "sudo sh -c 'set -eu; umask 077; "
                 "command -v stress-ng >/dev/null 2>&1 || exit 127; "
                 "if pgrep '^stress-ng' >/dev/null; then exit 126; fi; "
