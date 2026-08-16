@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+import shlex
 import subprocess
 
 from .live_runner import (
@@ -403,6 +404,10 @@ class LiveInjectionValidator:
                 "\"$pre_available\" \"$allocation\" \"$post_available\" "
                 "\"$live_available\""
             )
+            # The nonce directory is deliberately root-owned mode 0700.  The
+            # validator must cross that boundary without weakening the file
+            # permissions that protect the crash-recovery receipt.
+            command = "sudo sh -c " + shlex.quote(command)
             probe = self.ssh_probe(str(node), command)
             markers = {
                 "nodefs_device": "__V23_DISK_LIVE_DEVICE__=",
