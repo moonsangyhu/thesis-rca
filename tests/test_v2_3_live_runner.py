@@ -873,14 +873,14 @@ class LiveRunnerTests(unittest.TestCase):
             )
         command = ssh.call_args.args[1]
         self.assertIn("command -v stress-ng", command)
-        self.assertIn("--vm 1 --vm-bytes 14G", command)
+        self.assertIn("--vm 1 --vm-bytes 15G", command)
         self.assertIn("--timeout 180s", command)
         self.assertIn("--vm-keep", command)
         self.assertIn("sync -f", command)
         self.assertIn("read rpid rstart rhash", command)
         self.assertEqual(result["stress_ng_pid"], 4321)
         self.assertEqual(result["stress_ng_start_ticks"], 8765)
-        self.assertEqual(result["stress_memory_bytes"], "14G")
+        self.assertEqual(result["stress_memory_bytes"], "15G")
         self.assertEqual(result["stress_vm_workers"], 1)
         self.assertEqual(result["stress_timeout_seconds"], 180)
 
@@ -940,7 +940,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertIs(result["stress_ng_preexisting"], False)
         self.assertEqual(result["stress_receipt_file"], sealed["stress_receipt_file"])
         self.assertEqual(result["stress_ng_pid"], 4321)
-        self.assertEqual(result["wait_seconds"], 60)
+        self.assertEqual(result["wait_seconds"], 120)
 
         for trial in (1, 2, 4, 5):
             with patch(
@@ -988,7 +988,7 @@ class LiveRunnerTests(unittest.TestCase):
             fault_id="F4",
             trial=3,
             ground_truth={"target_service": "worker03"},
-            injection_result={"wait_seconds": 60},
+            injection_result={"wait_seconds": 120},
             injection_validator=Validator(),
             injection_started_monotonic=0.0,
             sleep_fn=sleep,
@@ -1014,13 +1014,13 @@ class LiveRunnerTests(unittest.TestCase):
                 fault_id="F4",
                 trial=3,
                 ground_truth={"target_service": "worker03"},
-                injection_result={"wait_seconds": 60},
+                injection_result={"wait_seconds": 120},
                 injection_validator=validator,
                 injection_started_monotonic=0.0,
                 sleep_fn=sleep,
                 monotonic_fn=lambda: clock[0],
             )
-        self.assertEqual(clock[0], 60.0)
+        self.assertEqual(clock[0], 120.0)
 
     def test_f4_memory_observation_timeout_is_bounded_and_audited(self):
         clock = [40.0]
@@ -1037,7 +1037,7 @@ class LiveRunnerTests(unittest.TestCase):
         result = validate_injection_in_observation_window(
             fault_id="F4", trial=3,
             ground_truth={"target_service": "worker03"},
-            injection_result={"wait_seconds": 60},
+            injection_result={"wait_seconds": 120},
             injection_validator=SimpleNamespace(validate=validate),
             injection_started_monotonic=0.0,
             sleep_fn=lambda seconds: clock.__setitem__(0, clock[0] + seconds),
@@ -1061,7 +1061,7 @@ class LiveRunnerTests(unittest.TestCase):
             validate_injection_in_observation_window(
                 fault_id="F4", trial=3,
                 ground_truth={"target_service": "worker03"},
-                injection_result={"wait_seconds": 60},
+                injection_result={"wait_seconds": 120},
                 injection_validator=validator,
                 injection_started_monotonic=0.0,
                 sleep_fn=lambda seconds: clock.__setitem__(0, clock[0] + seconds),
@@ -1090,7 +1090,7 @@ class LiveRunnerTests(unittest.TestCase):
                 fault_id="F4",
                 trial=3,
                 ground_truth={"target_service": "worker03"},
-                injection_result={"wait_seconds": 60},
+                injection_result={"wait_seconds": 120},
                 injection_validator=validator,
                 injection_started_monotonic=0.0,
                 sleep_fn=sleep,
@@ -1108,7 +1108,7 @@ class LiveRunnerTests(unittest.TestCase):
             validate_injection_in_observation_window(
                 fault_id="F4", trial=3,
                 ground_truth={"target_service": "worker03"},
-                injection_result={"wait_seconds": 60},
+                injection_result={"wait_seconds": 120},
                 injection_validator=SimpleNamespace(
                     validate=lambda *_: {"status": "bad"}
                 ),
@@ -1121,7 +1121,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(events[0]["outcome"], "invalid-result")
 
     def test_f4_memory_observation_window_rejects_late_start_and_success(self):
-        for initial_elapsed in (61.0, 70.0, float("nan"), -1.0):
+        for initial_elapsed in (121.0, 130.0, float("nan"), -1.0):
             with self.subTest(initial_elapsed=initial_elapsed):
                 validator = SimpleNamespace(
                     validate=lambda *_: {"status": "verified"}
@@ -1131,18 +1131,18 @@ class LiveRunnerTests(unittest.TestCase):
                         fault_id="F4",
                         trial=3,
                         ground_truth={"target_service": "worker03"},
-                        injection_result={"wait_seconds": 60},
+                        injection_result={"wait_seconds": 120},
                         injection_validator=validator,
                         injection_started_monotonic=0.0,
                         sleep_fn=lambda _: None,
                         monotonic_fn=lambda value=initial_elapsed: value,
                     )
 
-        clock = [59.0]
+        clock = [119.0]
 
         class SlowSuccessfulValidator:
             def validate(self, *_args):
-                clock[0] = 65.0
+                clock[0] = 125.0
                 return {"status": "verified"}
 
         with self.assertRaisesRegex(PilotError, "validation exceeded"):
@@ -1150,7 +1150,7 @@ class LiveRunnerTests(unittest.TestCase):
                 fault_id="F4",
                 trial=3,
                 ground_truth={"target_service": "worker03"},
-                injection_result={"wait_seconds": 60},
+                injection_result={"wait_seconds": 120},
                 injection_validator=SlowSuccessfulValidator(),
                 injection_started_monotonic=0.0,
                 sleep_fn=lambda _: None,
@@ -1180,7 +1180,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(result["attempts"], 2)
         self.assertIn('"$pid" != "4321"', ssh.call_args.args[1])
         self.assertIn("--timeout 180s", ssh.call_args.args[1])
-        self.assertIn("--vm 1 --vm-bytes 14G", ssh.call_args.args[1])
+        self.assertIn("--vm 1 --vm-bytes 15G", ssh.call_args.args[1])
         self.assertNotIn("pkill -9 stress-ng", ssh.call_args.args[1])
 
     def test_f4_memory_recovery_rejects_malformed_worker_receipt(self):

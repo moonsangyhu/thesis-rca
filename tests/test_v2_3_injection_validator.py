@@ -86,9 +86,9 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+            "stress_memory_bytes": "15G", "stress_vm_workers": 1,
             "stress_timeout_seconds": 180,
-            "wait_seconds": 60,
+            "wait_seconds": 120,
         }
         self.assertTrue(validator.validate(
             "F4", 3, {"target_service": "worker03"}, receipt
@@ -103,9 +103,9 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+            "stress_memory_bytes": "15G", "stress_vm_workers": 1,
             "stress_timeout_seconds": 180,
-            "wait_seconds": 60,
+            "wait_seconds": 120,
         }
         ready_under_pressure = node_state("True", "True")
         validator = LiveInjectionValidator(
@@ -120,7 +120,7 @@ class InjectionValidatorTests(unittest.TestCase):
             lambda *_: not_ready,
             lambda *_: "__V23_STRESS_NG_IDENTITY__=live",
         )
-        for bad_wait in (None, 0, 180, True, "60", 60.0):
+        for bad_wait in (None, 0, 60, 180, True, "120", 120.0):
             with self.subTest(wait=bad_wait):
                 mutated = dict(receipt)
                 if bad_wait is None:
@@ -162,9 +162,9 @@ class InjectionValidatorTests(unittest.TestCase):
                 "action": "node_disruption", "node": "yms-proxmox-04",
                 "stress_ng_pid": 999999, "stress_ng_start_ticks": 1,
                 "stress_ng_cmdline_sha256": "b" * 64,
-                "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+                "stress_memory_bytes": "15G", "stress_vm_workers": 1,
                 "stress_timeout_seconds": 180,
-                "wait_seconds": 60,
+                "wait_seconds": 120,
             })
 
     def test_f4_rejects_empty_wrong_or_ambiguous_node_observation(self):
@@ -173,8 +173,8 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
-            "stress_timeout_seconds": 180, "wait_seconds": 60,
+            "stress_memory_bytes": "15G", "stress_vm_workers": 1,
+            "stress_timeout_seconds": 180, "wait_seconds": 120,
         }
         malformed = [
             {},
@@ -217,8 +217,8 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
-            "stress_timeout_seconds": 180, "wait_seconds": 60,
+            "stress_memory_bytes": "15G", "stress_vm_workers": 1,
+            "stress_timeout_seconds": 180, "wait_seconds": 120,
         }
         with self.assertRaises(F4ObservationTimeout):
             validator.validate("F4", 3, {"target_service": "worker03"}, receipt)
@@ -234,8 +234,8 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
-            "stress_timeout_seconds": 180, "wait_seconds": 60,
+            "stress_memory_bytes": "15G", "stress_vm_workers": 1,
+            "stress_timeout_seconds": 180, "wait_seconds": 120,
         }
         for bad_node in (None, "", "wrong-node", 123):
             with self.subTest(node=bad_node):
