@@ -25,6 +25,10 @@ class PilotError(RuntimeError):
     pass
 
 
+class FluxCASConflict(PilotError):
+    """A retryable resourceVersion race with unchanged original Flux state."""
+
+
 class RecoveryFailure(PilotError):
     pass
 
@@ -51,6 +55,13 @@ class FluxAppGuard:
             str(metadata.get("uid") or ""),
         )
 
+    @staticmethod
+    def _spec_sha256(spec: dict) -> str:
+        encoded = json.dumps(
+            spec, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
+
     def prepare_recovery_context(self) -> dict:
         resource = self.resource_loader()
         namespace, name, uid = self._identity(resource)
@@ -76,6 +87,7 @@ class FluxAppGuard:
             "flux_name": name,
             "flux_uid": uid,
             "flux_resource_version": resource_version,
+            "flux_original_spec_sha256": self._spec_sha256(spec),
             "flux_original_suspend_present": present,
             "flux_original_suspend": original,
         }
@@ -83,7 +95,8 @@ class FluxAppGuard:
     def _validate_receipt(self, context: dict) -> None:
         required = {
             "flux_guard_schema", "flux_namespace", "flux_name", "flux_uid",
-            "flux_resource_version", "flux_original_suspend_present",
+            "flux_resource_version", "flux_original_spec_sha256",
+            "flux_original_suspend_present",
             "flux_original_suspend",
         }
         if set(context) != required:
@@ -95,6 +108,12 @@ class FluxAppGuard:
             or not context["flux_uid"]
             or not isinstance(context["flux_resource_version"], str)
             or not context["flux_resource_version"]
+            or not isinstance(context["flux_original_spec_sha256"], str)
+            or len(context["flux_original_spec_sha256"]) != 64
+            or any(
+                char not in "0123456789abcdef"
+                for char in context["flux_original_spec_sha256"]
+            )
             or not isinstance(context["flux_original_suspend_present"], bool)
             or context["flux_original_suspend"] is not False
         ):
@@ -109,13 +128,21 @@ class FluxAppGuard:
             raise PilotError("Flux identity changed before suspension")
         current_spec = current.get("spec", {})
         current_rv = str(current.get("metadata", {}).get("resourceVersion") or "")
-        if (
-            current_rv != context["flux_resource_version"]
-            or ("suspend" in current_spec)
-            != context["flux_original_suspend_present"]
-            or current_spec.get("suspend", False)
-            != context["flux_original_suspend"]
-        ):
+        original_unchanged = (
+            isinstance(current_spec, dict)
+            and self._spec_sha256(current_spec)
+            == context["flux_original_spec_sha256"]
+            and
+            ("suspend" in current_spec)
+            == context["flux_original_suspend_present"]
+            and current_spec.get("suspend", False)
+            == context["flux_original_suspend"]
+        )
+        if current_rv != context["flux_resource_version"] and original_unchanged:
+            raise FluxCASConflict(
+                "Flux resourceVersion advanced before suspension CAS"
+            )
+        if not original_unchanged:
             raise PilotError("Flux object changed after recovery receipt was sealed")
         patched = self.suspend_patcher(True, current_rv)
         patched_rv = str(patched.get("metadata", {}).get("resourceVersion") or "")
@@ -124,6 +151,27 @@ class FluxAppGuard:
             or patched.get("spec", {}).get("suspend") is not True
             or not patched_rv or patched_rv == current_rv
         ):
+            after = self.resource_loader()
+            after_spec = after.get("spec", {}) if isinstance(after, dict) else {}
+            after_rv = (
+                str(after.get("metadata", {}).get("resourceVersion") or "")
+                if isinstance(after, dict) else ""
+            )
+            if (
+                self._identity(after) == self._identity(current)
+                and after_rv
+                and after_rv != current_rv
+                and isinstance(after_spec, dict)
+                and self._spec_sha256(after_spec)
+                == context["flux_original_spec_sha256"]
+                and ("suspend" in after_spec)
+                == context["flux_original_suspend_present"]
+                and after_spec.get("suspend", False)
+                == context["flux_original_suspend"]
+            ):
+                raise FluxCASConflict(
+                    "Flux suspension CAS lost an unchanged-state resourceVersion race"
+                )
             raise PilotError("Flux suspension CAS did not succeed")
         suspended = self.resource_loader()
         if (
@@ -210,6 +258,8 @@ class FluxAppGuard:
 class FluxHierarchyGuard:
     """Suspend the self-managing Flux root before its child app object."""
 
+    MAX_APP_CAS_ATTEMPTS = 3
+
     def __init__(
         self,
         root_guard: FluxAppGuard,
@@ -269,14 +319,28 @@ class FluxHierarchyGuard:
         self.root_guard.suspend(context["root"])
         self.settle((self.root_guard, context["root"]))
 
-        refreshed_app = self.app_guard.prepare_recovery_context()
-        if not self._same_original_object(context["app"], refreshed_app):
-            raise PilotError("Flux app identity/original state drifted during root settle")
-        refreshed_context = json.loads(json.dumps(context, sort_keys=True))
-        refreshed_context["app"] = json.loads(json.dumps(refreshed_app, sort_keys=True))
-        receipt_observer(json.loads(json.dumps(refreshed_context, sort_keys=True)))
-
-        self.app_guard.suspend(refreshed_context["app"])
+        refreshed_context: dict | None = None
+        for attempt in range(self.MAX_APP_CAS_ATTEMPTS):
+            refreshed_app = self.app_guard.prepare_recovery_context()
+            if not self._same_original_object(context["app"], refreshed_app):
+                raise PilotError(
+                    "Flux app identity/original state drifted during root settle"
+                )
+            refreshed_context = json.loads(json.dumps(context, sort_keys=True))
+            refreshed_context["app"] = json.loads(
+                json.dumps(refreshed_app, sort_keys=True)
+            )
+            receipt_observer(json.loads(json.dumps(refreshed_context, sort_keys=True)))
+            try:
+                self.app_guard.suspend(refreshed_context["app"])
+                break
+            except FluxCASConflict:
+                if attempt + 1 == self.MAX_APP_CAS_ATTEMPTS:
+                    raise PilotError(
+                        "Flux app suspension CAS retry limit was exhausted"
+                    )
+        if refreshed_context is None:  # pragma: no cover - constant is positive
+            raise PilotError("Flux app suspension did not produce a recovery receipt")
         members = (
             (self.root_guard, refreshed_context["root"]),
             (self.app_guard, refreshed_context["app"]),
@@ -767,19 +831,20 @@ class PilotIncidentRunner:
             refreshed_flux: str | None = None
 
             def seal_refreshed_flux(receipt: dict) -> None:
-                nonlocal refreshed_flux
+                nonlocal refreshed_flux, flux_context
                 candidate = json.dumps(
                     receipt, ensure_ascii=False, sort_keys=True,
                     separators=(",", ":"),
                 )
-                if refreshed_flux is not None:
-                    raise PilotError("Flux app recovery receipt was refreshed twice")
                 if hasattr(self.store, "append_event"):
                     self.store.append_event(
                         "flux_app_recovery_receipt_refreshed",
                         recovery_context=json.loads(candidate),
                     )
                 refreshed_flux = candidate
+                # Recovery must follow the newest receipt as soon as its
+                # journal append is durable, even if a later CAS attempt fails.
+                flux_context = json.loads(candidate)
 
             suspend_with_observer = getattr(
                 self.flux_guard, "suspend_with_receipt_observer", None

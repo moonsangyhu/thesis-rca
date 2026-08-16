@@ -377,3 +377,12 @@
 - **수정 내용**: 공식 로컬 SDK schema와 durable 최소 진단 2회(합계 0.0512 AIC; 두 번째 auth failure known 0.0)로 persisted start의 실제 event/data key와 안전 필드 값을 확인했다. start UUID/timezone/root, exact data keys, session/model/reasoning, remote=false, call별 actual temp cwd, Copilot 1.0.77, producer, null tier, 30 AIC limit, event schema version을 binding과 교차검증하고 canonical order를 `session.start→binding→...→zero shutdown`으로 확장한다. 각 필드 drift는 적대 테스트로 거부한다.
 - **수정 파일**: `experiments/shared/copilot_sdk.py:1`, `tests/test_copilot_sdk.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — targeted 검증·독립 재리뷰·전체 V2.3 회귀·dry-run 후 clean commit-push 및 fresh campaign 재실행 예정
+
+### 43. Flux app CAS 경쟁의 bounded receipt 재봉인 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary13은 F1 t1의 root Flux suspend 뒤 app suspend merge-patch가 resourceVersion conflict로 거부돼 inference·fault injection·AIC·result/ledger 0으로 중단됐다. 자동 app already-original/root CAS restore 후 recovery GREEN이었다.
+- **원인**: root settle 뒤 app receipt를 새로 봉인했지만, 그 refresh와 patch 사이에도 Flux status writer가 resourceVersion을 갱신할 수 있었다. 기존 guard는 UID와 original suspend 상태가 그대로인 transient CAS race도 한 번만 시도했다.
+- **수정 내용**: app identity·original suspend field와 canonical 전체 spec SHA-256이 동일하고 resourceVersion만 전진한 경우에만 새 full hierarchy receipt를 fsync하고 최대 3회 재시도한다. normal runner는 각 fsync 직후 recovery context를 최신 receipt로 교체하고 emergency restore도 initial binding·엄격 증가 sequence를 확인한 마지막 receipt를 사용한다. 상한 초과·중복/역행 version·unrelated spec drift는 fail-closed한다.
+- **수정 파일**: `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/flux_restore.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_flux_restore.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — Flux/live-runner targeted 58개와 전체 V2.3 회귀·dry-run·독립 리뷰 후 clean commit-push 및 fresh campaign 재실행 예정

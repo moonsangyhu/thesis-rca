@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 24건
-- 심각(실험 무효화): 20건
+- 총 이슈: 25건
+- 심각(실험 무효화): 21건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -321,3 +321,14 @@
 - **근본 원인**: SDK의 `useLoggedInUser=true` 세션 생성이 앞선 정상 호출 뒤 일시적으로 인증 정보를 얻지 못했다. 사용자 계정 전체의 지속 실패는 같은 incident의 직전 성공 3건과 모순되며, 모델 추론·도구 실행·사용량 발생 전 실패라는 점은 shutdown metrics로 직접 확인된다.
 - **수정 내용**: exact persisted `session.start`를 binding 앞에 포함해 UUID/session ID, model/reasoning, remote=false, temp cwd context, 30 AIC session limit, timezone start와 schema version을 binding에 교차결합한다. 이어지는 exact empty-mode request binding, byte-exact 인증 오류 2종, routine shutdown의 0 AIC·0 premium·0 API duration·empty model metrics·0 system/conversation/tool token과 model/user/tool event 부재가 모두 맞을 때만 known-zero receipt로 분류한다. lifecycle 순서, required singleton, optional event 최대 1개, 각 optional event의 UUID/timezone/ephemeral/empty-data/parent linkage도 검증한다. 이 failure code만 fresh SDK session으로 최대 1회 재시도한다. 두 번째 동일 실패와 모든 drift는 즉시 campaign을 중단한다.
 - **현재 영향**: persisted start prefix의 실제 type/key shape와 안전 필드 값은 K8s와 무관한 최소 진단 2회에서 durable charged receipt 2건·합계 0.0512 AIC로 확인했다. 두 번째 진단은 같은 auth failure와 zero-usage shutdown을 재현해 patched receipt가 known 0.0 AIC로 분류됨을 확인했다. SDK/live-caller targeted 검증과 독립 리뷰·전체 V2.3 회귀·dry-run·clean commit-push 뒤 fresh campaign으로 처음부터 재실행한다.
+
+### [ISS-025] Flux app suspend의 post-refresh resourceVersion 경쟁
+
+- **카테고리**: infra / recovery guard
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary13`은 F1 trial 1의 Flux root suspend 뒤 app suspend CAS에서 중단됐다. result/raw/attempt/call/charged ledger는 모두 0이며 model inference·AIC 사용·fault injection은 없었다.
+- **발생 빈도**: 본실험 1회. 앞선 primary1에서 root settle 중 stale app receipt가 발생한 사례와 달리, 이번에는 root settle 뒤 app receipt를 다시 봉인한 후 실제 patch 직전 resourceVersion이 한 번 더 전진했다.
+- **관찰한 사실**: Kubernetes가 `Operation cannot be fulfilled ... object has been modified`를 반환했고 runner는 `Flux suspension CAS did not succeed`로 fail-closed했다. event는 `flux_recovery_receipt_sealed→flux_app_recovery_receipt_refreshed→incident_failed→flux_restored→recovery_green`이며 app은 이미 원래 상태, root는 CAS로 원래 absent suspend field에 복구됐다. 종료 후 6/6 node Ready·pressure false, Boutique 12/12, Flux 5/5, Prometheus/Loki GREEN을 확인했다.
+- **근본 원인**: Flux status writer가 post-root refresh와 app merge-patch 사이의 짧은 창에서 app Kustomization의 resourceVersion을 갱신했다. UID와 원래 suspend field shape/value는 바뀌지 않았지만 단일 CAS 시도만 허용해 안전한 transient race도 campaign 전체 실패가 됐다.
+- **수정 내용**: UID·original suspend shape/value뿐 아니라 전체 pre-mutation spec의 canonical SHA-256이 동일하고 resourceVersion만 전진한 경우에 한해 app pre-state를 다시 읽어 event journal에 fsync하고 최대 3회 CAS를 재시도한다. 각 시도의 full hierarchy receipt를 독립 봉인하며 정상 runner의 recovery context도 fsync 직후 마지막 receipt로 교체하고 SIGKILL emergency restore 역시 검증된 마지막 receipt를 사용한다. unrelated spec 변경, mutation 성공 여부가 불명확한 suspend=true, malformed/비결합 receipt, 중복·역행 resourceVersion, 3회 초과 경쟁은 계속 fail-closed한다.
+- **현재 영향**: 실제 empty patch response와 resourceVersion 전진 재현, unrelated interval drift 거부, 2회 경쟁 뒤 성공, 연속 경쟁 상한, normal failure recovery의 최신 receipt 결합, 다중 durable receipt의 마지막 정본 복구와 중복·역행·상한 초과 거부를 unit으로 검증한다. 전체 회귀·dry-run·독립 리뷰·clean commit-push 뒤 fresh campaign으로 처음부터 재실행한다.

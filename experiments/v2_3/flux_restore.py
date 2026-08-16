@@ -121,24 +121,40 @@ def _effective_flux_receipt(events: list[dict]) -> dict:
         event for event in events
         if event.get("event") == "flux_app_recovery_receipt_refreshed"
     ]
-    if len(refreshed) > 1:
-        raise PilotError("active incident contains duplicate refreshed Flux receipts")
+    if len(refreshed) > FluxHierarchyGuard.MAX_APP_CAS_ATTEMPTS:
+        raise PilotError("active incident exceeds the Flux CAS receipt retry limit")
     if not refreshed:
         return initial
-    receipt = refreshed[0].get("recovery_context")
-    if not isinstance(receipt, dict):
-        raise PilotError("refreshed Flux recovery receipt is malformed")
-    if (
-        receipt.get("flux_hierarchy_schema")
-        != initial.get("flux_hierarchy_schema")
-        or receipt.get("root") != initial.get("root")
-        or not isinstance(receipt.get("app"), dict)
-        or not FluxHierarchyGuard._same_original_object(
-            initial.get("app", {}), receipt["app"]
-        )
+    receipts: list[dict] = []
+    for event in refreshed:
+        receipt = event.get("recovery_context")
+        if not isinstance(receipt, dict):
+            raise PilotError("refreshed Flux recovery receipt is malformed")
+        if (
+            receipt.get("flux_hierarchy_schema")
+            != initial.get("flux_hierarchy_schema")
+            or receipt.get("root") != initial.get("root")
+            or not isinstance(receipt.get("app"), dict)
+            or not FluxHierarchyGuard._same_original_object(
+                initial.get("app", {}), receipt["app"]
+            )
+        ):
+            raise PilotError(
+                "refreshed Flux recovery receipt is not bound to initial receipt"
+            )
+        receipts.append(receipt)
+    versions = [receipt["app"].get("flux_resource_version") for receipt in receipts]
+    if any(
+        not isinstance(version, str) or not version.isdecimal()
+        for version in versions
     ):
-        raise PilotError("refreshed Flux recovery receipt is not bound to initial receipt")
-    return receipt
+        raise PilotError("refreshed Flux resourceVersion sequence is invalid")
+    if any(
+        int(current) <= int(previous)
+        for previous, current in zip(versions, versions[1:])
+    ):
+        raise PilotError("refreshed Flux resourceVersion did not advance")
+    return receipts[-1]
 
 
 def _active_incident_events(events: list[dict]) -> list[dict]:
