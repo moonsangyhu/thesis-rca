@@ -358,10 +358,17 @@ class InjectionValidatorTests(unittest.TestCase):
             "__V23_NODEFS_POST_AVAILABLE__=9000\n"
             "__V23_NODEFS_LIVE_AVAILABLE__=9000\n"
         )
-        validator = LiveInjectionValidator(lambda *_: observed, lambda *_: live)
+        disk_probe_commands = []
+        validator = LiveInjectionValidator(
+            lambda *_: observed,
+            lambda _node, command: disk_probe_commands.append(command) or live,
+        )
         verified = validator.validate(
             "F4", 4, {"target_service": "worker01"}, receipt
         )
+        self.assertEqual(len(disk_probe_commands), 1)
+        self.assertTrue(disk_probe_commands[0].startswith("sudo sh -c "))
+        self.assertIn("set -eu", disk_probe_commands[0])
         self.assertIs(verified["node_disrupted"], False)
         self.assertIs(verified["disk_pressure_observed"], False)
         self.assertIs(verified["nodefs_injection_threshold_verified"], True)

@@ -101,6 +101,9 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   post available은 capacity의 8% 이상 10% 미만이어야 하며 file device·inode·size·
   allocated blocks와 pre/post filesystem 값을 atomic post receipt에 봉인한다.
   validator는 Node condition과 별도로 같은 receipt/file/filesystem을 다시 읽는다.
+  nonce directory는 root-owned mode-0700이므로 이 read-only live probe에만 전체
+  `set -eu` command를 `shlex.quote`한 `sudo sh -c`를 사용하며, 다른 validator로
+  privilege를 확장하지 않는다.
 - `DiskPressure=True` 또는 `Ready!=True`이면 실제 node disruption으로 기록한다.
   atomic post receipt가 injection 당시 8–10%와 exact allocation을 입증하고 live
   file identity·8% safety floor가 유지되면, GC로 available이 10% 위로 반등해도

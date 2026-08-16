@@ -248,6 +248,8 @@ Terra의 effect size·intra-fault correlation 사전값이 없으므로 V2.2에�
   10% 미만이어야 한다. file device·work/file inode·size·allocated blocks와
   nodefs capacity·pre/post available을 atomic post receipt와 live validator에
   교차결합하며 allocated blocks가 requested bytes를 실제로 뒷받침해야 한다.
+  root-owned mode-0700 nonce directory의 live 검증에만 quoted `sudo sh -c` read-only
+  probe를 사용하고, 모든 exact identity·filesystem test를 marker 전에 fail-close한다.
   recovery는 파일 부재만으로 성공하지 않고 동일 nodefs의 available이 10% 이상
   회복됐는지 확인하고 current Node가 아직 NotReady/DiskPressure일 때만 kubelet을
   정확히 1회 재시작한다. active marker 뒤에는 재시작을 반복하지 않고 2초 간격

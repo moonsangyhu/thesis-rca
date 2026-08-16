@@ -467,3 +467,12 @@
 - **수정 내용**: exact Node UID·Ready=True·DiskPressure=False baseline과 injection post threshold/allocation을 durable하게 봉인하고, 같은 UID의 live file identity·8% safety floor가 유지될 때 새 DiskPressure/NotReady condition을 직접 endpoint로 우선한다. precursor branch만 live `<10%`를 요구한다. recovery는 exact cleanup·available `>=10%` 뒤 비GREEN condition에서 kubelet을 invocation당 1회만 restart하고, active marker 뒤 2초 간격 최대 15회 same-UID exact GREEN을 poll한다. stale condition으로 재시작을 반복하지 않으며 영구 stale은 RuntimeError로 fail-close한다.
 - **수정 파일**: `scripts/fault_inject/injector.py:1`, `experiments/v2_3/injection_validator.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/lab-environment.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 코드 검증 완료 — targeted 67 PASS, py_compile·diff-check PASS, 독립 reviewer APPROVE. fresh campaign 전 수정 정본의 model-free F4-t4 full lifecycle probe가 남아 있다.
+
+### 53. F4-t4 root-owned live receipt 검증 경계 — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: clean `913bfc5` model-free probe는 injection post available 4,460,826,624/49,564,815,360 bytes와 `DiskPressure=True`를 만들었지만 t180 live probe marker가 없어 inference 전에 `PilotError`로 중단됐다. exact recovery는 cleanup1·kubelet restart1·condition poll2로 health GREEN이었고 model/AIC/result는 0이었다.
+- **원인**: root-owned mode-0700 nonce directory와 receipt를 일반 SSH 사용자 권한의 validator가 traverse하려 했다. 원격 test가 marker 전에 실패해 malformed로 fail-closed됐다.
+- **수정 내용**: F4-t4 read-only live validator에만 전체 inner command를 `shlex.quote`한 `sudo sh -c`를 적용한다. wrapper 내부 `set -eu`와 receipt/file/device/inode/size/blocks/capacity/available exact test는 모두 marker 전에 유지하고 다른 fault validator에는 sudo를 확장하지 않는다. pressure로 Evicted된 monitoring DaemonSet pod 2개만 정확히 제거하고 replacement 및 comprehensive cluster GREEN을 확인했다.
+- **수정 파일**: `experiments/v2_3/injection_validator.py:1`, `tests/test_v2_3_injection_validator.py:1`, `docs/lab-environment.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 코드 검증 완료 — targeted 67 PASS, py_compile·diff-check PASS, 독립 reviewer APPROVE. clean commit 뒤 model-free F4-t4 full lifecycle probe 재실행이 남아 있다.

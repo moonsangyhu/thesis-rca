@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 31건
-- 심각(실험 무효화): 27건
+- 총 이슈: 32건
+- 심각(실험 무효화): 28건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -398,3 +398,14 @@
 - **근본 원인**: DiskPressure는 threshold signal의 순간값과 condition lifecycle이 동일하지 않다. 처치가 GC를 유발하면 live available은 threshold 위로 반등해도 condition은 관측 가능한 fault endpoint로 남을 수 있다. 반대로 cleanup만으로는 kubelet의 pressure transition/taint가 generic health timeout 안에 해제되지 않았다.
 - **수정 내용**: read-only preflight는 exact Node UID·Ready=True·DiskPressure=False baseline을 local recovery receipt에 함께 봉인한다. validator는 node-local post receipt가 injection 당시 8–10% threshold와 exact file allocation을 입증하고 같은 UID의 live file identity·safety floor가 유지되는 조건에서, 180초의 새 `DiskPressure=True` 또는 `Ready!=True`를 직접 treatment endpoint로 우선한다. ongoing `<10%`는 condition 미발현 precursor branch에서만 필수로 한다. injection post available·allocation·nonce/inode identity와 live threshold는 validation event에 분리해 영속화한다. recovery는 exact cleanup과 `available>=10%`를 확인한 뒤 current Node가 여전히 NotReady/DiskPressure일 때만 kubelet을 invocation당 1회 재시작하고 active marker 뒤 2초 간격 최대 15회 same-UID exact GREEN condition만 poll한다. stale condition으로 restart를 반복하지 않으며 poll 소진 시 fail-close한다. pre-mutation crash에서 이미 GREEN이면 restart하지 않는다. fresh campaign 전 동일 model-free full lifecycle probe와 comprehensive GREEN을 다시 요구한다.
 - **현재 영향**: 첫 probe는 invalid calibration으로만 보존한다. cluster는 수동 `$lab-restore` 후 GREEN이며 결과 데이터는 생성·수정되지 않았다.
+
+### [ISS-032] F4-t4 live validator가 root-owned receipt를 읽지 못함
+
+- **카테고리**: injection / validation boundary
+- **심각도**: critical (P0)
+- **영향**: clean commit `913bfc5` model-free probe는 의도한 DiskPressure를 만들었지만 inference 전 live validation에서 중단됐다. fresh main campaign은 시작하지 않았다.
+- **발생 빈도**: model-free lifecycle probe 1회.
+- **관찰한 사실**: nodefs capacity 49,564,815,360 bytes 중 injection post available 4,460,826,624 bytes(약 9.0%)와 33,394,947,482-byte allocated file을 exact receipt에 봉인했고, 관측 중 같은 UID 노드는 `Ready=True`, `DiskPressure=True`였다. 180초 validator는 `PilotError: F4 diskfill live probe is malformed`로 중단했다. recovery는 exact cleanup 1회, kubelet restart 1회, condition poll 2회 뒤 health gate GREEN이었다. model/AIC/result는 0이며 artifact는 `/tmp/v23-f4t4-probe-20260817T0108Z/probe_events.jsonl`에 보존했다. pressure로 Evicted된 monitoring DaemonSet pod 2개만 정확히 삭제했고 replacement Ready, nodes 6/6·DiskPressure false·Boutique 12/12·Flux 5/5·Prometheus/Loki Ready·Failed pod 0을 확인했다.
+- **근본 원인**: crash receipt 보호를 위해 nonce work directory를 root-owned mode-0700으로 생성했지만, validator의 live receipt/file probe만 일반 SSH 사용자 `debian` 권한으로 실행했다. 원격 command는 directory를 traverse하지 못해 marker 전에 종료됐고, marker 부재가 malformed로 fail-closed됐다.
+- **수정 내용**: F4-t4 read-only live probe에만 전체 inner command를 `shlex.quote`한 `sudo sh -c` 경계를 적용한다. root wrapper 내부의 `set -eu` 뒤 receipt schema·nonce·device·work/file inode·size·blocks·capacity·pre/post/live available 검사를 모두 marker 전에 유지한다. 다른 fault validator에는 sudo를 확장하지 않는다.
+- **현재 영향**: targeted 67 PASS, py_compile·diff-check와 독립 reviewer APPROVE를 확인했다. 수정 정본을 clean commit한 뒤 동일 model-free full lifecycle probe와 comprehensive GREEN을 다시 통과하기 전에는 fresh main campaign을 시작하지 않는다.
