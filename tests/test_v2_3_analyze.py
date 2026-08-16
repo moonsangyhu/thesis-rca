@@ -31,6 +31,15 @@ class AnalyzeTests(unittest.TestCase):
         self.assertAlmostEqual(result["exact_fault_cluster_sign_flip_p"], 2 / 4096)
         self.assertTrue(result["automated_strong_support_prerequisites"])
         self.assertEqual(result["final_hypothesis_status"], "pending_human_review")
+        sensitivity = result["treatment_integrity_sensitivity"]
+        self.assertEqual(sensitivity["exclude_f4_t3"]["incidents"], 59)
+        self.assertEqual(sensitivity["exclude_f4_t4"]["incidents"], 59)
+        self.assertEqual(sensitivity["exclude_f4_t3_and_t4"]["incidents"], 58)
+        self.assertEqual(
+            sensitivity["exclude_f4_t4"]["excluded_incidents"],
+            [{"fault_id": "F4", "trial": 4}],
+        )
+        self.assertEqual(sensitivity["exclude_f4_t4"]["primary_delta"], 1.0)
 
     def test_duplicate_missing_and_campaign_mixing_fail_closed(self):
         rows = complete_rows()

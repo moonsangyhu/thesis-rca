@@ -6,6 +6,7 @@ Node-level faults (F4) use SSH.
 """
 import csv
 import logging
+import secrets
 import time
 from pathlib import Path
 from typing import Optional
@@ -23,6 +24,13 @@ from .config import (
     F4_T3_STRESS_TIMEOUT_SECONDS,
     F4_T3_STRESS_VM_WORKERS,
     F4_T3_STRESS_VERSION,
+    F4_T4_ACCOUNTING_TOLERANCE_BYTES,
+    F4_T4_NODEFS_PATH,
+    F4_T4_NODE_NAME,
+    F4_T4_PARENT_DIR,
+    F4_T4_SAFETY_FLOOR_PERCENT,
+    F4_T4_TARGET_AVAILABLE_PERCENT,
+    F4_T4_WORK_PREFIX,
     INJECTION_WAIT,
     NAMESPACE,
 )
@@ -31,6 +39,14 @@ logger = logging.getLogger(__name__)
 
 # Ground truth CSV path
 GT_CSV = Path(__file__).parent.parent.parent / "results" / "ground_truth.csv"
+
+
+def _single_marker(output: str, marker: str) -> str:
+    values = [
+        line.removeprefix(marker) for line in output.splitlines()
+        if line.startswith(marker)
+    ]
+    return values[0] if len(values) == 1 else ""
 
 
 def load_trial(fault_id: str, trial: int) -> dict:
@@ -117,7 +133,7 @@ class FaultInjector:
                 "interface": self.NETEM_IFACE,
             }
         if fault_id == "F4":
-            nodes = {1: "yms-proxmox-02", 2: "yms-proxmox-03", 3: F4_T3_NODE_NAME, 4: "yms-proxmox-02", 5: "yms-proxmox-03"}
+            nodes = {1: "yms-proxmox-02", 2: "yms-proxmox-03", 3: F4_T3_NODE_NAME, 4: F4_T4_NODE_NAME, 5: "yms-proxmox-03"}
             context = {
                 "fault_id": fault_id, "trial": trial,
                 "target_service": target, "node": nodes[trial],
@@ -144,6 +160,59 @@ class FaultInjector:
                     "stress_ng_preexisting": False,
                     "stress_receipt_file": F4_T3_STRESS_RECEIPT_FILE,
                     "stress_vm_workers": F4_T3_STRESS_VM_WORKERS,
+                })
+            elif trial == 4:
+                nonce = secrets.token_hex(16)
+                work_dir = f"{F4_T4_WORK_PREFIX}{nonce}"
+                diskfill_file = f"{work_dir}/diskfill"
+                receipt_file = f"{work_dir}/receipt"
+                output = ssh_node(
+                    nodes[trial],
+                    "sudo sh -c 'set -eu; "
+                    f"nodefs={F4_T4_NODEFS_PATH}; parent={F4_T4_PARENT_DIR}; "
+                    f"work={work_dir}; "
+                    "test ! -e \"$work\"; "
+                    "nodefs_device=$(stat -c %d \"$nodefs\"); "
+                    "parent_device=$(stat -c %d \"$parent\"); "
+                    "test \"$nodefs_device\" = \"$parent_device\"; "
+                    "set -- $(stat -f -c \"%S %b %a\" \"$nodefs\"); "
+                    "capacity=$(( $1 * $2 )); available=$(( $1 * $3 )); "
+                    "test \"$capacity\" -gt 0; test \"$available\" -gt 0; "
+                    "test $(( available * 100 )) -ge $(( capacity * 10 )); "
+                    "printf \"__V23_DISK_PREFLIGHT_DEVICE__=%s\\n"
+                    "__V23_DISK_PREFLIGHT_CAPACITY__=%s\\n"
+                    "__V23_DISK_PREFLIGHT_AVAILABLE__=%s\\n\" "
+                    "\"$nodefs_device\" \"$capacity\" \"$available\"'",
+                )
+                device = _single_marker(output, "__V23_DISK_PREFLIGHT_DEVICE__=")
+                capacity = _single_marker(
+                    output, "__V23_DISK_PREFLIGHT_CAPACITY__="
+                )
+                available = _single_marker(
+                    output, "__V23_DISK_PREFLIGHT_AVAILABLE__="
+                )
+                if not all(value.isdigit() and int(value) > 0 for value in (
+                    device, capacity, available,
+                )):
+                    raise RuntimeError("F4 trial 4 nodefs preflight failed")
+                if int(available) >= int(capacity) or not (
+                    0 < F4_T4_SAFETY_FLOOR_PERCENT
+                    < F4_T4_TARGET_AVAILABLE_PERCENT < 10
+                ):
+                    raise RuntimeError("F4 trial 4 nodefs preflight is unsafe")
+                context.update({
+                    "diskfill_preexisting": False,
+                    "diskfill_nonce": nonce,
+                    "diskfill_file": diskfill_file,
+                    "diskfill_receipt_file": receipt_file,
+                    "diskfill_work_dir": work_dir,
+                    "nodefs_path": F4_T4_NODEFS_PATH,
+                    "nodefs_device": int(device),
+                    "nodefs_capacity_bytes": int(capacity),
+                    "nodefs_pre_available_bytes": int(available),
+                    "nodefs_target_available_percent": (
+                        F4_T4_TARGET_AVAILABLE_PERCENT
+                    ),
                 })
             return context
         if fault_id != "F7":
@@ -299,6 +368,130 @@ class FaultInjector:
             or recovery_context.get("stress_vm_workers") != F4_T3_STRESS_VM_WORKERS
         ):
             raise RuntimeError("F4 trial 3 sealed recovery preflight is invalid")
+        disk_nonce = (
+            recovery_context.get("diskfill_nonce")
+            if isinstance(recovery_context, dict) else None
+        )
+        expected_disk_work = (
+            f"{F4_T4_WORK_PREFIX}{disk_nonce}"
+            if isinstance(disk_nonce, str) else ""
+        )
+        if trial == 4 and (
+            not isinstance(recovery_context, dict)
+            or recovery_context.get("node") != F4_T4_NODE_NAME
+            or recovery_context.get("diskfill_preexisting") is not False
+            or not isinstance(disk_nonce, str)
+            or len(disk_nonce) != 32
+            or any(c not in "0123456789abcdef" for c in disk_nonce)
+            or recovery_context.get("diskfill_file")
+            != f"{expected_disk_work}/diskfill"
+            or recovery_context.get("diskfill_receipt_file")
+            != f"{expected_disk_work}/receipt"
+            or recovery_context.get("diskfill_work_dir") != expected_disk_work
+            or recovery_context.get("nodefs_path") != F4_T4_NODEFS_PATH
+            or any(
+                isinstance(recovery_context.get(name), bool)
+                or not isinstance(recovery_context.get(name), int)
+                or recovery_context[name] <= 0
+                for name in (
+                    "nodefs_device", "nodefs_capacity_bytes",
+                    "nodefs_pre_available_bytes",
+                )
+            )
+            or recovery_context.get("nodefs_target_available_percent")
+            != F4_T4_TARGET_AVAILABLE_PERCENT
+        ):
+            raise RuntimeError("F4 trial 4 sealed recovery preflight is invalid")
+        disk_command = ""
+        if trial == 4:
+            disk_command = (
+                "sudo sh -c 'set -eu; umask 077; "
+                f"nonce={disk_nonce}; nodefs={F4_T4_NODEFS_PATH}; "
+                f"parent={F4_T4_PARENT_DIR}; work={expected_disk_work}; "
+                f"file={expected_disk_work}/diskfill; "
+                f"receipt={expected_disk_work}/receipt; "
+                "test ! -e \"$work\"; install -d -m 700 \"$work\"; "
+                "work_inode=$(stat -c %i \"$work\"); "
+                "tmp=\"$receipt.tmp.$$\"; "
+                "printf \"intent %s %s %s %s %s %s\\n\" "
+                "\"$nonce\" "
+                f"\"{recovery_context.get('nodefs_device')}\" "
+                "\"$work_inode\" "
+                f"\"{recovery_context.get('nodefs_capacity_bytes')}\" "
+                f"\"{recovery_context.get('nodefs_pre_available_bytes')}\" "
+                f"\"{F4_T4_TARGET_AVAILABLE_PERCENT}\" >\"$tmp\"; "
+                "sync -f \"$tmp\"; mv \"$tmp\" \"$receipt\"; "
+                "sync -f \"$work\"; sync -f \"$parent\"; "
+                "read schema sealed_nonce sealed_device sealed_work_inode "
+                "sealed_capacity sealed_available sealed_target <\"$receipt\"; "
+                "test \"$schema\" = intent; "
+                "test \"$sealed_nonce\" = \"$nonce\"; "
+                f"test \"$sealed_device\" = {recovery_context.get('nodefs_device')}; "
+                f"test \"$sealed_capacity\" = {recovery_context.get('nodefs_capacity_bytes')}; "
+                f"test \"$sealed_available\" = {recovery_context.get('nodefs_pre_available_bytes')}; "
+                f"test \"$sealed_target\" = {F4_T4_TARGET_AVAILABLE_PERCENT}; "
+                "test \"$(stat -c %d \"$nodefs\")\" = \"$sealed_device\"; "
+                "test \"$(stat -c %d \"$work\")\" = \"$sealed_device\"; "
+                "test \"$(stat -c %i \"$work\")\" = \"$sealed_work_inode\"; "
+                "test ! -e \"$file\"; "
+                "set -- $(stat -f -c \"%S %b %a\" \"$nodefs\"); "
+                "capacity=$(( $1 * $2 )); pre_available=$(( $1 * $3 )); "
+                "test \"$capacity\" = \"$sealed_capacity\"; "
+                f"target_available=$(( capacity * {F4_T4_TARGET_AVAILABLE_PERCENT} / 100 )); "
+                "allocation=$(( pre_available - target_available )); "
+                "test \"$allocation\" -gt 0; "
+                "fallocate -l \"$allocation\" \"$file\"; sync -f \"$file\"; "
+                "file_device=$(stat -c %d \"$file\"); "
+                "file_inode=$(stat -c %i \"$file\"); "
+                "file_size=$(stat -c %s \"$file\"); "
+                "file_blocks=$(stat -c %b \"$file\"); "
+                "set -- $(stat -f -c \"%S %b %a\" \"$nodefs\"); "
+                "post_capacity=$(( $1 * $2 )); post_available=$(( $1 * $3 )); "
+                "test \"$file_device\" = \"$sealed_device\"; "
+                "test \"$file_size\" = \"$allocation\"; "
+                "test \"$file_blocks\" -gt 0; "
+                "test $(( file_blocks * 512 )) -ge \"$file_size\"; "
+                "test \"$post_capacity\" = \"$capacity\"; "
+                "consumed=$(( pre_available - post_available )); "
+                "test \"$consumed\" -ge \"$allocation\"; "
+                f"test \"$consumed\" -le $(( allocation + {F4_T4_ACCOUNTING_TOLERANCE_BYTES} )); "
+                f"test $(( post_available * 100 )) -lt $(( capacity * 10 )); "
+                f"test $(( post_available * 100 )) -ge $(( capacity * {F4_T4_SAFETY_FLOOR_PERCENT} )); "
+                "tmp=\"$receipt.tmp.$$\"; "
+                "printf \"post %s %s %s %s %s %s %s %s %s %s %s\\n\" "
+                "\"$nonce\" \"$sealed_device\" \"$sealed_work_inode\" \"$capacity\" "
+                "\"$pre_available\" \"$sealed_target\" \"$allocation\" "
+                "\"$file_inode\" \"$file_size\" \"$file_blocks\" "
+                "\"$post_available\" >\"$tmp\"; "
+                "sync -f \"$tmp\"; mv \"$tmp\" \"$receipt\"; "
+                "sync -f \"$work\"; sync -f \"$parent\"; "
+                "read pschema pnonce pdevice pwork_inode pcapacity "
+                "ppre ptarget pallocation pfile_inode pfile_size pfile_blocks "
+                "ppost <\"$receipt\"; "
+                "test \"$pschema\" = post; test \"$pnonce\" = \"$nonce\"; "
+                "test \"$pdevice\" = \"$sealed_device\"; "
+                "test \"$pwork_inode\" = \"$sealed_work_inode\"; "
+                "test \"$pcapacity\" = \"$capacity\"; "
+                "test \"$ppre\" = \"$pre_available\"; "
+                "test \"$ptarget\" = \"$sealed_target\"; "
+                "test \"$pallocation\" = \"$allocation\"; "
+                "test \"$pfile_inode\" = \"$file_inode\"; "
+                "test \"$pfile_size\" = \"$file_size\"; "
+                "test \"$pfile_blocks\" = \"$file_blocks\"; "
+                "test \"$ppost\" = \"$post_available\"; "
+                "printf \"__V23_DISK_DEVICE__=%s\\n"
+                "__V23_DISK_WORK_INODE__=%s\\n"
+                "__V23_DISK_CAPACITY__=%s\\n"
+                "__V23_DISK_PRE_AVAILABLE__=%s\\n"
+                "__V23_DISK_ALLOCATED_BYTES__=%s\\n"
+                "__V23_DISK_FILE_INODE__=%s\\n"
+                "__V23_DISK_FILE_SIZE__=%s\\n"
+                "__V23_DISK_FILE_BLOCKS__=%s\\n"
+                "__V23_DISK_POST_AVAILABLE__=%s\\n\" "
+                "\"$sealed_device\" \"$sealed_work_inode\" \"$capacity\" "
+                "\"$pre_available\" \"$allocation\" \"$file_inode\" "
+                "\"$file_size\" \"$file_blocks\" \"$post_available\"'"
+            )
         node_actions = {
             1: ("yms-proxmox-02", "sudo systemctl stop kubelet"),
             2: ("yms-proxmox-03", "sudo iptables -A OUTPUT -p tcp --dport 6443 -j DROP"),
@@ -323,7 +516,7 @@ class FaultInjector:
                 f"printf \"{stress_launch_marker}%s\\n{stress_start_marker}%s\\n"
                 f"{stress_hash_marker}%s\\n\" \"$pid\" \"$start\" \"$cmdhash\"'",
             ),
-            4: ("yms-proxmox-02", "sudo fallocate -l $(($(df --output=avail / | tail -1) * 95 / 100))k /tmp/diskfill"),
+            4: (F4_T4_NODE_NAME, disk_command),
             5: ("yms-proxmox-03", "sudo systemctl stop containerd"),
         }
         node_name, command = node_actions.get(trial, ("yms-proxmox-02", "sudo systemctl stop kubelet"))
@@ -337,16 +530,9 @@ class FaultInjector:
         stress_ng_start_ticks = None
         stress_ng_cmdline_sha256 = None
         if trial == 3:
-            def marker_value(marker: str) -> str:
-                values = [
-                    line.removeprefix(marker) for line in output.splitlines()
-                    if line.startswith(marker)
-                ]
-                return values[0] if len(values) == 1 else ""
-
-            pid_value = marker_value(stress_launch_marker)
-            start_value = marker_value(stress_start_marker)
-            hash_value = marker_value(stress_hash_marker)
+            pid_value = _single_marker(output, stress_launch_marker)
+            start_value = _single_marker(output, stress_start_marker)
+            hash_value = _single_marker(output, stress_hash_marker)
             if not pid_value.isdigit() or int(pid_value) <= 1:
                 raise RuntimeError("F4 trial 3 stress-ng launch receipt is missing")
             if not start_value.isdigit() or int(start_value) <= 0:
@@ -356,6 +542,57 @@ class FaultInjector:
             stress_ng_pid = int(pid_value)
             stress_ng_start_ticks = int(start_value)
             stress_ng_cmdline_sha256 = hash_value
+        disk_receipt = {}
+        if trial == 4:
+            marker_fields = {
+                "nodefs_device": "__V23_DISK_DEVICE__=",
+                "diskfill_work_inode": "__V23_DISK_WORK_INODE__=",
+                "nodefs_capacity_bytes": "__V23_DISK_CAPACITY__=",
+                "nodefs_injection_available_bytes": "__V23_DISK_PRE_AVAILABLE__=",
+                "diskfill_allocated_bytes": "__V23_DISK_ALLOCATED_BYTES__=",
+                "diskfill_inode": "__V23_DISK_FILE_INODE__=",
+                "diskfill_size_bytes": "__V23_DISK_FILE_SIZE__=",
+                "diskfill_allocated_blocks": "__V23_DISK_FILE_BLOCKS__=",
+                "nodefs_post_available_bytes": "__V23_DISK_POST_AVAILABLE__=",
+            }
+            for name, marker in marker_fields.items():
+                value = _single_marker(output, marker)
+                if not value.isdigit() or int(value) <= 0:
+                    raise RuntimeError("F4 trial 4 diskfill receipt is missing")
+                disk_receipt[name] = int(value)
+            if (
+                disk_receipt["nodefs_device"]
+                != recovery_context["nodefs_device"]
+                or disk_receipt["nodefs_capacity_bytes"]
+                != recovery_context["nodefs_capacity_bytes"]
+                or disk_receipt["diskfill_size_bytes"]
+                != disk_receipt["diskfill_allocated_bytes"]
+                or disk_receipt["diskfill_allocated_bytes"]
+                != disk_receipt["nodefs_injection_available_bytes"]
+                - (
+                    disk_receipt["nodefs_capacity_bytes"]
+                    * F4_T4_TARGET_AVAILABLE_PERCENT // 100
+                )
+                or disk_receipt["diskfill_allocated_blocks"] * 512
+                < disk_receipt["diskfill_size_bytes"]
+                or (
+                    disk_receipt["nodefs_injection_available_bytes"]
+                    - disk_receipt["nodefs_post_available_bytes"]
+                    < disk_receipt["diskfill_allocated_bytes"]
+                )
+                or (
+                    disk_receipt["nodefs_injection_available_bytes"]
+                    - disk_receipt["nodefs_post_available_bytes"]
+                    > disk_receipt["diskfill_allocated_bytes"]
+                    + F4_T4_ACCOUNTING_TOLERANCE_BYTES
+                )
+                or disk_receipt["nodefs_post_available_bytes"] * 100
+                >= disk_receipt["nodefs_capacity_bytes"] * 10
+                or disk_receipt["nodefs_post_available_bytes"] * 100
+                < disk_receipt["nodefs_capacity_bytes"]
+                * F4_T4_SAFETY_FLOOR_PERCENT
+            ):
+                raise RuntimeError("F4 trial 4 diskfill receipt is invalid")
         logger.info("F4 injected: %s on %s", command, node_name)
 
         result = {
@@ -372,6 +609,11 @@ class FaultInjector:
             result["stress_vm_workers"] = F4_T3_STRESS_VM_WORKERS
             result["stress_timeout_seconds"] = F4_T3_STRESS_TIMEOUT_SECONDS
             result["stress_receipt_file"] = F4_T3_STRESS_RECEIPT_FILE
+        if disk_receipt:
+            result.update(disk_receipt)
+            result["nodefs_target_available_percent"] = (
+                F4_T4_TARGET_AVAILABLE_PERCENT
+            )
         return result
 
     # ── F5: PVCPending ─────────────────────────────────────────────

@@ -957,6 +957,157 @@ class LiveRunnerTests(unittest.TestCase):
                 other = injector.inject("F4", trial, recovery_context=sealed)
             self.assertEqual(other["wait_seconds"], 180)
 
+    def test_f4_diskfill_preflight_launch_and_recovery_are_nodefs_bound(self):
+        from scripts.fault_inject.injector import FaultInjector
+        from scripts.stabilize.recovery import Recovery
+
+        preflight = (
+            "__V23_DISK_PREFLIGHT_DEVICE__=64512\n"
+            "__V23_DISK_PREFLIGHT_CAPACITY__=100000\n"
+            "__V23_DISK_PREFLIGHT_AVAILABLE__=70000\n"
+        )
+        launch = (
+            "__V23_DISK_DEVICE__=64512\n"
+            "__V23_DISK_WORK_INODE__=101\n"
+            "__V23_DISK_CAPACITY__=100000\n"
+            "__V23_DISK_PRE_AVAILABLE__=70000\n"
+            "__V23_DISK_ALLOCATED_BYTES__=61000\n"
+            "__V23_DISK_FILE_INODE__=102\n"
+            "__V23_DISK_FILE_SIZE__=61000\n"
+            "__V23_DISK_FILE_BLOCKS__=120\n"
+            "__V23_DISK_POST_AVAILABLE__=9000\n"
+        )
+        with patch(
+            "scripts.fault_inject.injector.load_trial",
+            return_value={
+                "target_service": "worker01",
+                "injection_method": "diskfill",
+                "fault_name": "NodeNotReady",
+            },
+        ), patch(
+            "scripts.fault_inject.injector.ssh_node",
+            side_effect=[preflight, launch],
+        ) as ssh, patch(
+            "scripts.fault_inject.injector.secrets.token_hex",
+            return_value="a" * 32,
+        ):
+            injector = FaultInjector()
+            sealed = injector.prepare_recovery_context("F4", 4)
+            result = injector.inject("F4", 4, recovery_context=sealed)
+        self.assertEqual(sealed["nodefs_device"], 64512)
+        self.assertEqual(sealed["nodefs_target_available_percent"], 9)
+        self.assertEqual(result["diskfill_inode"], 102)
+        self.assertEqual(result["nodefs_post_available_bytes"], 9000)
+        self.assertEqual(result["wait_seconds"], 180)
+        preflight_command = ssh.call_args_list[0].args[1]
+        self.assertIn("stat -c %d \"$nodefs\"", preflight_command)
+        self.assertNotIn("install -d", preflight_command)
+        self.assertNotIn("receipt.tmp", preflight_command)
+        self.assertIn(
+            f"/var/tmp/v23-f4t4-{'a' * 32}/diskfill",
+            ssh.call_args_list[1].args[1],
+        )
+        self.assertNotIn("/tmp/diskfill", ssh.call_args_list[1].args[1])
+        self.assertIn("post_available * 100", ssh.call_args_list[1].args[1])
+        self.assertLess(
+            ssh.call_args_list[1].args[1].index("printf \"intent"),
+            ssh.call_args_list[1].args[1].index("fallocate -l"),
+        )
+        self.assertLess(
+            ssh.call_args_list[1].args[1].index("mv \"$tmp\" \"$receipt\""),
+            ssh.call_args_list[1].args[1].index("fallocate -l"),
+        )
+        self.assertIn("read pschema pnonce", ssh.call_args_list[1].args[1])
+
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            return_value=(
+                "__V23_DISK_RECOVERY__=exact-clean\n"
+                "__V23_DISK_RECOVERY_CAPACITY__=100000\n"
+                "__V23_DISK_RECOVERY_AVAILABLE__=70000\n"
+            ),
+        ) as recovery_ssh, patch(
+            "scripts.stabilize.recovery.kubectl"
+        ), patch("scripts.stabilize.recovery.time.sleep"):
+            recovered = Recovery()._recover_f4(4, result)
+        self.assertTrue(recovered["diskfill_cleanup_verified"])
+        recovery_command = recovery_ssh.call_args.args[1]
+        self.assertIn("stat -c %i \"$work\"", recovery_command)
+        self.assertIn("sealed_file_inode", recovery_command)
+        self.assertIn("rmdir \"$work\"", recovery_command)
+
+    def test_f4_diskfill_malformed_receipts_fail_before_mutation_or_cleanup(self):
+        from scripts.fault_inject.injector import FaultInjector
+        from scripts.stabilize.recovery import Recovery
+
+        sealed = {
+            "fault_id": "F4", "trial": 4, "target_service": "worker01",
+            "node": "yms-proxmox-02", "diskfill_preexisting": False,
+            "diskfill_nonce": "a" * 32,
+            "diskfill_file": f"/var/tmp/v23-f4t4-{'a' * 32}/diskfill",
+            "diskfill_receipt_file": f"/var/tmp/v23-f4t4-{'a' * 32}/receipt",
+            "diskfill_work_dir": f"/var/tmp/v23-f4t4-{'a' * 32}",
+            "nodefs_path": "/var/lib/kubelet",
+            "nodefs_device": 64512, "nodefs_capacity_bytes": 100000,
+            "nodefs_pre_available_bytes": 70000,
+            "nodefs_target_available_percent": 9,
+        }
+        for field, value in (
+            ("nodefs_device", True),
+            ("nodefs_capacity_bytes", 0),
+            ("diskfill_nonce", "z" * 32),
+            ("diskfill_file", "/tmp/diskfill"),
+            ("nodefs_target_available_percent", 10),
+        ):
+            with self.subTest(field=field), patch(
+                "scripts.fault_inject.injector.ssh_node"
+            ) as inject_ssh, patch(
+                "scripts.stabilize.recovery.ssh_node"
+            ) as recovery_ssh:
+                bad = dict(sealed, **{field: value})
+                with self.assertRaisesRegex(RuntimeError, "sealed recovery preflight"):
+                    FaultInjector()._inject_f4_node_notready(
+                        "worker01", 4, {}, bad
+                    )
+                with self.assertRaisesRegex(RuntimeError, "receipt is incomplete"):
+                    Recovery()._recover_f4(4, bad)
+                inject_ssh.assert_not_called()
+                recovery_ssh.assert_not_called()
+
+    def test_f4_diskfill_recovery_retries_and_rejects_low_available_false_green(self):
+        from scripts.stabilize.recovery import Recovery
+
+        ctx = {
+            "node": "yms-proxmox-02", "diskfill_preexisting": False,
+            "diskfill_nonce": "a" * 32,
+            "diskfill_file": f"/var/tmp/v23-f4t4-{'a' * 32}/diskfill",
+            "diskfill_receipt_file": f"/var/tmp/v23-f4t4-{'a' * 32}/receipt",
+            "diskfill_work_dir": f"/var/tmp/v23-f4t4-{'a' * 32}",
+            "nodefs_path": "/var/lib/kubelet",
+            "nodefs_device": 64512, "nodefs_capacity_bytes": 100000,
+            "nodefs_pre_available_bytes": 70000,
+            "nodefs_target_available_percent": 9,
+        }
+        low = (
+            "__V23_DISK_RECOVERY__=already-absent\n"
+            "__V23_DISK_RECOVERY_CAPACITY__=100000\n"
+            "__V23_DISK_RECOVERY_AVAILABLE__=9000\n"
+        )
+        green = (
+            "__V23_DISK_RECOVERY__=already-absent\n"
+            "__V23_DISK_RECOVERY_CAPACITY__=100000\n"
+            "__V23_DISK_RECOVERY_AVAILABLE__=70000\n"
+        )
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            side_effect=[TimeoutError("ssh"), low, green],
+        ) as ssh, patch("scripts.stabilize.recovery.kubectl"), patch(
+            "scripts.stabilize.recovery.time.sleep"
+        ):
+            result = Recovery()._recover_f4(4, ctx)
+        self.assertEqual(result["attempts"], 3)
+        self.assertEqual(ssh.call_count, 3)
+
     def test_f4_memory_evidence_deadline_is_strict_and_trial_scoped(self):
         self.assertEqual(
             validate_f4_t3_evidence_deadline("F4", 3, 174.999),

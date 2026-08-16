@@ -238,6 +238,21 @@ Terra의 effect size·intra-fault correlation 사전값이 없으므로 V2.2에�
   live-identity와 memory-observation flag는 반드시 false로 기록한다. low-memory
   branch는 NotReady 자체가 아니라 extreme-memory-pressure precursor이므로 전체
   60건 paired primary와 별도로 F4-t3를 제외한 59건 paired sensitivity를 반드시 보고한다.
+- F4-t4는 `/tmp`가 tmpfs인 현재 worker 형상에서 kubelet nodefs와 무관한 파일을
+  만들지 않는다. `/var/tmp`와 `/var/lib/kubelet`의 exact device를 preflight에서
+  결합한다. preflight는 read-only이며 cryptographic nonce와 nodefs prestate를
+  local event journal에 먼저 fsync한다. 그 뒤에만 nonce-bound mode-0700
+  experiment-owned directory와 intent receipt를 원격에 생성·fsync한다. nodefs
+  capacity의 9% available을 목표로 하되 poststate는 8% 이상
+  10% 미만이어야 한다. file device·work/file inode·size·allocated blocks와
+  nodefs capacity·pre/post available을 atomic post receipt와 live validator에
+  교차결합하며 allocated blocks가 requested bytes를 실제로 뒷받침해야 한다.
+  recovery는 파일 부재만으로 성공하지 않고 동일 nodefs의 available이 10% 이상
+  회복됐는지 확인한다. `DiskPressure=True`가 아직 관측되지 않고 threshold만 직접
+  입증된 branch는 `node_disrupted=false`, `disk_pressure_observed=false`,
+  `treatment_basis=nodefs-available-threshold` precursor로 기록한다. 전체 60건
+  primary와 별도로 F4-t4 제외 59건 및 F4-t3/t4 동시 제외 58건 paired
+  sensitivity를 반드시 보고한다.
 - condition·fault·retrieval source를 가린 primary human reviewer의 180 representative output 전수 채점
 - 독립 second reviewer의 사전 층화 무작위 36건 채점과 agreement·Krippendorff α 또는 Cohen κ. second reviewer가 없으면 primary reviewer의 delayed repeat 36건을 차선으로 쓰고 독립성 한계를 명시
 

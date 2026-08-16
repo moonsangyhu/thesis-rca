@@ -135,6 +135,10 @@ F1 × trial 1은 기능 검증에는 적합하지만 비용 stress test로는 �
 6. condition 실행 순서나 서비스 시간대가 결과에 영향을 줬다.
 
 따라서 결과 해석에는 treatment-integrity, retrieval query provenance, human outcome, order/time sensitivity를 함께 제시해야 한다.
+F4-t3 low-memory와 F4-t4 low-nodefs는 각각 target Node condition이 발현되지
+않아도 underlying resource threshold만 성립할 수 있다. 이 두 precursor를
+NodeNotReady/DiskPressure 자체로 서술하지 않고 full 60, 각 trial 제외 59,
+동시 제외 58 incident 결과의 방향·효과크기·구간을 함께 비교해야 한다.
 
 ## 9. 최종 판정과 다음 gate
 

@@ -87,6 +87,30 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   fsync한 뒤 atomic rename한다. emergency recovery는 이 node-local receipt를
   사용하며, receipt가 없으면 stress process 부재를 확인하기 전 GREEN이 아니다.
 
+### F4 trial 4 nodefs disk-pressure prerequisite
+
+- yms-proxmox-02의 `/tmp`는 4.16GB tmpfs이고 kubelet nodefs는
+  `/dev/mapper/vg0-root` ext4다. 따라서 `/tmp/diskfill`은 금지한다.
+- preflight는 원격 상태를 변경하지 않고 nodefs device·capacity·available과
+  cryptographic launch nonce를 수집한다. 이 prestate를 로컬 event journal에 먼저
+  fsync한 뒤에만 nodefs와 같은 device의 `/var/tmp/v23-f4t4-<nonce>/`를 root
+  mode-0700으로 생성하고, directory inode·nodefs prestate·target 9%를 node-local
+  intent receipt에 fsync한다. 같은 nonce 경로가 이미 있으면 fail-close한다.
+- injection은 live available에서 capacity의 9%를 뺀 최소 byte만 fallocate한다.
+  post available은 capacity의 8% 이상 10% 미만이어야 하며 file device·inode·size·
+  allocated blocks와 pre/post filesystem 값을 atomic post receipt에 봉인한다.
+  validator는 Node condition과 별도로 같은 receipt/file/filesystem을 다시 읽는다.
+- `DiskPressure=True` 또는 `Ready!=True`이면 실제 node disruption으로 기록한다.
+  Node가 Ready이고 DiskPressure=False여도 exact `nodefs.available<10%`가 확인되면
+  low-disk precursor만 성립한 것으로 기록한다(`node_disrupted=false`,
+  `disk_pressure_observed=false`). 이 경우 F4-t4 제외 59건과 F4-t3/t4 동시 제외
+  58건 sensitivity를 primary 60건과 함께 보고한다.
+- crash recovery는 sealed work-directory inode와 intent/post receipt를 확인한 뒤
+  그 directory 안의 exact file만 제거한다. post receipt가 있으면 file inode·size·
+  blocks까지 일치해야 삭제하며, 예상하지 않은 파일이나 identity drift는 복구를
+  GREEN으로 표시하지 않는다. work directory가 없거나 제거된 경우에도 같은
+  nodefs device·capacity와 `available>=10%`가 확인돼야 GREEN이다.
+
 ## 네임스페이스 / 주요 서비스
 
 | 네임스페이스 | 서비스 | 비고 |
