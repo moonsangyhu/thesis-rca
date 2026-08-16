@@ -17,6 +17,7 @@ from .base import (
 from .config import (
     F4_T3_STRESS_BYTES,
     F4_T3_STRESS_LOG_FILE,
+    F4_T3_OBSERVATION_WAIT_SECONDS,
     F4_T3_STRESS_RECEIPT_FILE,
     F4_T3_STRESS_TIMEOUT_SECONDS,
     F4_T3_STRESS_VERSION,
@@ -92,7 +93,11 @@ class FaultInjector:
         result["fault_id"] = fault_id
         result["trial"] = trial
         result["target_service"] = target
-        result["wait_seconds"] = INJECTION_WAIT.get(fault_id, 120)
+        result["wait_seconds"] = (
+            F4_T3_OBSERVATION_WAIT_SECONDS
+            if (fault_id, trial) == ("F4", 3)
+            else INJECTION_WAIT.get(fault_id, 120)
+        )
         return result
 
     def prepare_recovery_context(self, fault_id: str, trial: int) -> dict:

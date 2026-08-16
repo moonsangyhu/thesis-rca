@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 25건
-- 심각(실험 무효화): 21건
+- 총 이슈: 26건
+- 심각(실험 무효화): 22건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -332,3 +332,14 @@
 - **근본 원인**: Flux status writer가 post-root refresh와 app merge-patch 사이의 짧은 창에서 app Kustomization의 resourceVersion을 갱신했다. UID와 원래 suspend field shape/value는 바뀌지 않았지만 단일 CAS 시도만 허용해 안전한 transient race도 campaign 전체 실패가 됐다.
 - **수정 내용**: UID·original suspend shape/value뿐 아니라 전체 pre-mutation spec의 canonical SHA-256이 동일하고 resourceVersion만 전진한 경우에 한해 app pre-state를 다시 읽어 event journal에 fsync하고 최대 3회 CAS를 재시도한다. 각 시도의 full hierarchy receipt를 독립 봉인하며 정상 runner의 recovery context도 fsync 직후 마지막 receipt로 교체하고 SIGKILL emergency restore 역시 검증된 마지막 receipt를 사용한다. unrelated spec 변경, mutation 성공 여부가 불명확한 suspend=true, malformed/비결합 receipt, 중복·역행 resourceVersion, 3회 초과 경쟁은 계속 fail-closed한다.
 - **현재 영향**: 실제 empty patch response와 resourceVersion 전진 재현, unrelated interval drift 거부, 2회 경쟁 뒤 성공, 연속 경쟁 상한, normal failure recovery의 최신 receipt 결합, 다중 durable receipt의 마지막 정본 복구와 중복·역행·상한 초과 거부를 unit으로 검증한다. 전체 회귀·dry-run·독립 리뷰·clean commit-push 뒤 fresh campaign으로 처음부터 재실행한다.
+
+### [ISS-026] F4 trial 3의 300초 memory stress가 node 복구 경계를 초과
+
+- **카테고리**: injection / recovery / infra
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary14`은 F1 t1부터 F4 t2까지 17 incidents·51 rows/raw·612 validated calls를 commit한 뒤 F4 t3 recovery에서 중단됐다. F4 t3의 36 model calls는 attempt/charged ledger에만 존재하고 incident/result/call ledger에는 commit되지 않았다. 불완전 campaign 전체는 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회. 13 GiB/90초 선행 lifecycle probe는 약 99초에 자율 복구됐지만 13 GiB/300초 production 처치는 host SSH와 kubelet 응답을 장시간 고갈시켰다.
+- **관찰한 사실**: F4 t3는 180초 뒤 `Ready=Unknown`과 node-unreachable process probe로 injection validation을 통과했고 36회 Terra 호출까지 완료했다. recovery 30회와 sealed-receipt emergency recovery 30회가 모두 SSH banner timeout으로 실패했으며 yms-proxmox-04는 약 32분 뒤에야 Ready/SSH 응답을 자율 회복했다. 두 번째 emergency restore는 첫 시도에 exact process cleanup을 확인했다. 최종 artifact는 rows/raw/call=51/51/612, attempt/charged=648/648, 알려진 누적 AIC 306.7476이며 event는 `recovery_failed→flux_emergency_restore_failed→flux_emergency_restored`로 끝난다. 최종 6/6 node pressure false, Boutique 12/12, Flux 5/5, Prometheus/Loki ready와 stress receipt/log/process 부재를 확인했다.
+- **근본 원인**: injection validation에 필요한 약 40초의 disruption보다 300초 stress duration이 과도했다. 16 GiB node에서 13 GiB `--vm-keep`을 5분 유지하면서 sshd와 kubelet이 exact recovery의 최대 약 6.5분 retry window 안에도 응답하지 못했고, 실험 종료 후 node가 장시간 비정상 상태로 남았다.
+- **수정 내용**: 13 GiB 절대 처치량과 PID/start/hash atomic receipt는 유지하되 F4 t3 전용 observation wait를 60초, stress timeout을 180초로 결합한다. validator는 public result의 wait=60을 bool 제외 exact 검증하고 `Ready!=True`를 필수로 요구한다. runner는 injection 시작부터 full collector 완료까지 monotonic elapsed가 175초 미만임을 `evidence_collection_verified` event로 봉인하며, 초과하면 inference 전에 중단한다. recovery command identity는 shared constant를 사용해 exact `13G/180s` process만 종료한다. 다른 F4 trial의 180초 wait는 변경하지 않는다.
+- **현재 영향**: exact wait 변조, Ready=True+MemoryPressure=True, evidence deadline 경계, 다른 F4 trial wait 누출을 적대 unit으로 검증한다. 전체 회귀·dry-run·독립 리뷰 후 clean commit-push하고, model-free bounded live lifecycle probe에서 60초 NotReady validation, full collector<175초, stress 종료 뒤 exact recovery/cluster GREEN을 확인한 뒤에만 fresh main campaign을 시작한다.

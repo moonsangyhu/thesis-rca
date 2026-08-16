@@ -11,6 +11,7 @@ from experiments.v2_3.live_runner import (
     AttemptJournal, ChargedCallJournal, F7InjectionValidator, FluxAppGuard,
     FluxCASConflict, FluxHierarchyGuard, PilotError, PilotIncidentRunner, RecoveryFailure,
     RuntimeEvidenceRenderer, RuntimeOnlyRetriever,
+    validate_f4_t3_evidence_deadline,
 )
 from experiments.v2_3.mock import DeterministicMockCaller
 from experiments.v2_3.scanner import ForbiddenLexicon
@@ -869,12 +870,14 @@ class LiveRunnerTests(unittest.TestCase):
         command = ssh.call_args.args[1]
         self.assertIn("command -v stress-ng", command)
         self.assertIn("--vm-bytes 13G", command)
+        self.assertIn("--timeout 180s", command)
         self.assertIn("--vm-keep", command)
         self.assertIn("sync -f", command)
         self.assertIn("read rpid rstart rhash", command)
         self.assertEqual(result["stress_ng_pid"], 4321)
         self.assertEqual(result["stress_ng_start_ticks"], 8765)
         self.assertEqual(result["stress_memory_bytes"], "13G")
+        self.assertEqual(result["stress_timeout_seconds"], 180)
 
         with patch(
             "scripts.fault_inject.injector.ssh_node",
@@ -913,6 +916,33 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertIs(result["stress_ng_preexisting"], False)
         self.assertEqual(result["stress_receipt_file"], sealed["stress_receipt_file"])
         self.assertEqual(result["stress_ng_pid"], 4321)
+        self.assertEqual(result["wait_seconds"], 60)
+
+        for trial in (1, 2, 4, 5):
+            with patch(
+                "scripts.fault_inject.injector.load_trial",
+                return_value={
+                    "target_service": "worker",
+                    "injection_method": "node fault",
+                    "fault_name": "NodeNotReady",
+                },
+            ):
+                injector._injectors["F4"] = lambda *_args: {
+                    "action": "node_disruption", "node": "worker"
+                }
+                other = injector.inject("F4", trial, recovery_context=sealed)
+            self.assertEqual(other["wait_seconds"], 180)
+
+    def test_f4_memory_evidence_deadline_is_strict_and_trial_scoped(self):
+        self.assertEqual(
+            validate_f4_t3_evidence_deadline("F4", 3, 174.999),
+            {"elapsed_seconds": 174.999, "deadline_seconds": 175},
+        )
+        self.assertIsNone(validate_f4_t3_evidence_deadline("F4", 2, 999))
+        for elapsed in (175, -1, float("nan"), True):
+            with self.subTest(elapsed=elapsed):
+                with self.assertRaisesRegex(PilotError, "treatment deadline"):
+                    validate_f4_t3_evidence_deadline("F4", 3, elapsed)
 
     def test_f4_memory_recovery_retries_and_kills_only_sealed_pid(self):
         from scripts.stabilize.recovery import Recovery
@@ -935,6 +965,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertTrue(result["stress_cleanup_verified"])
         self.assertEqual(result["attempts"], 2)
         self.assertIn('"$pid" != "4321"', ssh.call_args.args[1])
+        self.assertIn("--timeout 180s", ssh.call_args.args[1])
         self.assertNotIn("pkill -9 stress-ng", ssh.call_args.args[1])
 
     def test_f4_memory_crash_recovery_uses_durable_node_receipt(self):

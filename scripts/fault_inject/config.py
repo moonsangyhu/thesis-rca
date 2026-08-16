@@ -35,11 +35,14 @@ INJECTION_WAIT = {
 }
 
 # F4 trial 3 is calibrated to the 16 GiB yms-proxmox-04 worker.  The stressor
-# must outlive the F4 observation window so validation cannot sample a recovered
-# node.  Keep these values as a single contract shared by injection, validation,
-# recovery, tests, and lab documentation.
+# must outlive its trial-specific observation wait, while ending early enough
+# for SSH-based exact recovery before the 36 model calls complete.  Keep these
+# values as one contract shared by injection, validation, recovery, tests, and
+# lab documentation.
 F4_T3_STRESS_BYTES = "13G"
-F4_T3_STRESS_TIMEOUT_SECONDS = 300
+F4_T3_OBSERVATION_WAIT_SECONDS = 60
+F4_T3_STRESS_TIMEOUT_SECONDS = 180
+F4_T3_EVIDENCE_DEADLINE_MARGIN_SECONDS = 5
 F4_T3_STRESS_VERSION = "0.19.02"
 F4_T3_STRESS_RECEIPT_FILE = "/tmp/v23-f4t3-stress.receipt"
 F4_T3_STRESS_LOG_FILE = "/tmp/v23-f4t3-stress.log"

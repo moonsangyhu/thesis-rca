@@ -386,3 +386,12 @@
 - **수정 내용**: app identity·original suspend field와 canonical 전체 spec SHA-256이 동일하고 resourceVersion만 전진한 경우에만 새 full hierarchy receipt를 fsync하고 최대 3회 재시도한다. normal runner는 각 fsync 직후 recovery context를 최신 receipt로 교체하고 emergency restore도 initial binding·엄격 증가 sequence를 확인한 마지막 receipt를 사용한다. 상한 초과·중복/역행 version·unrelated spec drift는 fail-closed한다.
 - **수정 파일**: `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/flux_restore.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_flux_restore.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — Flux/live-runner targeted 58개와 전체 V2.3 회귀·dry-run·독립 리뷰 후 clean commit-push 및 fresh campaign 재실행 예정
+
+### 44. F4-t3 memory stress 관측·복구 시간 분리 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: primary14는 17 incidents·51 rows·612 calls 뒤 F4 t3의 36 calls까지 수행했지만 13 GiB/300초 stress로 yms-proxmox-04가 약 32분간 SSH/Ready를 잃어 normal 및 첫 emergency recovery가 실패했다. campaign은 미완료이며 attempt/charged 648, known AIC 306.7476이다.
+- **원인**: disruption은 약 40초에 이미 관측 가능했지만 stress를 300초 유지해 node control-plane과 recovery SSH를 필요 이상으로 고갈시켰다.
+- **수정 내용**: F4 t3만 observation wait=60초와 stress timeout=180초를 사용한다. 13 GiB 처치와 atomic PID/start/hash receipt는 유지한다. validator는 wait=60과 Ready!=True를 exact 요구하고 runner는 full collector가 injection 후 175초 안에 끝났음을 durable event로 증명한 경우만 inference한다. recovery는 shared constant의 exact command identity만 정리하며 다른 F4 trial wait=180초는 유지한다.
+- **수정 파일**: `scripts/fault_inject/config.py:1`, `scripts/fault_inject/injector.py:1`, `experiments/v2_3/injection_validator.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_injection_validator.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted/전체 회귀·dry-run·독립 리뷰·clean commit-push 뒤 model-free bounded live probe와 fresh campaign 재실행 예정

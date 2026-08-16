@@ -79,7 +79,8 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "13G", "stress_timeout_seconds": 300,
+            "stress_memory_bytes": "13G", "stress_timeout_seconds": 180,
+            "wait_seconds": 60,
         }
         self.assertTrue(validator.validate(
             "F4", 3, {"target_service": "worker03"}, receipt
@@ -87,6 +88,53 @@ class InjectionValidatorTests(unittest.TestCase):
         del receipt["stress_ng_pid"]
         with self.assertRaisesRegex(PilotError, "launch receipt"):
             validator.validate("F4", 3, {"target_service": "worker03"}, receipt)
+
+    def test_f4_memory_pressure_binds_exact_wait_and_requires_notready(self):
+        receipt = {
+            "fault_id": "F4", "trial": 3, "target_service": "worker03",
+            "action": "node_disruption", "node": "yms-proxmox-04",
+            "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
+            "stress_ng_cmdline_sha256": "a" * 64,
+            "stress_memory_bytes": "13G", "stress_timeout_seconds": 180,
+            "wait_seconds": 60,
+        }
+        ready_under_pressure = {"status": {"conditions": [
+            {"type": "Ready", "status": "True"},
+            {"type": "MemoryPressure", "status": "True"},
+        ]}}
+        validator = LiveInjectionValidator(
+            lambda *_: ready_under_pressure,
+            lambda *_: "__V23_STRESS_NG_IDENTITY__=live",
+        )
+        with self.assertRaisesRegex(PilotError, "node disruption"):
+            validator.validate("F4", 3, {"target_service": "worker03"}, receipt)
+
+        not_ready = {"status": {"conditions": [
+            {"type": "Ready", "status": "Unknown"},
+            {"type": "MemoryPressure", "status": "Unknown"},
+        ]}}
+        validator = LiveInjectionValidator(
+            lambda *_: not_ready,
+            lambda *_: "__V23_STRESS_NG_IDENTITY__=live",
+        )
+        for bad_wait in (None, 0, 180, True, "60", 60.0):
+            with self.subTest(wait=bad_wait):
+                mutated = dict(receipt)
+                if bad_wait is None:
+                    mutated.pop("wait_seconds")
+                else:
+                    mutated["wait_seconds"] = bad_wait
+                with self.assertRaisesRegex(PilotError, "amount"):
+                    validator.validate(
+                        "F4", 3, {"target_service": "worker03"}, mutated
+                    )
+        for bad_timeout in (True, 180.0, "180"):
+            with self.subTest(timeout=bad_timeout):
+                mutated = dict(receipt, stress_timeout_seconds=bad_timeout)
+                with self.assertRaisesRegex(PilotError, "amount"):
+                    validator.validate(
+                        "F4", 3, {"target_service": "worker03"}, mutated
+                    )
 
     def test_f4_memory_pressure_rejects_unbound_process_probe(self):
         node = {"status": {"conditions": [{"type": "Ready", "status": "Unknown"}]}}
@@ -100,7 +148,8 @@ class InjectionValidatorTests(unittest.TestCase):
                 "action": "node_disruption", "node": "yms-proxmox-04",
                 "stress_ng_pid": 999999, "stress_ng_start_ticks": 1,
                 "stress_ng_cmdline_sha256": "b" * 64,
-                "stress_memory_bytes": "13G", "stress_timeout_seconds": 300,
+                "stress_memory_bytes": "13G", "stress_timeout_seconds": 180,
+                "wait_seconds": 60,
             })
 
 
