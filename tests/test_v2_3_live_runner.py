@@ -296,6 +296,27 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(len(recovery.calls), 1)
         self.assertEqual(len(runner.store.writes), 0)
 
+    def test_leakage_failure_records_safe_stage_and_still_recovers(self):
+        from experiments.v2_3.scanner import LeakageDetected
+
+        collector = FakeCollector(
+            extra={"logs": {"pod_logs": ["fault_id F7"]}}
+        )
+        recovery = FakeRecovery()
+        runner, _ = self.make_runner(collector=collector, recovery=recovery)
+        with self.assertRaises(LeakageDetected):
+            runner.run("F7", 1, GROUND_TRUTH)
+        failures = [
+            details for event, details in runner.store.events
+            if event == "incident_failed"
+        ]
+        self.assertEqual(len(failures), 1)
+        diagnostic = failures[0]["leakage_diagnostic"]
+        self.assertEqual(diagnostic["stage"], "runtime_context")
+        self.assertNotIn("term", diagnostic["matches"][0])
+        self.assertEqual(len(recovery.calls), 1)
+        self.assertEqual(runner.store.writes, [])
+
     def test_post_injection_failure_stops_before_collection_and_recovers(self):
         injection_validator = SimpleNamespace(
             validate=lambda *args: (_ for _ in ()).throw(
@@ -793,6 +814,26 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertNotIn(injection["ssh_output"], lexicon.field_values)
         self.assertNotIn(injection["kubectl_output"], lexicon.field_values)
         self.assertIn("a" * 32, lexicon.field_values)
+
+    def test_production_fault_marker_is_structured_not_bare_short_id(self):
+        from experiments.v2_3.live_runner import build_forbidden_lexicon
+        from experiments.v2_3.scanner import LeakageScanner
+
+        lexicon = build_forbidden_lexicon(
+            "F7", 1, GROUND_TRUTH, FakeInjector().inject("F7", 1)
+        )
+        scanner = LeakageScanner()
+        self.assertEqual(
+            scanner.scan(
+                "pod uid segment abcd-f7-91ef", lexicon, runtime_scope=True
+            ).match_count,
+            0,
+        )
+        for leaked in ("fault_id F7", "fault F-7", "F7_t1"):
+            self.assertGreater(
+                scanner.scan(leaked, lexicon, runtime_scope=True).match_count,
+                0,
+            )
 
     def test_attempt_journal_fsync_path_receives_all_calls(self):
         with tempfile.TemporaryDirectory() as temp_dir:

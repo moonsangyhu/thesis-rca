@@ -503,3 +503,12 @@
 - **수정 내용**: command·ssh/kubectl output을 lexical scalar에서 제외하되 nonce·path·nodefs receipt 값은 유지한다. full exact match와 최소 충분 2/3-token adjacent grams만 사용해 pattern 수를 선형으로 제한하고, forbidden term은 128 normalized tokens를 넘으면 fail-closed한다. scanner/masker provenance version을 각각 `v2.3-nfkc-alias-ngram-2`, `v2.3-procedure-mask-3`으로 갱신했다.
 - **수정 파일**: `experiments/v2_3/scanner.py:1`, `experiments/v2_3/retrieval.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_scanner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — 관련 73 PASS, 전체 271 PASS, F4-t4 유사 18KB command·16KB transport·22KB runtime benchmark 0.041초, dry-run과 diff-check 통과 후 fresh campaign 재실행 예정. Primary17은 KeyboardInterrupt 뒤 exact Flux restore·recovery_green, nodes6/6·Boutique12/12·Flux5/5·Prometheus/Loki GREEN과 nonce workdir/Failed pod 0을 확인했다.
+
+### 57. 짧은 fault ID의 구조화 marker와 누출 진단 provenance — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary18은 F4-t4를 포함해 19 incidents·57 rows/raw·684 calls를 정상 commit한 뒤 F4-t5 node disruption 검증 직후 모델 호출 전에 `LeakageDetected`로 중단됐다. 당시 event는 error type만 보존해 match stage/category/term을 사후 감사할 수 없었다.
+- **원인**: production harness lexicon이 단독 두 글자 `F4`를 금지해 UUID·pod/container hash의 독립 `-f4-` token도 누출로 판정할 수 있었다. synthetic adversarial context로 false-positive를 재현했지만 Primary18 당시 exact scan report는 보존되지 않아 직접 원인 결론은 제한한다.
+- **수정 내용**: production fault marker를 `fault_id=F4`/`fault F-4`/`F4_t5`처럼 fault field 또는 scheduled trial과 결합된 Unicode-aware regex로 제한하고, 일반 scanner의 raw marker 기능과 `fault injection`/`experiment marker` 차단은 유지한다. `LeakageDetected`는 source text 없이 stage·category·kind·term hash와 context/lexicon hash를 제공하며 runner는 failure event에 이 진단을 fsync한 뒤 mandatory recovery를 수행한다. scanner version을 `v2.3-nfkc-alias-ngram-3`으로 갱신했다.
+- **수정 파일**: `experiments/v2_3/scanner.py:1`, `experiments/v2_3/retrieval.py:1`, `experiments/v2_3/conditions.py:1`, `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/mock.py:1`, `tests/test_v2_3_scanner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — targeted 77 PASS, 전체 275 PASS, dry-run 180/2,160 external0/fs0, pycompile·diff-check PASS. Primary18은 `incident_failed→flux_restored→recovery_green` 후 nodes6/6·Boutique12/12·Flux5/5·Prometheus/Loki·Failed pod0 GREEN을 확인했으며 fresh campaign 재실행 예정.
