@@ -8,10 +8,11 @@ import math
 from dataclasses import asdict, dataclass
 
 from .scanner import (
-    SCANNER_VERSION, ForbiddenLexicon, LeakageScanner, normalize, sha256_text,
+    MAX_FORBIDDEN_TERM_TOKENS, SCANNER_VERSION, ForbiddenLexicon,
+    LeakageScanner, minimum_token_ngrams, normalize, sha256_text,
 )
 
-MASKER_VERSION = "v2.3-procedure-mask-2"
+MASKER_VERSION = "v2.3-procedure-mask-3"
 
 
 @dataclass(frozen=True)
@@ -167,6 +168,8 @@ class BlindProcedureBuilder:
                 tokens = normalize(raw_term).split()
                 if not tokens:
                     continue
+                if len(tokens) > MAX_FORBIDDEN_TERM_TOKENS:
+                    raise ValueError("forbidden term exceeds token limit")
                 compact_term = "".join(tokens)
                 if (
                     category == "harness_markers"
@@ -182,12 +185,10 @@ class BlindProcedureBuilder:
                     continue
                 mask_terms.add((category, " ".join(tokens)))
                 minimum = 3 if category == "commands" else 2
-                if len(tokens) >= minimum:
-                    for size in range(len(tokens) - 1, minimum - 1, -1):
-                        for index in range(len(tokens) - size + 1):
-                            mask_terms.add(
-                                (category, " ".join(tokens[index:index + size]))
-                            )
+                mask_terms.update(
+                    (category, gram)
+                    for gram in minimum_token_ngrams(tokens, minimum)
+                )
         ordered_terms = sorted(
             regex_terms + list(mask_terms),
             key=lambda item: len(normalize(item[1])),

@@ -8,7 +8,8 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 
-SCANNER_VERSION = "v2.3-nfkc-alias-ngram-1"
+SCANNER_VERSION = "v2.3-nfkc-alias-ngram-2"
+MAX_FORBIDDEN_TERM_TOKENS = 128
 
 
 def normalize(text: str) -> str:
@@ -19,6 +20,26 @@ def normalize(text: str) -> str:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256((text or "").encode("utf-8")).hexdigest()
+
+
+def minimum_token_ngrams(tokens: list[str], minimum: int) -> tuple[str, ...]:
+    """Return the smallest sufficient adjacent grams with a hard work bound.
+
+    The full normalized term is checked separately.  For a changed suffix or
+    prefix, every longer partial match contains at least one adjacent gram of
+    ``minimum`` tokens, so enumerating every size from N-1 down to ``minimum``
+    adds no detection coverage and grows quadratically in pattern count.
+    """
+    if minimum < 1:
+        raise ValueError("token n-gram minimum must be positive")
+    if len(tokens) > MAX_FORBIDDEN_TERM_TOKENS:
+        raise ValueError("forbidden term exceeds token limit")
+    if len(tokens) < minimum:
+        return ()
+    return tuple(
+        " ".join(tokens[index:index + minimum])
+        for index in range(len(tokens) - minimum + 1)
+    )
 
 
 @dataclass(frozen=True)
@@ -105,6 +126,7 @@ class LeakageScanner:
         self, text: str, lexicon: ForbiddenLexicon, *, runtime_scope: bool = False
     ) -> ScanReport:
         folded = normalize(text)
+        compact_text = folded.replace(" ", "")
         report = ScanReport(sha256_text(text), lexicon.hash)
         seen: set[tuple[str, str, int, int]] = set()
 
@@ -127,6 +149,9 @@ class LeakageScanner:
                 term = normalize(raw_term)
                 if not term:
                     continue
+                tokens = term.split()
+                if len(tokens) > MAX_FORBIDDEN_TERM_TOKENS:
+                    raise ValueError("forbidden term exceeds token limit")
                 pattern = re.compile(rf"(?<!\w){re.escape(term)}(?!\w)")
                 for found in pattern.finditer(folded):
                     add(category, "exact_or_alias", term, found.start(), found.end())
@@ -134,7 +159,6 @@ class LeakageScanner:
                 # Detect separator-removal and concatenation evasions.  The
                 # compact coordinates are intentionally reported as normalized
                 # spans; raw text remains separate provenance.
-                compact_text = folded.replace(" ", "")
                 compact_term = term.replace(" ", "")
                 fault_marker = (
                     re.fullmatch(r"f(\d+)", compact_term)
@@ -162,15 +186,11 @@ class LeakageScanner:
                 # A changed suffix in a path/command must not evade the gate.
                 # Require at least two adjacent tokens (or three for commands)
                 # to avoid single common-word false positives.
-                tokens = term.split()
                 minimum = 3 if category == "commands" else 2
-                if len(tokens) >= minimum:
-                    for size in range(len(tokens) - 1, minimum - 1, -1):
-                        for index in range(len(tokens) - size + 1):
-                            gram = " ".join(tokens[index:index + size])
-                            gram_pattern = re.compile(rf"(?<!\w){re.escape(gram)}(?!\w)")
-                            for found in gram_pattern.finditer(folded):
-                                add(category, "token_ngram", gram, found.start(), found.end())
+                for gram in minimum_token_ngrams(tokens, minimum):
+                    gram_pattern = re.compile(rf"(?<!\w){re.escape(gram)}(?!\w)")
+                    for found in gram_pattern.finditer(folded):
+                        add(category, "token_ngram", gram, found.start(), found.end())
         return report
 
     def require_clean(

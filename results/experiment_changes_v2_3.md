@@ -494,3 +494,12 @@
 - **수정 내용**: remote `set -eu`·`LC_ALL=C df -P /`가 exact disk marker를 마지막에 1회 출력하고 parser는 exactly-one digits 0..100만 허용한다. unrelated stderr는 무시하되 missing/duplicate/invalid/timeout과 disk>=80은 RED다. full reset/F8 manifest는 `Path(__file__).resolve().parents[2]`의 checked-out revision 파일로 결합한다.
 - **수정 파일**: `scripts/stabilize/health_verify.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_health_verify.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — targeted 71 PASS, pycompile·diff-check PASS, actual comprehensive health `(True, [])`, 독립 reviewer APPROVE. fresh campaign 재실행 예정.
+
+### 56. F4-t4 누출 scanner/masker 복잡도 상한 — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary17은 F4-t3까지 18 incidents·54 rows/raw·648 calls를 commit한 뒤 F4-t4 처치 검증 후 모델 호출 전에 9분 이상 CPU 100%로 정체됐다. ledger는 648에서 증가하지 않았고 stack sample은 regex·bytearray search·GC에 집중됐다.
+- **원인**: F4-t4의 수백 토큰 crash-safe shell `command`와 `ssh_output`이 일반 forbidden field value로 들어갔고, scanner/masker가 N-token term의 모든 크기 adjacent n-gram을 생성해 O(N²) pattern·O(N³) 문자열 작업을 수행했다.
+- **수정 내용**: command·ssh/kubectl output을 lexical scalar에서 제외하되 nonce·path·nodefs receipt 값은 유지한다. full exact match와 최소 충분 2/3-token adjacent grams만 사용해 pattern 수를 선형으로 제한하고, forbidden term은 128 normalized tokens를 넘으면 fail-closed한다. scanner/masker provenance version을 각각 `v2.3-nfkc-alias-ngram-2`, `v2.3-procedure-mask-3`으로 갱신했다.
+- **수정 파일**: `experiments/v2_3/scanner.py:1`, `experiments/v2_3/retrieval.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_scanner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — 관련 73 PASS, 전체 271 PASS, F4-t4 유사 18KB command·16KB transport·22KB runtime benchmark 0.041초, dry-run과 diff-check 통과 후 fresh campaign 재실행 예정. Primary17은 KeyboardInterrupt 뒤 exact Flux restore·recovery_green, nodes6/6·Boutique12/12·Flux5/5·Prometheus/Loki GREEN과 nonce workdir/Failed pod 0을 확인했다.

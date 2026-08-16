@@ -1,7 +1,13 @@
 import unittest
 
 from experiments.v2_3.mock import clean_fixture, positive_fixture
-from experiments.v2_3.scanner import LeakageDetected, LeakageScanner
+from experiments.v2_3.scanner import (
+    MAX_FORBIDDEN_TERM_TOKENS,
+    ForbiddenLexicon,
+    LeakageDetected,
+    LeakageScanner,
+    minimum_token_ngrams,
+)
 
 
 class ScannerTests(unittest.TestCase):
@@ -68,6 +74,28 @@ class ScannerTests(unittest.TestCase):
             ).match_count,
             0,
         )
+
+    def test_long_terms_have_linear_minimum_ngram_count(self):
+        tokens = [f"token{index}" for index in range(MAX_FORBIDDEN_TERM_TOKENS)]
+        grams = minimum_token_ngrams(tokens, 3)
+        self.assertEqual(len(grams), MAX_FORBIDDEN_TERM_TOKENS - 2)
+        self.assertEqual(grams[0], "token0 token1 token2")
+        self.assertEqual(
+            grams[-1],
+            f"token{MAX_FORBIDDEN_TERM_TOKENS - 3} "
+            f"token{MAX_FORBIDDEN_TERM_TOKENS - 2} "
+            f"token{MAX_FORBIDDEN_TERM_TOKENS - 1}",
+        )
+
+    def test_oversized_forbidden_term_fails_closed(self):
+        oversized = " ".join(
+            f"token{index}" for index in range(MAX_FORBIDDEN_TERM_TOKENS + 1)
+        )
+        with self.assertRaisesRegex(ValueError, "token limit"):
+            LeakageScanner().scan(
+                "ordinary runtime evidence",
+                ForbiddenLexicon(commands=(oversized,)),
+            )
 
 
 if __name__ == "__main__":
