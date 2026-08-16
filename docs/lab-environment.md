@@ -124,6 +124,10 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   `Ready=True`·`DiskPressure=False`만 poll한다. condition 전파가 늦어도 kubelet을
   반복 restart하지 않고, poll 소진 시 fail-close한다. pre-mutation crash처럼 Node가
   이미 GREEN이면 service restart를 하지 않는다.
+- clean `84eb369` model-free full lifecycle probe에서 injection post 4,460,826,624
+  bytes, t180 live 4,775,100,416 bytes와 `DiskPressure=True` direct endpoint,
+  collector 181.843초, exact cleanup1·kubelet restart1·condition poll2·health GREEN을
+  확인했다. model/AIC/result는 0이며 사후 Failed pod와 nonce workdir은 0이다.
 
 ## 네임스페이스 / 주요 서비스
 
