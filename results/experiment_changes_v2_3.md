@@ -440,3 +440,12 @@
 - **수정 내용**: worker 1개와 timeout180은 유지하고 절대 byte를 15 GiB, observation window를 40–120초/2초 polling으로 확정한다. 독립 model-free calibration 2회에서 Ready=False onset 45.079초·65.334초, full collector 46.475초·66.833초, exact recovery 3회·4회 GREEN을 확인했다. full collector<175초 gate는 유지한다.
 - **수정 파일**: `scripts/fault_inject/config.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — 회귀·독립 리뷰·clean commit-push 뒤 정본 production helper로 model-free full lifecycle probe 1회 통과를 fresh main campaign gate로 둔다.
+
+### 50. F4-t3 low-memory precursor treatment gate — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 15G/120초 정본과 page-in·16G·2-worker·170초 후보가 연속해서 실제 low memory를 만들고도 Node NotReady를 재현하지 못했다. 모든 시도는 inference 전 중단, exact recovery GREEN, model/AIC/result 0이었다.
+- **원인**: stress-ng 상세 man page와 2×8G 메모리 감소 실측은 `vm-bytes`가 worker 전체 총량임을 보였고, NotReady 전환은 memory exhaustion 자체보다 kubelet lease와 kernel reclaim/OOM scheduling에 의존했다. ISS-027의 per-worker/28G 해석은 잘못됐다.
+- **수정 내용**: exact command를 worker2·총15G·timeout180으로 고정한다. 10–120초 poll에서 bound process가 live이고 Node NotReady 또는 같은 host의 `MemAvailable<=2 GiB`가 확인될 때만 treatment를 승인한다. low-memory-only case는 `node_disrupted=false` precursor로 라벨링한다. 원격 identity 검사는 `set -eu`로 fail-closed하고, NotReady+SSH-timeout 예외는 sealed-launch 근거만 기록하며 memory/live identity를 관측한 것으로 표시하지 않는다. primary60과 F4-t3 제외59 sensitivity를 함께 보고한다.
+- **수정 파일**: `scripts/fault_inject/config.py:1`, `experiments/v2_3/injection_validator.py:1`, `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_injection_validator.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/lab-environment.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — targeted/full regression과 독립 리뷰 후 clean commit에서 model-free production-helper probe를 실행한다.

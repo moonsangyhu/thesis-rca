@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 28건
-- 심각(실험 무효화): 24건
+- 총 이슈: 29건
+- 심각(실험 무효화): 25건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -365,3 +365,14 @@
 - **근본 원인**: Node Ready 변화가 단조 상태가 아닌데도 최초 runner는 정확히 60초 한 점만 읽었다. 이후 helper는 named-node 조회의 기존 최대 60초 timeout을 그대로 사용해 단일 transient read가 20초 window를 소진할 수 있었다. 또한 빈 `{}` 응답의 Ready=None을 disruption으로 해석할 수 있는 별도 fail-open schema 공백이 있었다.
 - **수정 내용**: F4-t3만 40초부터 120초까지 2초 간격으로 validator를 실행한다. receipt node는 shared `yms-proxmox-04`와 load/SSH 전에 결합하고 해당 named-node read만 5초로 제한하며 exact timeout과 `F4DisruptionNotObserved`만 재시도한다. 각 attempt의 시작·완료·enum outcome은 retryable·fatal·invalid-result·verified를 포함해 반환/재시도 전에 event journal에 fsync한다. Node kind/name/nonempty UID/conditions list/유일한 Ready/허용 status가 정확하지 않은 빈·오염 응답, malformed receipt, SSH identity 및 다른 validator 오류는 즉시 fail-closed한다. 성공 event에는 poll 시작과 validation 완료 elapsed를 모두 기록하고 완료가 120초를 넘으면 성공 응답도 거부한다.
 - **현재 영향**: 15 GiB/180초 calibration 2회는 각각 45.079초·65.334초에 NotReady, 46.475초·66.833초에 full collector<175, exact recovery 3회·4회 GREEN을 재현했다. 120초 deadline, exact timeout retry/audit, event fsync failure abort, wrong receipt node의 load/SSH 전 거부, empty/wrong/duplicate Ready schema 거부, fatal/invalid-result provenance, 121초 late start와 119→125초 slow-success 거부를 deterministic unit으로 검증한다. 전체 회귀·독립 리뷰·clean commit-push 뒤 정본 15G/120 production window 코드의 model-free live lifecycle probe가 실행 gate다.
+
+### [ISS-029] F4-t3 NotReady 처치의 run 간 비재현성과 vm-bytes 의미 정정
+
+- **카테고리**: injection / measurement validity
+- **심각도**: critical (P0)
+- **영향**: commit `1bbe2c1`의 정본 15G·worker1·40–120초 probe는 39회 모두 Ready=True라 inference 전에 중단됐다. `--page-in`, worker1 16G, worker2 8G/15G/16G, worker1 15G·170초 후보도 NotReady를 재현하지 못했다. 모든 probe는 model/AIC/result 0, exact recovery 2–4회와 comprehensive health GREEN이었다.
+- **발생 빈도**: 기존 성공 2회 뒤 정본 및 calibration 6회 연속 NotReady 미관측.
+- **관찰한 사실**: 설치된 0.19.02 상세 man page는 `--vm-bytes N`을 worker 전체에 공유되는 총량으로 설명한다. 2-worker 8G probe에서 node-exporter `MemAvailable`이 baseline 약 14.7GB에서 약 6.1GB로 감소해 총 8G 의미와 일치했다. 2-worker 15G 진단은 15초에 host `MemAvailable=1,659,895,808 bytes`, stress parent/children `oom_score_adj=-1000`과 exact process identity를 확인했지만 Node Ready=True·MemoryPressure=False였다. 따라서 ISS-027의 28 GiB 해석은 정정되어야 한다.
+- **근본 원인**: memory exhaustion은 실제로 성립하지만 kubelet lease/Ready 전환은 노드의 순간 workload와 kernel reclaim/OOM scheduling에 의존해 단조롭거나 재현 가능한 종점이 아니다. NotReady만 gate로 강제하면 실재하는 극심한 low-memory 처치를 거부하고, 더 강한 처치나 kubelet 강제 중단은 안전성과 단일 원인 타당성을 훼손한다.
+- **수정 내용**: 총량 15G와 timeout180을 유지하고 worker 2개로 동시에 touch한다. 10–120초 polling에서 exact PID/start/hash live identity와 `Ready!=True` 또는 같은 host probe의 `/proc/meminfo MemAvailable<=2 GiB`를 요구한다. Ready=True+low-memory는 `node_disrupted=false`, `memavailable-threshold` precursor로 명시한다. Node가 이미 NotReady라 SSH가 timeout인 경우에만 sealed launch receipt와 독립 Node 상태를 근거로 허용하되 identity/memory를 관측한 것으로 기록하지 않는다. 원격 identity command는 `set -eu`로 marker 전 모든 test를 fail-closed하며 malformed/duplicate/negative memory 값과 Ready=True SSH timeout은 retry/거부한다.
+- **현재 영향**: primary 60 paired incidents는 유지하되 F4-t3 제외 59-incident paired sensitivity를 의무 보고해 endpoint 완화의 영향을 분리한다. 전체 회귀·독립 리뷰·clean commit-push 뒤 이 exact production helper로 model-free full collector/recovery probe를 통과해야 fresh main campaign을 시작한다.

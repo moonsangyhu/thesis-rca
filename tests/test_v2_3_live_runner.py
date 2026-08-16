@@ -868,12 +868,12 @@ class LiveRunnerTests(unittest.TestCase):
                     "stress_ng_version": "0.19.02",
                     "stress_ng_preexisting": False,
                     "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
-                    "stress_vm_workers": 1,
+                    "stress_vm_workers": 2,
                 }
             )
         command = ssh.call_args.args[1]
         self.assertIn("command -v stress-ng", command)
-        self.assertIn("--vm 1 --vm-bytes 15G", command)
+        self.assertIn("--vm 2 --vm-bytes 15G", command)
         self.assertIn("--timeout 180s", command)
         self.assertIn("--vm-keep", command)
         self.assertIn("sync -f", command)
@@ -881,7 +881,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(result["stress_ng_pid"], 4321)
         self.assertEqual(result["stress_ng_start_ticks"], 8765)
         self.assertEqual(result["stress_memory_bytes"], "15G")
-        self.assertEqual(result["stress_vm_workers"], 1)
+        self.assertEqual(result["stress_vm_workers"], 2)
         self.assertEqual(result["stress_timeout_seconds"], 180)
 
         with patch(
@@ -894,11 +894,11 @@ class LiveRunnerTests(unittest.TestCase):
                         "stress_ng_version": "0.19.02",
                         "stress_ng_preexisting": False,
                         "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
-                        "stress_vm_workers": 1,
+                        "stress_vm_workers": 2,
                     }
                 )
 
-        for bad_workers in (None, 0, 2, True, 1.0, "1"):
+        for bad_workers in (None, 0, 1, 3, True, 2.0, "2"):
             with self.subTest(sealed_workers=bad_workers), patch(
                 "scripts.fault_inject.injector.ssh_node"
             ) as ssh:
@@ -922,7 +922,7 @@ class LiveRunnerTests(unittest.TestCase):
             "fault_id": "F4", "trial": 3, "target_service": "worker03",
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
-            "stress_vm_workers": 1,
+            "stress_vm_workers": 2,
         }
         injector = FaultInjector()
         injector._injectors["F4"] = lambda target, trial, gt, ctx: {
@@ -978,7 +978,7 @@ class LiveRunnerTests(unittest.TestCase):
         class Validator:
             def validate(self, *_args):
                 calls.append(clock[0])
-                if clock[0] < 52:
+                if clock[0] < 22:
                     raise F4DisruptionNotObserved(
                         "F4 node disruption was not observed"
                     )
@@ -994,9 +994,9 @@ class LiveRunnerTests(unittest.TestCase):
             sleep_fn=sleep,
             monotonic_fn=lambda: clock[0],
         )
-        self.assertEqual(calls, [40, 42, 44, 46, 48, 50, 52])
-        self.assertEqual(result["observation_poll_started_seconds"], 52.0)
-        self.assertEqual(result["observation_latched_seconds"], 52.0)
+        self.assertEqual(calls, [10, 12, 14, 16, 18, 20, 22])
+        self.assertEqual(result["observation_poll_started_seconds"], 22.0)
+        self.assertEqual(result["observation_latched_seconds"], 22.0)
 
     def test_f4_memory_observation_window_fails_at_deadline(self):
         clock = [0.0]
@@ -1023,7 +1023,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(clock[0], 120.0)
 
     def test_f4_memory_observation_timeout_is_bounded_and_audited(self):
-        clock = [40.0]
+        clock = [10.0]
         events = []
         attempts = [0]
 
@@ -1051,7 +1051,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual([event["attempt"] for event in events], [1, 2])
 
     def test_f4_memory_observation_event_failure_aborts_retry(self):
-        clock = [40.0]
+        clock = [10.0]
         validator = SimpleNamespace(
             validate=lambda *_: (_ for _ in ()).throw(
                 F4DisruptionNotObserved("not observed")
@@ -1097,12 +1097,12 @@ class LiveRunnerTests(unittest.TestCase):
                 monotonic_fn=lambda: clock[0],
                 observation_event_fn=events.append,
             )
-        self.assertEqual(calls, [40.0])
+        self.assertEqual(calls, [10.0])
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0]["outcome"], "fatal-validation-error")
 
     def test_f4_memory_observation_invalid_result_is_not_verified(self):
-        clock = [40.0]
+        clock = [10.0]
         events = []
         with self.assertRaisesRegex(PilotError, "did not PASS"):
             validate_injection_in_observation_window(
@@ -1163,7 +1163,7 @@ class LiveRunnerTests(unittest.TestCase):
         ctx = {
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
-            "stress_vm_workers": 1,
+            "stress_vm_workers": 2,
             "stress_ng_pid": 4321, "stress_ng_start_ticks": 8765,
         }
         with patch(
@@ -1180,13 +1180,13 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(result["attempts"], 2)
         self.assertIn('"$pid" != "4321"', ssh.call_args.args[1])
         self.assertIn("--timeout 180s", ssh.call_args.args[1])
-        self.assertIn("--vm 1 --vm-bytes 15G", ssh.call_args.args[1])
+        self.assertIn("--vm 2 --vm-bytes 15G", ssh.call_args.args[1])
         self.assertNotIn("pkill -9 stress-ng", ssh.call_args.args[1])
 
     def test_f4_memory_recovery_rejects_malformed_worker_receipt(self):
         from scripts.stabilize.recovery import Recovery
 
-        for bad_workers in (None, 0, 2, True, 1.0, "1"):
+        for bad_workers in (None, 0, 1, 3, True, 2.0, "2"):
             with self.subTest(workers=bad_workers), patch(
                 "scripts.stabilize.recovery.ssh_node"
             ) as ssh:
@@ -1207,7 +1207,7 @@ class LiveRunnerTests(unittest.TestCase):
         ctx = {
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
-            "stress_vm_workers": 1,
+            "stress_vm_workers": 2,
         }
         with patch(
             "scripts.stabilize.recovery.ssh_node",
@@ -1227,7 +1227,7 @@ class LiveRunnerTests(unittest.TestCase):
         ctx = {
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
-            "stress_vm_workers": 1,
+            "stress_vm_workers": 2,
         }
         with patch(
             "scripts.stabilize.recovery.ssh_node",
@@ -1248,7 +1248,7 @@ class LiveRunnerTests(unittest.TestCase):
         ctx = {
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
-            "stress_vm_workers": 1,
+            "stress_vm_workers": 2,
         }
         with patch(
             "scripts.stabilize.recovery.ssh_node",
@@ -1276,7 +1276,7 @@ class LiveRunnerTests(unittest.TestCase):
             context = FaultInjector().prepare_recovery_context("F4", 3)
         self.assertEqual(context["stress_ng_version"], "0.19.02")
         self.assertIs(context["stress_ng_preexisting"], False)
-        self.assertEqual(context["stress_vm_workers"], 1)
+        self.assertEqual(context["stress_vm_workers"], 2)
         self.assertEqual(
             context["stress_receipt_file"], "/tmp/v23-f4t3-stress.receipt"
         )

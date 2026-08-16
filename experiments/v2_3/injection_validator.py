@@ -12,6 +12,7 @@ from .live_runner import (
     PilotError,
 )
 from scripts.fault_inject.config import (
+    F4_T3_MEM_AVAILABLE_MAX_BYTES,
     F4_T3_STRESS_BYTES,
     F4_T3_OBSERVATION_WAIT_SECONDS,
     F4_T3_NODE_NAME,
@@ -198,32 +199,70 @@ class LiveInjectionValidator:
             disrupted = disrupted or conditions.get("DiskPressure") == "True"
         if trial == 1:
             disrupted = disrupted or observed.get("spec", {}).get("unschedulable") is True
-        if not node or not disrupted:
-            if trial == 3:
-                raise F4DisruptionNotObserved("F4 node disruption was not observed")
+        if not node:
             raise PilotError("F4 node disruption was not observed")
-        details = {"node": node, "node_disrupted": True}
+        details = {"node": node, "node_disrupted": disrupted}
         if trial == 3:
             command = (
-                f"pid={pid}; test -r /proc/$pid/stat; "
+                f"set -eu; pid={pid}; test -r /proc/$pid/stat; "
                 f"test \"$(awk '{{print $22}}' /proc/$pid/stat)\" = \"{start_ticks}\"; "
                 f"test \"$(sha256sum /proc/$pid/cmdline | awk '{{print $1}}')\" "
-                f"= \"{cmdline_hash}\"; echo __V23_STRESS_NG_IDENTITY__=live"
+                f"= \"{cmdline_hash}\"; echo __V23_STRESS_NG_IDENTITY__=live; "
+                "awk '/^MemAvailable:/{printf \"__V23_MEM_AVAILABLE_BYTES__=%.0f\\n\", "
+                "$2 * 1024}' /proc/meminfo"
             )
             try:
                 probe = self.ssh_probe(str(node), command)
             except (TimeoutError, subprocess.TimeoutExpired):
                 probe = "connection timed out"
-            if "__V23_STRESS_NG_IDENTITY__=live" in probe:
+            if probe.splitlines().count("__V23_STRESS_NG_IDENTITY__=live") == 1:
                 details["stress_process_probe"] = "live"
+                details["stress_identity_verified"] = True
+                values = [
+                    line.removeprefix("__V23_MEM_AVAILABLE_BYTES__=")
+                    for line in probe.splitlines()
+                    if line.startswith("__V23_MEM_AVAILABLE_BYTES__=")
+                ]
+                if len(values) != 1 or not values[0].isdigit():
+                    raise PilotError("F4 memory availability probe is malformed")
+                mem_available = int(values[0])
+                if mem_available < 0:
+                    raise PilotError("F4 memory availability probe is malformed")
+                details["mem_available_bytes"] = mem_available
+                details["memory_pressure_verified"] = (
+                    mem_available <= F4_T3_MEM_AVAILABLE_MAX_BYTES
+                )
             elif conditions.get("Ready") != "True" and any(
                 marker in probe.lower() for marker in (
                     "timed out", "timeout", "no route to host", "connection refused"
                 )
             ):
                 details["stress_process_probe"] = "node_unreachable"
+                details["stress_identity_verified"] = False
+                details["stress_identity_basis"] = (
+                    "sealed-launch-plus-node-notready"
+                )
+                details["memory_pressure_verified"] = False
             else:
+                if conditions.get("Ready") == "True" and any(
+                    marker in probe.lower() for marker in (
+                        "timed out", "timeout", "no route to host", "connection refused"
+                    )
+                ):
+                    raise F4ObservationTimeout(
+                        "F4 memory availability observation timed out"
+                    )
                 raise PilotError("F4 memory stress process identity was not observed")
+            if not disrupted and not details.get("memory_pressure_verified"):
+                raise F4DisruptionNotObserved(
+                    "F4 memory pressure treatment was not observed"
+                )
+            details["treatment_verified"] = True
+            details["treatment_basis"] = (
+                "node-notready" if disrupted else "memavailable-threshold"
+            )
+        elif not disrupted:
+            raise PilotError("F4 node disruption was not observed")
         return details
 
     def _validate_f5(self, trial: int, target: str, result: dict) -> dict:
