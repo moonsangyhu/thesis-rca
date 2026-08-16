@@ -395,3 +395,12 @@
 - **수정 내용**: F4 t3만 observation wait=60초와 stress timeout=180초를 사용한다. 13 GiB 처치와 atomic PID/start/hash receipt는 유지한다. validator는 wait=60과 Ready!=True를 exact 요구하고 runner는 full collector가 injection 후 175초 안에 끝났음을 durable event로 증명한 경우만 inference한다. recovery는 shared constant의 exact command identity만 정리하며 다른 F4 trial wait=180초는 유지한다.
 - **수정 파일**: `scripts/fault_inject/config.py:1`, `scripts/fault_inject/injector.py:1`, `experiments/v2_3/injection_validator.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_injection_validator.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — targeted/전체 회귀·dry-run·독립 리뷰·clean commit-push 뒤 model-free bounded live probe와 fresh campaign 재실행 예정
+
+### 45. F4-t3 시험 후보 내 유효 절대 처치량 재보정 — 2026-08-16
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 13 GiB/180초 model-free probe는 60초 validator에서 `Ready=True`로 거부됐고, 별도 bounded polling에서도 123초까지 Ready 상태가 유지돼 F4-t3의 NodeNotReady 처치가 성립하지 않았다.
+- **원인**: probe 시점 yms-proxmox-04의 가용 메모리가 약 14.68 GB여서 13 GiB stress가 kubelet/Ready 경계를 넘지 못했다.
+- **수정 내용**: 별도 14 GiB/90초 model-free calibration에서 52.034초에 `Ready=False`가 관측되고 sealed PID exact cleanup 1회로 복구된 근거에 따라 shared 절대 처치량만 14 GiB로 조정한다. wait=60초, timeout=180초, full-collector deadline<175초, Ready!=True, PID/start/hash receipt와 다른 F4 trial wait=180초 계약은 유지한다.
+- **수정 파일**: `scripts/fault_inject/config.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_injection_validator.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — 회귀·dry-run·독립 리뷰 뒤 model-free full-collector/recovery live probe 통과를 fresh main campaign의 실행 gate로 둔다.
