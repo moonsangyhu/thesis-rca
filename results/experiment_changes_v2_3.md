@@ -476,3 +476,12 @@
 - **수정 내용**: F4-t4 read-only live validator에만 전체 inner command를 `shlex.quote`한 `sudo sh -c`를 적용한다. wrapper 내부 `set -eu`와 receipt/file/device/inode/size/blocks/capacity/available exact test는 모두 marker 전에 유지하고 다른 fault validator에는 sudo를 확장하지 않는다. pressure로 Evicted된 monitoring DaemonSet pod 2개만 정확히 제거하고 replacement 및 comprehensive cluster GREEN을 확인했다.
 - **수정 파일**: `experiments/v2_3/injection_validator.py:1`, `tests/test_v2_3_injection_validator.py:1`, `docs/lab-environment.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 코드 검증 완료 — targeted 67 PASS, py_compile·diff-check PASS, 독립 reviewer APPROVE. clean commit 뒤 model-free F4-t4 full lifecycle probe 재실행이 남아 있다.
+
+### 54. F4-t4 model-free full lifecycle gate GREEN — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **검증 내용**: clean `84eb369`에서 Copilot 없이 F4-t4 production helper를 실행했다. injection post available 4,460,826,624 bytes와 exact allocation 33,394,939,290 bytes를 봉인했고, t180 same-UID `Ready=True`·`DiskPressure=True`, live available 4,775,100,416 bytes와 root-owned receipt/file identity를 검증했다. collector는 181.843초에 14 metric groups·2 log groups·6 kubectl groups를 완료했다.
+- **복구/안전**: exact cleanup attempts1, kubelet restart1, condition poll2 뒤 recovery health gate PASS였다. pressure로 Evicted된 monitoring DaemonSet pod 2개만 exact 삭제해 replacements 6/6을 확인했다. 최종 nodes6/6 Ready·DiskPressure/MemoryPressure false, Boutique12/12, Flux5/5, Prometheus/Loki Ready, Failed pod0, nonce workdir0이다.
+- **증거**: `/tmp/v23-f4t4-probe-20260817T0120Z/probe_events.jsonl` 8 events, SHA-256 `f075061b70d5c0f7505ecc6d36e023e7d9725cabe770098c5711ca1479d44c7a`; `probe_complete` model_calls0·AIC0·result_rows0.
+- **수정 파일**: `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: GREEN — F4-t4 model-free fresh-campaign 실행 gate 충족.
