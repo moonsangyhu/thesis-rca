@@ -241,14 +241,23 @@ Terra의 effect size·intra-fault correlation 사전값이 없으므로 V2.2에�
 - F4-t4는 `/tmp`가 tmpfs인 현재 worker 형상에서 kubelet nodefs와 무관한 파일을
   만들지 않는다. `/var/tmp`와 `/var/lib/kubelet`의 exact device를 preflight에서
   결합한다. preflight는 read-only이며 cryptographic nonce와 nodefs prestate를
-  local event journal에 먼저 fsync한다. 그 뒤에만 nonce-bound mode-0700
+  exact Node UID·Ready=True·DiskPressure=False baseline과 함께 local event
+  journal에 먼저 fsync한다. 그 뒤에만 nonce-bound mode-0700
   experiment-owned directory와 intent receipt를 원격에 생성·fsync한다. nodefs
   capacity의 9% available을 목표로 하되 poststate는 8% 이상
   10% 미만이어야 한다. file device·work/file inode·size·allocated blocks와
   nodefs capacity·pre/post available을 atomic post receipt와 live validator에
   교차결합하며 allocated blocks가 requested bytes를 실제로 뒷받침해야 한다.
   recovery는 파일 부재만으로 성공하지 않고 동일 nodefs의 available이 10% 이상
-  회복됐는지 확인한다. `DiskPressure=True`가 아직 관측되지 않고 threshold만 직접
+  회복됐는지 확인하고 current Node가 아직 NotReady/DiskPressure일 때만 kubelet을
+  정확히 1회 재시작한다. active marker 뒤에는 재시작을 반복하지 않고 2초 간격
+  최대 15회의 same-UID `Ready=True`·`DiskPressure=False` condition poll만 수행하며,
+  끝까지 stale이면 recovery를 실패시킨다. atomic
+  post receipt와 live file identity가 유효한 상태에서 `DiskPressure=True` 또는
+  `Ready!=True`가 관측되면 GC 이후 available 반등과 무관하게 직접 endpoint로
+  기록한다. validation event에는 injection 당시 post threshold/allocation/nonce·
+  inode identity와 validation 시점 live threshold를 분리해 영속화한다.
+  condition이 관측되지 않고 live threshold만 직접
   입증된 branch는 `node_disrupted=false`, `disk_pressure_observed=false`,
   `treatment_basis=nodefs-available-threshold` precursor로 기록한다. 전체 60건
   primary와 별도로 F4-t4 제외 59건 및 F4-t3/t4 동시 제외 58건 paired

@@ -977,6 +977,14 @@ class LiveRunnerTests(unittest.TestCase):
             "__V23_DISK_FILE_BLOCKS__=120\n"
             "__V23_DISK_POST_AVAILABLE__=9000\n"
         )
+        node_green = {
+            "kind": "Node",
+            "metadata": {"name": "yms-proxmox-02", "uid": "node-uid-02"},
+            "status": {"conditions": [
+                {"type": "Ready", "status": "True"},
+                {"type": "DiskPressure", "status": "False"},
+            ]},
+        }
         with patch(
             "scripts.fault_inject.injector.load_trial",
             return_value={
@@ -990,12 +998,16 @@ class LiveRunnerTests(unittest.TestCase):
         ) as ssh, patch(
             "scripts.fault_inject.injector.secrets.token_hex",
             return_value="a" * 32,
+        ), patch(
+            "scripts.fault_inject.injector.kubectl_get_json",
+            return_value=node_green,
         ):
             injector = FaultInjector()
             sealed = injector.prepare_recovery_context("F4", 4)
             result = injector.inject("F4", 4, recovery_context=sealed)
         self.assertEqual(sealed["nodefs_device"], 64512)
         self.assertEqual(sealed["nodefs_target_available_percent"], 9)
+        self.assertEqual(sealed["node_uid_before"], "node-uid-02")
         self.assertEqual(result["diskfill_inode"], 102)
         self.assertEqual(result["nodefs_post_available_bytes"], 9000)
         self.assertEqual(result["wait_seconds"], 180)
@@ -1028,6 +1040,9 @@ class LiveRunnerTests(unittest.TestCase):
             ),
         ) as recovery_ssh, patch(
             "scripts.stabilize.recovery.kubectl"
+        ), patch(
+            "scripts.stabilize.recovery.kubectl_get_json",
+            return_value=node_green,
         ), patch("scripts.stabilize.recovery.time.sleep"):
             recovered = Recovery()._recover_f4(4, result)
         self.assertTrue(recovered["diskfill_cleanup_verified"])
@@ -1035,6 +1050,112 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertIn("stat -c %i \"$work\"", recovery_command)
         self.assertIn("sealed_file_inode", recovery_command)
         self.assertIn("rmdir \"$work\"", recovery_command)
+        self.assertNotIn("systemctl restart kubelet", recovery_command)
+        self.assertIs(recovered["kubelet_restarted"], False)
+
+        node_stale = {
+            **node_green,
+            "status": {"conditions": [
+                {"type": "Ready", "status": "True"},
+                {"type": "DiskPressure", "status": "True"},
+            ]},
+        }
+        recovery_marker = (
+            "__V23_DISK_RECOVERY__=already-absent\n"
+            "__V23_DISK_RECOVERY_CAPACITY__=100000\n"
+            "__V23_DISK_RECOVERY_AVAILABLE__=70000\n"
+        )
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            side_effect=[
+                recovery_marker,
+                "__V23_KUBELET_RESTART__=verified\n",
+            ],
+        ) as stale_ssh, patch(
+            "scripts.stabilize.recovery.kubectl"
+        ), patch(
+            "scripts.stabilize.recovery.kubectl_get_json",
+            side_effect=[node_stale, node_stale, node_green],
+        ), patch("scripts.stabilize.recovery.time.sleep"):
+            stale_recovered = Recovery()._recover_f4(4, result)
+        self.assertIs(stale_recovered["kubelet_restarted"], True)
+        self.assertEqual(stale_recovered["condition_check_attempts"], 2)
+        self.assertEqual(stale_ssh.call_count, 2)
+        self.assertIn("systemctl restart kubelet", stale_ssh.call_args_list[1].args[1])
+
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            side_effect=[
+                recovery_marker, "", recovery_marker,
+                "__V23_KUBELET_RESTART__=verified\n",
+            ],
+        ) as retry_ssh, patch(
+            "scripts.stabilize.recovery.kubectl"
+        ), patch(
+            "scripts.stabilize.recovery.kubectl_get_json",
+            side_effect=[node_stale, node_stale, node_green],
+        ), patch("scripts.stabilize.recovery.time.sleep"):
+            retried = Recovery()._recover_f4(4, result)
+        self.assertEqual(retried["attempts"], 2)
+        self.assertIs(retried["kubelet_restarted"], True)
+        self.assertEqual(retry_ssh.call_count, 4)
+
+        node_unknown = {
+            **node_green,
+            "status": {"conditions": [
+                {"type": "Ready", "status": "True"},
+                {"type": "DiskPressure", "status": "Unknown"},
+            ]},
+        }
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            side_effect=[
+                recovery_marker,
+                "__V23_KUBELET_RESTART__=verified\n",
+            ],
+        ) as unknown_ssh, patch(
+            "scripts.stabilize.recovery.kubectl"
+        ), patch(
+            "scripts.stabilize.recovery.kubectl_get_json",
+            side_effect=[node_unknown, node_green],
+        ), patch("scripts.stabilize.recovery.time.sleep"):
+            unknown_recovered = Recovery()._recover_f4(4, result)
+        self.assertIs(unknown_recovered["kubelet_restarted"], True)
+        self.assertEqual(unknown_ssh.call_count, 2)
+
+        with patch(
+            "scripts.stabilize.recovery.ssh_node",
+            side_effect=[
+                recovery_marker,
+                "__V23_KUBELET_RESTART__=verified\n",
+            ],
+        ) as stuck_ssh, patch(
+            "scripts.stabilize.recovery.kubectl"
+        ), patch(
+            "scripts.stabilize.recovery.kubectl_get_json",
+            return_value=node_stale,
+        ) as stuck_state, patch("scripts.stabilize.recovery.time.sleep"):
+            with self.assertRaisesRegex(
+                RuntimeError, "did not become GREEN after one kubelet restart"
+            ):
+                Recovery()._recover_f4(4, result)
+        self.assertEqual(stuck_ssh.call_count, 2)
+        self.assertEqual(stuck_state.call_count, 16)
+
+        dirty_baseline = {
+            **node_green,
+            "status": {"conditions": [
+                {"type": "Ready", "status": "True"},
+                {"type": "DiskPressure", "status": "True"},
+            ]},
+        }
+        with patch(
+            "scripts.fault_inject.injector.kubectl_get_json",
+            return_value=dirty_baseline,
+        ), patch("scripts.fault_inject.injector.ssh_node") as no_ssh:
+            with self.assertRaisesRegex(RuntimeError, "baseline"):
+                FaultInjector().prepare_recovery_context("F4", 4)
+        no_ssh.assert_not_called()
 
     def test_f4_diskfill_malformed_receipts_fail_before_mutation_or_cleanup(self):
         from scripts.fault_inject.injector import FaultInjector
@@ -1048,6 +1169,9 @@ class LiveRunnerTests(unittest.TestCase):
             "diskfill_receipt_file": f"/var/tmp/v23-f4t4-{'a' * 32}/receipt",
             "diskfill_work_dir": f"/var/tmp/v23-f4t4-{'a' * 32}",
             "nodefs_path": "/var/lib/kubelet",
+            "node_uid_before": "node-uid-02",
+            "node_ready_before": "True",
+            "node_disk_pressure_before": "False",
             "nodefs_device": 64512, "nodefs_capacity_bytes": 100000,
             "nodefs_pre_available_bytes": 70000,
             "nodefs_target_available_percent": 9,
@@ -1084,6 +1208,9 @@ class LiveRunnerTests(unittest.TestCase):
             "diskfill_receipt_file": f"/var/tmp/v23-f4t4-{'a' * 32}/receipt",
             "diskfill_work_dir": f"/var/tmp/v23-f4t4-{'a' * 32}",
             "nodefs_path": "/var/lib/kubelet",
+            "node_uid_before": "node-uid-02",
+            "node_ready_before": "True",
+            "node_disk_pressure_before": "False",
             "nodefs_device": 64512, "nodefs_capacity_bytes": 100000,
             "nodefs_pre_available_bytes": 70000,
             "nodefs_target_available_percent": 9,
@@ -1102,6 +1229,18 @@ class LiveRunnerTests(unittest.TestCase):
             "scripts.stabilize.recovery.ssh_node",
             side_effect=[TimeoutError("ssh"), low, green],
         ) as ssh, patch("scripts.stabilize.recovery.kubectl"), patch(
+            "scripts.stabilize.recovery.kubectl_get_json",
+            return_value={
+                "kind": "Node",
+                "metadata": {
+                    "name": "yms-proxmox-02", "uid": "node-uid-02"
+                },
+                "status": {"conditions": [
+                    {"type": "Ready", "status": "True"},
+                    {"type": "DiskPressure", "status": "False"},
+                ]},
+            },
+        ), patch(
             "scripts.stabilize.recovery.time.sleep"
         ):
             result = Recovery()._recover_f4(4, ctx)

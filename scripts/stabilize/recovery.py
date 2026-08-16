@@ -32,6 +32,10 @@ logger = logging.getLogger(__name__)
 # Original Online Boutique manifest path (for full reset)
 ORIGINAL_MANIFEST = "/tmp/thesis-rca-work/k8s/app/online-boutique.yaml"
 
+F4_T4_RECOVERY_ATTEMPTS = 10
+F4_T4_CONDITION_POLL_ATTEMPTS = 15
+F4_T4_RETRY_DELAY_SECONDS = 2
+
 
 class Recovery:
     """Recover from injected faults."""
@@ -270,6 +274,10 @@ class Recovery:
             or ctx.get("diskfill_receipt_file") != f"{expected_work}/receipt"
             or ctx.get("diskfill_work_dir") != expected_work
             or ctx.get("nodefs_path") != F4_T4_NODEFS_PATH
+            or not isinstance(ctx.get("node_uid_before"), str)
+            or not ctx.get("node_uid_before")
+            or ctx.get("node_ready_before") != "True"
+            or ctx.get("node_disk_pressure_before") != "False"
             or ctx.get("nodefs_target_available_percent")
             != F4_T4_TARGET_AVAILABLE_PERCENT
             or any(
@@ -283,6 +291,40 @@ class Recovery:
             or context_work_inode < 0
         ):
             raise RuntimeError("F4 diskfill recovery receipt is incomplete")
+
+        def observed_node_conditions():
+            observed = kubectl_get_json("node", node, namespace="")
+            metadata = (
+                observed.get("metadata", {})
+                if isinstance(observed, dict) else {}
+            )
+            raw_conditions = (
+                observed.get("status", {}).get("conditions")
+                if isinstance(observed, dict) else None
+            )
+            ready = (
+                [item.get("status") for item in raw_conditions
+                 if isinstance(item, dict) and item.get("type") == "Ready"]
+                if isinstance(raw_conditions, list) else []
+            )
+            disk = (
+                [item.get("status") for item in raw_conditions
+                 if isinstance(item, dict) and item.get("type") == "DiskPressure"]
+                if isinstance(raw_conditions, list) else []
+            )
+            if (
+                not isinstance(observed, dict)
+                or observed.get("kind") != "Node"
+                or metadata.get("name") != node
+                or metadata.get("uid") != ctx["node_uid_before"]
+                or len(ready) != 1
+                or ready[0] not in {"True", "False", "Unknown"}
+                or len(disk) != 1
+                or disk[0] not in {"True", "False", "Unknown"}
+            ):
+                return None
+            return ready[0], disk[0]
+
         command = (
             "sudo sh -c 'set -eu; "
             f"nonce={nonce}; nodefs={F4_T4_NODEFS_PATH}; parent={F4_T4_PARENT_DIR}; "
@@ -344,12 +386,12 @@ class Recovery:
             "\"$live_capacity\" \"$live_available\"'"
         )
         last_output = ""
-        for attempt in range(1, 11):
+        for attempt in range(1, F4_T4_RECOVERY_ATTEMPTS + 1):
             try:
                 last_output = ssh_node(node, command)
             except (TimeoutError, subprocess.TimeoutExpired) as exc:
                 last_output = type(exc).__name__
-                time.sleep(2)
+                time.sleep(F4_T4_RETRY_DELAY_SECONDS)
                 continue
             status = [
                 line.removeprefix("__V23_DISK_RECOVERY__=")
@@ -374,15 +416,60 @@ class Recovery:
                 and int(available[0]) * 100
                 >= int(capacity[0]) * 10
             ):
+                node_conditions = observed_node_conditions()
+                if node_conditions is None:
+                    last_output = "F4 diskfill recovery node observation malformed"
+                    time.sleep(F4_T4_RETRY_DELAY_SECONDS)
+                    continue
+                kubelet_restarted = False
+                condition_check_attempts = 1
+                if node_conditions != ("True", "False"):
+                    try:
+                        restart_output = ssh_node(
+                            node,
+                            "sudo sh -c 'set -eu; systemctl restart kubelet; "
+                            "systemctl is-active --quiet kubelet; "
+                            "echo __V23_KUBELET_RESTART__=verified'",
+                        )
+                    except (TimeoutError, subprocess.TimeoutExpired) as exc:
+                        last_output = type(exc).__name__
+                        time.sleep(F4_T4_RETRY_DELAY_SECONDS)
+                        continue
+                    if restart_output.splitlines().count(
+                        "__V23_KUBELET_RESTART__=verified"
+                    ) != 1:
+                        last_output = restart_output
+                        time.sleep(F4_T4_RETRY_DELAY_SECONDS)
+                        continue
+                    kubelet_restarted = True
+                    condition_green = False
+                    for condition_check_attempts in range(
+                        1, F4_T4_CONDITION_POLL_ATTEMPTS + 1
+                    ):
+                        if observed_node_conditions() == ("True", "False"):
+                            condition_green = True
+                            break
+                        if (
+                            condition_check_attempts
+                            < F4_T4_CONDITION_POLL_ATTEMPTS
+                        ):
+                            time.sleep(F4_T4_RETRY_DELAY_SECONDS)
+                    if not condition_green:
+                        raise RuntimeError(
+                            "F4 diskfill node condition did not become GREEN "
+                            "after one kubelet restart"
+                        )
                 kubectl("uncordon", node, namespace="")
                 time.sleep(30)
                 return {
                     "action": "restore_node_diskfill",
                     "node": node,
                     "diskfill_cleanup_verified": True,
+                    "kubelet_restarted": kubelet_restarted,
+                    "condition_check_attempts": condition_check_attempts,
                     "attempts": attempt,
                 }
-            time.sleep(2)
+            time.sleep(F4_T4_RETRY_DELAY_SECONDS)
         raise RuntimeError(
             "F4 diskfill exact recovery did not reach the node: "
             + last_output[-200:]
