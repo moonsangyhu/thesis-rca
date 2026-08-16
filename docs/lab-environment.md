@@ -73,6 +73,15 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   window를 설계하는 근거였으나 후속 정본 probe는 170초까지 NotReady를
   재현하지 못했다. 따라서 현재 gate는 더 안전하고 직접 재현된 low-memory
   precursor를 함께 사용하며, stress 180초와 evidence deadline 175초는 유지한다.
+- clean commit `6efd23b`의 production-helper probe는 worker2·총15G에서
+  66.237초에 exact live identity와 `MemAvailable=757,661,696 bytes`를 확인했다.
+  Node는 Ready였으므로 `node_disrupted=false`, basis=`memavailable-threshold`로
+  기록했고 full collector는 105.737초에 끝났다. pressure 중 Loki error query 한
+  건은 30초 timeout이었으며 이를 숨기지 않는다. exact recovery는 3회에
+  recovery health gate를 통과했다. 별도 post-check의 첫 Loki readiness 5초는
+  timeout됐지만 즉시 10초 재시도에서 HTTP 200과 Loki pod 2/2를 확인했고,
+  최종 nodes 6/6·Boutique 12/12·Flux 5/5·Prometheus/Loki GREEN이었다.
+  model/AIC/result write는 0이었다.
 - binary 또는 launch receipt가 없으면 모델 호출 전에 fail-closed한다.
 - launch identity(PID·start tick·cmdline hash)는 worker03의 mode-0600 임시 파일을
   fsync한 뒤 atomic rename한다. emergency recovery는 이 node-local receipt를
