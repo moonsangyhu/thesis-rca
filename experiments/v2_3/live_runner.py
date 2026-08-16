@@ -84,7 +84,7 @@ def validate_injection_in_observation_window(
     monotonic_fn: Callable[[], float],
     observation_event_fn: Callable[[dict], None] | None = None,
 ) -> dict:
-    """Validate once, except latch F4-t3's NotReady state in 40..120s."""
+    """Validate once, except latch F4-t3 pressure evidence in 10..120s."""
     wait_seconds = injection_result.get("wait_seconds")
     if isinstance(wait_seconds, bool) or not isinstance(wait_seconds, int):
         raise PilotError("invalid injection wait interval")

@@ -44,11 +44,12 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
 
 - `yms-proxmox-04`에는 Debian package `stress-ng=0.19.02-1`이 필요하다.
 - V2.3은 percentage 기반 할당을 사용하지 않는다. 이 노드의 16 GiB 형상에서
-  `--vm 1 --vm-bytes 15G --vm-keep --timeout 180s`를 사용한다. 설치된
-  `stress-ng=0.19.02-1`의 `--vm-bytes`는 worker별 할당량이므로 worker 수를
-  1로 고정해 총 요청량과 receipt의 15 GiB 의미를 일치시킨다. F4 trial 3은
-  40–120초 bounded observation window를 2초 간격으로 확인하고 최초
-  `Ready!=True`를 latch한다. 120초까지 관측되지 않으면 fail-closed한다. runner는
+  `--vm 2 --vm-bytes 15G --vm-keep --timeout 180s`를 사용한다. 설치된
+  `stress-ng=0.19.02-1`의 상세 man page와 2×8G 실측은 `--vm-bytes`가 worker
+  전체에 나뉘는 총량임을 보였다. worker 2개는 총 15 GiB를 동시에 touch한다.
+  F4 trial 3은 10–120초 bounded observation window를 2초 간격으로 확인하고
+  최초 `Ready!=True` 또는 host `MemAvailable<=2 GiB`를 latch한다. 둘 다
+  120초까지 관측되지 않으면 fail-closed한다. runner는
   trial 3의 named-node 조회만 5초로 제한하고 timeout/not-observed poll을
   event journal에 기록한다. Node kind·name·UID·유일한 Ready condition이
   정확하지 않은 빈/오염 응답은 retry하지 않고 즉시 거부한다. receipt node도
@@ -56,14 +57,22 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   injection 시작부터 full collector 종료까지 monotonic elapsed가 175초 미만인지
   검증해 stressor deadline 안에서 evidence snapshot이 끝난 경우만 inference한다.
   이후 36회 모델 호출 중 자율 종료시켜 SSH exact recovery 여유를 확보한다.
-  PID·start tick·cmdline hash receipt와
-  실제 `Ready!=True`를 필수로 검증한다. `MemoryPressure`는 보조 관측값일
-  뿐 처치 성립을 대신하지 않는다.
+  PID·start tick·cmdline hash receipt를 필수로 검증하고, SSH가 응답하면 live
+  process identity를 다시 검증한다. Node가 이미 `Ready!=True`이고 SSH도
+  timeout인 severe branch만 sealed launch receipt와 독립 Node 상태를 근거로
+  `sealed-launch-plus-node-notready`를 기록하며 live identity나 low memory를
+  관측한 것으로 표시하지 않는다.
+  Node가 아직 Ready이면 같은 SSH probe에서 읽은 `/proc/meminfo`의 exact
+  `MemAvailable<=2 GiB`가 있어야 extreme-memory-pressure precursor로 인정한다.
+  이 precursor case는 primary paired 분석에 포함하되 F4-t3 제외 민감도 분석을
+  함께 보고하고, 실제 NotReady를 직접 관측한 것으로 서술하지 않는다.
 - 2026-08-16 model-free 15 GiB·stress timeout 180초·observation deadline 120초
   calibrations 2회는 각각 45.079초와
   65.334초에 `Ready=False`와 live process identity를 만들었고 full collector는
   46.475초와 66.833초에 끝났다. 따라서 변동 onset을 포함하는 위 bounded
-  window를 사용하며, stress 180초와 evidence deadline 175초는 유지한다.
+  window를 설계하는 근거였으나 후속 정본 probe는 170초까지 NotReady를
+  재현하지 못했다. 따라서 현재 gate는 더 안전하고 직접 재현된 low-memory
+  precursor를 함께 사용하며, stress 180초와 evidence deadline 175초는 유지한다.
 - binary 또는 launch receipt가 없으면 모델 호출 전에 fail-closed한다.
 - launch identity(PID·start tick·cmdline hash)는 worker03의 mode-0600 임시 파일을
   fsync한 뒤 atomic rename한다. emergency recovery는 이 node-local receipt를

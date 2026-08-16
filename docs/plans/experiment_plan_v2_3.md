@@ -231,6 +231,13 @@ Terra의 effect size·intra-fault correlation 사전값이 없으므로 V2.2에�
 - fault별 forest와 fault group별 효과: 탐색적이며 다중성 보정 없이 가설 생성용
 - generation/judge reliability, AIC·latency·output-token 차이
 - low-quality/attrition 포함·완전사례 sensitivity; 결측을 조용히 삭제하지 않음
+- F4-t3는 SSH가 응답할 때 exact live stress identity와 `Ready!=True` 또는 host
+  `MemAvailable<=2 GiB`를 treatment-integrity gate로 사용한다. 단, exact
+  `Ready!=True`와 인식 가능한 SSH-unreachable이 동시에 관측될 때만 durable
+  sealed launch receipt를 live 재검증의 대체 근거로 허용하고, 이 branch의
+  live-identity와 memory-observation flag는 반드시 false로 기록한다. low-memory
+  branch는 NotReady 자체가 아니라 extreme-memory-pressure precursor이므로 전체
+  60건 paired primary와 별도로 F4-t3를 제외한 59건 paired sensitivity를 반드시 보고한다.
 - condition·fault·retrieval source를 가린 primary human reviewer의 180 representative output 전수 채점
 - 독립 second reviewer의 사전 층화 무작위 36건 채점과 agreement·Krippendorff α 또는 Cohen κ. second reviewer가 없으면 primary reviewer의 delayed repeat 36건을 차선으로 쓰고 독립성 한계를 명시
 
