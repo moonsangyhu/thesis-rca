@@ -778,6 +778,22 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertIn("10m", lexicon.field_values)
         self.assertGreater(LeakageScanner().scan("limit=10-m", lexicon).match_count, 0)
 
+    def test_execution_envelopes_are_not_lexical_field_values(self):
+        from experiments.v2_3.live_runner import build_forbidden_lexicon
+
+        injection = {
+            **FakeInjector().inject("F7", 1),
+            "command": "sudo sh -c " + "very long command segment " * 300,
+            "ssh_output": "transport diagnostic " * 300,
+            "kubectl_output": "transport diagnostic " * 300,
+            "diskfill_nonce": "a" * 32,
+        }
+        lexicon = build_forbidden_lexicon("F7", 1, GROUND_TRUTH, injection)
+        self.assertNotIn(injection["command"], lexicon.field_values)
+        self.assertNotIn(injection["ssh_output"], lexicon.field_values)
+        self.assertNotIn(injection["kubectl_output"], lexicon.field_values)
+        self.assertIn("a" * 32, lexicon.field_values)
+
     def test_attempt_journal_fsync_path_receives_all_calls(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             journal = AttemptJournal(Path(temp_dir) / "attempts.jsonl")

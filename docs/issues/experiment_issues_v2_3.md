@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 33건
-- 심각(실험 무효화): 29건
+- 총 이슈: 34건
+- 심각(실험 무효화): 30건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -421,3 +421,14 @@
 - **근본 원인**: health check가 원격 출력 전체를 숫자로 간주해 locale stderr와 측정값을 분리하지 않았고, recovery manifest가 optional GitOps scratch clone의 stale 절대경로에 결합돼 있었다.
 - **수정 내용**: remote `set -eu`와 `LC_ALL=C df -P /`로 POSIX Use%를 추출해 exact `__V23_DISK_USAGE_PCT__=` marker를 마지막에 1회만 출력한다. Python은 exactly-one digits marker와 0..100만 허용하고 unrelated stderr는 무시한다. missing·duplicate·suffix·101·timeout은 RED이며 기존 `>=80%` gate를 유지한다. `ORIGINAL_MANIFEST`는 현재 checked-out revision의 `k8s/app/online-boutique.yaml`을 `Path(__file__).resolve()`에서 계산해 cwd와 `/tmp` clone 의존을 제거한다.
 - **현재 영향**: 새 적대 tests를 포함한 targeted 71 PASS, pycompile·diff-check, actual comprehensive health `(True, [])`, 독립 reviewer APPROVE를 확인했다. 수정 정본 clean commit 뒤 fresh primary campaign으로 재시작한다.
+
+### [ISS-034] F4-t4 실행 command가 누출 lexicon의 비한정 n-gram 확장을 유발
+
+- **카테고리**: code / performance / safety
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260817-primary17`은 F1 t1부터 F4 t3까지 18 incidents·54 rows/raw·648 validated calls를 commit한 뒤 F4 t4에서 모델 호출 전에 정체됐다. 불완전 campaign 전체는 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회.
+- **관찰한 사실**: F4 t4는 180초 시점에 same-UID `Ready=True`·`DiskPressure=True`, injection post nodefs available 4,460,826,624 bytes, exact diskfill allocation·inode·block identity를 검증했다. 이후 attempt/call/charged ledger는 648에서 9분 이상 증가하지 않았고 Python main process는 CPU 약 100%를 지속 사용했다. 두 차례 macOS stack sample은 Python regex substitution/search, bytearray find와 GC에 집중됐다. 안전상 tmux에 정상 interrupt를 보냈고 `incident_failed(error_type=KeyboardInterrupt)→flux_restored(exact original/CAS)→recovery_green`으로 종료됐다. commit boundary는 18/60, rows/raw 54/54, attempt/call/charged 648/648/648, 누적 AIC 308.46225다.
+- **근본 원인**: `build_forbidden_lexicon()`이 F4 t4의 수백 토큰 crash-safe shell `command`와 `ssh_output`을 일반 `field_values`로 포함했다. scanner와 masker는 길이 N term에 대해 full term 외에도 모든 크기 2/3..N의 adjacent n-gram을 생성해 패턴 수와 문자열 생성량이 O(N²), 총 문자열 작업량이 O(N³)으로 증가했다. 프로파일과 해당 실행 경로는 일치한다.
+- **수정 내용**: command·ssh/kubectl output은 semantic scalar가 아닌 실행/provenance envelope로 분류해 lexical field value에서 제외하고, nonce·path·nodefs 수치 등 민감한 개별 scalar receipt는 유지한다. full exact term 검사는 유지하되 changed-prefix/suffix 탐지는 가장 작은 충분 adjacent gram(일반 2-token, command 3-token)만 생성해 선형 pattern 수로 제한한다. forbidden term은 최대 128 normalized tokens로 fail-closed한다. synthetic long command envelope와 128/129-token 적대 회귀를 추가한다.
+- **현재 영향**: F4 t4 결과와 Copilot 호출·추가 AIC는 생성되지 않았다. exact nonce workdir 부재, target nodefs 19%, kubelet active, nodes 6/6 Ready·pressure false, Boutique 12/12, Flux 5/5, Prometheus/Loki Ready를 확인했다. F4 중 Evicted된 monitoring pod 3개만 exact 삭제했고 replacement 포함 monitoring non-Running pod·cluster Failed pod 0을 확인했다. 수정·전체 회귀·changelog·clean commit-push 뒤 fresh campaign으로 재시작한다.

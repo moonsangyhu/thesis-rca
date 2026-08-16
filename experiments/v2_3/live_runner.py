@@ -728,12 +728,18 @@ def build_forbidden_lexicon(
     target = str(ground_truth.get("target_service") or "").strip()
     if not target:
         raise PilotError("ground truth target is missing")
+    # These are opaque execution/provenance envelopes, not semantic field
+    # values.  In particular F4-t4's command is a multi-kilobyte crash-safe
+    # shell program; treating it as one lexical term caused unbounded n-gram
+    # expansion before the first model call.  Its sensitive scalar operands
+    # remain independently represented by the other receipt fields below.
+    non_lexical_fields = {
+        "action", "command", "ssh_output", "kubectl_output", "wait_seconds",
+        "fault_id", "trial", "target_service",
+    }
     field_values = tuple(
         str(value) for key, value in sorted(injection_result.items())
-        if key not in {
-            "kubectl_output", "wait_seconds", "fault_id", "trial",
-            "target_service", "action",
-        }
+        if key not in non_lexical_fields
         and isinstance(value, (str, int, float))
         and str(value).strip()
         and not str(value).strip().isdigit()
