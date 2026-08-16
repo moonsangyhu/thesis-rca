@@ -15,6 +15,7 @@ from scripts.fault_inject.config import (
     F4_T3_STRESS_LOG_FILE,
     F4_T3_STRESS_RECEIPT_FILE,
     F4_T3_STRESS_TIMEOUT_SECONDS,
+    F4_T3_STRESS_VM_WORKERS,
     NAMESPACE,
     WORKER_NODES,
 )
@@ -246,6 +247,9 @@ class Recovery:
         if (
             ctx.get("stress_ng_preexisting") is not False
             or ctx.get("stress_receipt_file") != F4_T3_STRESS_RECEIPT_FILE
+            or isinstance(ctx.get("stress_vm_workers"), bool)
+            or not isinstance(ctx.get("stress_vm_workers"), int)
+            or ctx.get("stress_vm_workers") != F4_T3_STRESS_VM_WORKERS
         ):
             raise RuntimeError("F4 memory recovery receipt is incomplete")
         pid = ctx.get("stress_ng_pid")
@@ -279,7 +283,8 @@ class Recovery:
             "if [ \"$live_hash\" != \"$sealed_hash\" ]; then "
             "echo __V23_STRESS_RECOVERY__=identity-mismatch; exit 47; fi; "
             "cmd=$(tr \"\\000\" \" \" </proc/$pid/cmdline); "
-            f"case \"$cmd\" in *\"stress-ng --vm 2 --vm-bytes {F4_T3_STRESS_BYTES} "
+            f"case \"$cmd\" in *\"stress-ng --vm {F4_T3_STRESS_VM_WORKERS} "
+            f"--vm-bytes {F4_T3_STRESS_BYTES} "
             f"--vm-keep --timeout {F4_T3_STRESS_TIMEOUT_SECONDS}s\"*) ;; *) "
             "echo __V23_STRESS_RECOVERY__=identity-mismatch; exit 44;; esac; "
             "children=$(pgrep -P \"$pid\" || true); "

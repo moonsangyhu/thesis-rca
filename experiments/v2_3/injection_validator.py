@@ -10,6 +10,7 @@ from scripts.fault_inject.config import (
     F4_T3_STRESS_BYTES,
     F4_T3_OBSERVATION_WAIT_SECONDS,
     F4_T3_STRESS_TIMEOUT_SECONDS,
+    F4_T3_STRESS_VM_WORKERS,
     INJECTION_WAIT,
 )
 
@@ -138,6 +139,9 @@ class LiveInjectionValidator:
                 raise PilotError("F4 memory stress process receipt is invalid")
             if (
                 result.get("stress_memory_bytes") != F4_T3_STRESS_BYTES
+                or isinstance(result.get("stress_vm_workers"), bool)
+                or not isinstance(result.get("stress_vm_workers"), int)
+                or result.get("stress_vm_workers") != F4_T3_STRESS_VM_WORKERS
                 or isinstance(result.get("stress_timeout_seconds"), bool)
                 or not isinstance(result.get("stress_timeout_seconds"), int)
                 or result.get("stress_timeout_seconds") != F4_T3_STRESS_TIMEOUT_SECONDS

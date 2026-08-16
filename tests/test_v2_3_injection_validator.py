@@ -79,7 +79,8 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "14G", "stress_timeout_seconds": 180,
+            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+            "stress_timeout_seconds": 180,
             "wait_seconds": 60,
         }
         self.assertTrue(validator.validate(
@@ -95,7 +96,8 @@ class InjectionValidatorTests(unittest.TestCase):
             "action": "node_disruption", "node": "yms-proxmox-04",
             "stress_ng_pid": 1234, "stress_ng_start_ticks": 5678,
             "stress_ng_cmdline_sha256": "a" * 64,
-            "stress_memory_bytes": "14G", "stress_timeout_seconds": 180,
+            "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+            "stress_timeout_seconds": 180,
             "wait_seconds": 60,
         }
         ready_under_pressure = {"status": {"conditions": [
@@ -135,6 +137,17 @@ class InjectionValidatorTests(unittest.TestCase):
                     validator.validate(
                         "F4", 3, {"target_service": "worker03"}, mutated
                     )
+        for bad_workers in (None, 0, 2, True, 1.0, "1"):
+            with self.subTest(workers=bad_workers):
+                mutated = dict(receipt)
+                if bad_workers is None:
+                    mutated.pop("stress_vm_workers")
+                else:
+                    mutated["stress_vm_workers"] = bad_workers
+                with self.assertRaisesRegex(PilotError, "amount"):
+                    validator.validate(
+                        "F4", 3, {"target_service": "worker03"}, mutated
+                    )
 
     def test_f4_memory_pressure_rejects_unbound_process_probe(self):
         node = {"status": {"conditions": [{"type": "Ready", "status": "Unknown"}]}}
@@ -148,7 +161,8 @@ class InjectionValidatorTests(unittest.TestCase):
                 "action": "node_disruption", "node": "yms-proxmox-04",
                 "stress_ng_pid": 999999, "stress_ng_start_ticks": 1,
                 "stress_ng_cmdline_sha256": "b" * 64,
-                "stress_memory_bytes": "14G", "stress_timeout_seconds": 180,
+                "stress_memory_bytes": "14G", "stress_vm_workers": 1,
+                "stress_timeout_seconds": 180,
                 "wait_seconds": 60,
             })
 

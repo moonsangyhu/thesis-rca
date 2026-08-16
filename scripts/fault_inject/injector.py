@@ -20,6 +20,7 @@ from .config import (
     F4_T3_OBSERVATION_WAIT_SECONDS,
     F4_T3_STRESS_RECEIPT_FILE,
     F4_T3_STRESS_TIMEOUT_SECONDS,
+    F4_T3_STRESS_VM_WORKERS,
     F4_T3_STRESS_VERSION,
     INJECTION_WAIT,
     NAMESPACE,
@@ -141,6 +142,7 @@ class FaultInjector:
                     "stress_ng_version": F4_T3_STRESS_VERSION,
                     "stress_ng_preexisting": False,
                     "stress_receipt_file": F4_T3_STRESS_RECEIPT_FILE,
+                    "stress_vm_workers": F4_T3_STRESS_VM_WORKERS,
                 })
             return context
         if fault_id != "F7":
@@ -291,6 +293,9 @@ class FaultInjector:
             or recovery_context.get("stress_ng_version") != F4_T3_STRESS_VERSION
             or recovery_context.get("stress_ng_preexisting") is not False
             or recovery_context.get("stress_receipt_file") != F4_T3_STRESS_RECEIPT_FILE
+            or isinstance(recovery_context.get("stress_vm_workers"), bool)
+            or not isinstance(recovery_context.get("stress_vm_workers"), int)
+            or recovery_context.get("stress_vm_workers") != F4_T3_STRESS_VM_WORKERS
         ):
             raise RuntimeError("F4 trial 3 sealed recovery preflight is invalid")
         node_actions = {
@@ -301,7 +306,8 @@ class FaultInjector:
                 "sudo sh -c 'set -eu; umask 077; "
                 "command -v stress-ng >/dev/null 2>&1 || exit 127; "
                 "if pgrep '^stress-ng' >/dev/null; then exit 126; fi; "
-                f"nohup stress-ng --vm 2 --vm-bytes {F4_T3_STRESS_BYTES} "
+                f"nohup stress-ng --vm {F4_T3_STRESS_VM_WORKERS} "
+                f"--vm-bytes {F4_T3_STRESS_BYTES} "
                 f"--vm-keep --timeout {F4_T3_STRESS_TIMEOUT_SECONDS}s "
                 f">{F4_T3_STRESS_LOG_FILE} 2>&1 </dev/null & pid=$!; "
                 "sleep 1; kill -0 \"$pid\" || exit 1; "
@@ -362,6 +368,7 @@ class FaultInjector:
             result["stress_ng_start_ticks"] = stress_ng_start_ticks
             result["stress_ng_cmdline_sha256"] = stress_ng_cmdline_sha256
             result["stress_memory_bytes"] = F4_T3_STRESS_BYTES
+            result["stress_vm_workers"] = F4_T3_STRESS_VM_WORKERS
             result["stress_timeout_seconds"] = F4_T3_STRESS_TIMEOUT_SECONDS
             result["stress_receipt_file"] = F4_T3_STRESS_RECEIPT_FILE
         return result

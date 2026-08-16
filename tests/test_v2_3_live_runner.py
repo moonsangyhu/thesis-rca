@@ -865,11 +865,12 @@ class LiveRunnerTests(unittest.TestCase):
                     "stress_ng_version": "0.19.02",
                     "stress_ng_preexisting": False,
                     "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+                    "stress_vm_workers": 1,
                 }
             )
         command = ssh.call_args.args[1]
         self.assertIn("command -v stress-ng", command)
-        self.assertIn("--vm-bytes 14G", command)
+        self.assertIn("--vm 1 --vm-bytes 14G", command)
         self.assertIn("--timeout 180s", command)
         self.assertIn("--vm-keep", command)
         self.assertIn("sync -f", command)
@@ -877,6 +878,7 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(result["stress_ng_pid"], 4321)
         self.assertEqual(result["stress_ng_start_ticks"], 8765)
         self.assertEqual(result["stress_memory_bytes"], "14G")
+        self.assertEqual(result["stress_vm_workers"], 1)
         self.assertEqual(result["stress_timeout_seconds"], 180)
 
         with patch(
@@ -889,8 +891,26 @@ class LiveRunnerTests(unittest.TestCase):
                         "stress_ng_version": "0.19.02",
                         "stress_ng_preexisting": False,
                         "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+                        "stress_vm_workers": 1,
                     }
                 )
+
+        for bad_workers in (None, 0, 2, True, 1.0, "1"):
+            with self.subTest(sealed_workers=bad_workers), patch(
+                "scripts.fault_inject.injector.ssh_node"
+            ) as ssh:
+                context = {
+                    "stress_ng_version": "0.19.02",
+                    "stress_ng_preexisting": False,
+                    "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+                }
+                if bad_workers is not None:
+                    context["stress_vm_workers"] = bad_workers
+                with self.assertRaisesRegex(RuntimeError, "sealed recovery preflight"):
+                    FaultInjector()._inject_f4_node_notready(
+                        "worker03", 3, {}, context
+                    )
+                ssh.assert_not_called()
 
     def test_f4_inject_preserves_sealed_preflight_for_runner_recovery(self):
         from scripts.fault_inject.injector import FaultInjector
@@ -899,6 +919,7 @@ class LiveRunnerTests(unittest.TestCase):
             "fault_id": "F4", "trial": 3, "target_service": "worker03",
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+            "stress_vm_workers": 1,
         }
         injector = FaultInjector()
         injector._injectors["F4"] = lambda target, trial, gt, ctx: {
@@ -950,6 +971,7 @@ class LiveRunnerTests(unittest.TestCase):
         ctx = {
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+            "stress_vm_workers": 1,
             "stress_ng_pid": 4321, "stress_ng_start_ticks": 8765,
         }
         with patch(
@@ -966,7 +988,26 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(result["attempts"], 2)
         self.assertIn('"$pid" != "4321"', ssh.call_args.args[1])
         self.assertIn("--timeout 180s", ssh.call_args.args[1])
+        self.assertIn("--vm 1 --vm-bytes 14G", ssh.call_args.args[1])
         self.assertNotIn("pkill -9 stress-ng", ssh.call_args.args[1])
+
+    def test_f4_memory_recovery_rejects_malformed_worker_receipt(self):
+        from scripts.stabilize.recovery import Recovery
+
+        for bad_workers in (None, 0, 2, True, 1.0, "1"):
+            with self.subTest(workers=bad_workers), patch(
+                "scripts.stabilize.recovery.ssh_node"
+            ) as ssh:
+                ctx = {
+                    "node": "yms-proxmox-04",
+                    "stress_ng_preexisting": False,
+                    "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+                }
+                if bad_workers is not None:
+                    ctx["stress_vm_workers"] = bad_workers
+                with self.assertRaisesRegex(RuntimeError, "receipt is incomplete"):
+                    Recovery()._recover_f4(3, ctx)
+                ssh.assert_not_called()
 
     def test_f4_memory_crash_recovery_uses_durable_node_receipt(self):
         from scripts.stabilize.recovery import Recovery
@@ -974,6 +1015,7 @@ class LiveRunnerTests(unittest.TestCase):
         ctx = {
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+            "stress_vm_workers": 1,
         }
         with patch(
             "scripts.stabilize.recovery.ssh_node",
@@ -993,6 +1035,7 @@ class LiveRunnerTests(unittest.TestCase):
         ctx = {
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+            "stress_vm_workers": 1,
         }
         with patch(
             "scripts.stabilize.recovery.ssh_node",
@@ -1013,6 +1056,7 @@ class LiveRunnerTests(unittest.TestCase):
         ctx = {
             "node": "yms-proxmox-04", "stress_ng_preexisting": False,
             "stress_receipt_file": "/tmp/v23-f4t3-stress.receipt",
+            "stress_vm_workers": 1,
         }
         with patch(
             "scripts.stabilize.recovery.ssh_node",
@@ -1040,6 +1084,7 @@ class LiveRunnerTests(unittest.TestCase):
             context = FaultInjector().prepare_recovery_context("F4", 3)
         self.assertEqual(context["stress_ng_version"], "0.19.02")
         self.assertIs(context["stress_ng_preexisting"], False)
+        self.assertEqual(context["stress_vm_workers"], 1)
         self.assertEqual(
             context["stress_receipt_file"], "/tmp/v23-f4t3-stress.receipt"
         )
