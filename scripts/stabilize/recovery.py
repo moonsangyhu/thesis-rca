@@ -4,6 +4,7 @@ Recovery/stabilization scripts for each fault type.
 Reverts fault injection and restores cluster to healthy state.
 """
 import logging
+from pathlib import Path
 import subprocess
 import time
 
@@ -29,8 +30,11 @@ from scripts.fault_inject.config import (
 
 logger = logging.getLogger(__name__)
 
-# Original Online Boutique manifest path (for full reset)
-ORIGINAL_MANIFEST = "/tmp/thesis-rca-work/k8s/app/online-boutique.yaml"
+# Original Online Boutique manifest in the checked-out experiment revision.
+# Recovery must not depend on the optional GitOps scratch clone under /tmp.
+ORIGINAL_MANIFEST = str(
+    Path(__file__).resolve().parents[2] / "k8s" / "app" / "online-boutique.yaml"
+)
 
 F4_T4_RECOVERY_ATTEMPTS = 10
 F4_T4_CONDITION_POLL_ATTEMPTS = 15

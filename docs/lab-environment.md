@@ -174,6 +174,13 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
 
 호스트 디스크 50G(이전 nested 15G). 현재 22~26% 사용. disk-pressure 만성화 해소됨. 잔여물 정리는 `/lab-restore` 스킬.
 
+Recovery disk health는 SSH stdout 전체를 숫자로 parse하지 않는다. Debian locale
+warning처럼 unrelated stderr가 합쳐질 수 있으므로 remote `set -eu` 아래
+`LC_ALL=C df -P /`에서 exact `__V23_DISK_USAGE_PCT__=` marker를 1회 출력하고,
+0..100 digits와 `<80%`를 검증한다. full reset/F8 manifest는 optional
+`/tmp/thesis-rca-work`가 아니라 현재 checked-out revision의
+`k8s/app/online-boutique.yaml`을 사용한다.
+
 ### Docker Hub Rate Limit
 
 `ImagePullBackOff`/`429` 시 quay.io 미러 pull 후 태깅(기존 runbook 동일).

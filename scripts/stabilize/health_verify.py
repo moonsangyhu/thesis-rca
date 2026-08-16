@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 NAMESPACE = "boutique"
 EXPECTED_DEPLOYMENTS = 12
 DISK_THRESHOLD_PCT = 80
+DISK_USAGE_MARKER = "__V23_DISK_USAGE_PCT__="
 
 
 def comprehensive_health_check(
@@ -158,8 +159,27 @@ def _check_disk_usage() -> list[str]:
     issues = []
     for node_name in WORKER_NODES:
         try:
-            raw = ssh_node(node_name, "df / --output=pcent | tail -1", timeout=15)
-            pct = int(raw.strip().replace("%", ""))
+            raw = ssh_node(
+                node_name,
+                "set -eu; "
+                "pct=$(LC_ALL=C df -P / | "
+                "awk 'NR == 2 {gsub(\"%\", \"\", $5); print $5}'); "
+                "case \"$pct\" in ''|*[!0-9]*) exit 41;; esac; "
+                f"printf '{DISK_USAGE_MARKER}%s\\n' \"$pct\"",
+                timeout=15,
+            )
+            values = [
+                line.removeprefix(DISK_USAGE_MARKER)
+                for line in raw.splitlines()
+                if line.startswith(DISK_USAGE_MARKER)
+            ]
+            if (
+                len(values) != 1
+                or not values[0].isdigit()
+                or not 0 <= int(values[0]) <= 100
+            ):
+                raise ValueError("disk usage marker is malformed")
+            pct = int(values[0])
             if pct >= DISK_THRESHOLD_PCT:
                 issues.append(f"{node_name} disk={pct}% (>={DISK_THRESHOLD_PCT}%)")
         except Exception as e:
