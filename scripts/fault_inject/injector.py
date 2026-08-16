@@ -166,6 +166,39 @@ class FaultInjector:
                 work_dir = f"{F4_T4_WORK_PREFIX}{nonce}"
                 diskfill_file = f"{work_dir}/diskfill"
                 receipt_file = f"{work_dir}/receipt"
+                observed_node = kubectl_get_json(
+                    "node", nodes[trial], namespace=""
+                )
+                metadata = (
+                    observed_node.get("metadata", {})
+                    if isinstance(observed_node, dict) else {}
+                )
+                raw_conditions = (
+                    observed_node.get("status", {}).get("conditions")
+                    if isinstance(observed_node, dict) else None
+                )
+                ready_items = (
+                    [item for item in raw_conditions
+                     if isinstance(item, dict) and item.get("type") == "Ready"]
+                    if isinstance(raw_conditions, list) else []
+                )
+                disk_items = (
+                    [item for item in raw_conditions
+                     if isinstance(item, dict)
+                     and item.get("type") == "DiskPressure"]
+                    if isinstance(raw_conditions, list) else []
+                )
+                if (
+                    observed_node.get("kind") != "Node"
+                    or metadata.get("name") != nodes[trial]
+                    or not isinstance(metadata.get("uid"), str)
+                    or not metadata.get("uid")
+                    or len(ready_items) != 1
+                    or ready_items[0].get("status") != "True"
+                    or len(disk_items) != 1
+                    or disk_items[0].get("status") != "False"
+                ):
+                    raise RuntimeError("F4 trial 4 node baseline is not GREEN")
                 output = ssh_node(
                     nodes[trial],
                     "sudo sh -c 'set -eu; "
@@ -210,6 +243,9 @@ class FaultInjector:
                     "nodefs_device": int(device),
                     "nodefs_capacity_bytes": int(capacity),
                     "nodefs_pre_available_bytes": int(available),
+                    "node_uid_before": metadata["uid"],
+                    "node_ready_before": "True",
+                    "node_disk_pressure_before": "False",
                     "nodefs_target_available_percent": (
                         F4_T4_TARGET_AVAILABLE_PERCENT
                     ),
@@ -389,6 +425,10 @@ class FaultInjector:
             != f"{expected_disk_work}/receipt"
             or recovery_context.get("diskfill_work_dir") != expected_disk_work
             or recovery_context.get("nodefs_path") != F4_T4_NODEFS_PATH
+            or not isinstance(recovery_context.get("node_uid_before"), str)
+            or not recovery_context.get("node_uid_before")
+            or recovery_context.get("node_ready_before") != "True"
+            or recovery_context.get("node_disk_pressure_before") != "False"
             or any(
                 isinstance(recovery_context.get(name), bool)
                 or not isinstance(recovery_context.get(name), int)

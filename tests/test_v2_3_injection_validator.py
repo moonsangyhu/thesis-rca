@@ -332,6 +332,9 @@ class InjectionValidatorTests(unittest.TestCase):
             "diskfill_receipt_file": f"/var/tmp/v23-f4t4-{'a' * 32}/receipt",
             "diskfill_work_dir": f"/var/tmp/v23-f4t4-{'a' * 32}",
             "nodefs_path": "/var/lib/kubelet",
+            "node_uid_before": "node-uid-02",
+            "node_ready_before": "True",
+            "node_disk_pressure_before": "False",
             "nodefs_device": 64512, "diskfill_work_inode": 101,
             "nodefs_capacity_bytes": 100_000,
             "nodefs_pre_available_bytes": 80_000,
@@ -361,8 +364,23 @@ class InjectionValidatorTests(unittest.TestCase):
         )
         self.assertIs(verified["node_disrupted"], False)
         self.assertIs(verified["disk_pressure_observed"], False)
-        self.assertIs(verified["nodefs_available_threshold_verified"], True)
+        self.assertIs(verified["nodefs_injection_threshold_verified"], True)
+        self.assertIs(verified["nodefs_live_threshold_verified"], True)
+        self.assertEqual(verified["nodefs_injection_post_available_bytes"], 9000)
+        self.assertEqual(verified["nodefs_injection_allocation_bytes"], 61000)
         self.assertEqual(verified["treatment_basis"], "nodefs-available-threshold")
+
+        replaced_node = {
+            **observed,
+            "metadata": {"name": "yms-proxmox-02", "uid": "replacement-uid"},
+        }
+        validator = LiveInjectionValidator(
+            lambda *_: replaced_node, lambda *_: live
+        )
+        with self.assertRaisesRegex(PilotError, "schema"):
+            validator.validate(
+                "F4", 4, {"target_service": "worker01"}, receipt
+            )
 
         for name, bad in (
             ("node", "wrong-node"),
@@ -370,6 +388,9 @@ class InjectionValidatorTests(unittest.TestCase):
             ("diskfill_nonce", "z" * 32),
             ("nodefs_device", True),
             ("diskfill_inode", 999),
+            ("node_uid_before", "wrong-uid"),
+            ("node_ready_before", "False"),
+            ("node_disk_pressure_before", "True"),
             ("nodefs_pre_available_bytes", "80000"),
             ("nodefs_pre_available_bytes", 9_999),
             ("nodefs_injection_available_bytes", 70_001),
@@ -398,6 +419,23 @@ class InjectionValidatorTests(unittest.TestCase):
             validator.validate(
                 "F4", 4, {"target_service": "worker01"}, receipt
             )
+
+        disk_pressure = dict(observed)
+        disk_pressure["status"] = {"conditions": [
+            {"type": "Ready", "status": "True"},
+            {"type": "DiskPressure", "status": "True"},
+        ]}
+        validator = LiveInjectionValidator(
+            lambda *_: disk_pressure, lambda *_: above_threshold
+        )
+        verified = validator.validate(
+            "F4", 4, {"target_service": "worker01"}, receipt
+        )
+        self.assertEqual(verified["treatment_basis"], "diskpressure-condition")
+        self.assertIs(verified["disk_pressure_observed"], True)
+        self.assertIs(verified["nodefs_injection_threshold_verified"], True)
+        self.assertIs(verified["nodefs_live_threshold_verified"], False)
+        self.assertEqual(verified["diskfill_nonce"], "a" * 32)
 
         below_floor = live.replace(
             "__V23_NODEFS_LIVE_AVAILABLE__=9000",

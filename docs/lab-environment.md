@@ -92,7 +92,8 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
 - yms-proxmox-02의 `/tmp`는 4.16GB tmpfs이고 kubelet nodefs는
   `/dev/mapper/vg0-root` ext4다. 따라서 `/tmp/diskfill`은 금지한다.
 - preflight는 원격 상태를 변경하지 않고 nodefs device·capacity·available과
-  cryptographic launch nonce를 수집한다. 이 prestate를 로컬 event journal에 먼저
+  exact Node UID·Ready=True·DiskPressure=False baseline 및 cryptographic launch
+  nonce를 수집한다. 이 prestate를 로컬 event journal에 먼저
   fsync한 뒤에만 nodefs와 같은 device의 `/var/tmp/v23-f4t4-<nonce>/`를 root
   mode-0700으로 생성하고, directory inode·nodefs prestate·target 9%를 node-local
   intent receipt에 fsync한다. 같은 nonce 경로가 이미 있으면 fail-close한다.
@@ -101,7 +102,12 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   allocated blocks와 pre/post filesystem 값을 atomic post receipt에 봉인한다.
   validator는 Node condition과 별도로 같은 receipt/file/filesystem을 다시 읽는다.
 - `DiskPressure=True` 또는 `Ready!=True`이면 실제 node disruption으로 기록한다.
-  Node가 Ready이고 DiskPressure=False여도 exact `nodefs.available<10%`가 확인되면
+  atomic post receipt가 injection 당시 8–10%와 exact allocation을 입증하고 live
+  file identity·8% safety floor가 유지되면, GC로 available이 10% 위로 반등해도
+  같은 UID에서 새로 관측된 exact Node condition을 직접 endpoint로 사용한다.
+  durable validation event는 injection-threshold와 live-threshold를 별도 flag와
+  post available·allocation·nonce/inode identity로 기록한다. Node가 Ready이고
+  DiskPressure=False이면 live `nodefs.available<10%`가 확인될 때만
   low-disk precursor만 성립한 것으로 기록한다(`node_disrupted=false`,
   `disk_pressure_observed=false`). 이 경우 F4-t4 제외 59건과 F4-t3/t4 동시 제외
   58건 sensitivity를 primary 60건과 함께 보고한다.
@@ -109,7 +115,12 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   그 directory 안의 exact file만 제거한다. post receipt가 있으면 file inode·size·
   blocks까지 일치해야 삭제하며, 예상하지 않은 파일이나 identity drift는 복구를
   GREEN으로 표시하지 않는다. work directory가 없거나 제거된 경우에도 같은
-  nodefs device·capacity와 `available>=10%`가 확인돼야 GREEN이다.
+  nodefs device·capacity와 `available>=10%`가 확인돼야 한다. 그 뒤 current Node가
+  아직 NotReady/DiskPressure일 때만 kubelet을 restart하고 active 상태를 확인한다.
+  restart는 invocation당 정확히 1회이며, 그 뒤에는 2초 간격 최대 15회 same-UID
+  `Ready=True`·`DiskPressure=False`만 poll한다. condition 전파가 늦어도 kubelet을
+  반복 restart하지 않고, poll 소진 시 fail-close한다. pre-mutation crash처럼 Node가
+  이미 GREEN이면 service restart를 하지 않는다.
 
 ## 네임스페이스 / 주요 서비스
 

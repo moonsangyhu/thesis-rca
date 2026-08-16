@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 30건
-- 심각(실험 무효화): 26건
+- 총 이슈: 31건
+- 심각(실험 무효화): 27건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -387,3 +387,14 @@
 - **근본 원인**: yms-proxmox-02에서 `/tmp`는 4,163,809,280-byte `tmpfs`(device 37)지만 kubelet `nodefs`와 `/var/lib/kubelet`은 49,564,815,360-byte `/dev/mapper/vg0-root` ext4(device 64512)다. 기존 명령은 root `/`의 available bytes 중 95%를 계산한 뒤 그보다 훨씬 작은 `/tmp/diskfill`에 `fallocate`했다. 원격 command nonzero exit를 `ssh_node()`가 확인하지 않아 allocation 실패를 injection 성공처럼 진행했고, validator에는 file/filesystem/poststate receipt가 없어 180초 후 Node condition만 읽었다. `evictionPressureTransitionPeriod=5m`은 관찰된 설정이지만 이번 실패의 직접 원인으로 사용하지 않는다.
 - **수정 내용**: preflight는 원격 mutation 없이 cryptographic nonce와 kubelet nodefs prestate만 수집하며 이를 local event journal에 먼저 fsync한다. 그 뒤에만 nodefs와 같은 `/var/tmp/v23-f4t4-<nonce>/`를 생성하고, pre-existing path 부재, device/mount, pre/post capacity·available, work/file inode·size·allocated blocks를 exact 결합하는 crash-safe intent/poststate receipt를 fsync·readback한다. 95%-of-current-available 대신 사전 고정한 nodefs 9% available target을 사용하고, live poststate가 8% 이상 10% 미만이며 allocated blocks와 filesystem delta가 요청량을 뒷받침해야 한다. recovery는 file/workdir 부재만으로 GREEN이 아니며 같은 nodefs의 available이 10% 이상 회복돼야 한다. 원격 exit와 marker가 하나라도 어긋나면 inference 전에 거부한다. precursor를 허용할 경우 `node_disrupted=false`, `disk_pressure_observed=false`, `treatment_basis=nodefs-available-threshold`로 기록하고 F4-t4 제외 59건 민감도 분석과 estimand 한계를 의무화한다. 독립 리뷰와 model-free lifecycle probe를 fresh campaign 실행 gate로 둔다.
 - **현재 영향**: Primary15는 불완전 operational attrition으로 보존하며 재사용하지 않는다. 실험 프로세스는 종료됐고 F4-t4 결과는 commit되지 않았다. 정지했던 로컬 Loki port-forward만 교체한 뒤 Loki `/ready`가 다시 `ready`를 반환해 nodes 6/6·Boutique 12/12·Flux 5/5·Prometheus/Loki comprehensive health GREEN을 회복했다. 수정·회귀·독립 리뷰·model-free probe 전에는 fresh campaign을 시작하지 않는다.
+
+### [ISS-031] F4-t4 DiskPressure 발현 뒤 GC 반등과 condition 해제 지연
+
+- **카테고리**: injection / recovery / measurement validity
+- **심각도**: critical (P0)
+- **영향**: clean commit `2d9c6ad` model-free probe는 inference·AIC·result 0 상태에서 실제 `DiskPressure=True`를 만들었지만 validator와 recovery health gate를 통과하지 못했다. fresh main campaign은 시작하지 않았다.
+- **발생 빈도**: model-free lifecycle probe 1회.
+- **관찰한 사실**: nonce-bound injection 직후 nodefs capacity 49,564,815,360 bytes 중 available 4,460,826,624 bytes(약 9.0%)와 30,747,039,130-byte allocated file을 봉인했고 Node는 `Ready=True`, `DiskPressure=True`가 됐다. 이후 kubelet image GC로 live available이 10% 위, 최종 약 38.17GB까지 반등했지만 DiskPressure condition은 True로 유지됐다. 180초 validator는 ongoing 8–10% gate 때문에 `PilotError`로 중단했다. exact file cleanup은 1회 성공했으나 generic health timeout 동안 condition/taint가 남아 recovery RED였다. 실험 종료 후 exact workdir 부재와 available 38.17GB를 확인하고 kubelet을 1회 재시작하자 DiskPressure=False·taint 없음으로 즉시 회복됐다. pressure 중 Evicted된 monitoring DaemonSet pod 2개를 정확히 삭제한 뒤 replacement를 포함해 nodes 6/6·Boutique 12/12·Flux 5/5·Prometheus/Loki·Failed pod 0을 확인했다.
+- **근본 원인**: DiskPressure는 threshold signal의 순간값과 condition lifecycle이 동일하지 않다. 처치가 GC를 유발하면 live available은 threshold 위로 반등해도 condition은 관측 가능한 fault endpoint로 남을 수 있다. 반대로 cleanup만으로는 kubelet의 pressure transition/taint가 generic health timeout 안에 해제되지 않았다.
+- **수정 내용**: read-only preflight는 exact Node UID·Ready=True·DiskPressure=False baseline을 local recovery receipt에 함께 봉인한다. validator는 node-local post receipt가 injection 당시 8–10% threshold와 exact file allocation을 입증하고 같은 UID의 live file identity·safety floor가 유지되는 조건에서, 180초의 새 `DiskPressure=True` 또는 `Ready!=True`를 직접 treatment endpoint로 우선한다. ongoing `<10%`는 condition 미발현 precursor branch에서만 필수로 한다. injection post available·allocation·nonce/inode identity와 live threshold는 validation event에 분리해 영속화한다. recovery는 exact cleanup과 `available>=10%`를 확인한 뒤 current Node가 여전히 NotReady/DiskPressure일 때만 kubelet을 invocation당 1회 재시작하고 active marker 뒤 2초 간격 최대 15회 same-UID exact GREEN condition만 poll한다. stale condition으로 restart를 반복하지 않으며 poll 소진 시 fail-close한다. pre-mutation crash에서 이미 GREEN이면 restart하지 않는다. fresh campaign 전 동일 model-free full lifecycle probe와 comprehensive GREEN을 다시 요구한다.
+- **현재 영향**: 첫 probe는 invalid calibration으로만 보존한다. cluster는 수동 `$lab-restore` 후 GREEN이며 결과 데이터는 생성·수정되지 않았다.

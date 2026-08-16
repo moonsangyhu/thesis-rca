@@ -185,6 +185,13 @@ class LiveInjectionValidator:
             }
             if any(result.get(name) != value for name, value in exact_strings.items()):
                 raise PilotError("F4 diskfill path receipt is invalid")
+            if (
+                not isinstance(result.get("node_uid_before"), str)
+                or not result["node_uid_before"]
+                or result.get("node_ready_before") != "True"
+                or result.get("node_disk_pressure_before") != "False"
+            ):
+                raise PilotError("F4 diskfill node baseline receipt is invalid")
             numeric_names = (
                 "nodefs_device", "diskfill_work_inode",
                 "nodefs_capacity_bytes", "nodefs_pre_available_bytes",
@@ -266,6 +273,10 @@ class LiveInjectionValidator:
             or metadata.get("name") != node
             or not isinstance(metadata.get("uid"), str)
             or not metadata.get("uid")
+            or (
+                trial == 4
+                and metadata.get("uid") != result.get("node_uid_before")
+            )
             or not isinstance(raw_conditions, list)
             or len(ready_items) != 1
             or ready_items[0].get("status") not in {"True", "False", "Unknown"}
@@ -435,22 +446,38 @@ class LiveInjectionValidator:
                 >= live["nodefs_capacity_bytes"]
                 * F4_T4_SAFETY_FLOOR_PERCENT
             )
-            if not low_disk or not safe_floor:
+            ready_status = conditions.get("Ready")
+            disk_status = conditions.get("DiskPressure")
+            condition_observed = (
+                ready_status != "True" or disk_status == "True"
+            )
+            if not safe_floor or (not condition_observed and not low_disk):
                 raise PilotError("F4 nodefs available threshold was not crossed")
             details.update({
-                "disk_pressure_observed": conditions.get("DiskPressure") == "True",
-                "ready_status": conditions.get("Ready"),
-                "disk_pressure_status": conditions.get("DiskPressure"),
-                "nodefs_available_threshold_verified": True,
+                "disk_pressure_observed": disk_status == "True",
+                "ready_status": ready_status,
+                "disk_pressure_status": disk_status,
+                "nodefs_injection_threshold_verified": True,
+                "nodefs_injection_post_available_bytes": (
+                    result["nodefs_post_available_bytes"]
+                ),
+                "nodefs_injection_allocation_bytes": (
+                    result["diskfill_allocated_bytes"]
+                ),
+                "diskfill_nonce": result["diskfill_nonce"],
+                "diskfill_work_inode": result["diskfill_work_inode"],
+                "diskfill_inode": result["diskfill_inode"],
+                "diskfill_allocated_blocks": result["diskfill_allocated_blocks"],
+                "nodefs_live_threshold_verified": low_disk,
                 "nodefs_available_bytes": live["nodefs_live_available_bytes"],
                 "nodefs_capacity_bytes": live["nodefs_capacity_bytes"],
                 "treatment_verified": True,
                 "treatment_basis": (
                     "node-notready"
-                    if conditions.get("Ready") != "True"
+                    if ready_status != "True"
                     else (
                         "diskpressure-condition"
-                        if conditions.get("DiskPressure") == "True"
+                        if disk_status == "True"
                         else "nodefs-available-threshold"
                     )
                 ),
