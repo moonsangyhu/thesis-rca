@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 32건
-- 심각(실험 무효화): 28건
+- 총 이슈: 33건
+- 심각(실험 무효화): 29건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -410,3 +410,14 @@
 - **수정 내용**: F4-t4 read-only live probe에만 전체 inner command를 `shlex.quote`한 `sudo sh -c` 경계를 적용한다. root wrapper 내부의 `set -eu` 뒤 receipt schema·nonce·device·work/file inode·size·blocks·capacity·pre/post/live available 검사를 모두 marker 전에 유지한다. 다른 fault validator에는 sudo를 확장하지 않는다.
 - **현재 영향**: targeted 67 PASS, py_compile·diff-check와 독립 reviewer APPROVE를 확인했다. 수정 정본을 clean commit한 뒤 동일 model-free full lifecycle probe와 comprehensive GREEN을 다시 통과하기 전에는 fresh main campaign을 시작하지 않는다.
 - **검증 후속(append-only)**: clean commit `84eb369`의 동일 helper probe가 injection post available 4,460,826,624 bytes, t180 live available 4,775,100,416 bytes, same-UID `Ready=True`·`DiskPressure=True`, exact allocation/receipt identity를 검증해 `treatment_basis=diskpressure-condition`으로 PASS했다. collector는 181.843초에 14 metric groups·2 log groups·6 kubectl groups를 완료했다. recovery는 exact cleanup 1회, kubelet restart 1회, condition poll 2회, comprehensive health GREEN이었고 `probe_complete`의 model/AIC/result는 0/0/0이다. artifact는 `/tmp/v23-f4t4-probe-20260817T0120Z/probe_events.jsonl`, SHA-256 `f075061b70d5c0f7505ecc6d36e023e7d9725cabe770098c5711ca1479d44c7a`다. Evicted monitoring pod 2개만 exact 삭제한 뒤 replacements 6/6, nodes 6/6·DiskPressure/MemoryPressure false, Boutique 12/12, Flux 5/5, Prometheus/Loki Ready, Failed pod·nonce workdir 0을 확인했다. F4-t4 model-free 실행 gate는 충족됐다.
+
+### [ISS-033] locale stderr가 recovery disk health를 false-RED로 만듦
+
+- **카테고리**: recovery / code / infra provenance
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260817-primary16`은 F1-t1에서 36 Terra calls를 완료했지만 recovery health를 잘못 RED로 판정해 commit 전에 중단됐다. 불완전 campaign은 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회.
+- **관찰한 사실**: F1-t1 injection과 exact Flux restore는 성공했고 attempt/charged는 36/36, actual model `gpt-5.6-terra`, AIC 합계·final cumulative 17.487로 정렬됐다. result/raw/call ledger는 0/0/0이다. 실제 nodes 6/6 Ready·DiskPressure/MemoryPressure false, Boutique 12/12, Flux root/app Ready·suspend absent, Prometheus/Loki Ready, Failed pod와 experiment residual 0, worker disk 20/25/34/29/44%였다. 그러나 `ssh_node()`가 stdout과 stderr를 합치면서 각 disk 출력이 `20\nbash: warning: setlocale...` 형태가 됐고, `int(raw.strip().replace('%',''))`가 다섯 노드 모두 실패했다. fallback full reset도 존재하지 않는 `/tmp/thesis-rca-work/k8s/app/online-boutique.yaml`을 참조했다.
+- **근본 원인**: health check가 원격 출력 전체를 숫자로 간주해 locale stderr와 측정값을 분리하지 않았고, recovery manifest가 optional GitOps scratch clone의 stale 절대경로에 결합돼 있었다.
+- **수정 내용**: remote `set -eu`와 `LC_ALL=C df -P /`로 POSIX Use%를 추출해 exact `__V23_DISK_USAGE_PCT__=` marker를 마지막에 1회만 출력한다. Python은 exactly-one digits marker와 0..100만 허용하고 unrelated stderr는 무시한다. missing·duplicate·suffix·101·timeout은 RED이며 기존 `>=80%` gate를 유지한다. `ORIGINAL_MANIFEST`는 현재 checked-out revision의 `k8s/app/online-boutique.yaml`을 `Path(__file__).resolve()`에서 계산해 cwd와 `/tmp` clone 의존을 제거한다.
+- **현재 영향**: 새 적대 tests를 포함한 targeted 71 PASS, pycompile·diff-check, actual comprehensive health `(True, [])`, 독립 reviewer APPROVE를 확인했다. 수정 정본 clean commit 뒤 fresh primary campaign으로 재시작한다.

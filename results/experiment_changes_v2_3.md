@@ -485,3 +485,12 @@
 - **증거**: `/tmp/v23-f4t4-probe-20260817T0120Z/probe_events.jsonl` 8 events, SHA-256 `f075061b70d5c0f7505ecc6d36e023e7d9725cabe770098c5711ca1479d44c7a`; `probe_complete` model_calls0·AIC0·result_rows0.
 - **수정 파일**: `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: GREEN — F4-t4 model-free fresh-campaign 실행 gate 충족.
+
+### 55. Recovery disk marker와 checked-out manifest binding — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary16 F1-t1은 36 Terra calls(AIC 17.487)를 완료하고 Flux exact restore까지 성공했지만, five-worker disk check가 locale stderr를 숫자와 합쳐 parse하며 recovery false-RED로 중단됐다. result/raw/call은 0/0/0이다. fallback full reset은 존재하지 않는 `/tmp/thesis-rca-work` manifest를 사용했다.
+- **원인**: `ssh_node`의 stdout+stderr 계약을 고려하지 않은 whole-string `int()` parse와 optional scratch clone에 대한 stale absolute path였다.
+- **수정 내용**: remote `set -eu`·`LC_ALL=C df -P /`가 exact disk marker를 마지막에 1회 출력하고 parser는 exactly-one digits 0..100만 허용한다. unrelated stderr는 무시하되 missing/duplicate/invalid/timeout과 disk>=80은 RED다. full reset/F8 manifest는 `Path(__file__).resolve().parents[2]`의 checked-out revision 파일로 결합한다.
+- **수정 파일**: `scripts/stabilize/health_verify.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_health_verify.py:1`, `docs/lab-environment.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — targeted 71 PASS, pycompile·diff-check PASS, actual comprehensive health `(True, [])`, 독립 reviewer APPROVE. fresh campaign 재실행 예정.
