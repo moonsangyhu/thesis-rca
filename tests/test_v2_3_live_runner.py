@@ -8,10 +8,12 @@ from types import SimpleNamespace
 
 from experiments.v2_3.engine import RCAEngineV2_3
 from experiments.v2_3.live_runner import (
+    F4DisruptionNotObserved,
     AttemptJournal, ChargedCallJournal, F7InjectionValidator, FluxAppGuard,
     FluxCASConflict, FluxHierarchyGuard, PilotError, PilotIncidentRunner, RecoveryFailure,
     RuntimeEvidenceRenderer, RuntimeOnlyRetriever,
     validate_f4_t3_evidence_deadline,
+    validate_injection_in_observation_window,
 )
 from experiments.v2_3.mock import DeterministicMockCaller
 from experiments.v2_3.scanner import ForbiddenLexicon
@@ -964,6 +966,123 @@ class LiveRunnerTests(unittest.TestCase):
             with self.subTest(elapsed=elapsed):
                 with self.assertRaisesRegex(PilotError, "treatment deadline"):
                     validate_f4_t3_evidence_deadline("F4", 3, elapsed)
+
+    def test_f4_memory_observation_window_latches_first_notready(self):
+        clock = [0.0]
+        calls = []
+
+        def sleep(seconds):
+            clock[0] += seconds
+
+        class Validator:
+            def validate(self, *_args):
+                calls.append(clock[0])
+                if clock[0] < 52:
+                    raise F4DisruptionNotObserved(
+                        "F4 node disruption was not observed"
+                    )
+                return {"status": "verified", "node_disrupted": True}
+
+        result = validate_injection_in_observation_window(
+            fault_id="F4",
+            trial=3,
+            ground_truth={"target_service": "worker03"},
+            injection_result={"wait_seconds": 60},
+            injection_validator=Validator(),
+            injection_started_monotonic=0.0,
+            sleep_fn=sleep,
+            monotonic_fn=lambda: clock[0],
+        )
+        self.assertEqual(calls, [40, 42, 44, 46, 48, 50, 52])
+        self.assertEqual(result["observation_poll_started_seconds"], 52.0)
+        self.assertEqual(result["observation_latched_seconds"], 52.0)
+
+    def test_f4_memory_observation_window_fails_at_deadline(self):
+        clock = [0.0]
+
+        def sleep(seconds):
+            clock[0] += seconds
+
+        validator = SimpleNamespace(
+            validate=lambda *_: (_ for _ in ()).throw(
+                F4DisruptionNotObserved("F4 node disruption was not observed")
+            )
+        )
+        with self.assertRaisesRegex(F4DisruptionNotObserved, "not observed"):
+            validate_injection_in_observation_window(
+                fault_id="F4",
+                trial=3,
+                ground_truth={"target_service": "worker03"},
+                injection_result={"wait_seconds": 60},
+                injection_validator=validator,
+                injection_started_monotonic=0.0,
+                sleep_fn=sleep,
+                monotonic_fn=lambda: clock[0],
+            )
+        self.assertEqual(clock[0], 60.0)
+
+    def test_f4_memory_observation_window_does_not_retry_other_errors(self):
+        clock = [0.0]
+        calls = []
+
+        def sleep(seconds):
+            calls.append(seconds)
+            clock[0] += seconds
+
+        validator = SimpleNamespace(
+            validate=lambda *_: (_ for _ in ()).throw(
+                PilotError("malformed launch receipt")
+            )
+        )
+        with self.assertRaisesRegex(PilotError, "malformed launch receipt"):
+            validate_injection_in_observation_window(
+                fault_id="F4",
+                trial=3,
+                ground_truth={"target_service": "worker03"},
+                injection_result={"wait_seconds": 60},
+                injection_validator=validator,
+                injection_started_monotonic=0.0,
+                sleep_fn=sleep,
+                monotonic_fn=lambda: clock[0],
+            )
+        self.assertEqual(calls, [40.0])
+
+    def test_f4_memory_observation_window_rejects_late_start_and_success(self):
+        for initial_elapsed in (61.0, 70.0, float("nan"), -1.0):
+            with self.subTest(initial_elapsed=initial_elapsed):
+                validator = SimpleNamespace(
+                    validate=lambda *_: {"status": "verified"}
+                )
+                with self.assertRaisesRegex(PilotError, "window elapsed"):
+                    validate_injection_in_observation_window(
+                        fault_id="F4",
+                        trial=3,
+                        ground_truth={"target_service": "worker03"},
+                        injection_result={"wait_seconds": 60},
+                        injection_validator=validator,
+                        injection_started_monotonic=0.0,
+                        sleep_fn=lambda _: None,
+                        monotonic_fn=lambda value=initial_elapsed: value,
+                    )
+
+        clock = [59.0]
+
+        class SlowSuccessfulValidator:
+            def validate(self, *_args):
+                clock[0] = 65.0
+                return {"status": "verified"}
+
+        with self.assertRaisesRegex(PilotError, "validation exceeded"):
+            validate_injection_in_observation_window(
+                fault_id="F4",
+                trial=3,
+                ground_truth={"target_service": "worker03"},
+                injection_result={"wait_seconds": 60},
+                injection_validator=SlowSuccessfulValidator(),
+                injection_started_monotonic=0.0,
+                sleep_fn=lambda _: None,
+                monotonic_fn=lambda: clock[0],
+            )
 
     def test_f4_memory_recovery_retries_and_kills_only_sealed_pid(self):
         from scripts.stabilize.recovery import Recovery

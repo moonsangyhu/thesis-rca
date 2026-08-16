@@ -47,17 +47,18 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
   `--vm 1 --vm-bytes 14G --vm-keep --timeout 180s`를 사용한다. 설치된
   `stress-ng=0.19.02-1`의 `--vm-bytes`는 worker별 할당량이므로 worker 수를
   1로 고정해 총 요청량과 receipt의 14 GiB 의미를 일치시킨다. F4 trial 3은
-  전용 observation wait 60초를 사용하고 `Ready!=True`를 요구한다. runner는
+  40–60초 bounded observation window를 2초 간격으로 확인하고 최초
+  `Ready!=True`를 latch한다. 60초까지 관측되지 않으면 fail-closed한다. runner는
   injection 시작부터 full collector 종료까지 monotonic elapsed가 175초 미만인지
   검증해 stressor deadline 안에서 evidence snapshot이 끝난 경우만 inference한다.
   이후 36회 모델 호출 중 자율 종료시켜 SSH exact recovery 여유를 확보한다.
   PID·start tick·cmdline hash receipt와
   실제 `Ready!=True`를 필수로 검증한다. `MemoryPressure`는 보조 관측값일
   뿐 처치 성립을 대신하지 않는다.
-- 2026-08-16 model-free calibration에서 13 GiB/180초는 123초 동안에도
-  `Ready=True`여서 처치가 성립하지 않았고, 14 GiB/90초는 52.034초에
-  `Ready=False`를 만들면서 exact cleanup 1회로 복구됐다. 따라서 14 GiB가
-  현재 16 GiB worker에서 시험한 정수 GiB 후보 중 가장 작은 유효값이다.
+- 2026-08-16 model-free probe에서 `--vm 1 --vm-bytes 14G`는 51.191초에
+  `Ready=False`와 live process identity를 만들었고 full collector는 52.685초에
+  끝났다. 60초 단일 관측은 이미 회복된 Ready 상태를 보아 실패했으므로 위의
+  bounded window가 transient NotReady를 재현 가능하게 latch한다.
 - binary 또는 launch receipt가 없으면 모델 호출 전에 fail-closed한다.
 - launch identity(PID·start tick·cmdline hash)는 worker03의 mode-0600 임시 파일을
   fsync한 뒤 atomic rename한다. emergency recovery는 이 node-local receipt를

@@ -17,6 +17,9 @@ from .conditions import ConditionAssembler, latin_square_schedule, schedule_hash
 from .config import PILOT_FAULT_ID, PILOT_TRIAL
 from scripts.fault_inject.config import (
     F4_T3_EVIDENCE_DEADLINE_MARGIN_SECONDS,
+    F4_T3_OBSERVATION_POLL_SECONDS,
+    F4_T3_OBSERVATION_START_SECONDS,
+    F4_T3_OBSERVATION_WAIT_SECONDS,
     F4_T3_STRESS_TIMEOUT_SECONDS,
 )
 from .engine import RCAEngineV2_3
@@ -28,6 +31,10 @@ from .storage import SafeOutputStore
 
 class PilotError(RuntimeError):
     pass
+
+
+class F4DisruptionNotObserved(PilotError):
+    """Retryable only inside the bounded F4-t3 observation window."""
 
 
 class FluxCASConflict(PilotError):
@@ -60,6 +67,66 @@ def validate_f4_t3_evidence_deadline(
         "elapsed_seconds": round(float(elapsed_seconds), 6),
         "deadline_seconds": deadline,
     }
+
+
+def validate_injection_in_observation_window(
+    fault_id: str,
+    trial: int,
+    ground_truth: dict,
+    injection_result: dict,
+    injection_validator: object,
+    injection_started_monotonic: float,
+    sleep_fn: Callable[[float], None],
+    monotonic_fn: Callable[[], float],
+) -> dict:
+    """Validate once, except latch F4-t3's brief NotReady state in 40..60s."""
+    wait_seconds = injection_result.get("wait_seconds")
+    if isinstance(wait_seconds, bool) or not isinstance(wait_seconds, int):
+        raise PilotError("invalid injection wait interval")
+    if not 0 <= wait_seconds <= 600:
+        raise PilotError("invalid injection wait interval")
+    if (fault_id, trial) != ("F4", 3):
+        sleep_fn(wait_seconds)
+        return injection_validator.validate(
+            fault_id, trial, ground_truth, injection_result
+        )
+    if wait_seconds != F4_T3_OBSERVATION_WAIT_SECONDS:
+        raise PilotError("F4 trial 3 observation deadline is invalid")
+    elapsed = monotonic_fn() - injection_started_monotonic
+    if not math.isfinite(elapsed) or elapsed < 0 or elapsed > wait_seconds:
+        raise PilotError("F4 trial 3 observation window elapsed before validation")
+    sleep_fn(max(0.0, F4_T3_OBSERVATION_START_SECONDS - elapsed))
+    while True:
+        poll_started = monotonic_fn() - injection_started_monotonic
+        if (
+            not math.isfinite(poll_started)
+            or poll_started < 0
+            or poll_started > wait_seconds
+        ):
+            raise PilotError("F4 trial 3 observation window deadline exceeded")
+        try:
+            verified = injection_validator.validate(
+                fault_id, trial, ground_truth, injection_result
+            )
+            completed = monotonic_fn() - injection_started_monotonic
+            if (
+                not math.isfinite(completed)
+                or completed < 0
+                or completed > wait_seconds
+            ):
+                raise PilotError(
+                    "F4 trial 3 observation validation exceeded deadline"
+                )
+            return {
+                **verified,
+                "observation_poll_started_seconds": round(poll_started, 6),
+                "observation_latched_seconds": round(completed, 6),
+            }
+        except F4DisruptionNotObserved:
+            elapsed = monotonic_fn() - injection_started_monotonic
+            if elapsed >= wait_seconds:
+                raise
+            sleep_fn(min(F4_T3_OBSERVATION_POLL_SECONDS, wait_seconds - elapsed))
 
 
 class FluxAppGuard:
@@ -811,6 +878,7 @@ class PilotIncidentRunner:
     allowed_incidents: frozenset[tuple[str, int]] | None = None
     renderer: RuntimeEvidenceRenderer = RuntimeEvidenceRenderer()
     sleep_fn: Callable[[float], None] = __import__("time").sleep
+    monotonic_fn: Callable[[], float] = time.monotonic
 
     def __post_init__(self) -> None:
         self.authorization.revalidate()
@@ -910,18 +978,19 @@ class PilotIncidentRunner:
             injection_attempted = True
             if hasattr(self.store, "append_event"):
                 self.store.append_event("injection_started", fault_id=fault_id, trial=trial)
-            injection_started_monotonic = time.monotonic()
+            injection_started_monotonic = self.monotonic_fn()
             injection_result = self.injector.inject(
                 fault_id, trial, recovery_context=prepared_recovery
             )
-            wait_seconds = injection_result.get("wait_seconds")
-            if isinstance(wait_seconds, bool) or not isinstance(wait_seconds, int):
-                raise PilotError("invalid injection wait interval")
-            if not 0 <= wait_seconds <= 600:
-                raise PilotError("invalid injection wait interval")
-            self.sleep_fn(wait_seconds)
-            injection_validation = self.injection_validator.validate(
-                fault_id, trial, ground_truth, injection_result
+            injection_validation = validate_injection_in_observation_window(
+                fault_id=fault_id,
+                trial=trial,
+                ground_truth=ground_truth,
+                injection_result=injection_result,
+                injection_validator=self.injection_validator,
+                injection_started_monotonic=injection_started_monotonic,
+                sleep_fn=self.sleep_fn,
+                monotonic_fn=self.monotonic_fn,
             )
             if injection_validation.get("status") != "verified":
                 raise PilotError("post-injection validator did not PASS")
@@ -929,7 +998,8 @@ class PilotIncidentRunner:
                 self.store.append_event("injection_verified", **injection_validation)
             collected = self.collector.collect_observability_only(window_minutes=5)
             evidence_timing = validate_f4_t3_evidence_deadline(
-                fault_id, trial, time.monotonic() - injection_started_monotonic
+                fault_id, trial,
+                self.monotonic_fn() - injection_started_monotonic,
             )
             if evidence_timing is not None:
                 if hasattr(self.store, "append_event"):

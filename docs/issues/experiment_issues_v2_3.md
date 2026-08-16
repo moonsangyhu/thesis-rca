@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 27건
-- 심각(실험 무효화): 23건
+- 총 이슈: 28건
+- 심각(실험 무효화): 24건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -341,16 +341,27 @@
 - **발생 빈도**: 본실험 1회. 13 GiB/90초 선행 lifecycle probe는 약 99초에 자율 복구됐지만 13 GiB/300초 production 처치는 host SSH와 kubelet 응답을 장시간 고갈시켰다.
 - **관찰한 사실**: F4 t3는 180초 뒤 `Ready=Unknown`과 node-unreachable process probe로 injection validation을 통과했고 36회 Terra 호출까지 완료했다. recovery 30회와 sealed-receipt emergency recovery 30회가 모두 SSH banner timeout으로 실패했으며 yms-proxmox-04는 약 32분 뒤에야 Ready/SSH 응답을 자율 회복했다. 두 번째 emergency restore는 첫 시도에 exact process cleanup을 확인했다. 최종 artifact는 rows/raw/call=51/51/612, attempt/charged=648/648, 알려진 누적 AIC 306.7476이며 event는 `recovery_failed→flux_emergency_restore_failed→flux_emergency_restored`로 끝난다. 최종 6/6 node pressure false, Boutique 12/12, Flux 5/5, Prometheus/Loki ready와 stress receipt/log/process 부재를 확인했다.
 - **근본 원인**: injection validation에 필요한 약 40초의 disruption보다 300초 stress duration이 과도했다. 16 GiB node에서 13 GiB `--vm-keep`을 5분 유지하면서 sshd와 kubelet이 exact recovery의 최대 약 6.5분 retry window 안에도 응답하지 못했고, 실험 종료 후 node가 장시간 비정상 상태로 남았다.
-- **수정 내용**: F4 t3 전용 observation wait를 60초, stress timeout을 180초로 결합한다. 13 GiB/180초 model-free probe는 60초 validator와 123초 bounded polling 모두 `Ready=True`여서 inference 전에 안전하게 거부됐다. 당시 node 가용 메모리는 약 14.68 GB였다. 별도 14 GiB/90초 calibration은 52.034초에 `Ready=False`를 만들고 sealed PID exact cleanup 1회로 복구됐으므로 절대 처치량을 14 GiB로 조정한다. validator는 public result의 wait=60과 timeout=180을 bool 제외 exact int로 검증하고 `Ready!=True`를 필수로 요구한다. runner는 injection 시작부터 full collector 완료까지 monotonic elapsed가 175초 미만임을 `evidence_collection_verified` event로 봉인하며, 초과하면 inference 전에 중단한다. recovery command identity는 shared constant를 사용해 exact `14G/180s` process만 종료한다. 다른 F4 trial의 180초 wait는 변경하지 않는다.
-- **현재 영향**: 13 GiB 두 probe와 14 GiB calibration에는 Copilot 호출·AIC·result 파일 쓰기가 없었다. exact wait/timeout type 변조, Ready=True+MemoryPressure=True, evidence deadline 경계, 다른 F4 trial wait 누출을 적대 unit으로 검증한다. 전체 회귀·dry-run·독립 리뷰 후 clean commit-push하고, model-free bounded live lifecycle probe에서 60초 NotReady validation, full collector<175초, stress 종료 뒤 exact recovery/cluster GREEN을 확인한 뒤에만 fresh main campaign을 시작한다.
+- **수정 내용**: F4 t3의 stress timeout을 180초로 줄이고 14 GiB 총 처치량을 worker 1개에 결합한다. validator는 public result의 observation deadline=60과 timeout=180을 bool 제외 exact int로 검증하고 `Ready!=True`를 필수로 요구한다. runner는 40–60초를 2초 간격으로 관측해 최초 NotReady를 latch하고, injection 시작부터 full collector 완료까지 monotonic elapsed가 175초 미만임을 `evidence_collection_verified` event로 봉인한다. recovery command identity는 exact `--vm 1 --vm-bytes 14G --timeout 180s` process만 종료한다. 다른 F4 trial의 180초 wait는 변경하지 않는다.
+- **현재 영향**: 모든 calibration/probe에는 Copilot 호출·AIC·result 파일 쓰기가 없었다. exact worker/wait/timeout type 변조, Ready=True+MemoryPressure=True, observation window deadline, evidence deadline, 다른 F4 trial wait 누출을 적대 unit으로 검증한다. 전체 회귀·독립 리뷰·clean commit-push 뒤 production window 코드로 model-free full lifecycle probe를 한 번 더 통과해야 fresh main campaign을 시작한다.
 
 ### [ISS-027] stress-ng vm-bytes의 worker별 의미로 총 처치량이 이중 요청됨
 
 - **카테고리**: injection / code
 - **심각도**: critical (P0)
 - **영향**: 14 GiB/180초 model-free full probe는 60초에 `Ready=True`여서 inference 전에 거부됐고, 이어진 polling probe도 25–123초 내내 Ready=True·MemoryPressure=False였다. 두 probe 모두 exact recovery GREEN이며 Copilot 호출·AIC·result 쓰기는 0이다.
-- **발생 빈도**: 14 GiB/180초 무모델 probe 2회. 앞선 14 GiB/90초 calibration의 52.034초 일시적 NotReady는 같은 구성의 비결정적 OOM churn으로 해석된다.
+- **발생 빈도**: `--vm 2`의 14 GiB/180초 무모델 probe 2회. 앞선 동일 worker 구성의 14 GiB/90초 calibration은 52.034초에 일시적 NotReady를 보였다.
 - **관찰한 사실**: worker03의 설치된 `stress-ng 0.19.02` 도움말은 `--vm-bytes N`을 `allocate N bytes per vm worker`로 정의한다. 기존 command는 `--vm 2 --vm-bytes 14G`여서 16 GiB node에 총 14 GiB가 아니라 worker별 14 GiB, 최대 28 GiB를 요청했다. probe 직전 node available memory는 14,730,600,448 bytes였다.
-- **근본 원인**: 절대 byte 값만 receipt에 결합하고 vm worker 수와 stress-ng의 per-worker 의미를 총 처치량 계약에 포함하지 않았다. 과다 요청된 child worker의 OOM/restart 동작 때문에 node Ready 변화가 일시적·비재현적이었다.
+- **근본 원인**: 절대 byte 값만 receipt에 결합하고 vm worker 수와 stress-ng의 per-worker 의미를 총 처치량 계약에 포함하지 않았다. 과다 요청과 child worker OOM/restart가 일시적 Ready 변화에 기여했다는 해석은 관측과 일치하지만 process별 RSS 원자료는 보존하지 않아 직접 입증된 것은 아니다.
 - **수정 내용**: `F4_T3_STRESS_VM_WORKERS=1`을 shared constant로 추가해 launch를 exact `--vm 1 --vm-bytes 14G`로 고정한다. sealed preflight/result receipt, validator, recovery command identity에 worker 수를 bool 제외 exact int로 결합하고 missing/0/2/bool/float/string 변조를 거부한다.
-- **현재 영향**: 회귀·dry-run·독립 리뷰·clean commit-push 후 동일 14G/180초의 model-free full-collector/recovery probe를 다시 통과해야만 fresh main campaign을 허용한다.
+- **현재 영향**: worker 1개 구성은 51.191초에 NotReady와 live process identity를 재현했고 full collector를 52.685초에 끝냈다. worker-count contract와 별도로 60초 단일 샘플링 문제는 ISS-028에서 추적한다.
+
+### [ISS-028] F4-t3의 60초 단일 관측점이 transient NotReady를 놓침
+
+- **카테고리**: injection / measurement
+- **심각도**: critical (P0)
+- **영향**: worker 1개·14 GiB/180초 production-path full probe는 60초에 `Ready=True`를 읽어 inference 전에 거부됐다. 동일 구성의 후속 latch probe는 51.191초에 `Ready=False`를 관측해 처치가 실제 성립했음을 보였다.
+- **발생 빈도**: 고정 60초 probe 1회 실패, bounded latch probe 1회 성공.
+- **관찰한 사실**: 성공 probe에서 PID/start/hash process identity는 live였고 observability-only full collector는 injection 후 52.685초에 끝나 175초 evidence deadline을 충족했다. exact recovery는 7회 만에 GREEN이었다. 실패 probe도 exact recovery 11회 GREEN이며 두 probe 모두 model/AIC/result write 0이다.
+- **근본 원인**: Node Ready 변화가 단조 상태가 아닌데도 runner가 정확히 60초 한 점만 읽었다. 51초 전후의 NotReady 구간과 60초의 Ready 회복을 모두 관측했으므로 처치 실패가 아니라 sampling aliasing이다.
+- **수정 내용**: F4-t3만 40초부터 60초까지 2초 간격으로 validator를 실행해 `F4DisruptionNotObserved`만 재시도하고 최초 `Ready!=True`를 latch한다. malformed receipt, process identity, 다른 validator 오류는 즉시 fail-closed한다. 성공 event에 poll 시작과 validation 완료 elapsed를 모두 기록하고 완료가 60초를 넘으면 성공 응답도 거부하며 full collector<175초 gate를 유지한다.
+- **현재 영향**: 52초 latch, 60초 deadline failure, 비관측 오류 무재시도, 61초 late start와 59→65초 slow-success 거부를 deterministic unit으로 검증한다. 전체 회귀·독립 리뷰·clean commit-push 뒤 같은 production window 코드의 model-free live lifecycle probe가 실행 gate다.
