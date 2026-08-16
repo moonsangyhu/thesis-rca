@@ -94,16 +94,20 @@ class ConditionAssembler:
         # Runtime is scanned only for harness-only leakage. Legitimate observed
         # Kubernetes labels/entities remain valid runtime evidence.
         runtime_report = self.scanner.require_clean(
-            runtime_context, lexicon, runtime_scope=True
+            runtime_context, lexicon, runtime_scope=True, stage="runtime_context"
         )
         if not isinstance(blind_procedure, BlindProcedure):
             raise TypeError("blind procedure must include retrieval/masking provenance")
         blind_procedure.validate(lexicon, runtime_context)
         blind_text = blind_procedure.text
-        blind_report = self.scanner.require_clean(blind_text, lexicon)
+        blind_report = self.scanner.require_clean(
+            blind_text, lexicon, stage="blind_procedure"
+        )
         metrics = text_metrics(blind_text)
         placebo = make_length_placebo(metrics["chars"], metrics["bytes"])
-        placebo_report = self.scanner.require_clean(placebo, lexicon)
+        placebo_report = self.scanner.require_clean(
+            placebo, lexicon, stage="length_placebo"
+        )
         additional = {
             "runtime": "",
             "length_placebo": placebo,

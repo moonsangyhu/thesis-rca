@@ -25,7 +25,10 @@ from scripts.fault_inject.config import (
 from .engine import RCAEngineV2_3
 from .ledger import CallLedgerEntry
 from .retrieval import BlindProcedure, BlindProcedureBuilder, RetrievalChunk
-from .scanner import ForbiddenLexicon, sha256_text
+from .scanner import (
+    ForbiddenLexicon, LeakageDetected, sha256_text,
+    structured_harness_markers,
+)
 from .storage import SafeOutputStore
 
 
@@ -760,7 +763,7 @@ def build_forbidden_lexicon(
             str(injection_result.get("action") or "").strip(),
         )))),
         field_values=tuple(dict.fromkeys(field_values)),
-        harness_markers=(fault_id, "fault injection", "experiment marker"),
+        harness_markers=structured_harness_markers(fault_id, trial),
     )
 
 
@@ -1121,8 +1124,13 @@ class PilotIncidentRunner:
             primary_error = exc
             if hasattr(self.store, "append_event"):
                 try:
+                    diagnostic = (
+                        {"leakage_diagnostic": exc.safe_diagnostic()}
+                        if isinstance(exc, LeakageDetected) else {}
+                    )
                     self.store.append_event(
-                        "incident_failed", error_type=type(exc).__name__
+                        "incident_failed", error_type=type(exc).__name__,
+                        **diagnostic,
                     )
                 except BaseException:
                     # Diagnostic persistence must never bypass mandatory

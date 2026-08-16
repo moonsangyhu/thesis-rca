@@ -8,7 +8,7 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 
-SCANNER_VERSION = "v2.3-nfkc-alias-ngram-2"
+SCANNER_VERSION = "v2.3-nfkc-alias-ngram-3"
 MAX_FORBIDDEN_TERM_TOKENS = 128
 
 
@@ -20,6 +20,33 @@ def normalize(text: str) -> str:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256((text or "").encode("utf-8")).hexdigest()
+
+
+def structured_harness_markers(fault_id: str, trial: int) -> tuple[str, ...]:
+    """Return production markers that bind a fault ID to harness structure.
+
+    A bare two-character marker such as ``F4`` is not distinctive enough for
+    observability payloads: random pod hashes and UUID components can contain
+    an isolated ``f4`` token.  The production gate therefore requires either
+    an explicit fault field/prefix or the scheduled fault/trial pair.  General
+    harness phrases remain forbidden independently.
+    """
+    match = re.fullmatch(r"F([1-9][0-9]*)", str(fault_id or ""), re.IGNORECASE)
+    if match is None or isinstance(trial, bool) or not isinstance(trial, int) or trial < 1:
+        raise ValueError("invalid structured harness identity")
+    number = match.group(1)
+    return (
+        (
+            "re:" + rf"(?<!\w)fault[\W_]*(?:id[\W_]*)?"
+            rf"f[\W_]*{re.escape(number)}(?!\w)"
+        ),
+        (
+            "re:" + rf"(?<!\w)f[\W_]*{re.escape(number)}[\W_]*"
+            rf"(?:t|trial)[\W_]*{trial}(?!\w)"
+        ),
+        "fault injection",
+        "experiment marker",
+    )
 
 
 def minimum_token_ngrams(tokens: list[str], minimum: int) -> tuple[str, ...]:
@@ -110,7 +137,28 @@ class ScanReport:
 
 
 class LeakageDetected(RuntimeError):
-    pass
+    def __init__(self, message: str, *, report: ScanReport, stage: str):
+        super().__init__(message)
+        self.report = report
+        self.stage = stage
+
+    def safe_diagnostic(self) -> dict:
+        """Return auditable match metadata without forbidden source text."""
+        return {
+            "stage": self.stage,
+            "scanner_version": self.report.scanner_version,
+            "lexicon_hash": self.report.lexicon_hash,
+            "context_hash": self.report.context_hash,
+            "category_counts": self.report.category_counts,
+            "matches": [
+                {
+                    "category": match.category,
+                    "kind": match.kind,
+                    "term_hash": sha256_text(match.term),
+                }
+                for match in self.report.matches
+            ],
+        }
 
 
 class LeakageScanner:
@@ -194,12 +242,15 @@ class LeakageScanner:
         return report
 
     def require_clean(
-        self, text: str, lexicon: ForbiddenLexicon, *, runtime_scope: bool = False
+        self, text: str, lexicon: ForbiddenLexicon, *, runtime_scope: bool = False,
+        stage: str = "unspecified",
     ) -> ScanReport:
         report = self.scan(text, lexicon, runtime_scope=runtime_scope)
         if report.match_count:
             raise LeakageDetected(
                 f"forbidden leakage detected: {report.match_count} match(es); "
-                f"categories={report.category_counts}"
+                f"categories={report.category_counts}",
+                report=report,
+                stage=stage,
             )
         return report

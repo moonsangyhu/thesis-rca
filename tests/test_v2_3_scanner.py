@@ -7,6 +7,7 @@ from experiments.v2_3.scanner import (
     LeakageDetected,
     LeakageScanner,
     minimum_token_ngrams,
+    structured_harness_markers,
 )
 
 
@@ -58,7 +59,7 @@ class ScannerTests(unittest.TestCase):
         self.assertGreater(scanner.scan("packet loss observed", lexicon).match_count, 0)
 
     def test_fault_id_spacing_punctuation_and_nfkc_variants_are_blocked(self):
-        _, _, lexicon = clean_fixture("F12", 1)
+        lexicon = ForbiddenLexicon(harness_markers=("F12",))
         scanner = LeakageScanner()
         for variant in ("F-12", "F 12", "Ｆ－１２", "F_12", "Ｆ＿１２"):
             self.assertGreater(
@@ -74,6 +75,47 @@ class ScannerTests(unittest.TestCase):
             ).match_count,
             0,
         )
+
+    def test_structured_marker_avoids_short_hex_collision_but_blocks_harness(self):
+        lexicon = ForbiddenLexicon(
+            harness_markers=structured_harness_markers("F4", 5)
+        )
+        scanner = LeakageScanner()
+        for ordinary in (
+            "pod hash abcd-f4-91ef remains runtime evidence",
+            "uid component f_4 is not a harness field",
+            "container suffix F-4 is independently observed",
+        ):
+            self.assertEqual(
+                scanner.scan(ordinary, lexicon, runtime_scope=True).match_count,
+                0,
+                ordinary,
+            )
+        for leaked in (
+            "fault_id=F4",
+            "fault F-4",
+            "scheduled F4_t5",
+            "scheduled Ｆ－４ trial 5",
+        ):
+            self.assertGreater(
+                scanner.scan(leaked, lexicon, runtime_scope=True).match_count,
+                0,
+                leaked,
+            )
+
+    def test_leakage_exception_exposes_only_safe_diagnostic(self):
+        lexicon = ForbiddenLexicon(harness_markers=("experiment marker",))
+        with self.assertRaises(LeakageDetected) as raised:
+            LeakageScanner().require_clean(
+                "experiment marker present", lexicon,
+                runtime_scope=True, stage="runtime_context",
+            )
+        diagnostic = raised.exception.safe_diagnostic()
+        self.assertEqual(diagnostic["stage"], "runtime_context")
+        self.assertGreaterEqual(diagnostic["category_counts"]["harness_markers"], 1)
+        for match in diagnostic["matches"]:
+            self.assertNotIn("term", match)
+            self.assertEqual(len(match["term_hash"]), 64)
 
     def test_long_terms_have_linear_minimum_ngram_count(self):
         tokens = [f"token{index}" for index in range(MAX_FORBIDDEN_TERM_TOKENS)]

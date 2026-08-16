@@ -227,7 +227,9 @@ class BlindProcedureBuilder:
             raise ValueError("retrieval query source is not in frozen runtime context")
         query_lexicon = self._query_lexicon(lexicon)
         sanitized, removals = self._mask(raw_query, query_lexicon)
-        self.scanner.require_clean(sanitized, query_lexicon)
+        self.scanner.require_clean(
+            sanitized, query_lexicon, stage="runtime_query"
+        )
         return sanitized, removals
 
     def build(
@@ -244,7 +246,10 @@ class BlindProcedureBuilder:
             raise ValueError("query, retrieval chunks, and corpus version are required")
         if runtime_query_source is None:
             runtime_query_source = runtime_query
-            self.scanner.require_clean(runtime_query, self._query_lexicon(lexicon))
+            self.scanner.require_clean(
+                runtime_query, self._query_lexicon(lexicon),
+                stage="runtime_query",
+            )
             query_removals: list[RemovedSpan] = []
         else:
             expected_query, query_removals = self.sanitize_runtime_query(
@@ -278,7 +283,9 @@ class BlindProcedureBuilder:
                 }
             )
         procedure = "\n\n".join(masked_parts)
-        report = self.scanner.require_clean(procedure, lexicon)
+        report = self.scanner.require_clean(
+            procedure, lexicon, stage="retrieved_procedure"
+        )
         provenance = {
             "query_origin": "runtime_only",
             "query_text": runtime_query,

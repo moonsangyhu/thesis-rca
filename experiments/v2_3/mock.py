@@ -15,7 +15,7 @@ from .config import (
 )
 from .engine import Invocation, InvocationResult, RCAEngineV2_3
 from .ledger import CallLedgerEntry
-from .scanner import ForbiddenLexicon, sha256_text
+from .scanner import ForbiddenLexicon, sha256_text, structured_harness_markers
 from .retrieval import BlindProcedure, BlindProcedureBuilder, RetrievalChunk
 from .storage import SafeOutputStore
 
@@ -38,7 +38,7 @@ def clean_fixture(fault_id: str, trial: int) -> tuple[str, BlindProcedure, Forbi
         entities=("secret-workload",),
         commands=("kubectl patch deployment secret-workload",),
         field_values=("resources.limits.memory=32Mi",),
-        harness_markers=(fault_id, "fault injection", "experiment marker"),
+        harness_markers=structured_harness_markers(fault_id, trial),
     )
     procedure = BlindProcedureBuilder().build(
         runtime_context=runtime,
