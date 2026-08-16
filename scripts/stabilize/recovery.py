@@ -4,6 +4,7 @@ Recovery/stabilization scripts for each fault type.
 Reverts fault injection and restores cluster to healthy state.
 """
 import logging
+import subprocess
 import time
 
 from scripts.fault_inject.base import (
@@ -17,6 +18,11 @@ from scripts.fault_inject.config import (
     F4_T3_STRESS_RECEIPT_FILE,
     F4_T3_STRESS_TIMEOUT_SECONDS,
     F4_T3_STRESS_VM_WORKERS,
+    F4_T4_NODEFS_PATH,
+    F4_T4_NODE_NAME,
+    F4_T4_PARENT_DIR,
+    F4_T4_TARGET_AVAILABLE_PERCENT,
+    F4_T4_WORK_PREFIX,
     NAMESPACE,
     WORKER_NODES,
 )
@@ -231,6 +237,8 @@ class Recovery:
 
         if trial == 3:
             return self._recover_f4_memory_stress(node, ctx)
+        if trial == 4:
+            return self._recover_f4_diskfill(node, ctx)
 
         commands = recovery_commands.get(trial, ["sudo systemctl start kubelet"])
         outputs = []
@@ -242,6 +250,143 @@ class Recovery:
         time.sleep(30)  # Wait for node to rejoin
 
         return {"action": "restore_node", "node": node, "outputs": outputs}
+
+    def _recover_f4_diskfill(self, node: str, ctx: dict) -> dict:
+        required_numbers = (
+            "nodefs_device", "nodefs_capacity_bytes",
+            "nodefs_pre_available_bytes",
+        )
+        nonce = ctx.get("diskfill_nonce")
+        expected_work = (
+            f"{F4_T4_WORK_PREFIX}{nonce}" if isinstance(nonce, str) else ""
+        )
+        context_work_inode = ctx.get("diskfill_work_inode", 0)
+        if (
+            node != F4_T4_NODE_NAME
+            or ctx.get("diskfill_preexisting") is not False
+            or not isinstance(nonce, str) or len(nonce) != 32
+            or any(c not in "0123456789abcdef" for c in nonce)
+            or ctx.get("diskfill_file") != f"{expected_work}/diskfill"
+            or ctx.get("diskfill_receipt_file") != f"{expected_work}/receipt"
+            or ctx.get("diskfill_work_dir") != expected_work
+            or ctx.get("nodefs_path") != F4_T4_NODEFS_PATH
+            or ctx.get("nodefs_target_available_percent")
+            != F4_T4_TARGET_AVAILABLE_PERCENT
+            or any(
+                isinstance(ctx.get(name), bool)
+                or not isinstance(ctx.get(name), int)
+                or ctx[name] <= 0
+                for name in required_numbers
+            )
+            or isinstance(context_work_inode, bool)
+            or not isinstance(context_work_inode, int)
+            or context_work_inode < 0
+        ):
+            raise RuntimeError("F4 diskfill recovery receipt is incomplete")
+        command = (
+            "sudo sh -c 'set -eu; "
+            f"nonce={nonce}; nodefs={F4_T4_NODEFS_PATH}; parent={F4_T4_PARENT_DIR}; "
+            f"work={expected_work}; file={expected_work}/diskfill; "
+            f"receipt={expected_work}/receipt; "
+            f"sealed_device={ctx['nodefs_device']}; "
+            f"sealed_capacity={ctx['nodefs_capacity_bytes']}; "
+            "test \"$(stat -c %d \"$nodefs\")\" = \"$sealed_device\"; "
+            "set -- $(stat -f -c \"%S %b %a\" \"$nodefs\"); "
+            "current_capacity=$(( $1 * $2 )); current_available=$(( $1 * $3 )); "
+            "test \"$current_capacity\" = \"$sealed_capacity\"; "
+            "if test ! -e \"$work\"; then "
+            "test $(( current_available * 100 )) -ge $(( sealed_capacity * 10 )); "
+            "printf \"__V23_DISK_RECOVERY__=already-absent\\n"
+            "__V23_DISK_RECOVERY_CAPACITY__=%s\\n"
+            "__V23_DISK_RECOVERY_AVAILABLE__=%s\\n\" "
+            "\"$current_capacity\" \"$current_available\"; exit 0; fi; "
+            "test -d \"$work\"; test \"$(stat -c %d \"$work\")\" = \"$sealed_device\"; "
+            "test \"$(stat -c %u \"$work\")\" = 0; "
+            "test \"$(stat -c %a \"$work\")\" = 700; "
+            "live_work_inode=$(stat -c %i \"$work\"); "
+            f"if test {context_work_inode} -gt 0; then "
+            f"test \"$live_work_inode\" = {context_work_inode}; fi; "
+            "if test -f \"$receipt\"; then "
+            "set -- $(cat \"$receipt\"); schema=$1; rnonce=$2; rdevice=$3; "
+            "rwork_inode=$4; rcapacity=$5; rpre=$6; rtarget=$7; "
+            "test \"$schema\" = intent -o \"$schema\" = post; "
+            "test \"$rnonce\" = \"$nonce\"; "
+            "test \"$rdevice\" = \"$sealed_device\"; "
+            "test \"$rwork_inode\" = \"$live_work_inode\"; "
+            "test \"$rcapacity\" = \"$sealed_capacity\"; "
+            f"test \"$rtarget\" = {F4_T4_TARGET_AVAILABLE_PERCENT}; "
+            "if test \"$schema\" = post; then "
+            "test $# -eq 12; sealed_file_inode=$9; "
+            "sealed_file_size=${10}; sealed_file_blocks=${11}; "
+            "test -f \"$file\"; "
+            "test \"$(stat -c %i \"$file\")\" = \"$sealed_file_inode\"; "
+            "test \"$(stat -c %s \"$file\")\" = \"$sealed_file_size\"; "
+            "test \"$(stat -c %b \"$file\")\" = \"$sealed_file_blocks\"; "
+            "else test $# -eq 7; fi; "
+            "else "
+            "find \"$work\" -mindepth 1 -maxdepth 1 "
+            "! -name diskfill ! -name \"receipt.tmp.*\" | grep -q . && exit 124 || true; "
+            "fi; "
+            "find \"$work\" -mindepth 1 -maxdepth 1 "
+            "! -name diskfill ! -name receipt ! -name \"receipt.tmp.*\" | "
+            "grep -q . && exit 125 || true; "
+            "rm -f \"$file\" \"$receipt\" \"$receipt\".tmp.*; "
+            "rmdir \"$work\"; sync -f \"$parent\"; "
+            "test ! -e \"$work\"; "
+            "test \"$(stat -c %d \"$nodefs\")\" = \"$sealed_device\"; "
+            "set -- $(stat -f -c \"%S %b %a\" \"$nodefs\"); "
+            "live_capacity=$(( $1 * $2 )); live_available=$(( $1 * $3 )); "
+            "test \"$live_capacity\" = \"$sealed_capacity\"; "
+            "test $(( live_available * 100 )) -ge $(( sealed_capacity * 10 )); "
+            "printf \"__V23_DISK_RECOVERY__=exact-clean\\n"
+            "__V23_DISK_RECOVERY_CAPACITY__=%s\\n"
+            "__V23_DISK_RECOVERY_AVAILABLE__=%s\\n\" "
+            "\"$live_capacity\" \"$live_available\"'"
+        )
+        last_output = ""
+        for attempt in range(1, 11):
+            try:
+                last_output = ssh_node(node, command)
+            except (TimeoutError, subprocess.TimeoutExpired) as exc:
+                last_output = type(exc).__name__
+                time.sleep(2)
+                continue
+            status = [
+                line.removeprefix("__V23_DISK_RECOVERY__=")
+                for line in last_output.splitlines()
+                if line.startswith("__V23_DISK_RECOVERY__=")
+            ]
+            capacity = [
+                line.removeprefix("__V23_DISK_RECOVERY_CAPACITY__=")
+                for line in last_output.splitlines()
+                if line.startswith("__V23_DISK_RECOVERY_CAPACITY__=")
+            ]
+            available = [
+                line.removeprefix("__V23_DISK_RECOVERY_AVAILABLE__=")
+                for line in last_output.splitlines()
+                if line.startswith("__V23_DISK_RECOVERY_AVAILABLE__=")
+            ]
+            if (
+                len(status) == len(capacity) == len(available) == 1
+                and status[0] in {"exact-clean", "already-absent"}
+                and capacity[0].isdigit() and available[0].isdigit()
+                and int(capacity[0]) == ctx["nodefs_capacity_bytes"]
+                and int(available[0]) * 100
+                >= int(capacity[0]) * 10
+            ):
+                kubectl("uncordon", node, namespace="")
+                time.sleep(30)
+                return {
+                    "action": "restore_node_diskfill",
+                    "node": node,
+                    "diskfill_cleanup_verified": True,
+                    "attempts": attempt,
+                }
+            time.sleep(2)
+        raise RuntimeError(
+            "F4 diskfill exact recovery did not reach the node: "
+            + last_output[-200:]
+        )
 
     def _recover_f4_memory_stress(self, node: str, ctx: dict) -> dict:
         """Retry an exact pidfile-bound stress cleanup until the node answers."""

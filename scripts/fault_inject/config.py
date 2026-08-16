@@ -51,3 +51,16 @@ F4_T3_MEM_AVAILABLE_MAX_BYTES = 2 * 1024 * 1024 * 1024
 F4_T3_STRESS_VERSION = "0.19.02"
 F4_T3_STRESS_RECEIPT_FILE = "/tmp/v23-f4t3-stress.receipt"
 F4_T3_STRESS_LOG_FILE = "/tmp/v23-f4t3-stress.log"
+
+# F4 trial 4 must consume the same filesystem that kubelet reports as nodefs.
+# The live worker mounts /tmp as tmpfs, so the treatment owns a sealed directory
+# under /var/tmp (the root/nodefs device).  Target 9% available: one percentage
+# point below the kubelet's pre-registered nodefs.available<10% hard threshold,
+# with an 8% safety floor enforced after allocation.
+F4_T4_NODE_NAME = "yms-proxmox-02"
+F4_T4_NODEFS_PATH = "/var/lib/kubelet"
+F4_T4_PARENT_DIR = "/var/tmp"
+F4_T4_WORK_PREFIX = "/var/tmp/v23-f4t4-"
+F4_T4_TARGET_AVAILABLE_PERCENT = 9
+F4_T4_SAFETY_FLOOR_PERCENT = 8
+F4_T4_ACCOUNTING_TOLERANCE_BYTES = 16 * 1024 * 1024

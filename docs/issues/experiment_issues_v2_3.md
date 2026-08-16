@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 29건
-- 심각(실험 무효화): 25건
+- 총 이슈: 30건
+- 심각(실험 무효화): 26건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -376,3 +376,14 @@
 - **근본 원인**: memory exhaustion은 실제로 성립하지만 kubelet lease/Ready 전환은 노드의 순간 workload와 kernel reclaim/OOM scheduling에 의존해 단조롭거나 재현 가능한 종점이 아니다. NotReady만 gate로 강제하면 실재하는 극심한 low-memory 처치를 거부하고, 더 강한 처치나 kubelet 강제 중단은 안전성과 단일 원인 타당성을 훼손한다.
 - **수정 내용**: 총량 15G와 timeout180을 유지하고 worker 2개로 동시에 touch한다. 10–120초 polling에서 exact PID/start/hash live identity와 `Ready!=True` 또는 같은 host probe의 `/proc/meminfo MemAvailable<=2 GiB`를 요구한다. Ready=True+low-memory는 `node_disrupted=false`, `memavailable-threshold` precursor로 명시한다. Node가 이미 NotReady라 SSH가 timeout인 경우에만 sealed launch receipt와 독립 Node 상태를 근거로 허용하되 identity/memory를 관측한 것으로 기록하지 않는다. 원격 identity command는 `set -eu`로 marker 전 모든 test를 fail-closed하며 malformed/duplicate/negative memory 값과 Ready=True SSH timeout은 retry/거부한다.
 - **현재 영향**: clean commit `6efd23b`의 exact production-helper probe는 66.237초에 live PID/start/hash와 `MemAvailable=757,661,696 bytes`, Ready=True를 관측해 `node_disrupted=false`, `memavailable-threshold`로 PASS했다. full collector는 105.737초<175였고 pressure 중 Loki error query 한 건이 30초 timeout으로 남았다. exact recovery 3회는 recovery health gate를 통과했다. 별도 post-check의 첫 Loki readiness 5초는 timeout됐지만 즉시 10초 재시도에서 HTTP 200·Loki pod 2/2를 확인했고, 최종 nodes 6/6·Boutique 12/12·Flux 5/5·Prometheus/Loki GREEN이었다. model/AIC/result write는 0이다. primary 60 paired incidents는 유지하되 F4-t3 제외 59-incident paired sensitivity를 의무 보고해 endpoint 완화의 영향을 분리한다. 이 gate 통과 뒤 fresh main campaign을 시작할 수 있다.
+
+### [ISS-030] F4-t4 diskfill이 tmpfs에 배치되고 원격 실패가 누락됨
+
+- **카테고리**: injection / measurement validity
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260816-primary15`는 F1 t1부터 F4 t3까지 18 incidents·54 rows/raw·648 validated calls를 commit한 뒤 F4 t4 injection validation에서 중단됐다. 불완전 campaign 전체는 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회. F4 t4는 model inference 전에 거부됐으므로 해당 trial의 attempt/charged/call/result는 0이다.
+- **관찰한 사실**: F4 t4는 yms-proxmox-02에서 root filesystem의 당시 available block 중 95%를 `/tmp/diskfill`에 예약하려 했지만, `/tmp` tmpfs capacity를 초과해 `fallocate`가 실패했다. 원격 nonzero exit가 누락된 채 공용 180초를 기다렸고, validator 시점의 Node는 `Ready=True`, `DiskPressure=False`여서 `PilotError: F4 node disruption was not observed`로 fail-closed했다. event는 `incident_failed→flux_restored(exact original/CAS)→recovery_green`이며 commit boundary는 18/60, rows/raw 54/54, attempt/call/charged 648/648/648, 누적 AIC 295.87545다. 종료 후 `/tmp/diskfill`은 없고 nodes 6/6 Ready·pressure false, Boutique 12/12, Flux 5/5, Prometheus ready다. Loki readiness는 별도 재시도에서도 timeout 상태라 후속 건강 점검 대상으로 남긴다.
+- **근본 원인**: yms-proxmox-02에서 `/tmp`는 4,163,809,280-byte `tmpfs`(device 37)지만 kubelet `nodefs`와 `/var/lib/kubelet`은 49,564,815,360-byte `/dev/mapper/vg0-root` ext4(device 64512)다. 기존 명령은 root `/`의 available bytes 중 95%를 계산한 뒤 그보다 훨씬 작은 `/tmp/diskfill`에 `fallocate`했다. 원격 command nonzero exit를 `ssh_node()`가 확인하지 않아 allocation 실패를 injection 성공처럼 진행했고, validator에는 file/filesystem/poststate receipt가 없어 180초 후 Node condition만 읽었다. `evictionPressureTransitionPeriod=5m`은 관찰된 설정이지만 이번 실패의 직접 원인으로 사용하지 않는다.
+- **수정 내용**: preflight는 원격 mutation 없이 cryptographic nonce와 kubelet nodefs prestate만 수집하며 이를 local event journal에 먼저 fsync한다. 그 뒤에만 nodefs와 같은 `/var/tmp/v23-f4t4-<nonce>/`를 생성하고, pre-existing path 부재, device/mount, pre/post capacity·available, work/file inode·size·allocated blocks를 exact 결합하는 crash-safe intent/poststate receipt를 fsync·readback한다. 95%-of-current-available 대신 사전 고정한 nodefs 9% available target을 사용하고, live poststate가 8% 이상 10% 미만이며 allocated blocks와 filesystem delta가 요청량을 뒷받침해야 한다. recovery는 file/workdir 부재만으로 GREEN이 아니며 같은 nodefs의 available이 10% 이상 회복돼야 한다. 원격 exit와 marker가 하나라도 어긋나면 inference 전에 거부한다. precursor를 허용할 경우 `node_disrupted=false`, `disk_pressure_observed=false`, `treatment_basis=nodefs-available-threshold`로 기록하고 F4-t4 제외 59건 민감도 분석과 estimand 한계를 의무화한다. 독립 리뷰와 model-free lifecycle probe를 fresh campaign 실행 gate로 둔다.
+- **현재 영향**: Primary15는 불완전 operational attrition으로 보존하며 재사용하지 않는다. 실험 프로세스는 종료됐고 F4-t4 결과는 commit되지 않았다. 정지했던 로컬 Loki port-forward만 교체한 뒤 Loki `/ready`가 다시 `ready`를 반환해 nodes 6/6·Boutique 12/12·Flux 5/5·Prometheus/Loki comprehensive health GREEN을 회복했다. 수정·회귀·독립 리뷰·model-free probe 전에는 fresh campaign을 시작하지 않는다.

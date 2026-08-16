@@ -314,6 +314,153 @@ class InjectionValidatorTests(unittest.TestCase):
                         "F4", 3, {"target_service": "worker03"}, receipt
                     )
 
+    def test_f4_diskfill_requires_exact_nodefs_receipt_and_live_threshold(self):
+        observed = {
+            "kind": "Node",
+            "metadata": {"name": "yms-proxmox-02", "uid": "node-uid-02"},
+            "status": {"conditions": [
+                {"type": "Ready", "status": "True"},
+                {"type": "DiskPressure", "status": "False"},
+            ]},
+        }
+        receipt = {
+            "fault_id": "F4", "trial": 4, "target_service": "worker01",
+            "action": "node_disruption", "node": "yms-proxmox-02",
+            "diskfill_preexisting": False,
+            "diskfill_nonce": "a" * 32,
+            "diskfill_file": f"/var/tmp/v23-f4t4-{'a' * 32}/diskfill",
+            "diskfill_receipt_file": f"/var/tmp/v23-f4t4-{'a' * 32}/receipt",
+            "diskfill_work_dir": f"/var/tmp/v23-f4t4-{'a' * 32}",
+            "nodefs_path": "/var/lib/kubelet",
+            "nodefs_device": 64512, "diskfill_work_inode": 101,
+            "nodefs_capacity_bytes": 100_000,
+            "nodefs_pre_available_bytes": 80_000,
+            "nodefs_injection_available_bytes": 70_000,
+            "diskfill_allocated_bytes": 61_000,
+            "diskfill_inode": 102, "diskfill_size_bytes": 61_000,
+            "diskfill_allocated_blocks": 120,
+            "nodefs_post_available_bytes": 9_000,
+            "nodefs_target_available_percent": 9,
+            "wait_seconds": 180,
+        }
+        live = (
+            "__V23_DISK_LIVE_DEVICE__=64512\n"
+            "__V23_DISK_LIVE_WORK_INODE__=101\n"
+            "__V23_DISK_LIVE_FILE_INODE__=102\n"
+            "__V23_DISK_LIVE_FILE_SIZE__=61000\n"
+            "__V23_DISK_LIVE_FILE_BLOCKS__=120\n"
+            "__V23_NODEFS_LIVE_CAPACITY__=100000\n"
+            "__V23_NODEFS_INJECTION_AVAILABLE__=70000\n"
+            "__V23_DISK_LIVE_ALLOCATION__=61000\n"
+            "__V23_NODEFS_POST_AVAILABLE__=9000\n"
+            "__V23_NODEFS_LIVE_AVAILABLE__=9000\n"
+        )
+        validator = LiveInjectionValidator(lambda *_: observed, lambda *_: live)
+        verified = validator.validate(
+            "F4", 4, {"target_service": "worker01"}, receipt
+        )
+        self.assertIs(verified["node_disrupted"], False)
+        self.assertIs(verified["disk_pressure_observed"], False)
+        self.assertIs(verified["nodefs_available_threshold_verified"], True)
+        self.assertEqual(verified["treatment_basis"], "nodefs-available-threshold")
+
+        for name, bad in (
+            ("node", "wrong-node"),
+            ("diskfill_file", "/tmp/diskfill"),
+            ("diskfill_nonce", "z" * 32),
+            ("nodefs_device", True),
+            ("diskfill_inode", 999),
+            ("nodefs_pre_available_bytes", "80000"),
+            ("nodefs_pre_available_bytes", 9_999),
+            ("nodefs_injection_available_bytes", 70_001),
+            ("diskfill_allocated_bytes", 60_999),
+            ("diskfill_allocated_blocks", 119),
+            ("nodefs_post_available_bytes", 9_001),
+            ("nodefs_target_available_percent", 10),
+            ("wait_seconds", 0),
+            ("wait_seconds", 180.0),
+        ):
+            with self.subTest(field=name):
+                mutated = dict(receipt, **{name: bad})
+                with self.assertRaises(PilotError):
+                    validator.validate(
+                        "F4", 4, {"target_service": "worker01"}, mutated
+                    )
+
+        above_threshold = live.replace(
+            "__V23_NODEFS_LIVE_AVAILABLE__=9000",
+            "__V23_NODEFS_LIVE_AVAILABLE__=10000",
+        )
+        validator = LiveInjectionValidator(
+            lambda *_: observed, lambda *_: above_threshold
+        )
+        with self.assertRaisesRegex(PilotError, "threshold"):
+            validator.validate(
+                "F4", 4, {"target_service": "worker01"}, receipt
+            )
+
+        below_floor = live.replace(
+            "__V23_NODEFS_LIVE_AVAILABLE__=9000",
+            "__V23_NODEFS_LIVE_AVAILABLE__=7999",
+        )
+        validator = LiveInjectionValidator(
+            lambda *_: observed, lambda *_: below_floor
+        )
+        with self.assertRaisesRegex(PilotError, "threshold"):
+            validator.validate(
+                "F4", 4, {"target_service": "worker01"}, receipt
+            )
+
+        missing_disk = dict(observed)
+        missing_disk["status"] = {"conditions": [
+            {"type": "Ready", "status": "True"},
+        ]}
+        validator = LiveInjectionValidator(lambda *_: missing_disk, lambda *_: live)
+        with self.assertRaisesRegex(PilotError, "schema"):
+            validator.validate(
+                "F4", 4, {"target_service": "worker01"}, receipt
+            )
+
+        unknown_disk = dict(observed)
+        unknown_disk["status"] = {"conditions": [
+            {"type": "Ready", "status": "True"},
+            {"type": "DiskPressure", "status": "Unknown"},
+        ]}
+        validator = LiveInjectionValidator(
+            lambda *_: unknown_disk, lambda *_: live
+        )
+        with self.assertRaisesRegex(PilotError, "schema"):
+            validator.validate(
+                "F4", 4, {"target_service": "worker01"}, receipt
+            )
+
+        not_ready = dict(observed)
+        not_ready["status"] = {"conditions": [
+            {"type": "Ready", "status": "False"},
+            {"type": "DiskPressure", "status": "False"},
+        ]}
+        validator = LiveInjectionValidator(lambda *_: not_ready, lambda *_: live)
+        verified = validator.validate(
+            "F4", 4, {"target_service": "worker01"}, receipt
+        )
+        self.assertEqual(verified["treatment_basis"], "node-notready")
+        self.assertIs(verified["node_disrupted"], True)
+        self.assertEqual(verified["disk_pressure_status"], "False")
+
+        duplicate_disk = dict(observed)
+        duplicate_disk["status"] = {"conditions": [
+            {"type": "Ready", "status": "True"},
+            {"type": "DiskPressure", "status": "False"},
+            {"type": "DiskPressure", "status": "False"},
+        ]}
+        validator = LiveInjectionValidator(
+            lambda *_: duplicate_disk, lambda *_: live
+        )
+        with self.assertRaisesRegex(PilotError, "schema"):
+            validator.validate(
+                "F4", 4, {"target_service": "worker01"}, receipt
+            )
+
     def test_f4_named_node_timeout_has_dedicated_retry_class(self):
         validator = LiveInjectionValidator(
             lambda *_: (_ for _ in ()).throw(

@@ -71,15 +71,52 @@ def _percentile(sorted_values: list[float], probability: float) -> float:
     return sorted_values[lower] * (1 - weight) + sorted_values[upper] * weight
 
 
-def _fault_cluster_differences(indexed, threshold: float) -> dict[str, float]:
+def _fault_cluster_differences(
+    indexed, threshold: float, *, excluded_incidents: frozenset[tuple[str, int]] = frozenset()
+) -> dict[str, float]:
     field = f"correct_at_{threshold}"
-    return {
-        fault: sum(
+    differences = {}
+    for fault in FAULTS:
+        included_trials = [
+            trial for trial in TRIALS
+            if (fault, trial) not in excluded_incidents
+        ]
+        if not included_trials:
+            raise AnalysisError(f"sensitivity excludes every trial for {fault}")
+        differences[fault] = sum(
             _binary(indexed[(fault, trial, "blind_procedural_rag")][field])
             - _binary(indexed[(fault, trial, "length_placebo")][field])
-            for trial in TRIALS
-        ) / len(TRIALS)
-        for fault in FAULTS
+            for trial in included_trials
+        ) / len(included_trials)
+    return differences
+
+
+def _sensitivity_result(indexed, excluded: frozenset[tuple[str, int]]) -> dict:
+    threshold_results = {}
+    for threshold in THRESHOLDS:
+        differences = _fault_cluster_differences(
+            indexed, threshold, excluded_incidents=excluded
+        )
+        threshold_results[str(threshold)] = {
+            "blind_minus_placebo": sum(differences.values()) / len(differences),
+            "fault_differences": differences,
+        }
+    primary = threshold_results["0.5"]["fault_differences"]
+    ci_low, ci_high = cluster_bootstrap_ci(primary)
+    return {
+        "excluded_incidents": [
+            {"fault_id": fault, "trial": trial}
+            for fault, trial in sorted(excluded)
+        ],
+        "incidents": 60 - len(excluded),
+        "primary_delta": threshold_results["0.5"]["blind_minus_placebo"],
+        "fault_cluster_bootstrap_ci_95": [ci_low, ci_high],
+        "exact_fault_cluster_sign_flip_p": exact_cluster_sign_flip_p(primary),
+        "threshold_results": threshold_results,
+        "threshold_direction_stable": all(
+            threshold_results[str(threshold)]["blind_minus_placebo"] > 0
+            for threshold in THRESHOLDS
+        ),
     }
 
 
@@ -147,6 +184,17 @@ def analyze_rows(rows: list[dict]) -> dict:
         ),
         "human_primary_direction": "pending",
         "final_hypothesis_status": "pending_human_review",
+        "treatment_integrity_sensitivity": {
+            "exclude_f4_t3": _sensitivity_result(
+                indexed, frozenset({("F4", 3)})
+            ),
+            "exclude_f4_t4": _sensitivity_result(
+                indexed, frozenset({("F4", 4)})
+            ),
+            "exclude_f4_t3_and_t4": _sensitivity_result(
+                indexed, frozenset({("F4", 3), ("F4", 4)})
+            ),
+        },
     }
 
 

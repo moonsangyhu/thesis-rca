@@ -18,6 +18,12 @@ from scripts.fault_inject.config import (
     F4_T3_NODE_NAME,
     F4_T3_STRESS_TIMEOUT_SECONDS,
     F4_T3_STRESS_VM_WORKERS,
+    F4_T4_ACCOUNTING_TOLERANCE_BYTES,
+    F4_T4_NODEFS_PATH,
+    F4_T4_NODE_NAME,
+    F4_T4_SAFETY_FLOOR_PERCENT,
+    F4_T4_TARGET_AVAILABLE_PERCENT,
+    F4_T4_WORK_PREFIX,
     INJECTION_WAIT,
 )
 
@@ -161,6 +167,76 @@ class LiveInjectionValidator:
                 <= F4_T3_OBSERVATION_WAIT_SECONDS
             ):
                 raise PilotError("F4 memory stress amount is invalid")
+        if trial == 4:
+            if node != F4_T4_NODE_NAME:
+                raise PilotError("F4 diskfill node identity is invalid")
+            nonce = result.get("diskfill_nonce")
+            if (
+                not isinstance(nonce, str) or len(nonce) != 32
+                or any(c not in "0123456789abcdef" for c in nonce)
+            ):
+                raise PilotError("F4 diskfill nonce is invalid")
+            work_dir = f"{F4_T4_WORK_PREFIX}{nonce}"
+            exact_strings = {
+                "diskfill_file": f"{work_dir}/diskfill",
+                "diskfill_receipt_file": f"{work_dir}/receipt",
+                "diskfill_work_dir": work_dir,
+                "nodefs_path": F4_T4_NODEFS_PATH,
+            }
+            if any(result.get(name) != value for name, value in exact_strings.items()):
+                raise PilotError("F4 diskfill path receipt is invalid")
+            numeric_names = (
+                "nodefs_device", "diskfill_work_inode",
+                "nodefs_capacity_bytes", "nodefs_pre_available_bytes",
+                "nodefs_injection_available_bytes",
+                "diskfill_allocated_bytes", "diskfill_inode",
+                "diskfill_size_bytes", "diskfill_allocated_blocks",
+                "nodefs_post_available_bytes",
+            )
+            if any(
+                isinstance(result.get(name), bool)
+                or not isinstance(result.get(name), int)
+                or result[name] <= 0
+                for name in numeric_names
+            ) or (
+                result.get("nodefs_target_available_percent")
+                != F4_T4_TARGET_AVAILABLE_PERCENT
+                or result.get("diskfill_preexisting") is not False
+                or isinstance(result.get("wait_seconds"), bool)
+                or not isinstance(result.get("wait_seconds"), int)
+                or result["wait_seconds"] != INJECTION_WAIT["F4"]
+                or result["nodefs_pre_available_bytes"]
+                >= result["nodefs_capacity_bytes"]
+                or result["nodefs_pre_available_bytes"] * 100
+                < result["nodefs_capacity_bytes"] * 10
+                or result["diskfill_size_bytes"]
+                != result["diskfill_allocated_bytes"]
+                or result["diskfill_allocated_bytes"]
+                != result["nodefs_injection_available_bytes"]
+                - (
+                    result["nodefs_capacity_bytes"]
+                    * F4_T4_TARGET_AVAILABLE_PERCENT // 100
+                )
+                or result["diskfill_allocated_blocks"] * 512
+                < result["diskfill_size_bytes"]
+                or (
+                    result["nodefs_injection_available_bytes"]
+                    - result["nodefs_post_available_bytes"]
+                    < result["diskfill_allocated_bytes"]
+                )
+                or (
+                    result["nodefs_injection_available_bytes"]
+                    - result["nodefs_post_available_bytes"]
+                    > result["diskfill_allocated_bytes"]
+                    + F4_T4_ACCOUNTING_TOLERANCE_BYTES
+                )
+                or result["nodefs_post_available_bytes"] * 100
+                >= result["nodefs_capacity_bytes"] * 10
+                or result["nodefs_post_available_bytes"] * 100
+                < result["nodefs_capacity_bytes"]
+                * F4_T4_SAFETY_FLOOR_PERCENT
+            ):
+                raise PilotError("F4 diskfill numeric receipt is invalid")
         try:
             observed = self.load("node", str(node), "")
         except (TimeoutError, subprocess.TimeoutExpired) as exc:
@@ -179,6 +255,11 @@ class LiveInjectionValidator:
              if isinstance(item, dict) and item.get("type") == "Ready"]
             if isinstance(raw_conditions, list) else []
         )
+        disk_items = (
+            [item for item in raw_conditions
+             if isinstance(item, dict) and item.get("type") == "DiskPressure"]
+            if isinstance(raw_conditions, list) else []
+        )
         if (
             not isinstance(observed, dict)
             or observed.get("kind") != "Node"
@@ -188,6 +269,13 @@ class LiveInjectionValidator:
             or not isinstance(raw_conditions, list)
             or len(ready_items) != 1
             or ready_items[0].get("status") not in {"True", "False", "Unknown"}
+            or (
+                trial == 4 and (
+                    len(disk_items) != 1
+                    or disk_items[0].get("status")
+                    not in {"True", "False"}
+                )
+            )
         ):
             raise PilotError("F4 node observation schema is invalid")
         conditions = {
@@ -261,6 +349,112 @@ class LiveInjectionValidator:
             details["treatment_basis"] = (
                 "node-notready" if disrupted else "memavailable-threshold"
             )
+        elif trial == 4:
+            command = (
+                "set -eu; "
+                f"nonce={nonce}; nodefs={F4_T4_NODEFS_PATH}; work={work_dir}; "
+                f"file={work_dir}/diskfill; receipt={work_dir}/receipt; "
+                "read schema sealed_nonce device work_inode capacity pre_available target "
+                "allocation file_inode file_size file_blocks post_available "
+                "<\"$receipt\"; "
+                "test \"$schema\" = post; "
+                "test \"$sealed_nonce\" = \"$nonce\"; "
+                f"test \"$device\" = {result['nodefs_device']}; "
+                f"test \"$work_inode\" = {result['diskfill_work_inode']}; "
+                f"test \"$capacity\" = {result['nodefs_capacity_bytes']}; "
+                f"test \"$target\" = {F4_T4_TARGET_AVAILABLE_PERCENT}; "
+                f"test \"$allocation\" = {result['diskfill_allocated_bytes']}; "
+                f"test \"$file_inode\" = {result['diskfill_inode']}; "
+                f"test \"$file_size\" = {result['diskfill_size_bytes']}; "
+                f"test \"$file_blocks\" = {result['diskfill_allocated_blocks']}; "
+                "test \"$(stat -c %d \"$nodefs\")\" = \"$device\"; "
+                "test \"$(stat -c %d \"$work\")\" = \"$device\"; "
+                "test \"$(stat -c %i \"$work\")\" = \"$work_inode\"; "
+                "test \"$(stat -c %d \"$file\")\" = \"$device\"; "
+                "test \"$(stat -c %i \"$file\")\" = \"$file_inode\"; "
+                "test \"$(stat -c %s \"$file\")\" = \"$file_size\"; "
+                "test \"$(stat -c %b \"$file\")\" = \"$file_blocks\"; "
+                "set -- $(stat -f -c \"%S %b %a\" \"$nodefs\"); "
+                "live_capacity=$(( $1 * $2 )); live_available=$(( $1 * $3 )); "
+                "test \"$live_capacity\" = \"$capacity\"; "
+                "printf \"__V23_DISK_LIVE_DEVICE__=%s\\n"
+                "__V23_DISK_LIVE_WORK_INODE__=%s\\n"
+                "__V23_DISK_LIVE_FILE_INODE__=%s\\n"
+                "__V23_DISK_LIVE_FILE_SIZE__=%s\\n"
+                "__V23_DISK_LIVE_FILE_BLOCKS__=%s\\n"
+                "__V23_NODEFS_LIVE_CAPACITY__=%s\\n"
+                "__V23_NODEFS_INJECTION_AVAILABLE__=%s\\n"
+                "__V23_DISK_LIVE_ALLOCATION__=%s\\n"
+                "__V23_NODEFS_POST_AVAILABLE__=%s\\n"
+                "__V23_NODEFS_LIVE_AVAILABLE__=%s\\n\" "
+                "\"$device\" \"$work_inode\" \"$file_inode\" "
+                "\"$file_size\" \"$file_blocks\" \"$live_capacity\" "
+                "\"$pre_available\" \"$allocation\" \"$post_available\" "
+                "\"$live_available\""
+            )
+            probe = self.ssh_probe(str(node), command)
+            markers = {
+                "nodefs_device": "__V23_DISK_LIVE_DEVICE__=",
+                "diskfill_work_inode": "__V23_DISK_LIVE_WORK_INODE__=",
+                "diskfill_inode": "__V23_DISK_LIVE_FILE_INODE__=",
+                "diskfill_size_bytes": "__V23_DISK_LIVE_FILE_SIZE__=",
+                "diskfill_allocated_blocks": "__V23_DISK_LIVE_FILE_BLOCKS__=",
+                "nodefs_capacity_bytes": "__V23_NODEFS_LIVE_CAPACITY__=",
+                "nodefs_injection_available_bytes": (
+                    "__V23_NODEFS_INJECTION_AVAILABLE__="
+                ),
+                "diskfill_allocated_bytes": "__V23_DISK_LIVE_ALLOCATION__=",
+                "nodefs_post_available_bytes": "__V23_NODEFS_POST_AVAILABLE__=",
+                "nodefs_live_available_bytes": "__V23_NODEFS_LIVE_AVAILABLE__=",
+            }
+            live = {}
+            for name, marker in markers.items():
+                values = [
+                    line.removeprefix(marker) for line in probe.splitlines()
+                    if line.startswith(marker)
+                ]
+                if len(values) != 1 or not values[0].isdigit():
+                    raise PilotError("F4 diskfill live probe is malformed")
+                live[name] = int(values[0])
+            if any(
+                live[name] != result[name]
+                for name in (
+                    "nodefs_device", "diskfill_work_inode", "diskfill_inode",
+                    "diskfill_size_bytes", "diskfill_allocated_blocks",
+                    "nodefs_capacity_bytes", "nodefs_injection_available_bytes",
+                    "diskfill_allocated_bytes", "nodefs_post_available_bytes",
+                )
+            ):
+                raise PilotError("F4 diskfill live identity mismatch")
+            low_disk = (
+                live["nodefs_live_available_bytes"] * 100
+                < live["nodefs_capacity_bytes"] * 10
+            )
+            safe_floor = (
+                live["nodefs_live_available_bytes"] * 100
+                >= live["nodefs_capacity_bytes"]
+                * F4_T4_SAFETY_FLOOR_PERCENT
+            )
+            if not low_disk or not safe_floor:
+                raise PilotError("F4 nodefs available threshold was not crossed")
+            details.update({
+                "disk_pressure_observed": conditions.get("DiskPressure") == "True",
+                "ready_status": conditions.get("Ready"),
+                "disk_pressure_status": conditions.get("DiskPressure"),
+                "nodefs_available_threshold_verified": True,
+                "nodefs_available_bytes": live["nodefs_live_available_bytes"],
+                "nodefs_capacity_bytes": live["nodefs_capacity_bytes"],
+                "treatment_verified": True,
+                "treatment_basis": (
+                    "node-notready"
+                    if conditions.get("Ready") != "True"
+                    else (
+                        "diskpressure-condition"
+                        if conditions.get("DiskPressure") == "True"
+                        else "nodefs-available-threshold"
+                    )
+                ),
+            })
         elif not disrupted:
             raise PilotError("F4 node disruption was not observed")
         return details
