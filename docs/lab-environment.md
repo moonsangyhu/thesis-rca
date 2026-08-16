@@ -44,7 +44,9 @@ KT Cloud VM 6대(Debian 13 trixie)에 **K8s를 직접** 설치. master 1 + worke
 
 - `yms-proxmox-04`에는 Debian package `stress-ng=0.19.02-1`이 필요하다.
 - V2.3은 percentage 기반 할당을 사용하지 않는다. 이 노드의 16 GiB 형상에서
-  `--vm 2 --vm-bytes 14G --vm-keep --timeout 180s`를 사용한다. F4 trial 3은
+  `--vm 1 --vm-bytes 14G --vm-keep --timeout 180s`를 사용한다. 설치된
+  `stress-ng=0.19.02-1`의 `--vm-bytes`는 worker별 할당량이므로 worker 수를
+  1로 고정해 총 요청량과 receipt의 14 GiB 의미를 일치시킨다. F4 trial 3은
   전용 observation wait 60초를 사용하고 `Ready!=True`를 요구한다. runner는
   injection 시작부터 full collector 종료까지 monotonic elapsed가 175초 미만인지
   검증해 stressor deadline 안에서 evidence snapshot이 끝난 경우만 inference한다.

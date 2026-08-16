@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 26건
-- 심각(실험 무효화): 22건
+- 총 이슈: 27건
+- 심각(실험 무효화): 23건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -343,3 +343,14 @@
 - **근본 원인**: injection validation에 필요한 약 40초의 disruption보다 300초 stress duration이 과도했다. 16 GiB node에서 13 GiB `--vm-keep`을 5분 유지하면서 sshd와 kubelet이 exact recovery의 최대 약 6.5분 retry window 안에도 응답하지 못했고, 실험 종료 후 node가 장시간 비정상 상태로 남았다.
 - **수정 내용**: F4 t3 전용 observation wait를 60초, stress timeout을 180초로 결합한다. 13 GiB/180초 model-free probe는 60초 validator와 123초 bounded polling 모두 `Ready=True`여서 inference 전에 안전하게 거부됐다. 당시 node 가용 메모리는 약 14.68 GB였다. 별도 14 GiB/90초 calibration은 52.034초에 `Ready=False`를 만들고 sealed PID exact cleanup 1회로 복구됐으므로 절대 처치량을 14 GiB로 조정한다. validator는 public result의 wait=60과 timeout=180을 bool 제외 exact int로 검증하고 `Ready!=True`를 필수로 요구한다. runner는 injection 시작부터 full collector 완료까지 monotonic elapsed가 175초 미만임을 `evidence_collection_verified` event로 봉인하며, 초과하면 inference 전에 중단한다. recovery command identity는 shared constant를 사용해 exact `14G/180s` process만 종료한다. 다른 F4 trial의 180초 wait는 변경하지 않는다.
 - **현재 영향**: 13 GiB 두 probe와 14 GiB calibration에는 Copilot 호출·AIC·result 파일 쓰기가 없었다. exact wait/timeout type 변조, Ready=True+MemoryPressure=True, evidence deadline 경계, 다른 F4 trial wait 누출을 적대 unit으로 검증한다. 전체 회귀·dry-run·독립 리뷰 후 clean commit-push하고, model-free bounded live lifecycle probe에서 60초 NotReady validation, full collector<175초, stress 종료 뒤 exact recovery/cluster GREEN을 확인한 뒤에만 fresh main campaign을 시작한다.
+
+### [ISS-027] stress-ng vm-bytes의 worker별 의미로 총 처치량이 이중 요청됨
+
+- **카테고리**: injection / code
+- **심각도**: critical (P0)
+- **영향**: 14 GiB/180초 model-free full probe는 60초에 `Ready=True`여서 inference 전에 거부됐고, 이어진 polling probe도 25–123초 내내 Ready=True·MemoryPressure=False였다. 두 probe 모두 exact recovery GREEN이며 Copilot 호출·AIC·result 쓰기는 0이다.
+- **발생 빈도**: 14 GiB/180초 무모델 probe 2회. 앞선 14 GiB/90초 calibration의 52.034초 일시적 NotReady는 같은 구성의 비결정적 OOM churn으로 해석된다.
+- **관찰한 사실**: worker03의 설치된 `stress-ng 0.19.02` 도움말은 `--vm-bytes N`을 `allocate N bytes per vm worker`로 정의한다. 기존 command는 `--vm 2 --vm-bytes 14G`여서 16 GiB node에 총 14 GiB가 아니라 worker별 14 GiB, 최대 28 GiB를 요청했다. probe 직전 node available memory는 14,730,600,448 bytes였다.
+- **근본 원인**: 절대 byte 값만 receipt에 결합하고 vm worker 수와 stress-ng의 per-worker 의미를 총 처치량 계약에 포함하지 않았다. 과다 요청된 child worker의 OOM/restart 동작 때문에 node Ready 변화가 일시적·비재현적이었다.
+- **수정 내용**: `F4_T3_STRESS_VM_WORKERS=1`을 shared constant로 추가해 launch를 exact `--vm 1 --vm-bytes 14G`로 고정한다. sealed preflight/result receipt, validator, recovery command identity에 worker 수를 bool 제외 exact int로 결합하고 missing/0/2/bool/float/string 변조를 거부한다.
+- **현재 영향**: 회귀·dry-run·독립 리뷰·clean commit-push 후 동일 14G/180초의 model-free full-collector/recovery probe를 다시 통과해야만 fresh main campaign을 허용한다.
