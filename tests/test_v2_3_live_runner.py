@@ -207,7 +207,7 @@ class LiveRunnerTests(unittest.TestCase):
 
     def make_runner(
         self, *, injector=None, recovery=None, collector=None, journal=None,
-        injection_validator=None, flux_guard=None,
+        injection_validator=None, flux_guard=None, infrastructure_flux_guard=None,
     ):
         auth = verified_authorization(Path(self.temp.name))
         caller = AuthorizedMockCaller("pilot-campaign", auth)
@@ -231,6 +231,7 @@ class LiveRunnerTests(unittest.TestCase):
                 validate=lambda *args: {"status": "verified"}
             ),
             flux_guard=flux_guard or FakeFluxGuard(),
+            infrastructure_flux_guard=infrastructure_flux_guard,
             retriever=RuntimeOnlyRetriever(backend, corpus_version="corpus-snapshot-1"),
             store=FakeStore(),
             sleep_fn=lambda _: None,
@@ -261,6 +262,30 @@ class LiveRunnerTests(unittest.TestCase):
         runner, _ = self.make_runner()
         with self.assertRaisesRegex(PilotError, "frozen to F7 trial 1"):
             runner.run("F7", 5, GROUND_TRUTH)
+        self.assertEqual(runner.injector.calls, [])
+
+    def test_f5_trial_3_uses_infrastructure_flux_guard_only(self):
+        app_guard = FakeFluxGuard()
+        infrastructure_guard = FakeFluxGuard()
+        runner, _ = self.make_runner(
+            flux_guard=app_guard,
+            infrastructure_flux_guard=infrastructure_guard,
+        )
+        runner.allowed_incidents = frozenset({("F5", 3)})
+        summary = runner.run(
+            "F5", 3, {**GROUND_TRUTH, "fault_id": "F5", "trial": "3"}
+        )
+        self.assertEqual((summary["rows"], summary["calls"]), (3, 36))
+        self.assertEqual(app_guard.calls, [])
+        self.assertEqual(
+            infrastructure_guard.calls, ["prepare", "suspend", "restore"]
+        )
+
+    def test_f5_trial_3_without_infrastructure_guard_fails_before_mutation(self):
+        runner, _ = self.make_runner()
+        runner.allowed_incidents = frozenset({("F5", 3)})
+        with self.assertRaisesRegex(PilotError, "infrastructure Flux guard"):
+            runner.run("F5", 3, {**GROUND_TRUTH, "fault_id": "F5", "trial": "3"})
         self.assertEqual(runner.injector.calls, [])
 
     def test_injection_exception_still_attempts_recovery(self):

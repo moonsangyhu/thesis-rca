@@ -165,6 +165,7 @@ def run_authorized_main(
         validator=StateValidator(ground_truth=ground_truth),
         injection_validator=validator,
         flux_guard=build_live_flux_guard(),
+        infrastructure_flux_guard=build_live_flux_guard("infrastructure"),
         retriever=RuntimeOnlyRetriever(
             KnowledgeRetriever(chroma_dir=resolved_chroma),
             corpus_version=corpus_version,

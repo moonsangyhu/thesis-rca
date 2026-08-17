@@ -411,6 +411,7 @@ def _run_authorized_pilot(
             lambda: kubectl_get_json("pods"),
         ),
         flux_guard=build_live_flux_guard(),
+        infrastructure_flux_guard=build_live_flux_guard("infrastructure"),
         retriever=RuntimeOnlyRetriever(
             KnowledgeRetriever(chroma_dir=resolved_chroma), corpus_version=corpus_version
         ),
