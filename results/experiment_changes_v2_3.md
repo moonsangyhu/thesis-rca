@@ -564,3 +564,12 @@
 - **수정 내용**: exact deployment CPU limit/request·target/container identity는 유지한 채, `F7/t4/adservice/5m`에서만 resource-matched non-ready pod를 `java-startup-cpu-starvation` 처치 basis로 검증한다. 다른 F7 trial의 non-ready pod는 계속 거부한다.
 - **수정 파일**: `experiments/v2_3/live_runner.py:588`, `tests/test_v2_3_live_runner.py:818`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — targeted live-runner 61 PASS, pycompile·diff-check PASS. Primary24은 불완전 artifact로 보존하고 clean commit 후 fresh campaign을 처음부터 재시작한다.
+
+### 64. SDK watchdog 권한 거부 시 runner PID cleanup 보강 — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: full regression의 real watchdog child cleanup에서 `killpg` 권한 오류가 전파돼 직접 runner PID가 남을 수 있었다.
+- **원인**: cleanup helper가 production 새 session의 group-kill만 가정하고 host가 group signal을 거부하는 경우를 처리하지 않았다.
+- **수정 내용**: `killpg`의 `PermissionError`에서 직접-owned runner PID에 SIGKILL fallback을 수행한다. group kill 정상 경로와 process-missing 무시는 유지하고 fallback 회귀를 추가했다.
+- **수정 파일**: `experiments/shared/copilot_sdk.py:397`, `tests/test_copilot_sdk.py:518`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — full 286 PASS, dry-run 180/2,160 external0/filesystem0, pycompile·diff-check PASS. clean commit 후 fresh primary campaign을 시작한다.

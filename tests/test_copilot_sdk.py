@@ -520,6 +520,13 @@ class CopilotSDKBackendTest(unittest.TestCase):
         self.assertTrue(timed_out)
         self.assertLess(time.monotonic() - started, 5)
 
+    @patch("experiments.shared.copilot_sdk.os.kill")
+    @patch("experiments.shared.copilot_sdk.os.killpg", side_effect=PermissionError)
+    def test_group_kill_permission_failure_still_kills_runner_pid(self, killpg, kill):
+        CopilotSDKBackend._kill_process_group(4323)
+        killpg.assert_called_once_with(4323, 9)
+        kill.assert_called_once_with(4323, 9)
+
     @patch("experiments.shared.copilot_sdk.shutil.which")
     def test_sdk_timeout_requires_positive_non_boolean_integer(self, which):
         which.side_effect = lambda name: f"/opt/bin/{name}"
