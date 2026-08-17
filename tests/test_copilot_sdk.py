@@ -1,7 +1,9 @@
 import hashlib
 import json
 import subprocess
+import sys
 import tempfile
+import time
 import unittest
 import uuid
 from datetime import datetime, timezone
@@ -465,6 +467,66 @@ class CopilotSDKBackendTest(unittest.TestCase):
         self.assertEqual(completed.stdout, "partial usage")
         killpg.assert_called_once_with(4321, 9)
         self.assertTrue(popen.call_args.kwargs["start_new_session"])
+
+    @patch("experiments.shared.copilot_sdk.threading.Timer")
+    @patch("experiments.shared.copilot_sdk.os.killpg")
+    @patch("experiments.shared.copilot_sdk.subprocess.Popen")
+    @patch("experiments.shared.copilot_sdk.shutil.which")
+    def test_independent_watchdog_marks_runner_timeout_when_communicate_returns(
+        self, which, popen, killpg, timer
+    ):
+        """A watchdog expiry is timeout even if communicate later returns."""
+        which.side_effect = lambda name: f"/opt/bin/{name}"
+        process = popen.return_value
+        process.pid = 4323
+        process.returncode = -9
+        process.communicate.return_value = ("", "")
+
+        class ImmediateTimer:
+            daemon = False
+
+            def __init__(self, _seconds, callback):
+                self.callback = callback
+
+            def start(self):
+                self.callback()
+
+            def cancel(self):
+                pass
+
+        timer.side_effect = ImmediateTimer
+        with tempfile.TemporaryDirectory() as temp_dir:
+            backend = self.backend(temp_dir, timeout_seconds=1)
+            completed, timed_out = backend._run_runner(
+                ["node", "runner"], "{}", Path(temp_dir), {},
+            )
+        self.assertTrue(timed_out)
+        self.assertEqual(completed.returncode, -9)
+        killpg.assert_any_call(4323, 9)
+
+    @patch("experiments.shared.copilot_sdk.SDK_RUNNER_REAP_SECONDS", 1)
+    @patch("experiments.shared.copilot_sdk.SDK_RUNNER_GRACE_SECONDS", 0)
+    @patch("experiments.shared.copilot_sdk.shutil.which")
+    def test_real_watchdog_terminates_unresponsive_runner_process_group(self, which):
+        """The independent watchdog returns control without a Copilot call."""
+        which.side_effect = lambda name: f"/opt/bin/{name}"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            backend = self.backend(temp_dir, timeout_seconds=1)
+            started = time.monotonic()
+            completed, timed_out = backend._run_runner(
+                [sys.executable, "-c", "import time; time.sleep(30)"],
+                "{}", Path(temp_dir), {},
+            )
+        self.assertTrue(timed_out)
+        self.assertLess(time.monotonic() - started, 5)
+
+    @patch("experiments.shared.copilot_sdk.shutil.which")
+    def test_sdk_timeout_requires_positive_non_boolean_integer(self, which):
+        which.side_effect = lambda name: f"/opt/bin/{name}"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            for invalid in (True, 0, -1, 1.0, "180"):
+                with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                    self.backend(temp_dir, timeout_seconds=invalid)
 
     @patch("experiments.shared.copilot_sdk.os.killpg")
     @patch("experiments.shared.copilot_sdk.subprocess.Popen")

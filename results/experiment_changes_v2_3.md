@@ -538,3 +538,12 @@
 - **복구/안전**: `Recovery().recover(F5,3)` 뒤 child→root Flux CAS exact restore와 recovery GREEN을 확인했다. local-path provisioner는 1/1로 복원됐고, probe artifact `artifacts/v2_3_main/v2-3-f5t3-probe-20260817-055642/campaign_events.jsonl`의 SHA-256은 `c463f29b4f827fab36a5912eed5ef5a14994d35dc98beeea5aafe78ea8fe8500`이다.
 - **수정 파일**: `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: GREEN — model_calls=0, AIC=0. fresh primary campaign은 새 ID에서 처음부터 실행한다.
+
+### 61. SDK runner 독립 watchdog과 bounded drain — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary22 F1 t2가 SDK judge 호출의 `process.communicate()`에서 진행하지 않아 operator interrupt 후에만 recovery로 전환됐다. F1 t1의 3 rows/36 calls만 commit됐으며 Primary22는 불완전 artifact다.
+- **원인**: Python `communicate(timeout=210)` 단일 timeout은 SDK/CLI process tree의 retained pipe descriptor 또는 selector wait 지연 시 parent-level liveness를 독립적으로 보장하지 못했다.
+- **수정 내용**: SDK runner process group에 동일 deadline의 daemon watchdog을 추가해 expiry 즉시 전체 group을 kill한다. watchdog expiry는 `communicate()`가 뒤늦게 return해도 timeout으로 분류하며, timeout/interrupt 후 reaping은 15초 상한으로 제한한다. timeout 입력은 bool 제외 positive integer로 봉인했다.
+- **수정 파일**: `experiments/shared/copilot_sdk.py:1`, `tests/test_copilot_sdk.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — SDK unit 12 PASS, 전체 283 PASS, offline dry-run 180 rows/2,160 calls·external0·filesystem0, pycompile·diff-check PASS. clean commit-push 뒤 새 campaign에서 검증한다.
