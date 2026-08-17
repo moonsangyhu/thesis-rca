@@ -399,6 +399,15 @@ class CopilotSDKBackend:
             os.killpg(pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
+        except PermissionError:
+            # The production runner is created as a new session, so killpg is
+            # the normal process-tree cleanup path.  Some host test/process
+            # configurations can nevertheless reject a group signal; never
+            # leave the directly owned runner alive in that case.
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
 
     @staticmethod
     def _json_lines(output: str) -> list[dict]:

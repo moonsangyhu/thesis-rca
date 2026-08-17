@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 39건
-- 심각(실험 무효화): 35건
+- 총 이슈: 40건
+- 심각(실험 무효화): 36건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -487,3 +487,14 @@
 - **근본 원인**: F7 validator가 모든 CPU-throttle trial에 Ready pod를 요구했다. 그러나 ground truth의 F7 t4는 Java adservice를 5m으로 제한하여 startup을 수 분 지연시키는 처치이므로, non-ready rollout 자체가 사전 정의된 treatment symptom이다.
 - **수정 내용**: deployment desired CPU limit/request와 target/container identity는 계속 exact-bind한다. Ready=false pod는 exact `F7/t4/adservice/5m` 조합에서만 `java-startup-cpu-starvation` basis로 허용하고, 그 밖의 F7 trial 또는 값에는 기존 Ready gate를 유지한다. unready Java branch와 일반 trial 거부 회귀를 추가했다.
 - **현재 영향**: Primary24 partial artifact는 append-only로 보존하며 fresh campaign과 결합하지 않는다. 수정 뒤 targeted live-runner 61 PASS, pycompile·diff-check PASS를 확인했다. clean commit 뒤 새 campaign ID에서 처음부터 재시작한다.
+
+### [ISS-040] SDK watchdog cleanup이 host killpg 권한 오류를 전파
+
+- **카테고리**: code / recovery
+- **심각도**: critical (P0)
+- **영향**: full regression의 real watchdog subprocess test. 본실험 Copilot 호출·클러스터 mutation에는 영향을 주지 않았다.
+- **발생 빈도**: 검증 환경 1회.
+- **관찰한 사실**: timeout된 local child cleanup에서 `os.killpg(pid, SIGKILL)`가 `PermissionError: [Errno 1] Operation not permitted`를 내며 watchdog test가 실패했다. 이때 직접 runner PID는 아직 실행 중이었다.
+- **근본 원인**: production은 `start_new_session=True`로 새 process group을 만들지만, cleanup helper는 host가 group signal을 거부하는 경우의 직접-owned runner fallback을 두지 않았다.
+- **수정 내용**: group kill의 `PermissionError`에서 runner PID에 `SIGKILL`을 보내고 process-missing은 무시한다. production 정상 경로의 process-group kill은 유지하며, fallback 호출 적대 회귀를 추가했다.
+- **현재 영향**: full 286 tests와 offline dry-run 180 rows/2,160 calls·external/filesystem 0, pycompile·diff-check PASS를 확인했다. clean commit 뒤 fresh campaign에서 처음부터 재시작한다.
