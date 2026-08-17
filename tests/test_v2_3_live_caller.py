@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from experiments.shared.copilot_cli import (
+    RETRYABLE_MALFORMED_JSONL_FAILURE_CODE,
     RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
     CopilotCLIError,
     CopilotCLIResponse,
@@ -71,6 +72,19 @@ class StrictParseFailureBackend(FakeBackend):
         receipt = {"attempt_id": "strict-failure", "ai_credits": 9.0}
         self.charge_observer(receipt)
         raise CopilotCLIError("strict JSONL parse failed", receipt)
+
+
+class RetryableMalformedJsonlBackend(FakeBackend):
+    def call(self, prompt, system_prompt, max_tokens):
+        if not self.calls:
+            self.calls.append((prompt, system_prompt, max_tokens))
+            receipt = {"attempt_id": "truncated", "ai_credits": 0.2,
+                       "premium_requests": 1.0, "usage_metadata_complete": True,
+                       "actual_model": self.model, "output_tokens": 5}
+            self.charge_observer(receipt)
+            raise CopilotCLIError("Copilot SDK emitted malformed JSONL", receipt,
+                                  failure_code=RETRYABLE_MALFORMED_JSONL_FAILURE_CODE)
+        return super().call(prompt, system_prompt, max_tokens)
 
 
 class RetryableMetadataBackend(FakeBackend):
@@ -230,6 +244,17 @@ class LiveCallerTests(unittest.TestCase):
             caller(invocation)
         self.assertEqual(len(backend.receipts), 1)
         self.assertAlmostEqual(caller.cumulative_aic, 0.1)
+
+    def test_complete_charged_truncated_jsonl_retries_once(self):
+        backend = RetryableMalformedJsonlBackend()
+        caller = AuthorizedTerraCaller(self.authorization(), backend, "pilot-campaign", "copilot-1.0.78")
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+        caller(Invocation("generator", "F1", 1, "runtime", 1, None,
+                          context.full_context, context))
+        self.assertEqual(len(backend.calls), 2)
+        self.assertAlmostEqual(caller.cumulative_aic, 0.3)
 
     def test_charged_cap_exceed_updates_usage_before_failure(self):
         backend = FakeBackend()

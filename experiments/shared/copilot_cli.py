@@ -27,6 +27,7 @@ RETRYABLE_SKILL_METADATA_FAILURE_CODES = frozenset({
     "enabled_state", "path_type", "argument_hint_type",
 })
 RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE = "sdk_auth_session_creation_zero_usage"
+RETRYABLE_MALFORMED_JSONL_FAILURE_CODE = "sdk_malformed_jsonl_complete_usage"
 
 
 class CopilotCLIError(RuntimeError):

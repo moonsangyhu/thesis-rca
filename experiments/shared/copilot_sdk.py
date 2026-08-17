@@ -21,6 +21,7 @@ from typing import Callable
 from .copilot_cli import (
     DEFAULT_COPILOT_MODEL,
     MIN_COPILOT_SESSION_AIC,
+    RETRYABLE_MALFORMED_JSONL_FAILURE_CODE,
     RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
     CopilotCLIError,
     CopilotCLIResponse,
@@ -256,7 +257,18 @@ class CopilotSDKBackend:
                 expected_nonce=request_nonce,
             )
         except Exception as exc:
-            raise CopilotCLIError(str(exc), receipt) from exc
+            # The Node SDK has occasionally truncated an otherwise charged
+            # JSONL response at its 64KiB output boundary.  This has no tool
+            # side effects in empty mode; retrying once is safe only when the
+            # durable receipt proves complete, model-bound usage.
+            malformed_jsonl = str(exc) == "Copilot SDK emitted malformed JSONL"
+            raise CopilotCLIError(
+                str(exc), receipt,
+                failure_code=(
+                    RETRYABLE_MALFORMED_JSONL_FAILURE_CODE
+                    if malformed_jsonl else None
+                ),
+            ) from exc
         return replace(
             parsed,
             started_at=started.isoformat(),

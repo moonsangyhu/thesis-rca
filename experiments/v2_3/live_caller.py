@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from experiments.shared.copilot_cli import (
     CopilotCLIBackend, CopilotCLIError, RETRYABLE_SKILL_METADATA_FAILURE_CODES,
-    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
+    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE, RETRYABLE_MALFORMED_JSONL_FAILURE_CODE,
 )
 
 from .authorization import LiveAuthorization
@@ -175,7 +175,15 @@ class AuthorizedTerraCaller:
                     and math.isfinite(premium) and premium == 0
                     and not self.usage_uncertain
                 )
-                retryable = retryable_metadata or retryable_zero_usage_auth
+                retryable_malformed_jsonl = (
+                    attempt == 0
+                    and exc.failure_code == RETRYABLE_MALFORMED_JSONL_FAILURE_CODE
+                    and known_charge
+                    and complete_usage
+                    and not self.usage_uncertain
+                )
+                retryable = (retryable_metadata or retryable_zero_usage_auth
+                             or retryable_malformed_jsonl)
                 if retryable:
                     retry_aic += charged
                     retry_premium_requests += premium

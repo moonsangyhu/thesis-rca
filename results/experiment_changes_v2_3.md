@@ -547,3 +547,11 @@
 - **수정 내용**: SDK runner process group에 동일 deadline의 daemon watchdog을 추가해 expiry 즉시 전체 group을 kill한다. watchdog expiry는 `communicate()`가 뒤늦게 return해도 timeout으로 분류하며, timeout/interrupt 후 reaping은 15초 상한으로 제한한다. timeout 입력은 bool 제외 positive integer로 봉인했다.
 - **수정 파일**: `experiments/shared/copilot_sdk.py:1`, `tests/test_copilot_sdk.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — SDK unit 12 PASS, 전체 283 PASS, offline dry-run 180 rows/2,160 calls·external0·filesystem0, pycompile·diff-check PASS. clean commit-push 뒤 새 campaign에서 검증한다.
+
+### 62. 완전 과금 JSONL 절단 1회 재시도 — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary23 F4 t4에서 SDK stdout JSONL 한 줄이 약 64KiB 지점에서 절단돼 strict parser가 거부했다. 해당 subprocess는 exit 0이며 Terra 모델·output token·AIC 3.1204의 durable charged receipt를 남겼지만 논리 호출은 commit되지 않았다.
+- **수정 내용**: 정확히 `Copilot SDK emitted malformed JSONL`인 경우에만, 첫 시도·완전 usage/model/AIC receipt·zero side-effect empty mode 조건을 모두 만족할 때 1회 재시도한다. 두 번째 실패 또는 불완전 usage는 기존처럼 fail-closed하며, 재시도 비용은 논리 호출 AIC에 합산된다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/shared/copilot_sdk.py:1`, `experiments/v2_3/live_caller.py:1`, `tests/test_v2_3_live_caller.py:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: targeted 27 PASS, `git diff --check` PASS. Primary23은 불완전 artifact로 보존하고 fresh campaign에서 처음부터 재실행한다.
