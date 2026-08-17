@@ -573,3 +573,11 @@
 - **수정 내용**: `killpg`의 `PermissionError`에서 직접-owned runner PID에 SIGKILL fallback을 수행한다. group kill 정상 경로와 process-missing 무시는 유지하고 fallback 회귀를 추가했다.
 - **수정 파일**: `experiments/shared/copilot_sdk.py:397`, `tests/test_copilot_sdk.py:518`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — full 286 PASS, dry-run 180/2,160 external0/filesystem0, pycompile·diff-check PASS. clean commit 후 fresh primary campaign을 시작한다.
+
+### 65. F1 memory pre-state exact recovery — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary25 F1 t1의 OOM 처치 후 `rollout undo`가 cartservice memory 32Mi/32Mi를 남겨 recovery health를 막았다.
+- **수정 내용**: injector가 original memory limit/request/container를 receipt에 봉인하고, 실제 주입도 해당 container로 한정한다. recovery는 exact resources를 재설정·rollout·desired equality 검증하도록 변경했다.
+- **수정 파일**: `scripts/fault_inject/injector.py:286`, `scripts/stabilize/recovery.py:201`, `tests/test_f1_memory_recovery.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: F1 receipt/restore 적대 회귀 4건과 관련 79건, 전체 290 unittest, offline dry-run 180/2,160 external/filesystem 0, pycompile·diff-check PASS. Primary25은 불완전 artifact로 보존하며, 새 primary 전 model-free F1 lifecycle probe를 실행한다.

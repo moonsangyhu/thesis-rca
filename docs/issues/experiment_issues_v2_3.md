@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 40건
-- 심각(실험 무효화): 36건
+- 총 이슈: 41건
+- 심각(실험 무효화): 37건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -498,3 +498,13 @@
 - **근본 원인**: production은 `start_new_session=True`로 새 process group을 만들지만, cleanup helper는 host가 group signal을 거부하는 경우의 직접-owned runner fallback을 두지 않았다.
 - **수정 내용**: group kill의 `PermissionError`에서 runner PID에 `SIGKILL`을 보내고 process-missing은 무시한다. production 정상 경로의 process-group kill은 유지하며, fallback 호출 적대 회귀를 추가했다.
 - **현재 영향**: full 286 tests와 offline dry-run 180 rows/2,160 calls·external/filesystem 0, pycompile·diff-check PASS를 확인했다. clean commit 뒤 fresh campaign에서 처음부터 재시작한다.
+
+### [ISS-041] F1 memory recovery가 rollout history에 의존해 exact pre-state를 잃음
+
+- **카테고리**: recovery / injection
+- **심각도**: critical (P0)
+- **영향**: Primary25 F1 t1은 32 validated calls 이후 LiveCallerError로 실패했고 recovery는 cartservice 32Mi/32Mi memory state를 남겨 CrashLoopBackOff와 recovery_failed를 유발했다. 결과·raw·logical ledger는 0이다.
+- **근본 원인**: F1 injector는 original memory request/container를 receipt에 봉인하지 않았고 recovery는 `rollout undo`만 사용했다. revision history는 exact pre-injection resource state의 정본이 아니다.
+- **수정 내용**: F1은 target container와 original memory limit/request를 injection receipt에 봉인한다. recovery는 exact `kubectl set resources` 후 rollout 및 desired resource equality를 검증하며 receipt가 불완전하면 fail-closed한다.
+- **현재 영향**: manual restore로 cartservice request 64Mi/limit 128Mi·1/1 Ready와 nodes/Flux GREEN을 확인했다. Primary25는 불완전 artifact로 보존한다.
+- **정정·검증 후속(append-only)**: 위의 “32 validated calls”는 정확하지 않다. artifact의 `attempt_call_ledger=32`, `charged_call_ledger=33`이지만 `call_ledger/result/raw=0/0/0`이므로 validated logical call은 0건이다. 마지막 1건은 210.711초 timeout·usage metadata incomplete이며, 알려진 32건 AIC 합계는 15.05945다. exact receipt recovery와 target-container injection을 추가 보강했고, F1 전용 4건을 포함한 전체 290 unittest, offline dry-run 180 rows/2,160 calls·external/filesystem 0, pycompile·diff-check를 통과했다. 새 primary는 model-free F1 lifecycle probe가 GREEN인 clean revision에서만 시작한다.

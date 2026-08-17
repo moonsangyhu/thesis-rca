@@ -297,19 +297,28 @@ class FaultInjector:
         # Save original for rollback
         original = kubectl_get_json("deployment", target)
         original_limit = None
+        original_request = None
+        container_name = None
         if original:
             containers = original.get("spec", {}).get("template", {}).get(
                 "spec", {}
             ).get("containers", [])
             for c in containers:
                 if c.get("name") == target or len(containers) == 1:
+                    container_name = c.get("name")
                     original_limit = (
                         c.get("resources", {}).get("limits", {}).get("memory")
                     )
+                    original_request = (
+                        c.get("resources", {}).get("requests", {}).get("memory")
+                    )
+        if not all((container_name, original_limit, original_request)):
+            raise RuntimeError(f"F1 original memory resources are incomplete: {target}")
 
         # Use kubectl set resources (avoids strategic merge patch validation issues)
         result = kubectl(
             "set", "resources", "deployment", target,
+            f"--containers={container_name}",
             f"--limits=memory={limit}", f"--requests=memory={limit}",
         )
         logger.info("F1 injected: %s memory limit → %s", target, limit)
@@ -318,6 +327,8 @@ class FaultInjector:
             "action": "patch_memory_limit",
             "memory_limit": limit,
             "original_limit": original_limit,
+            "original_request": original_request,
+            "container_name": container_name,
             "kubectl_output": result,
         }
 

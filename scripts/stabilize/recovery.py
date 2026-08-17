@@ -199,13 +199,30 @@ class Recovery:
     # ── Per-fault recovery ─────────────────────────────────────────
 
     def _recover_f1(self, trial: int, ctx: dict) -> dict:
-        """Remove memory limit patch → rollout restart."""
+        """Restore exact sealed memory resources rather than relying on revision history."""
         target = ctx.get("target_service", "")
-        # Remove resource limits by patching with empty/null
-        # Simplest: rollout undo or re-apply original
-        kubectl("rollout", "undo", f"deployment/{target}")
+        container = ctx.get("container_name", "")
+        original_limit = ctx.get("original_limit", "")
+        original_request = ctx.get("original_request", "")
+        if not all((target, container, original_limit, original_request)):
+            raise RuntimeError("F1 recovery receipt is incomplete")
+        kubectl(
+            "set", "resources", f"deployment/{target}",
+            f"--containers={container}",
+            f"--limits=memory={original_limit}",
+            f"--requests=memory={original_request}",
+        )
         kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
-        return {"action": "rollout_undo", "target": target}
+        deployment = kubectl_get_json("deployment", target)
+        containers = deployment.get("spec", {}).get("template", {}).get("spec", {}).get("containers", [])
+        current = next((item for item in containers if item.get("name") == container), None)
+        resources = (current or {}).get("resources", {})
+        if (
+            resources.get("limits", {}).get("memory") != original_limit
+            or resources.get("requests", {}).get("memory") != original_request
+        ):
+            raise RuntimeError("F1 desired memory state was not exactly restored")
+        return {"action": "restore_memory_resources", "target": target}
 
     def _recover_f2(self, trial: int, ctx: dict) -> dict:
         """Remove command override → rollout undo."""
