@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import threading
 import uuid
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -30,6 +31,13 @@ SDK_RUNNER_SCHEMA = 1
 SDK_REASONING_EFFORT = "medium"
 SDK_COPILOT_VERSION = "1.0.77"
 SDK_SESSION_EVENT_VERSION = 1
+# The SDK receives the same 180-second inference deadline.  The Python parent
+# has a small, fixed grace period to receive the runner's final event/usage
+# envelope.  A separate watchdog is intentional: `communicate(timeout=...)`
+# is not the only liveness boundary, because a runner can retain pipe handles
+# while its Node/CLI process tree is wedged.
+SDK_RUNNER_GRACE_SECONDS = 30
+SDK_RUNNER_REAP_SECONDS = 15
 ZERO_USAGE_AUTH_MESSAGE = (
     "Execution failed: Error: Session was not created with authentication info "
     "or custom provider"
@@ -82,6 +90,12 @@ class CopilotSDKBackend:
             or max_ai_credits < MIN_COPILOT_SESSION_AIC
         ):
             raise ValueError("Copilot SDK session AIC cap must be an integer at least 30")
+        if (
+            isinstance(timeout_seconds, bool)
+            or not isinstance(timeout_seconds, int)
+            or timeout_seconds < 1
+        ):
+            raise ValueError("Copilot SDK timeout must be a positive integer")
         if zero_overage_confirmed is not None and billing_execution_authorized is not None:
             raise ValueError("billing authorization modes are mutually exclusive")
         if (
@@ -278,7 +292,12 @@ class CopilotSDKBackend:
     def _run_runner(
         self, command: list[str], request: str, cwd: Path, env: dict[str, str],
     ) -> tuple[subprocess.CompletedProcess, bool]:
-        """Run Node and its Copilot child in one killable process group."""
+        """Run Node and its Copilot child in one killable process group.
+
+        The timer is a second, independent liveness boundary.  In particular,
+        it still kills the whole process group if `communicate()` is delayed by
+        retained pipe descriptors after a child-side SDK failure.
+        """
         process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
@@ -289,21 +308,78 @@ class CopilotSDKBackend:
             text=True,
             start_new_session=True,
         )
+        watchdog_expired = threading.Event()
+        watchdog_lock = threading.Lock()
+        watchdog_closed = False
+
+        def expire_watchdog() -> None:
+            with watchdog_lock:
+                if watchdog_closed:
+                    return
+                watchdog_expired.set()
+            self._kill_process_group(process.pid)
+
+        watchdog = threading.Timer(
+            self.timeout_seconds + SDK_RUNNER_GRACE_SECONDS,
+            expire_watchdog,
+        )
+        watchdog.daemon = True
+        watchdog.start()
+
+        def close_watchdog() -> bool:
+            nonlocal watchdog_closed
+            with watchdog_lock:
+                watchdog_closed = True
+                expired = watchdog_expired.is_set()
+            watchdog.cancel()
+            return expired
+
         try:
             stdout, stderr = process.communicate(
-                input=request, timeout=self.timeout_seconds + 30
+                input=request,
+                timeout=self.timeout_seconds + SDK_RUNNER_GRACE_SECONDS,
             )
+            if close_watchdog():
+                # A process can close its inherited stdout/stderr descriptors
+                # before its parent has been reaped.  Preserve the watchdog
+                # outcome and wait only for the fixed reap boundary.
+                self._kill_process_group(process.pid)
+                try:
+                    process.wait(timeout=SDK_RUNNER_REAP_SECONDS)
+                except subprocess.TimeoutExpired:
+                    self._kill_process_group(process.pid)
             return subprocess.CompletedProcess(
                 command, process.returncode, stdout, stderr
-            ), False
+            ), watchdog_expired.is_set()
         except subprocess.TimeoutExpired:
+            close_watchdog()
+            watchdog_expired.set()
             self._kill_process_group(process.pid)
-            stdout, stderr = process.communicate()
+            try:
+                stdout, stderr = process.communicate(timeout=SDK_RUNNER_REAP_SECONDS)
+            except subprocess.TimeoutExpired as exc:
+                # The group was already killed.  Do not let an inherited pipe
+                # descriptor hold the fault-injection/recovery state forever.
+                self._kill_process_group(process.pid)
+                stdout = self._as_text(exc.output)
+                stderr = self._as_text(exc.stderr)
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    try:
+                        if stream is not None:
+                            stream.close()
+                    except OSError:
+                        pass
             return subprocess.CompletedProcess(command, None, stdout, stderr), True
         except BaseException:
+            close_watchdog()
             self._kill_process_group(process.pid)
-            process.communicate()
+            try:
+                process.communicate(timeout=SDK_RUNNER_REAP_SECONDS)
+            except subprocess.TimeoutExpired:
+                self._kill_process_group(process.pid)
             raise
+        finally:
+            close_watchdog()
 
     @staticmethod
     def _kill_process_group(pid: int) -> None:

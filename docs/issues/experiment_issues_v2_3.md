@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 37건
-- 심각(실험 무효화): 33건
+- 총 이슈: 38건
+- 심각(실험 무효화): 34건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -465,3 +465,14 @@
 - **근본 원인**: runner는 Flux `flux-system` root와 `app` child만 suspend했다. local-path provisioner는 sibling `infrastructure` Kustomization이 관리하므로, app guard만으로는 `replicas=0` 처치를 validator 시점까지 유지할 수 없었다. controller actor audit은 별도로 보존하지 않아 reconciliation 시점 자체는 라벨·관측 상태에 근거한 추론이다.
 - **현재 영향**: 자동 recovery 후 nodes 6/6 Ready, Boutique 12/12 Running, Flux Kustomizations 5/5 Ready를 확인했다. primary20 artifact는 append-only로 보존하며 fresh campaign과 결합하지 않는다.
 - **수정 방안**: F5 t3에만 root→`infrastructure` Flux hierarchy guard를 사용하고, recovery/emergency restore는 sealed child receipt의 `flux_name`에서 `app` 또는 `infrastructure` guard를 선택한다. 이외 fault는 기존 root→app guard를 유지한다. targeted tests·clean commit 뒤 fresh campaign으로 처음부터 재실행한다.
+
+### [ISS-038] SDK runner subprocess 대기가 incident recovery 경계를 넘김
+
+- **카테고리**: code / infra
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260817-primary22`의 F1 t2. F1 t1만 3 rows/raw·36 validated calls로 commit됐고 F1 t2는 결과 commit 전에 중단됐다. 이 campaign은 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회.
+- **관찰한 사실**: F1 t2의 `injection_verified` 뒤 attempt/charged ledger는 50 entries까지 증가했지만 call ledger·result/raw는 F1 t1의 36/3/3에서 진행하지 않았다. 실행 PID는 살아 있으나 campaign event가 더 진행하지 않아 정상 interrupt를 보냈고, `incident_failed(error_type=KeyboardInterrupt)→flux_restored(exact original/CAS)→recovery_green`을 확인했다. traceback은 `CopilotSDKBackend._run_runner()`의 `process.communicate()` 대기에서 발생했다. recovery 뒤 Flux 5/5 Ready·suspend false, nodes 6/6 Ready·DiskPressure false, Boutique 12/12 Running을 확인했다.
+- **근본 원인**: Python parent는 `communicate(timeout=210)` 하나에만 liveness를 맡겼다. SDK/CLI process tree가 pipe descriptor를 유지하거나 selector wait가 지연되면 timeout 관찰 자체가 늦어져 fault injection 중 recovery 전환이 보장되지 않는다. 이 실행에서 어떤 SDK child가 descriptor를 유지했는지는 직접 actor audit으로 확정하지 못했다.
+- **현재 영향**: primary22 artifact는 append-only로 보존한다. validated result 3행·call ledger 36건만 F1 t1에 대응하며 F1 t2의 14 attempts/charges와 포함 AIC는 campaign 결과에 합산하지 않는다.
+- **수정 방안**: SDK parent에 inference deadline+30초 independent watchdog을 두어 process group 전체를 kill하고, timeout 뒤 drain도 15초 상한으로 제한한다. watchdog expiry는 returncode와 무관하게 timeout receipt·charged provenance·incident recovery로 연결한다. process group·watchdog·typed timeout의 unit/regression과 V2.3 dry-run을 통과한 clean revision에서만 fresh campaign을 시작한다.
