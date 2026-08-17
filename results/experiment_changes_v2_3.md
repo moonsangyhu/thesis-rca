@@ -581,3 +581,11 @@
 - **수정 내용**: injector가 original memory limit/request/container를 receipt에 봉인하고, 실제 주입도 해당 container로 한정한다. recovery는 exact resources를 재설정·rollout·desired equality 검증하도록 변경했다.
 - **수정 파일**: `scripts/fault_inject/injector.py:286`, `scripts/stabilize/recovery.py:201`, `tests/test_f1_memory_recovery.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: F1 receipt/restore 적대 회귀 4건과 관련 79건, 전체 290 unittest, offline dry-run 180/2,160 external/filesystem 0, pycompile·diff-check PASS. Primary25은 불완전 artifact로 보존하며, 새 primary 전 model-free F1 lifecycle probe를 실행한다.
+
+### 66. F1 sealed-memory model-free lifecycle 검증 — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **검증 내용**: clean `ded79ce`에서 F1-t1의 `32Mi` OOM 처치를 Copilot 없이 실행했다. receipt는 `server`와 pre-state request/limit `64Mi/128Mi`를 보존했고 120초 관찰 뒤 exact resource 복원과 1/1 Ready를 확인했다.
+- **복구/안전**: 같은 sealed receipt로 `Recovery().recover()`가 `restore_memory_resources`, `health_check_passed=true`를 반환했고 `comprehensive_health_check(max_retries=1)`은 `(True, [])`였다. 모델 호출·AIC·primary row/raw는 모두 0이다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: GREEN — 새 full primary campaign을 clean commit에서 시작할 수 있다.
