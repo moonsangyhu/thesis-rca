@@ -815,6 +815,37 @@ class LiveRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(PilotError, "trial identity"):
             validator.validate("F7", 1, GROUND_TRUTH, bad)
 
+    def test_f7_t4_accepts_only_the_preregistered_unready_java_startup_symptom(self):
+        deployment = {
+            "spec": {"template": {"spec": {"containers": [{
+                "name": "server",
+                "resources": {"limits": {"cpu": "5m"}, "requests": {"cpu": "5m"}},
+            }]}}}
+        }
+        unready_adservice = {"items": [{
+            "metadata": {"labels": {"app": "adservice"}},
+            "spec": {"containers": [{
+                "name": "server",
+                "resources": {"limits": {"cpu": "5m"}, "requests": {"cpu": "5m"}},
+            }]},
+            "status": {"phase": "Running", "containerStatuses": [{"name": "server", "ready": False}]},
+        }]}
+        validator = F7InjectionValidator(lambda _: deployment, lambda: unready_adservice)
+        result = {
+            "fault_id": "F7", "trial": 4, "target_service": "adservice",
+            "action": "patch_cpu_limit", "cpu_limit": "5m",
+        }
+        ground_truth = {"target_service": "adservice"}
+        verified = validator.validate("F7", 4, ground_truth, result)
+        self.assertEqual(verified["treatment_basis"], "java-startup-cpu-starvation")
+        self.assertEqual(verified["unready_pods"], 1)
+
+        # The same unready state is not valid evidence for a normal F7 trial.
+        with self.assertRaisesRegex(PilotError, "not Ready"):
+            validator.validate("F7", 1, {"target_service": "adservice"}, {
+                **result, "trial": 1,
+            })
+
     def test_short_injection_value_is_forbidden(self):
         from experiments.v2_3.live_runner import build_forbidden_lexicon
         from experiments.v2_3.scanner import LeakageScanner
