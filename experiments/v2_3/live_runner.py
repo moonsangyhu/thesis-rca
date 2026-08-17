@@ -588,7 +588,8 @@ class F7InjectionValidator:
             raise PilotError("post-injection live CPU state does not match injector receipt")
         pod_list = self.pod_loader()
         items = pod_list.get("items", []) if isinstance(pod_list, dict) else []
-        matching_pods = []
+        ready_pods = []
+        unready_pods = []
         for pod in items:
             labels = pod.get("metadata", {}).get("labels", {})
             if target not in {labels.get("app"), labels.get("app.kubernetes.io/name")}:
@@ -606,13 +607,34 @@ class F7InjectionValidator:
                 and status.get("ready") is True
                 for status in statuses
             )
-            if resource_match and ready:
-                matching_pods.append(pod)
-        if not matching_pods:
+            if resource_match:
+                (ready_pods if ready else unready_pods).append(pod)
+
+        # F7-t4 deliberately constrains the Java adservice startup path to 5m.
+        # Its preregistered symptom is a non-ready rollout, unlike the other
+        # CPU-throttle trials whose target pod must remain Ready.  Accept that
+        # symptom only for the exact t4/adservice/5m identity; a generic
+        # unready pod is never evidence of a successful CPU-throttle injection.
+        startup_starvation = (
+            fault_id == "F7"
+            and trial == 4
+            and target == "adservice"
+            and requested == "5m"
+        )
+        if startup_starvation and unready_pods:
+            return {
+                "status": "verified", "target_service": target,
+                "cpu_limit": requested, "ready_pods": len(ready_pods),
+                "unready_pods": len(unready_pods),
+                "treatment_basis": "java-startup-cpu-starvation",
+            }
+        if not ready_pods:
             raise PilotError("post-injection live target pod is not Ready with requested CPU")
         return {
             "status": "verified", "target_service": target,
-            "cpu_limit": requested, "ready_pods": len(matching_pods),
+            "cpu_limit": requested, "ready_pods": len(ready_pods),
+            "unready_pods": len(unready_pods),
+            "treatment_basis": "ready-cpu-throttle",
         }
 
 

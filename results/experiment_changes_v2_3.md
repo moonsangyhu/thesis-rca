@@ -555,3 +555,12 @@
 - **수정 내용**: 정확히 `Copilot SDK emitted malformed JSONL`인 경우에만, 첫 시도·완전 usage/model/AIC receipt·zero side-effect empty mode 조건을 모두 만족할 때 1회 재시도한다. 두 번째 실패 또는 불완전 usage는 기존처럼 fail-closed하며, 재시도 비용은 논리 호출 AIC에 합산된다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/shared/copilot_sdk.py:1`, `experiments/v2_3/live_caller.py:1`, `tests/test_v2_3_live_caller.py:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: targeted 27 PASS, `git diff --check` PASS. Primary23은 불완전 artifact로 보존하고 fresh campaign에서 처음부터 재실행한다.
+
+### 63. F7-t4 Java startup CPU-starvation 처치 검증 분기 — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary24는 33 incidents·99 rows/raw·1,188 validated calls를 정상 commit한 뒤 F7 t4에서 CPU 5m adservice rollout이 Ready가 아니어서 Copilot 호출 전 fail-closed했다.
+- **원인**: F7 validator가 모든 trial에 Ready target pod를 요구했다. 그러나 t4 ground truth는 Java adservice의 5m startup starvation과 수 분 startup 지연을 사전 정의한다.
+- **수정 내용**: exact deployment CPU limit/request·target/container identity는 유지한 채, `F7/t4/adservice/5m`에서만 resource-matched non-ready pod를 `java-startup-cpu-starvation` 처치 basis로 검증한다. 다른 F7 trial의 non-ready pod는 계속 거부한다.
+- **수정 파일**: `experiments/v2_3/live_runner.py:588`, `tests/test_v2_3_live_runner.py:818`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — targeted live-runner 61 PASS, pycompile·diff-check PASS. Primary24은 불완전 artifact로 보존하고 clean commit 후 fresh campaign을 처음부터 재시작한다.
