@@ -15,8 +15,10 @@ from .live_runner import FluxAppGuard, FluxHierarchyGuard, PilotError
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
-def build_live_flux_guard() -> FluxHierarchyGuard:
-    """Build the production root/app hierarchy guard with CAS patches."""
+def build_live_flux_guard(child_name: str = "app") -> FluxHierarchyGuard:
+    """Build the production root/child hierarchy guard with CAS patches."""
+    if child_name not in {"app", "infrastructure"}:
+        raise PilotError("unsupported Flux child Kustomization")
     from scripts.fault_inject.base import kubectl, kubectl_get_json
 
     def guard_for(name: str) -> FluxAppGuard:
@@ -52,7 +54,7 @@ def build_live_flux_guard() -> FluxHierarchyGuard:
                 guard.verify_suspended(receipt)
 
     return FluxHierarchyGuard(
-        guard_for("flux-system"), guard_for("app"), settle=settle
+        guard_for("flux-system"), guard_for(child_name), settle=settle
     )
 
 
@@ -219,7 +221,14 @@ def restore_campaign(
     events = _durable_events(resolved)
     active_events = _active_incident_events(events)
     flux_receipt = _effective_flux_receipt(active_events)
-    active_guard = guard or build_live_flux_guard()
+    if guard is None:
+        child = flux_receipt.get("app", flux_receipt)
+        child_name = child.get("flux_name") if isinstance(child, dict) else None
+        if child_name not in {"app", "infrastructure"}:
+            raise PilotError("sealed Flux child identity is unsupported")
+        active_guard = build_live_flux_guard(child_name)
+    else:
+        active_guard = guard
     if recovery is None:
         from scripts.stabilize import Recovery
 

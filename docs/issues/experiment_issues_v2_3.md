@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 36건
-- 심각(실험 무효화): 32건
+- 총 이슈: 37건
+- 심각(실험 무효화): 33건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -454,3 +454,14 @@
 - **근본 원인**: scanner는 separator를 제거한 compact 비교로 `NodeNotReady`와 `node not ready`를 동일 금지어로 탐지하지만, procedure masker는 single-token `NodeNotReady`를 contiguous form으로만 마스킹했다. 따라서 corpus의 spaced/punctuated serialization이 masker를 통과한 뒤 최종 scanner에서 차단됐다. 이는 실제 ground-truth label 누출을 올바르게 fail-close한 것이며 ISS-035의 짧은 harness-ID false-positive와 다른 원인이다.
 - **수정 내용**: masker의 non-regex forbidden term을 scanner와 같은 boundaryless compact semantics로 결합한다. 일반 term은 compact length 4 이상, harness/field value는 2 이상일 때 각 문자 사이 Unicode punctuation/spacing/underscore를 허용하고 접두·접미 문자열 내부에서도 마스킹한다. 동일 normalized term이 여러 category에 있으면 lexicon category 순서로 deterministic precedence를 고정한다. `NodeNotReady`의 spaced/embedded 변형 회귀에서 removed-span provenance, masked procedure hash, 최종 scanner 0건을 함께 검증하고 masker provenance를 `v2.3-procedure-mask-4`로 올린다.
 - **현재 영향**: targeted 78 PASS, 전체 276 PASS, dry-run 180 rows/2,160 calls·external0·filesystem0, pycompile·diff-check PASS다. append-only changelog·독립 리뷰·clean commit-push 후 새 campaign ID로 처음부터 재실행한다.
+
+### [ISS-037] F5-t3 local-path provisioner 처치가 Flux infrastructure reconciliation으로 소실
+
+- **카테고리**: injection / GitOps recovery guard
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260817-primary20`은 F1–F4 및 F5 t1–t2의 22 incidents·66 rows/raw·792 validated calls를 commit한 뒤 F5 t3에서 모델 호출 전에 중단됐다. 이 캠페인의 부분 결과는 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회.
+- **관찰한 사실**: F5 t3은 `injection_started` 뒤 약 90초에 `PilotError: F5 provisioner treatment is absent`로 fail-closed했고, `flux_restored→recovery_green`을 기록했다. 실패 trial은 attempt/charged/call ledger 증가 없이 종료했고, 이후 `local-path-storage/local-path-provisioner` Deployment는 replicas=1이었다. 해당 Deployment에는 `kustomize.toolkit.fluxcd.io/name=infrastructure` 라벨이 있다.
+- **근본 원인**: runner는 Flux `flux-system` root와 `app` child만 suspend했다. local-path provisioner는 sibling `infrastructure` Kustomization이 관리하므로, app guard만으로는 `replicas=0` 처치를 validator 시점까지 유지할 수 없었다. controller actor audit은 별도로 보존하지 않아 reconciliation 시점 자체는 라벨·관측 상태에 근거한 추론이다.
+- **현재 영향**: 자동 recovery 후 nodes 6/6 Ready, Boutique 12/12 Running, Flux Kustomizations 5/5 Ready를 확인했다. primary20 artifact는 append-only로 보존하며 fresh campaign과 결합하지 않는다.
+- **수정 방안**: F5 t3에만 root→`infrastructure` Flux hierarchy guard를 사용하고, recovery/emergency restore는 sealed child receipt의 `flux_name`에서 `app` 또는 `infrastructure` guard를 선택한다. 이외 fault는 기존 root→app guard를 유지한다. targeted tests·clean commit 뒤 fresh campaign으로 처음부터 재실행한다.

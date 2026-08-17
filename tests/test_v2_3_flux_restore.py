@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from experiments.v2_3.flux_restore import restore_campaign
+from experiments.v2_3.flux_restore import build_live_flux_guard, restore_campaign
 from experiments.v2_3.live_runner import PilotError
 
 
@@ -113,6 +113,31 @@ class FluxEmergencyRestoreTests(unittest.TestCase):
                     campaign, guard=guard, recovery=FakeEmergencyRecovery()
                 )
             self.assertEqual(guard.receipts, [refreshed])
+
+    def test_live_guard_accepts_only_supported_child_kustomizations(self):
+        with self.assertRaisesRegex(PilotError, "unsupported Flux child"):
+            build_live_flux_guard("unrelated")
+
+    def test_emergency_restore_builds_infrastructure_guard_from_sealed_child(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project = Path(temp_dir)
+            campaign, receipt = self.make_campaign(project)
+            hierarchy = {
+                "flux_hierarchy_schema": "v2.3-flux-hierarchy-1",
+                "root": {**receipt, "flux_name": "flux-system"},
+                "app": {**receipt, "flux_name": "infrastructure"},
+            }
+            events_path = campaign / "campaign_events.jsonl"
+            events = [json.loads(line) for line in events_path.read_text().splitlines()]
+            events[0]["recovery_context"] = hierarchy
+            events_path.write_text("\n".join(json.dumps(event) for event in events) + "\n")
+            guard = FakeEmergencyGuard()
+            with patch("experiments.v2_3.flux_restore.PROJECT_ROOT", project), patch(
+                "experiments.v2_3.flux_restore.build_live_flux_guard", return_value=guard
+            ) as factory:
+                restore_campaign(campaign, recovery=FakeEmergencyRecovery())
+            factory.assert_called_once_with("infrastructure")
+            self.assertEqual(guard.receipts, [hierarchy])
 
     def test_restore_uses_last_bounded_refreshed_child_receipt(self):
         with tempfile.TemporaryDirectory() as temp_dir:

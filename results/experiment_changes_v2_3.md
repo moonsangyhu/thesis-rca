@@ -521,3 +521,12 @@
 - **수정 내용**: non-regex masker가 scanner와 동일한 boundaryless compact minimum 및 문자 사이 Unicode separator 허용 규칙을 사용하도록 맞췄다. `NodeNotReady`의 spaced/embedded corpus 표현을 마스킹하고, 동일 term의 category precedence를 deterministic하게 고정해 removed-span provenance와 post-mask scanner clean을 검증한다. masker version은 `v2.3-procedure-mask-4`로 올렸다.
 - **수정 파일**: `experiments/v2_3/retrieval.py:1`, `tests/test_v2_3_retrieval.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — targeted 78 PASS, 전체 276 PASS, dry-run 180/2,160 external0/fs0, pycompile·diff-check PASS. Primary19 F4-t5는 calls/AIC 증가 없이 exact Flux restore·recovery_green 후 종료됐으며 fresh campaign 재실행 예정.
+
+### 59. F5-t3 infrastructure Flux guard 분리 — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary20은 22 incidents·66 rows/raw·792 calls를 정상 commit한 뒤 F5 t3에서 `F5 provisioner treatment is absent`로 Copilot 호출 전 중단됐다. runner가 root→app만 suspend한 동안 local-path provisioner의 replicas가 1로 복귀했다.
+- **원인**: local-path provisioner Deployment는 Flux `infrastructure` Kustomization이 관리하지만, 기존 hierarchy guard의 child identity는 `app`으로 고정돼 있었다. 따라서 F5 t3의 `replicas=0` scale 처치가 sibling reconciliation으로 소실될 수 있었다.
+- **수정 내용**: production Flux guard builder가 허용 목록의 `app` 또는 `infrastructure` child를 명시적으로 선택하게 했다. incident runner는 F5 t3에서만 root→infrastructure CAS suspend·exact restore를 사용하고 나머지 incidents는 root→app guard를 계속 사용한다. SIGKILL emergency restore는 sealed child receipt를 읽어 동일 child guard를 재구성하며, unsupported child identity는 fail-closed한다.
+- **수정 파일**: `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/flux_restore.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/run.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_flux_restore.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — targeted 87 PASS 및 `git diff --check` PASS. Primary20은 불완전 artifact로 보존하고 clean revision에서 fresh campaign을 처음부터 재실행한다.

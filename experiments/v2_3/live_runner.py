@@ -937,6 +937,7 @@ class PilotIncidentRunner:
     retriever: RuntimeOnlyRetriever
     store: PilotOutputStore
     allowed_incidents: frozenset[tuple[str, int]] | None = None
+    infrastructure_flux_guard: object | None = None
     renderer: RuntimeEvidenceRenderer = RuntimeEvidenceRenderer()
     sleep_fn: Callable[[float], None] = __import__("time").sleep
     monotonic_fn: Callable[[], float] = time.monotonic
@@ -962,6 +963,19 @@ class PilotIncidentRunner:
         if getattr(validation, "status", None) not in {"clean", "corrected"}:
             raise PilotError("pre-injection cluster state is not GREEN")
 
+        # F5-t3 mutates the local-path provisioner, which is reconciled by the
+        # sibling Flux ``infrastructure`` Kustomization rather than ``app``.
+        # Suspending only app lets that controller erase the treatment before
+        # its validator observes it.  Keep this narrower guard isolated to the
+        # one affected intervention; all other incidents retain app guarding.
+        active_flux_guard = (
+            self.infrastructure_flux_guard
+            if (fault_id, trial) == ("F5", 3)
+            else self.flux_guard
+        )
+        if active_flux_guard is None:
+            raise PilotError("F5 trial 3 requires an infrastructure Flux guard")
+
         flux_context: dict = {}
         flux_attempted = False
         injection_result: dict = {}
@@ -969,7 +983,7 @@ class PilotIncidentRunner:
         primary_error: BaseException | None = None
         pending: tuple[list[dict], list[dict], list[dict]] | None = None
         try:
-            prepare_flux = getattr(self.flux_guard, "prepare_recovery_context", None)
+            prepare_flux = getattr(active_flux_guard, "prepare_recovery_context", None)
             if not callable(prepare_flux):
                 raise PilotError("Flux guard lacks durable recovery receipt support")
             prepared_flux = prepare_flux()
@@ -1005,14 +1019,14 @@ class PilotIncidentRunner:
                 flux_context = json.loads(candidate)
 
             suspend_with_observer = getattr(
-                self.flux_guard, "suspend_with_receipt_observer", None
+                active_flux_guard, "suspend_with_receipt_observer", None
             )
             if callable(suspend_with_observer):
                 suspended_context = suspend_with_observer(
                     json.loads(sealed_flux), seal_refreshed_flux
                 )
             else:
-                suspended_context = self.flux_guard.suspend(json.loads(sealed_flux))
+                suspended_context = active_flux_guard.suspend(json.loads(sealed_flux))
             returned_flux = json.dumps(
                 suspended_context, ensure_ascii=False, sort_keys=True,
                 separators=(",", ":"),
@@ -1148,7 +1162,7 @@ class PilotIncidentRunner:
                 recovery_errors.append(recovery_error)
         if flux_attempted:
             try:
-                flux_restore = self.flux_guard.restore(flux_context)
+                flux_restore = active_flux_guard.restore(flux_context)
                 if (
                     flux_restore.get("flux_restored") is not True
                     or flux_restore.get("flux_exact_original") is not True
