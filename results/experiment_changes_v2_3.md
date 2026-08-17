@@ -530,3 +530,11 @@
 - **수정 내용**: production Flux guard builder가 허용 목록의 `app` 또는 `infrastructure` child를 명시적으로 선택하게 했다. incident runner는 F5 t3에서만 root→infrastructure CAS suspend·exact restore를 사용하고 나머지 incidents는 root→app guard를 계속 사용한다. SIGKILL emergency restore는 sealed child receipt를 읽어 동일 child guard를 재구성하며, unsupported child identity는 fail-closed한다.
 - **수정 파일**: `experiments/v2_3/live_runner.py:1`, `experiments/v2_3/flux_restore.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/run.py:1`, `tests/test_v2_3_live_runner.py:1`, `tests/test_v2_3_flux_restore.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — targeted 87 PASS 및 `git diff --check` PASS. Primary20은 불완전 artifact로 보존하고 clean revision에서 fresh campaign을 처음부터 재실행한다.
+
+### 60. F5-t3 infrastructure guard 모델 프리 lifecycle gate — 2026-08-17
+
+- **수정 에이전트**: @Codex
+- **검증 내용**: clean `d11c726`에서 Copilot 없이 F5-t3 production guard를 실행했다. root→`infrastructure` suspend 뒤 local-path provisioner replicas=0과 `storage-probe-pvc=Pending`을 90초 후 확인했다.
+- **복구/안전**: `Recovery().recover(F5,3)` 뒤 child→root Flux CAS exact restore와 recovery GREEN을 확인했다. local-path provisioner는 1/1로 복원됐고, probe artifact `artifacts/v2_3_main/v2-3-f5t3-probe-20260817-055642/campaign_events.jsonl`의 SHA-256은 `c463f29b4f827fab36a5912eed5ef5a14994d35dc98beeea5aafe78ea8fe8500`이다.
+- **수정 파일**: `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/review_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: GREEN — model_calls=0, AIC=0. fresh primary campaign은 새 ID에서 처음부터 실행한다.

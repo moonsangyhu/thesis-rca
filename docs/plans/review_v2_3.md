@@ -121,7 +121,7 @@ F1 × trial 1은 기능 검증에는 적합하지만 비용 stress test로는 �
 - 과거 수동 증빙과 현재 서버 정책의 drift를 막기 위해 공식 SDK의 비추론 `account.getQuota`도 K8s import 전과 매 model subprocess 전에 조회한다. 두 exhausted-quota/overage 허용 flag가 모두 false이고 추가 사용량·entitlement가 0일 때만 진행한다.
 - **2026-08-12/16 실행 결정:** 사용자가 별도 과금 가능성을 차단 사유에서 제외했으므로 본실험은 `paid-overage-user-authorized` 모드로 실행한다. 위 zero-overage 조건은 legacy mode에만 적용한다. paid 본실험은 비결정적 SDK quota 조회를 수행하지 않고 active GitHub login을 campaign 시작 시 결합하며, manifest에 quota 미조회 사유를 기록한다. 30 AIC session limit과 charge journal은 유지한다.
 - Copilot CLI 1.0.78의 세션 상한 최소값 30 AIC를 사용하되, 다음 호출 전에 해당 30 AIC를 campaign 잔여 상한에서 예약해 누적 최악값이 360 AIC를 넘으면 subprocess를 시작하지 않는다.
-- F7 live patch가 Flux reconcile로 소실될 수 있으므로 상위 `flux-system`과 그 관리 대상 `app` Kustomization을 root→child 순서로 incident 동안만 suspend한다. 두 원래 suspend field의 존재 여부와 값을 mutation 전에 fsync하고, F7 desired state 복구 뒤 child→root를 정확히 원복하지 못하면 결과를 commit하지 않는다. 이 조치는 세 arm 공통이지만 active reconciliation 환경에 대한 외적 타당성 한계로 보고한다.
+- live patch가 Flux reconcile로 소실될 수 있으므로 상위 `flux-system`과 그 관리 child Kustomization을 root→child 순서로 incident 동안만 suspend한다. 기본 child는 `app`이며, local-path provisioner를 scale하는 F5-t3만 `infrastructure`를 선택한다. 두 원래 suspend field의 존재 여부와 값을 mutation 전에 fsync하고, fault desired state 복구 뒤 child→root를 정확히 원복하지 못하면 결과를 commit하지 않는다. 이 조치는 세 arm 공통이지만 active reconciliation 환경에 대한 외적 타당성 한계로 보고한다.
 
 ## 8. 대안 가설
 

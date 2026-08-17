@@ -305,7 +305,7 @@ recovery gate GREEN
 - `boutique` workload가 사전 정의 replica/Ready 상태
 - injection object·patch·traffic control·network policy·node mutation 잔류 0건
 - Prometheus·Loki와 K8s API health 정상, 수집 window query 성공
-- Flux/ArgoCD가 환경 오염을 만들지 않는 정상 상태; GitOps 정보는 모델 context에 넣지 않음. 다만 live patch fault가 reconcile로 소실되는 것을 막기 위해 상위 `flux-system`과 하위 `app` Kustomization을 root→child 순서로 incident 동안 일시 suspend하고, 두 객체의 원래 field 존재 여부·값을 durable hierarchy receipt로 봉인해 recovery 후 child→root 순서로 정확히 복원한다.
+- Flux/ArgoCD가 환경 오염을 만들지 않는 정상 상태; GitOps 정보는 모델 context에 넣지 않음. live patch fault가 reconcile로 소실되는 것을 막기 위해 상위 `flux-system`과 관리 child Kustomization을 root→child 순서로 incident 동안 일시 suspend하고, 두 객체의 원래 field 존재 여부·값을 durable hierarchy receipt로 봉인해 recovery 후 child→root 순서로 정확히 복원한다. 기본 child는 `app`이고, local-path provisioner를 직접 scale하는 F5-t3만 sibling `infrastructure` child를 사용한다. child identity가 sealed receipt와 일치하지 않으면 fail-closed한다.
 - recovery manifest path와 대상 revision/hash가 계획값과 일치
 - 이전 trial marker와 low-quality signal 0건
 
@@ -362,7 +362,7 @@ dry-run과 코드 리뷰를 통과한 뒤, 라이브 fault injection에 대한 �
 
 파일럿 후 prompt/masker/길이/collector를 수정하면 파일럿을 폐기하고 dry-run부터 다시 승인받는다.
 
-Flux 일시 suspend는 세 condition 모두에 공통으로 적용되므로 RAG 독립변수 차이를 만들지는 않지만, active reconciliation이 동작하는 production 환경으로의 외적 타당성을 제한한다. 따라서 결과는 “reconciliation이 정지된 통제 incident”로 명시하며 GitOps 효과에 관한 근거로 사용하지 않는다.
+Flux 일시 suspend는 세 condition 모두에 공통으로 적용되므로 RAG 독립변수 차이를 만들지는 않지만, active reconciliation이 동작하는 production 환경으로의 외적 타당성을 제한한다. 기본적으로 `app`, F5-t3에서는 `infrastructure` child까지 일시 정지한 “reconciliation이 정지된 통제 incident”로 결과를 명시하며 GitOps 효과에 관한 근거로 사용하지 않는다.
 
 ### 8.5 AIC budget stop rule
 
