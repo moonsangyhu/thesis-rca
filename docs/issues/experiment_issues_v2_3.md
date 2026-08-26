@@ -2,9 +2,9 @@
 
 ## 요약
 
-- 총 이슈: 43건
-- 심각(실험 무효화): 39건
-- 경고(실행 전 수정): 3건
+- 총 이슈: 46건
+- 심각(실험 무효화): 40건
+- 경고(실행 전 수정): 5건
 - 참고(영향 미미): 1건
 
 ## 이슈 목록
@@ -550,3 +550,14 @@
 - **근본 원인**: runner는 `injection_started`와 wait 이후의 `injection_verified`만 journal에 남겼다. F1/F2 등 fixed wait fault의 현재 phase·계획된 deadline을 durable하게 알 수 없었다.
 - **수정 내용**: injection 결과의 typed/bounded wait interval을 검증한 뒤, blocking wait 이전에 `injection_observation_started` event를 fsync한다. event에는 fault/trial, `wait_seconds`, F4 t3의 `bounded-poll` 또는 기타 fault의 `fixed-wait` mode만 기록한다. event append 실패는 기존 mandatory recovery 경로로 fail-closed한다.
 - **현재 영향**: live runner/main campaign 및 SDK/live caller targeted 91 tests와 전체 회귀를 clean revision에서 재확인한 뒤, fresh campaign을 F1 t1부터 시작한다.
+
+### [ISS-046] Terra SDK 호출이 180초 inference deadline을 초과
+
+- **카테고리**: infra / code / execution
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260827-primary29`은 F1–F2 전체와 F3 t1–t2까지 12 incidents·36 rows/raw·432 validated calls를 commit한 뒤 F3 t3에서 중단됐다. 불완전 campaign 전체는 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회, F3 t3 호출 1회.
+- **관찰한 사실**: 마지막 성공 호출은 140.236초였고, 다음 SDK subprocess는 229.938초 뒤 `timed_out=true`, `actual_model/AIC=null`, `usage_metadata_complete=false` durable receipt를 남겼다. runner는 `incident_failed(LiveCallerError)` 뒤 Flux root/app exact-original CAS restore와 `recovery_green`을 기록했다. commit boundary는 12/60, 36 rows/raw, attempt/call/charged는 447/432/448이다.
+- **근본 원인**: Terra 서비스 지연이 SDK의 180초 inference deadline과 30초 cleanup grace를 넘었다. watchdog과 charged receipt·복구는 의도대로 fail-closed했지만, 현재 실측 지연분포에는 deadline 여유가 부족했다.
+- **수정 내용**: 본실험 전용 SDK inference deadline을 300초로 확대하고, manifest schema v5에 `copilot_inference_timeout_seconds=300`을 봉인한다. SDK의 process-group watchdog·30초 cleanup grace, 30 AIC session cap, incomplete-usage hard-stop, model/tool/skill isolation은 유지한다.
+- **현재 영향**: Primary29 artifact는 append-only로 보존하고 fresh campaign에서 F1 t1부터 재시작한다. main wiring·SDK·live caller 29 tests와 180-row/2,160-call offline dry-run으로 변경을 검증한다.
