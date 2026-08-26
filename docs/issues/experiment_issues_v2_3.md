@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 47건
-- 심각(실험 무효화): 41건
+- 총 이슈: 48건
+- 심각(실험 무효화): 42건
 - 경고(실행 전 수정): 5건
 - 참고(영향 미미): 1건
 
@@ -584,3 +584,14 @@
 - **후속 관찰·수정(append-only, 2026-08-27)**: `primary35`는 authorization event 뒤 preflight의 read-only `kubectl get`가 Torch 이후 `start_new_session=True` fork 경로에서 정체했다. operator interrupt 전 Flux/처치/Copilot/ledger/result는 0이고 app/root는 exact unsuspended·Ready였다. infra helper의 `kubectl`은 absolute executable·`close_fds=False`·direct child termination으로 바꾸어 macOS `posix_spawn`을 사용한다. local port-forward 재연결도 shell pipeline 없이 absolute `lsof`/`kubectl`과 explicit listener PID SIGTERM으로 보강했다.
 
 - **후속 관찰·수정(append-only, 2026-08-27)**: `primary36`은 artifact 전 active-account `gh api user`가 timeout으로 중단됐으나 독립 shell probe는 1.31초로 정상이었다. helper가 `start_new_session=True`로 fork를 강제한 것이 원인이며, account probe도 absolute `gh`·`close_fds=False`와 direct child kill로 전환했다. 해당 campaign은 artifact·fault·Copilot·AIC가 0이다.
+
+### [ISS-048] Copilot SDK가 null overage entitlement 인증 응답을 거부
+
+- **카테고리**: infra / code / execution
+- **심각도**: critical (P0)
+- **영향**: `v2-3-main-20260827-primary39`은 F1 t1–t5와 F2 t1–t3의 8 incidents·24 rows/raw·288 validated calls를 commit한 뒤 F2 t4에서 중단됐다. F2 t4의 25 successful attempt와 1 pre-session 실패 attempt는 durable ledgers에 남았으나 result/raw/call ledger에는 commit되지 않았다. 불완전 campaign 전체는 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회, F2 t4의 runtime condition 다음 session creation.
+- **관찰한 사실**: official SDK의 `session.create`가 모델 호출 전 `quota_snapshots.{chat,completions,premium_interactions}.overage_entitlement: Expected number, received null`로 exit 1을 냈다. 실패 receipt는 `actual_model/AIC/output_tokens=null`, `usage_metadata_complete=false`였고, 이어 `incident_failed(LiveCallerError) → flux_restored(exact original/CAS) → recovery_green`이 기록됐다. nodes 6/6 Ready, Flux 5/5 Ready, Boutique 정상으로 복구됐다.
+- **근본 원인**: GitHub CLI가 business-seat 계정의 세 overage entitlement field를 null로 직렬화했고, pinned Copilot SDK 1.0.77이 이를 number-only schema로 검증해 session creation을 거부했다. 이 경로는 session/model/tool/usage event가 생성되기 전이다.
+- **수정 내용**: runner의 sole `thesis.sdk.error`가 관측된 완전한 세-field null message와 exact schema에 일치할 때에만 zero-usage receipt로 봉인하고 최대 1회 재시도한다. 추가 event, message drift, 일반 인증 오류, usage/model/tool event가 있으면 기존처럼 fail-closed한다. Live caller는 이 새 failure code에도 zero AIC·zero premium·complete usage가 모두 성립할 때만 재시도한다.
+- **현재 영향**: primary39 artifact는 append-only로 보존·배제한다. SDK/live caller regression을 통과하고, read-only quota/auth preflight를 재검증한 clean revision에서 fresh main campaign을 새 ID로 시작한다.

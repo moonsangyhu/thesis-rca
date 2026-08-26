@@ -22,6 +22,7 @@ from .copilot_cli import (
     DEFAULT_COPILOT_MODEL,
     MIN_COPILOT_SESSION_AIC,
     RETRYABLE_MALFORMED_JSONL_FAILURE_CODE,
+    RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE,
     RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
     CopilotCLIError,
     CopilotCLIResponse,
@@ -42,6 +43,14 @@ SDK_RUNNER_REAP_SECONDS = 15
 ZERO_USAGE_AUTH_MESSAGE = (
     "Execution failed: Error: Session was not created with authentication info "
     "or custom provider"
+)
+QUOTA_NULL_AUTH_MESSAGE = (
+    "Request session.create failed with message: Authentication failed: "
+    "Failed to fetch GitHub CLI user login: response validation failed: "
+    "quota_snapshots.chat.overage_entitlement: Expected number, received null\n"
+    "quota_snapshots.completions.overage_entitlement: Expected number, received null\n"
+    "quota_snapshots.premium_interactions.overage_entitlement: Expected number, "
+    "received null"
 )
 ZERO_USAGE_AUTH_EVENT_TYPES = frozenset({
     "session.start", "thesis.sdk.binding", "pending_messages.modified", "session.error",
@@ -226,7 +235,7 @@ class CopilotSDKBackend:
         )
         self._observe_charge(receipt)
         if completed.returncode != 0:
-            retryable_zero_usage_authentication = (
+            retryable_standard_zero_usage_authentication = (
                 self._is_retryable_zero_usage_auth_failure(
                     stdout,
                     expected_prompt=prompt,
@@ -236,6 +245,13 @@ class CopilotSDKBackend:
                     expected_working_directory=working_directory,
                 )
             )
+            retryable_quota_null_authentication = (
+                self._has_exact_quota_null_auth_pre_session_failure(stdout)
+            )
+            retryable_zero_usage_authentication = (
+                retryable_standard_zero_usage_authentication
+                or retryable_quota_null_authentication
+            )
             detail = (stderr or stdout).strip()[-2000:]
             raise CopilotCLIError(
                 f"Copilot SDK failed with exit code {completed.returncode}: {detail}",
@@ -244,8 +260,12 @@ class CopilotSDKBackend:
                     retryable_zero_usage_authentication
                 ),
                 failure_code=(
-                    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE
-                    if retryable_zero_usage_authentication else None
+                    RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE
+                    if retryable_quota_null_authentication
+                    else (
+                        RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE
+                        if retryable_standard_zero_usage_authentication else None
+                    )
                 ),
             )
         try:
@@ -457,7 +477,10 @@ class CopilotSDKBackend:
             and isinstance(premium, (int, float)) and not isinstance(premium, bool)
             and math.isfinite(premium) and premium >= 0
         )
-        if not complete and cls._has_exact_zero_usage_auth_shutdown(output):
+        if not complete and (
+            cls._has_exact_zero_usage_auth_shutdown(output)
+            or cls._has_exact_quota_null_auth_pre_session_failure(output)
+        ):
             return {
                 "actual_model": None,
                 "session_id": session_id,
@@ -474,6 +497,25 @@ class CopilotSDKBackend:
             "premium_requests": float(premium) if complete else None,
             "usage_metadata_complete": complete,
         }
+
+    @classmethod
+    def _has_exact_quota_null_auth_pre_session_failure(cls, output: str) -> bool:
+        """Recognize the observed no-session, no-usage auth-schema rejection."""
+        try:
+            records = cls._json_lines(output)
+        except RuntimeError:
+            return False
+        if len(records) != 1:
+            return False
+        record = records[0]
+        return (
+            set(record) == {"type", "schema_version", "message"}
+            and record.get("type") == "thesis.sdk.error"
+            and isinstance(record.get("schema_version"), int)
+            and not isinstance(record.get("schema_version"), bool)
+            and record["schema_version"] == SDK_RUNNER_SCHEMA
+            and record.get("message") == QUOTA_NULL_AUTH_MESSAGE
+        )
 
     @classmethod
     def _has_exact_zero_usage_auth_shutdown(cls, output: str) -> bool:

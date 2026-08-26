@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from experiments.shared.copilot_cli import (
     RETRYABLE_MALFORMED_JSONL_FAILURE_CODE,
+    RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE,
     RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
     CopilotCLIError,
     CopilotCLIResponse,
@@ -140,6 +141,24 @@ class RetryableZeroUsageAuthBackend(FakeBackend):
                 failure_code=RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
             )
         return super().call(prompt, system_prompt, max_tokens)
+
+
+class RetryableQuotaNullAuthBackend(RetryableZeroUsageAuthBackend):
+    def call(self, prompt, system_prompt, max_tokens):
+        if len(self.calls) == 0:
+            self.calls.append((prompt, system_prompt, max_tokens))
+            receipt = {
+                "attempt_id": "quota-null-auth", "ai_credits": 0.0,
+                "premium_requests": 0.0, "usage_metadata_complete": True,
+                "actual_model": None, "output_tokens": 0,
+            }
+            self.charge_observer(receipt)
+            raise CopilotCLIError(
+                "sealed quota-null pre-session failure", receipt,
+                retryable_zero_usage_authentication=True,
+                failure_code=RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE,
+            )
+        return FakeBackend.call(self, prompt, system_prompt, max_tokens)
 
 
 class LiveCallerTests(unittest.TestCase):
@@ -358,6 +377,27 @@ class LiveCallerTests(unittest.TestCase):
         )
 
         result = caller(invocation)
+
+        self.assertEqual(len(backend.calls), 2)
+        self.assertEqual(len(backend.receipts), 2)
+        self.assertAlmostEqual(caller.cumulative_aic, 0.1)
+        self.assertAlmostEqual(result.ledger_entry.ai_credits, 0.1)
+        self.assertAlmostEqual(result.ledger_entry.premium_requests, 1.0)
+
+    def test_quota_null_pre_session_failure_retries_once_without_usage(self):
+        backend = RetryableQuotaNullAuthBackend()
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+
+        result = caller(Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        ))
 
         self.assertEqual(len(backend.calls), 2)
         self.assertEqual(len(backend.receipts), 2)
