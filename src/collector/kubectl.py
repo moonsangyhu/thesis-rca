@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import shutil
 import subprocess
 from datetime import datetime, timezone
 
@@ -10,11 +11,16 @@ from .config import KUBECONFIG, KUBECTL, TARGET_NAMESPACE
 logger = logging.getLogger(__name__)
 
 
+def _kubectl_executable() -> str:
+    """Resolve kubectl before spawning so macOS uses posix_spawn after ML init."""
+    return shutil.which(KUBECTL) or KUBECTL
+
+
 def _run(args: list[str], timeout: int = 30) -> str:
     """Run kubectl command and return stdout."""
     env = os.environ.copy()
     env["KUBECONFIG"] = KUBECONFIG
-    cmd = [KUBECTL] + args
+    cmd = [_kubectl_executable()] + args
     try:
         result = subprocess.run(
             cmd,
@@ -22,6 +28,7 @@ def _run(args: list[str], timeout: int = 30) -> str:
             text=True,
             timeout=timeout,
             env=env,
+            close_fds=False,
         )
         if result.returncode != 0:
             logger.warning("kubectl error: %s", result.stderr.strip())

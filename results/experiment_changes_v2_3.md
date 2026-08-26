@@ -632,3 +632,12 @@
 - **수정 내용**: primary-only `PRIMARY_COPILOT_TIMEOUT_SECONDS=300`을 backend request와 parent watchdog에 전달하고, main manifest schema를 v5로 올려 timeout 값을 durable provenance로 기록한다. session AIC 30, fail-closed unknown usage, tool/skill/model isolation 및 처치 설계는 변경하지 않는다.
 - **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/main_campaign.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — main wiring·SDK·live caller 29 PASS, offline dry-run 180 rows/2,160 calls·external0·filesystem0, `git diff --check` PASS. Primary29은 append-only artifact로 보존하고 fresh main campaign을 새 ID에서 시작한다.
+
+### 72. Torch 초기화 후 macOS kubectl spawn 경로 보강 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary30/31은 local sentence-transformer/Torch 초기화 뒤 pre-injection state snapshot의 `kubectl` subprocess가 30초씩 정체했다. Primary31은 F1 t1 scheduled까지 기록했지만 Flux suspend·fault injection·Copilot/AIC·result/raw/ledger는 0이다.
+- **원인**: macOS Python에서 bare `kubectl`과 default `close_fds=True`는 fork/exec를 선택한다. native ML runtime thread가 존재하면 child exec errpipe 준비가 멈출 수 있었고, 같은 KUBECONFIG의 shell kubectl은 즉시 정상 응답했다.
+- **수정 내용**: fault injector, state validator, kubectl collector, GitOps collector가 각 command executable을 절대 경로로 resolve하고 `close_fds=False`를 전달해 `posix_spawn` 조건을 충족하게 했다. fault·corpus·retrieval/model·prompt·condition은 변경하지 않는다.
+- **수정 파일**: `scripts/fault_inject/base.py:1`, `scripts/stabilize/state_validator.py:1`, `src/collector/kubectl.py:1`, `src/collector/gitops.py:1`, `tests/test_kubectl_posix_spawn.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: unit/main/live-runner 65 PASS, pycompile·diff-check PASS. Torch-after-spawn read-only smoke는 model import 장기화 중 cluster mutation 전에 interrupt했고, fresh campaign의 F1 pre-injection snapshot으로 runtime 재검증한다.
