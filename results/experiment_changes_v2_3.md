@@ -658,3 +658,12 @@
 - **수정 내용**: `cwd`를 사용하지 않고 absolute Git command에 `-C <absolute-project-root>`를 넣어 동일한 repository binding과 clean-tree fail-closed 검사를 유지한다. 이로써 Git verifier의 executable absolute path, `close_fds=False`, `cwd=None`을 함께 고정한다.
 - **수정 파일**: `experiments/v2_3/run.py:1`, `tests/test_kubectl_posix_spawn.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: Git/Kubernetes spawn·storage/run 29 PASS, `py_compile`·`git diff --check` PASS, Loki `/ready` HTTP 200 재확인. 이전 incomplete artifact는 보존·배제하고 clean commit에서 새 campaign을 시작한다.
+
+### 75. Torch import 이전으로 Git clean-tree verifier 이동 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary33은 Git command shape를 #74처럼 고정했음에도 `_verified_git_revision()`의 status가 15초 timeout으로 종료했다. 별도 shell의 같은 status command는 0.20초였고 artifact·fault injection·Copilot·AIC는 0이다.
+- **원인**: `run_authorized_main()`이 Git verifier보다 먼저 `KnowledgeRetriever`를 포함한 local live dependency를 import해 Torch native runtime이 초기화될 수 있었다.
+- **수정 내용**: authorization revalidate 직후 Git verifier를 모든 live/ML dependency import보다 먼저 실행한다. 기존 `git -C`, absolute executable, `close_fds=False`, full SHA·clean-tree fail-closed 계약은 유지한다.
+- **수정 파일**: `experiments/v2_3/main_campaign.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: main wiring 1 PASS, `py_compile`·`git diff --check` PASS. 새 clean commit에서 fresh primary를 재시작해 runtime verifier를 확인한다.

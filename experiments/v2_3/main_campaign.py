@@ -26,6 +26,13 @@ def run_authorized_main(
     authorization.revalidate()
     project_root = Path(__file__).resolve().parents[2]
 
+    # This must precede every live/ML dependency import.  The local retriever
+    # initializes native Torch components; running Git afterwards can stall on
+    # macOS even when the command itself is otherwise spawn-safe.
+    from .run import _local_cli_build_identity, _verified_git_revision
+
+    git_revision = _verified_git_revision(project_root)
+
     # Local imports keep offline/dry-run imports free of live dependencies.
     from experiments.shared.copilot_identity import inspect_active_gh_account
     from experiments.shared.copilot_sdk import CopilotSDKBackend
@@ -49,9 +56,6 @@ def run_authorized_main(
         AttemptJournal, ChargedCallJournal, MainOutputStore,
         PilotIncidentRunner, RuntimeOnlyRetriever, snapshot_tree,
     )
-    from .run import _local_cli_build_identity, _verified_git_revision
-
-    git_revision = _verified_git_revision(project_root)
     output_dir = project_root / "artifacts" / "v2_3_main" / campaign_id
     paid_overage_authorized = authorization.billing_mode == PAID_OVERAGE_MODE
     if not paid_overage_authorized:
