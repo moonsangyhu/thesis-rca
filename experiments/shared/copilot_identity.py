@@ -25,6 +25,19 @@ class CopilotAccountIdentity:
         return asdict(self)
 
 
+def _is_retryable_identity_service_failure(
+    completed: subprocess.CompletedProcess[str],
+) -> bool:
+    """Recognize only GitHub's transient authenticated-API 503 response."""
+    if completed.returncode == 0:
+        return False
+    combined = f"{completed.stdout}\n{completed.stderr}"
+    return (
+        "HTTP 503" in combined
+        or "No server is currently available to service your request" in combined
+    )
+
+
 def _run_identity_probe(
     command: list[str], *, timeout_seconds: int
 ) -> subprocess.CompletedProcess[str]:
@@ -75,7 +88,14 @@ def inspect_active_gh_account(
                 [gh, "api", "user", "--jq", ".login"],
                 timeout_seconds=timeout_seconds,
             )
-            break
+            if completed.returncode == 0:
+                break
+            if (
+                _is_retryable_identity_service_failure(completed)
+                and attempt < timeout_retries
+            ):
+                continue
+            raise CopilotIdentityError("GitHub account probe failed before inference")
         except subprocess.TimeoutExpired as exc:
             if attempt == timeout_retries:
                 raise CopilotIdentityError(
