@@ -255,6 +255,16 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertEqual(len({row["runtime_context_hash"] for row in rows}), 1)
         events = [event for event, _ in runner.store.events]
         self.assertLess(events.index("flux_suspended"), events.index("injection_started"))
+        self.assertLess(
+            events.index("injection_started"),
+            events.index("injection_observation_started"),
+        )
+        observation = next(
+            details for event, details in runner.store.events
+            if event == "injection_observation_started"
+        )
+        self.assertEqual(observation["wait_seconds"], 0)
+        self.assertEqual(observation["mode"], "fixed-wait")
         self.assertLess(events.index("flux_restored"), events.index("recovery_green"))
         self.assertLess(events.index("recovery_green"), events.index("incident_committed"))
 
