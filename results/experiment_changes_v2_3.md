@@ -597,3 +597,11 @@
 - **수정 내용**: 특정 GitHub 503 diagnostic에만 최대 한 번 재시도한다. timeout retry 상한과 account mismatch·인증 오류·기타 process failure의 즉시 fail-closed 계약은 유지한다.
 - **수정 파일**: `experiments/shared/copilot_identity.py:1`, `tests/test_copilot_identity.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: targeted identity/main wiring 7 PASS. 전체 회귀·offline dry-run·clean commit 후 fresh primary26을 재실행한다.
+
+### 68. Primary25 Flux suspend 잔여의 exact-original 복구 — 2026-08-26
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary25 recovery failure 뒤 Flux `app`과 `flux-system` Kustomization이 `spec.suspend=true`로 남아 다음 campaign의 pre-injection guard를 차단했다.
+- **수정 내용**: Primary25 durable receipt의 original presence/value를 기준으로 두 `spec.suspend` field를 null merge-patch로 제거하고 reconcile을 요청했다. 양쪽은 new generation과 observedGeneration 일치·Ready=True까지 확인했다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: GREEN — 이번 복구 자체는 Copilot/AIC/fault injection/result를 생성하지 않았다. Primary26 pre-injection artifact는 제외하고 새 campaign ID로 재시작한다.
