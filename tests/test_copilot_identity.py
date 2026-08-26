@@ -67,9 +67,8 @@ class CopilotIdentityTests(unittest.TestCase):
                 inspect_active_gh_account(expected_login="researcher")
             self.assertEqual(probe.call_count, 1)
 
-    @patch("experiments.shared.copilot_identity.os.killpg")
     @patch("experiments.shared.copilot_identity.subprocess.Popen")
-    def test_timeout_and_interruption_kill_process_group(self, popen, killpg):
+    def test_timeout_and_interruption_kill_probe_process(self, popen):
         for exc in (
             subprocess.TimeoutExpired(cmd=["gh"], timeout=3), KeyboardInterrupt(),
         ):
@@ -78,7 +77,7 @@ class CopilotIdentityTests(unittest.TestCase):
             process.communicate.side_effect = (exc, ("", ""))
             with self.subTest(exc=type(exc).__name__), self.assertRaises(type(exc)):
                 _run_identity_probe(["gh"], timeout_seconds=3)
-            killpg.assert_called_with(4444, 9)
+            process.kill.assert_called_with()
             process.communicate.reset_mock()
 
     def test_invalid_contract_is_rejected(self):

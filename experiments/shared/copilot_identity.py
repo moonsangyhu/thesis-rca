@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 import re
-import signal
 import shutil
 import subprocess
 from dataclasses import asdict, dataclass
@@ -43,13 +42,15 @@ def _run_identity_probe(
 ) -> subprocess.CompletedProcess[str]:
     process = subprocess.Popen(
         command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        start_new_session=True,
+        # gh api user is one read-only CLI process, so direct timeout cleanup
+        # avoids macOS fork/exec after a native runtime has initialized.
+        close_fds=False,
     )
     try:
         stdout, stderr = process.communicate(timeout=timeout_seconds)
     except BaseException:
         try:
-            os.killpg(process.pid, signal.SIGKILL)
+            process.kill()
         except ProcessLookupError:
             pass
         process.communicate()

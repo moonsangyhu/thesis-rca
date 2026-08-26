@@ -683,3 +683,11 @@
 - **수정 내용**: `_run_kubectl_check()`를 absolute executable·`close_fds=False`·direct child `kill()` timeout cleanup으로 바꿔 `posix_spawn` 조건을 충족한다. local port-forward recovery도 shell pipeline을 제거하고 exact listening PID에 SIGTERM 후 absolute `kubectl`을 `close_fds=False`로 시작한다.
 - **수정 파일**: `experiments/shared/infra.py:1`, `tests/test_infra.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: infra/main wiring 6 PASS, `py_compile`·`git diff --check` PASS. 새 clean commit의 fresh campaign preflight에서 runtime 재검증한다.
+
+### 78. GitHub identity probe의 fork 경로 제거 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary36은 artifact 전 active-account probe가 timeout됐지만 동일 `gh api user` shell command는 1.31초로 성공했다.
+- **수정 내용**: read-only `gh` probe에서 process-group 생성 대신 absolute executable·`close_fds=False` 및 direct child timeout cleanup을 사용한다. expected-login identity와 bounded retry/fail-closed semantics는 유지한다.
+- **수정 파일**: `experiments/shared/copilot_identity.py:1`, `tests/test_copilot_identity.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: identity/main wiring 7 PASS, `py_compile`·`git diff --check` PASS. clean commit에서 fresh campaign으로 runtime 재검증한다.
