@@ -11,10 +11,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 from experiments.shared.copilot_cli import (
+    RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE,
     RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE, CopilotCLIError,
 )
 from experiments.shared.copilot_sdk import (
-    ZERO_USAGE_AUTH_MESSAGE, CopilotSDKBackend,
+    QUOTA_NULL_AUTH_MESSAGE, ZERO_USAGE_AUTH_MESSAGE, CopilotSDKBackend,
 )
 from experiments.v2_3.live_runner import ChargedCallJournal
 
@@ -244,6 +245,53 @@ class CopilotSDKBackendTest(unittest.TestCase):
         self.assertEqual(receipts[0]["output_tokens"], 0)
         self.assertEqual(receipts[0]["ai_credits"], 0.0)
         self.assertEqual(receipts[0]["premium_requests"], 0.0)
+
+    @patch("experiments.shared.copilot_sdk.shutil.which")
+    @patch.object(CopilotSDKBackend, "_run_runner")
+    def test_exact_quota_null_pre_session_failure_is_zero_usage_retryable(
+        self, run, which,
+    ):
+        which.side_effect = lambda name: f"/opt/bin/{name}"
+        prompt, system = "diagnose", "return JSON"
+        output = json.dumps({
+            "type": "thesis.sdk.error", "schema_version": 1,
+            "message": QUOTA_NULL_AUTH_MESSAGE,
+        })
+        run.return_value = (
+            subprocess.CompletedProcess(["node"], 1, output, ""), False,
+        )
+        receipts = []
+        with tempfile.TemporaryDirectory() as temp_dir:
+            backend = self.backend(temp_dir, charge_observer=receipts.append)
+            with self.assertRaises(CopilotCLIError) as raised:
+                backend.call(prompt, system, 128)
+
+        self.assertTrue(raised.exception.retryable_zero_usage_authentication)
+        self.assertEqual(
+            raised.exception.failure_code,
+            RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE,
+        )
+        self.assertEqual(len(receipts), 1)
+        self.assertEqual(receipts[0]["ai_credits"], 0.0)
+        self.assertEqual(receipts[0]["premium_requests"], 0.0)
+        self.assertTrue(receipts[0]["usage_metadata_complete"])
+
+    @patch("experiments.shared.copilot_sdk.shutil.which")
+    def test_quota_null_retry_match_rejects_any_extra_record_or_message_drift(self, which):
+        which.side_effect = lambda name: f"/opt/bin/{name}"
+        baseline = json.dumps({
+            "type": "thesis.sdk.error", "schema_version": 1,
+            "message": QUOTA_NULL_AUTH_MESSAGE,
+        })
+        with tempfile.TemporaryDirectory() as temp_dir:
+            backend = self.backend(temp_dir)
+            self.assertTrue(backend._has_exact_quota_null_auth_pre_session_failure(baseline))
+            self.assertFalse(backend._has_exact_quota_null_auth_pre_session_failure(
+                baseline + "\n" + json.dumps({"type": "assistant.usage"})
+            ))
+            self.assertFalse(backend._has_exact_quota_null_auth_pre_session_failure(
+                baseline.replace("received null", "received string", 1)
+            ))
 
     @patch("experiments.shared.copilot_sdk.shutil.which")
     def test_zero_usage_auth_retry_requires_exact_shutdown_and_binding(self, which):

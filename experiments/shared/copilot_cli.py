@@ -28,6 +28,11 @@ RETRYABLE_SKILL_METADATA_FAILURE_CODES = frozenset({
 })
 RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE = "sdk_auth_session_creation_zero_usage"
 RETRYABLE_MALFORMED_JSONL_FAILURE_CODE = "sdk_malformed_jsonl_complete_usage"
+# The official SDK can reject a session before it is created when GitHub's
+# account response serializes all three overage-entitlement fields as null.
+# This has no session, model, tool, or usage event, so it is eligible only for
+# the same bounded zero-usage retry contract as a sealed auth setup failure.
+RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE = "sdk_quota_null_auth_pre_session_zero_usage"
 
 
 class CopilotCLIError(RuntimeError):

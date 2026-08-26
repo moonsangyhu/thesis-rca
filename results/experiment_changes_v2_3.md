@@ -691,3 +691,12 @@
 - **수정 내용**: read-only `gh` probe에서 process-group 생성 대신 absolute executable·`close_fds=False` 및 direct child timeout cleanup을 사용한다. expected-login identity와 bounded retry/fail-closed semantics는 유지한다.
 - **수정 파일**: `experiments/shared/copilot_identity.py:1`, `tests/test_copilot_identity.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: identity/main wiring 7 PASS, `py_compile`·`git diff --check` PASS. clean commit에서 fresh campaign으로 runtime 재검증한다.
+
+### 79. null overage entitlement의 zero-usage SDK session 재시도 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary39 F2 t4에서 Copilot SDK 1.0.77이 GitHub CLI의 `quota_snapshots.*.overage_entitlement=null` 응답을 인증 schema 오류로 처리해 model call 전 session.create가 exit 1로 실패했다. 자동 복구는 GREEN이었지만 campaign은 8/60 incidents에서 불완전 종료됐다.
+- **원인**: official SDK가 세 overage entitlement field에 number를 요구하지만 business-seat server response가 일시적으로 null을 보냈다. 기존 retry predicate는 session.start/binding/shutdown을 포함한 다른 authentication lifecycle만 허용했다.
+- **수정 내용**: 정확히 하나의 `thesis.sdk.error`, schema v1, 그리고 관측된 세-field null message 전체가 일치할 때만 zero-AIC/zero-premium complete-usage receipt로 분류해 1회 재시도한다. extra record·message drift·일반 authentication failure·tool/model/usage event는 재시도하지 않는다.
+- **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/shared/copilot_sdk.py:1`, `experiments/v2_3/live_caller.py:1`, `tests/test_copilot_sdk.py:1`, `tests/test_v2_3_live_caller.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: SDK/live-caller targeted 31 PASS, `git diff --check` PASS. Primary39은 append-only artifact로 보존·배제하고, clean revision에서 read-only auth 확인 후 fresh campaign을 시작한다.

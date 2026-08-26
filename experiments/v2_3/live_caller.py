@@ -8,7 +8,9 @@ from dataclasses import dataclass
 
 from experiments.shared.copilot_cli import (
     CopilotCLIBackend, CopilotCLIError, RETRYABLE_SKILL_METADATA_FAILURE_CODES,
-    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE, RETRYABLE_MALFORMED_JSONL_FAILURE_CODE,
+    RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
+    RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE,
+    RETRYABLE_MALFORMED_JSONL_FAILURE_CODE,
 )
 
 from .authorization import LiveAuthorization
@@ -165,7 +167,10 @@ class AuthorizedTerraCaller:
                 retryable_zero_usage_auth = (
                     attempt == 0
                     and exc.retryable_zero_usage_authentication
-                    and exc.failure_code == RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE
+                    and exc.failure_code in {
+                        RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
+                        RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE,
+                    }
                     and known_charge and charged == 0
                     and exc.receipt.get("usage_metadata_complete") is True
                     and exc.receipt.get("actual_model") is None
