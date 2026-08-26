@@ -582,3 +582,5 @@
 - **후속 관찰·수정(append-only, 2026-08-27)**: `primary34`는 Git verifier는 통과했으나, 이후의 `gh api user` account identity probe가 Torch 이후 60초 timeout으로 fail-closed했다. output store 생성 전이므로 artifact·fault·Copilot·AIC는 0이다. GitHub account identity도 Git revision 직후, 모든 live/ML dependency import 전에 실행해 paid-overage account binding을 native runtime 전 완료하도록 이동한다.
 
 - **후속 관찰·수정(append-only, 2026-08-27)**: `primary35`는 authorization event 뒤 preflight의 read-only `kubectl get`가 Torch 이후 `start_new_session=True` fork 경로에서 정체했다. operator interrupt 전 Flux/처치/Copilot/ledger/result는 0이고 app/root는 exact unsuspended·Ready였다. infra helper의 `kubectl`은 absolute executable·`close_fds=False`·direct child termination으로 바꾸어 macOS `posix_spawn`을 사용한다. local port-forward 재연결도 shell pipeline 없이 absolute `lsof`/`kubectl`과 explicit listener PID SIGTERM으로 보강했다.
+
+- **후속 관찰·수정(append-only, 2026-08-27)**: `primary36`은 artifact 전 active-account `gh api user`가 timeout으로 중단됐으나 독립 shell probe는 1.31초로 정상이었다. helper가 `start_new_session=True`로 fork를 강제한 것이 원인이며, account probe도 absolute `gh`·`close_fds=False`와 direct child kill로 전환했다. 해당 campaign은 artifact·fault·Copilot·AIC가 0이다.
