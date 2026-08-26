@@ -32,9 +32,11 @@ def run_authorized_main(
     from .run import _local_cli_build_identity, _verified_git_revision
 
     git_revision = _verified_git_revision(project_root)
+    from experiments.shared.copilot_identity import inspect_active_gh_account
+
+    account = inspect_active_gh_account(expected_login=COPILOT_ACCOUNT_LOGIN)
 
     # Local imports keep offline/dry-run imports free of live dependencies.
-    from experiments.shared.copilot_identity import inspect_active_gh_account
     from experiments.shared.copilot_sdk import CopilotSDKBackend
     from experiments.shared.csv_io import load_ground_truth
     from experiments.shared.infra import preflight_check
@@ -68,12 +70,6 @@ def run_authorized_main(
         billing_execution_authorized=True,
     )
 
-    def account_check():
-        return inspect_active_gh_account(
-            expected_login=COPILOT_ACCOUNT_LOGIN,
-        )
-
-    account = account_check()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
     resolved_chroma = Path(chroma_dir).resolve(strict=True)

@@ -667,3 +667,11 @@
 - **수정 내용**: authorization revalidate 직후 Git verifier를 모든 live/ML dependency import보다 먼저 실행한다. 기존 `git -C`, absolute executable, `close_fds=False`, full SHA·clean-tree fail-closed 계약은 유지한다.
 - **수정 파일**: `experiments/v2_3/main_campaign.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: main wiring 1 PASS, `py_compile`·`git diff --check` PASS. 새 clean commit에서 fresh primary를 재시작해 runtime verifier를 확인한다.
+
+### 76. Torch 초기화 전 GitHub account identity를 봉인 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary34는 Git verifier는 통과했지만 `inspect_active_gh_account()`가 Torch 이후 timeout되어 main output store 전에 종료했다. 해당 실행은 artifact·fault injection·Copilot·AIC가 0이다.
+- **수정 내용**: expected GitHub login identity probe를 Git revision 직후로 옮겨 모든 live/ML dependency import 전에 실행한다. expected-login fail-closed 및 manifest의 startup active-account provenance는 그대로 유지한다.
+- **수정 파일**: `experiments/v2_3/main_campaign.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: main wiring 재검증 및 clean commit 뒤 fresh campaign에서 Git/account preflight를 함께 runtime 확인한다.
