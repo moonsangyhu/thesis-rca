@@ -33,7 +33,25 @@ class CopilotIdentityTests(unittest.TestCase):
 
     @patch("experiments.shared.copilot_identity.shutil.which", return_value="/usr/bin/gh")
     @patch("experiments.shared.copilot_identity._run_identity_probe")
-    def test_mismatch_and_process_failure_fail_closed_without_retry(self, probe, _which):
+    def test_transient_503_retries_once_then_binds_exact_account(self, probe, _which):
+        probe.side_effect = [
+            subprocess.CompletedProcess(
+                args=[], returncode=1, stdout="", stderr=(
+                    "gh: No server is currently available to service your request. "
+                    "(HTTP 503)"
+                ),
+            ),
+            subprocess.CompletedProcess(
+                args=[], returncode=0, stdout="researcher\n", stderr="",
+            ),
+        ]
+        identity = inspect_active_gh_account(expected_login="researcher")
+        self.assertEqual(identity.login, "researcher")
+        self.assertEqual(probe.call_count, 2)
+
+    @patch("experiments.shared.copilot_identity.shutil.which", return_value="/usr/bin/gh")
+    @patch("experiments.shared.copilot_identity._run_identity_probe")
+    def test_mismatch_and_non_retryable_process_failure_fail_closed_without_retry(self, probe, _which):
         for outcome in (
             subprocess.CompletedProcess(args=[], returncode=0, stdout="other\n", stderr=""),
             subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="x"),

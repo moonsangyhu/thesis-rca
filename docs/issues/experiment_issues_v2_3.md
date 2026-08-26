@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 41건
-- 심각(실험 무효화): 37건
+- 총 이슈: 42건
+- 심각(실험 무효화): 38건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -509,3 +509,13 @@
 - **현재 영향**: manual restore로 cartservice request 64Mi/limit 128Mi·1/1 Ready와 nodes/Flux GREEN을 확인했다. Primary25는 불완전 artifact로 보존한다.
 - **정정·검증 후속(append-only)**: 위의 “32 validated calls”는 정확하지 않다. artifact의 `attempt_call_ledger=32`, `charged_call_ledger=33`이지만 `call_ledger/result/raw=0/0/0`이므로 validated logical call은 0건이다. 마지막 1건은 210.711초 timeout·usage metadata incomplete이며, 알려진 32건 AIC 합계는 15.05945다. exact receipt recovery와 target-container injection을 추가 보강했고, F1 전용 4건을 포함한 전체 290 unittest, offline dry-run 180 rows/2,160 calls·external/filesystem 0, pycompile·diff-check를 통과했다. 새 primary는 model-free F1 lifecycle probe가 GREEN인 clean revision에서만 시작한다.
 - **model-free lifecycle 검증 후속(append-only)**: clean `ded79ce`에서 Copilot 호출 없이 F1-t1을 `32Mi`로 주입했다. pane-observed receipt는 `container=server`, original request/limit=`64Mi/128Mi`, wait=120초였다. 120초 뒤 desired resource는 `64Mi/128Mi`, cartservice는 1/1 Running으로 복원됐다. 동일 sealed receipt의 독립 recovery verification은 `{"action":"restore_memory_resources","health_check_passed":true,"target":"cartservice"}`를 반환했고 `comprehensive_health_check(max_retries=1)`도 `(True, [])`였다. 이 probe는 primary 결과·raw·Copilot/AIC를 생성하지 않았다.
+
+### [ISS-042] GitHub identity probe의 단발 503이 primary launch를 사전 중단
+
+- **카테고리**: infra / code
+- **심각도**: critical (P0)
+- **영향**: `primary26`의 두 launch가 artifact·Copilot call·fault injection 전에 중단됐다.
+- **관찰한 사실**: `gh auth status`는 active account `moonsangyhu`를 보였고 공개 GitHub API와 rate-limit API는 정상 응답했지만, 인증된 `gh api user`가 간헐적으로 HTTP 503을 반환했다. 한 번은 identity가 정상화된 뒤에도 15초 `git rev-parse HEAD` timeout으로 사전 중단됐다. 두 경로 모두 output artifact, AIC receipt, K8s mutation 0건이다.
+- **근본 원인**: identity verifier는 timeout만 최대 한 번 재시도하고 GitHub의 명시적 transient 503 nonzero 응답은 즉시 실패로 분류했다.
+- **수정 내용**: exact GitHub 503 diagnostic에만 timeout과 동일한 최대 한 번 retry를 허용한다. account mismatch·auth failure·다른 process failure는 계속 첫 시도에서 fail-closed한다.
+- **현재 영향**: identity unit과 main wiring 7 PASS, full regression·dry-run과 clean commit 뒤 fresh primary26 launch로 재검증한다.

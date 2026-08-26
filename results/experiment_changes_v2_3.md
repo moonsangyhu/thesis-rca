@@ -589,3 +589,11 @@
 - **복구/안전**: 같은 sealed receipt로 `Recovery().recover()`가 `restore_memory_resources`, `health_check_passed=true`를 반환했고 `comprehensive_health_check(max_retries=1)`은 `(True, [])`였다. 모델 호출·AIC·primary row/raw는 모두 0이다.
 - **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: GREEN — 새 full primary campaign을 clean commit에서 시작할 수 있다.
+
+### 67. GitHub identity 503 bounded retry — 2026-08-26
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: active GitHub account identity의 `gh api user`가 일시 HTTP 503을 반환하면, Copilot·fault injection 전에 primary launch가 즉시 중단됐다.
+- **수정 내용**: 특정 GitHub 503 diagnostic에만 최대 한 번 재시도한다. timeout retry 상한과 account mismatch·인증 오류·기타 process failure의 즉시 fail-closed 계약은 유지한다.
+- **수정 파일**: `experiments/shared/copilot_identity.py:1`, `tests/test_copilot_identity.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: targeted identity/main wiring 7 PASS. 전체 회귀·offline dry-run·clean commit 후 fresh primary26을 재실행한다.
