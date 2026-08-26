@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 42건
-- 심각(실험 무효화): 38건
+- 총 이슈: 43건
+- 심각(실험 무효화): 39건
 - 경고(실행 전 수정): 3건
 - 참고(영향 미미): 1건
 
@@ -519,3 +519,12 @@
 - **근본 원인**: identity verifier는 timeout만 최대 한 번 재시도하고 GitHub의 명시적 transient 503 nonzero 응답은 즉시 실패로 분류했다.
 - **수정 내용**: exact GitHub 503 diagnostic에만 timeout과 동일한 최대 한 번 retry를 허용한다. account mismatch·auth failure·다른 process failure는 계속 첫 시도에서 fail-closed한다.
 - **현재 영향**: identity unit과 main wiring 7 PASS, full regression·dry-run과 clean commit 뒤 fresh primary26 launch로 재검증한다.
+
+### [ISS-043] Primary25 recovery failure 뒤 Flux suspend 잔여
+
+- **카테고리**: recovery / infra
+- **심각도**: critical (P0)
+- **영향**: `primary26`은 authorization·preflight 뒤 첫 incident의 Flux receipt preparation에서 중단됐다. Copilot, AIC, fault injection은 0건이다.
+- **관찰한 사실**: Primary25 event는 `flux_suspended` 뒤 `recovery_failed`로 끝나고 `flux_restored` event가 없다. 2026-08-26 현재 Flux `app`과 `flux-system`의 `spec.suspend=true`가 남아 있었다. Primary25 sealed receipt는 양쪽의 original suspend field가 absent임을 기록한다.
+- **복구 조치**: exact-original semantics로 두 Kustomization의 `spec.suspend`를 merge-patch null로 제거하고 reconcile annotation을 요청했다. 양쪽 모두 new generation=observedGeneration, `Ready=True`, `ReconciliationSucceeded`로 확인했다.
+- **현재 영향**: Primary26의 pre-injection artifact는 append-only로 보존하며 primary estimand에 포함하지 않는다. 이후 실행은 새 campaign ID에서 full preflight부터 시작한다.
