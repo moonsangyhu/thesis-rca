@@ -572,3 +572,5 @@
 - **근본 원인**: macOS Python 3.11은 bare executable과 기본 `close_fds=True` 조합에서 fork/exec 경로를 사용한다. ML runtime thread가 초기화된 뒤 이 fork 경로의 child exec 준비가 정체될 수 있다. absolute executable과 `close_fds=False`이면 Python의 macOS `posix_spawn` 조건을 만족한다.
 - **수정 내용**: fault injector·state validator·kubectl/GitOps collector에서 executable을 절대 경로로 resolve하고 `close_fds=False`를 고정했다. 이는 model, corpus, retrieval query, fault schedule, context condition을 바꾸지 않는다.
 - **현재 영향**: 관련 regression 65개·syntax·diff 검사를 통과했다. 실제 Torch-after-spawn read-only smoke는 local import가 장기화되어 Copilot/cluster mutation 전에 interrupt했으므로, clean commit의 fresh campaign에서 F1 t1 pre-injection snapshot이 정상 진행되는지 재검증한다.
+
+- **후속 관찰·수정(append-only)**: spawn 보강 뒤 `primary32`는 artifact 생성 전 `_verified_git_revision()`의 bare `git status --porcelain`에서 같은 fork/exec timeout으로 중단됐다. fault·Copilot·AIC·artifact는 0이다. Git revision verifier도 `/usr/bin/git` 같은 absolute executable과 `close_fds=False`를 사용하도록 보강했고, Git revision의 clean-tree fail-closed 검사는 유지했다. Git/Kubernetes spawn regression 30개를 통과했으며 새 clean revision에서 다시 시작한다.

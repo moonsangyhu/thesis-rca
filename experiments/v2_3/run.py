@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import signal
 import subprocess
 from datetime import datetime, timezone
@@ -245,13 +246,16 @@ def _local_cli_build_identity(executable: str) -> str:
 
 
 def _verified_git_revision(project_root: Path) -> str:
+    git = shutil.which("git") or "git"
     head = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=project_root,
+        [git, "rev-parse", "HEAD"], cwd=project_root,
         text=True, capture_output=True, timeout=15, check=False,
+        close_fds=False,
     )
     status = subprocess.run(
-        ["git", "status", "--porcelain", "--untracked-files=all"],
+        [git, "status", "--porcelain", "--untracked-files=all"],
         cwd=project_root, text=True, capture_output=True, timeout=15, check=False,
+        close_fds=False,
     )
     revision = head.stdout.strip()
     if head.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", revision):

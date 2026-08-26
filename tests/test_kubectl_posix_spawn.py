@@ -41,6 +41,21 @@ class KubectlPosixSpawnTests(unittest.TestCase):
             gitops._run(["/usr/local/bin/kubectl", "get", "kustomization"])
         self.assertFalse(run.call_args.kwargs["close_fds"])
 
+    def test_git_revision_uses_absolute_git_and_keeps_fds(self):
+        from pathlib import Path
+        from experiments.v2_3.run import _verified_git_revision
+
+        completed = [
+            subprocess.CompletedProcess(["git"], 0, "a" * 40 + "\n", ""),
+            subprocess.CompletedProcess(["git"], 0, "", ""),
+        ]
+        with patch("experiments.v2_3.run.shutil.which", return_value="/usr/bin/git"), \
+                patch("experiments.v2_3.run.subprocess.run", side_effect=completed) as run:
+            self.assertEqual(_verified_git_revision(Path("/repo")), "a" * 40)
+
+        self.assertEqual(run.call_args_list[0].args[0][0], "/usr/bin/git")
+        self.assertEqual(run.call_args_list[1].args[0][0], "/usr/bin/git")
+        self.assertTrue(all(not call.kwargs["close_fds"] for call in run.call_args_list))
 
 if __name__ == "__main__":
     unittest.main()

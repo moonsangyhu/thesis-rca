@@ -641,3 +641,12 @@
 - **수정 내용**: fault injector, state validator, kubectl collector, GitOps collector가 각 command executable을 절대 경로로 resolve하고 `close_fds=False`를 전달해 `posix_spawn` 조건을 충족하게 했다. fault·corpus·retrieval/model·prompt·condition은 변경하지 않는다.
 - **수정 파일**: `scripts/fault_inject/base.py:1`, `scripts/stabilize/state_validator.py:1`, `src/collector/kubectl.py:1`, `src/collector/gitops.py:1`, `tests/test_kubectl_posix_spawn.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: unit/main/live-runner 65 PASS, pycompile·diff-check PASS. Torch-after-spawn read-only smoke는 model import 장기화 중 cluster mutation 전에 interrupt했고, fresh campaign의 F1 pre-injection snapshot으로 runtime 재검증한다.
+
+### 73. Torch 초기화 후 Git revision verifier spawn 경로 보강 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary32는 artifact 생성 전 `_verified_git_revision()`의 bare `git status --porcelain --untracked-files=all`가 15초 timeout되어 종료됐다. fault injection·Copilot/AIC·output artifact는 0이다.
+- **원인**: ISS-047과 같은 macOS fork/exec 경로가 Git verifier에는 남아 있었다.
+- **수정 내용**: Git executable을 absolute path로 resolve하고 `close_fds=False`를 지정해 `posix_spawn` 조건을 만족시킨다. HEAD SHA-256 identity 및 dirty-tree fail-closed 검사는 그대로 유지한다.
+- **수정 파일**: `experiments/v2_3/run.py:1`, `tests/test_kubectl_posix_spawn.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: Git/Kubernetes spawn·storage/main wiring 30 PASS, pycompile·diff-check PASS. 전체 회귀와 dry-run 뒤 clean commit으로 fresh campaign을 재시작한다.
