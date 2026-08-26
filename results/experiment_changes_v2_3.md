@@ -605,3 +605,12 @@
 - **수정 내용**: Primary25 durable receipt의 original presence/value를 기준으로 두 `spec.suspend` field를 null merge-patch로 제거하고 reconcile을 요청했다. 양쪽은 new generation과 observedGeneration 일치·Ready=True까지 확인했다.
 - **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: GREEN — 이번 복구 자체는 Copilot/AIC/fault injection/result를 생성하지 않았다. Primary26 pre-injection artifact는 제외하고 새 campaign ID로 재시작한다.
+
+### 69. SDK runner JSONL partial-write 및 EAGAIN 보강 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary27 F6 t2에서 SDK stdout JSONL event가 65,536 byte 부근에서 절단되어 strict parser가 `Copilot SDK emitted malformed JSONL`로 fail-closed했다. 최초 시도와 제한된 재시도 모두 과금 provenance를 남겼지만 logical call은 commit되지 않아 campaign은 26/60 incidents·78/180 rows에서 불완전 종료됐다.
+- **원인**: Node `fs.writeSync()`는 pipe에 대한 부분 write byte 수를 반환하거나 transient `EAGAIN`을 던질 수 있는데 runner가 반환값을 무시했다.
+- **수정 내용**: UTF-8 Buffer와 offset loop로 record 전체 write를 보장하고, `EAGAIN`은 bounded 1 ms retry로 처리한다. 0-byte·비정상·retry 소진 write는 예외로 fail-closed한다. 70,000-byte SDK event의 JSONL 완결성 회귀를 추가했다.
+- **수정 파일**: `experiments/shared/copilot_sdk_runner.mjs:1`, `tests/test_copilot_sdk_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — SDK/live-caller targeted 29 PASS, 전체 292 unittest PASS, `node --check`·`git diff --check` PASS. Primary27은 append-only 불완전 artifact로 보존하며 새 campaign을 F1 t1부터 실행한다.

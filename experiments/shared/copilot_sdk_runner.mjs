@@ -4,9 +4,46 @@ import { writeSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 const SCHEMA_VERSION = 1;
+const WRITE_RETRY_DELAY_MS = 1;
+const MAX_EAGAIN_RETRIES = 10_000;
+const WRITE_WAIT_ARRAY = new Int32Array(new SharedArrayBuffer(4));
+
+function waitForWritableStdout() {
+  Atomics.wait(WRITE_WAIT_ARRAY, 0, 0, WRITE_RETRY_DELAY_MS);
+}
 
 function writeRecord(record) {
-  writeSync(process.stdout.fd, `${JSON.stringify(record)}\n`);
+  // `fs.writeSync()` returns the number of bytes written.  A pipe is allowed
+  // to accept only a prefix (observed at exactly 64 KiB under load), so a
+  // single call can leave an unterminated JSONL record even though the SDK
+  // session completed and was charged.  Write a Buffer with explicit offsets
+  // until the whole record is durable on stdout.
+  const buffer = Buffer.from(`${JSON.stringify(record)}\n`, "utf8");
+  let offset = 0;
+  let eagainRetries = 0;
+  while (offset < buffer.length) {
+    let written;
+    try {
+      written = writeSync(
+        process.stdout.fd, buffer, offset, buffer.length - offset,
+      );
+    } catch (error) {
+      // stdout can be a non-blocking pipe.  EAGAIN is not a failed record:
+      // wait briefly and continue from the same offset.  The production
+      // failure was an ignored partial write at this boundary.
+      if (error?.code === "EAGAIN" && eagainRetries < MAX_EAGAIN_RETRIES) {
+        eagainRetries += 1;
+        waitForWritableStdout();
+        continue;
+      }
+      throw error;
+    }
+    if (!Number.isInteger(written) || written <= 0) {
+      throw new Error("failed to write complete SDK JSONL record");
+    }
+    offset += written;
+    eagainRetries = 0;
+  }
 }
 
 function fail(message) {
