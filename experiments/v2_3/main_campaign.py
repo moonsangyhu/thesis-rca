@@ -12,7 +12,7 @@ from .authorization import LiveAuthorization, PAID_OVERAGE_MODE
 from .config import (
     COPILOT_ACCOUNT_LOGIN, COPILOT_SESSION_MAX_AIC, EXPECTED_CALLS,
     EXPECTED_ROWS, FAULTS, FLUX_RECONCILIATION_POLICY, MAIN_MANIFEST_SCHEMA,
-    REQUESTED_MODEL, TRIALS,
+    PRIMARY_COPILOT_TIMEOUT_SECONDS, REQUESTED_MODEL, TRIALS,
 )
 
 
@@ -59,6 +59,7 @@ def run_authorized_main(
 
     backend = CopilotSDKBackend(
         model=REQUESTED_MODEL,
+        timeout_seconds=PRIMARY_COPILOT_TIMEOUT_SECONDS,
         max_ai_credits=COPILOT_SESSION_MAX_AIC,
         billing_execution_authorized=True,
     )
@@ -104,6 +105,7 @@ def run_authorized_main(
         "active_account": account.to_dict(),
         "max_campaign_aic": None,
         "copilot_session_max_aic": COPILOT_SESSION_MAX_AIC,
+        "copilot_inference_timeout_seconds": PRIMARY_COPILOT_TIMEOUT_SECONDS,
         "projected_main_aic_from_pilot": 4055,
         "model": REQUESTED_MODEL,
         "expected_incidents": len(FAULTS) * len(TRIALS),

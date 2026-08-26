@@ -79,6 +79,8 @@ class MainCampaignWiringTests(unittest.TestCase):
             )
 
         self.assertEqual(summary["incidents"], 1)
+        backend_factory = mocks["experiments.shared.copilot_sdk.CopilotSDKBackend"]
+        self.assertEqual(backend_factory.call_args.kwargs["timeout_seconds"], 300)
         self.assertIsNone(backend.pre_call_guard)
         mocks["experiments.shared.copilot_quota.inspect_copilot_quota"].assert_not_called()
         self.assertEqual(
@@ -86,7 +88,8 @@ class MainCampaignWiringTests(unittest.TestCase):
             1,
         )
         manifest = store.write_manifest.call_args.args[0]
-        self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-4")
+        self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-5")
+        self.assertEqual(manifest["copilot_inference_timeout_seconds"], 300)
         self.assertIsNone(manifest["billing_confirmed_at"])
         self.assertEqual(
             manifest["billing_confirmation_timestamp_status"],

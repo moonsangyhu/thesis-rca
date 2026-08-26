@@ -623,3 +623,12 @@
 - **수정 내용**: injection result의 wait interval을 bool 제외 integer·0..600으로 먼저 봉인하고 `injection_observation_started`를 fsync한다. fixed wait와 F4 t3 bounded poll mode를 구분해 모니터가 사전 정의 deadline을 계산할 수 있게 한다.
 - **수정 파일**: `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: targeted 91 PASS, full unittest·dry-run·clean commit 후 새 primary campaign을 F1 t1부터 실행한다.
+
+### 71. 본실험 Terra inference deadline 여유 확대 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary29 F3 t3의 SDK 호출이 229.938초 뒤 timeout되어 incomplete-usage charged receipt와 `incident_failed`를 남겼다. 해당 incident는 결과로 커밋되지 않았고 campaign은 12/60 incidents에서 불완전 종료됐다.
+- **원인**: 본실험 SDK inference deadline 180초에 독립 watchdog cleanup grace 30초를 더한 210초 경계가 실제 Terra 지연에 부족했다.
+- **수정 내용**: primary-only `PRIMARY_COPILOT_TIMEOUT_SECONDS=300`을 backend request와 parent watchdog에 전달하고, main manifest schema를 v5로 올려 timeout 값을 durable provenance로 기록한다. session AIC 30, fail-closed unknown usage, tool/skill/model isolation 및 처치 설계는 변경하지 않는다.
+- **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/main_campaign.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 검증 완료 — main wiring·SDK·live caller 29 PASS, offline dry-run 180 rows/2,160 calls·external0·filesystem0, `git diff --check` PASS. Primary29은 append-only artifact로 보존하고 fresh main campaign을 새 ID에서 시작한다.

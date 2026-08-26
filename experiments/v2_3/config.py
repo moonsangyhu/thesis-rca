@@ -17,8 +17,13 @@ SCHEDULE_SEED = 20260809
 PILOT_FAULT_ID = "F7"
 PILOT_TRIAL = 1
 PILOT_MANIFEST_SCHEMA = "v2.3-pilot-campaign-5"
-MAIN_MANIFEST_SCHEMA = "v2.3-main-campaign-4"
+MAIN_MANIFEST_SCHEMA = "v2.3-main-campaign-5"
 COPILOT_SESSION_MAX_AIC = 30
+# The primary campaign runs sequentially while a fault remains injected.  The
+# SDK's process-group watchdog adds its fixed 30-second cleanup grace to this
+# deadline; the value below is the inference deadline passed to both the SDK
+# request and its parent watchdog.
+PRIMARY_COPILOT_TIMEOUT_SECONDS = 300
 COPILOT_ACCOUNT_LOGIN = "moonsangyhu"
 FLUX_RECONCILIATION_POLICY = "suspend-flux-root-then-app-during-incident"
 

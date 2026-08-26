@@ -24,6 +24,8 @@ repo 정본은 실험 간 `gpt-4o-mini` 고정을 요구하지만, 이번 라운
 - provider: GitHub Copilot CLI prompt mode
 - generator: `gpt-5.6-terra`
 - judge: `gpt-5.6-terra`
+- 본실험 SDK inference deadline: 300초(+독립 watchdog cleanup grace 30초). 이 값은
+  `campaign_manifest.json`에 봉인하며, timeout은 사용량 불확실성으로 fail-closed한다.
 - auto routing: 명시적 모델 지정과 실제 응답 model ID 검증으로 차단
 - tools: `--available-tools=none`; tool event가 관찰되면 fail-closed
 - built-in MCP: `--disable-builtin-mcps`
