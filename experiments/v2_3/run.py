@@ -247,14 +247,18 @@ def _local_cli_build_identity(executable: str) -> str:
 
 def _verified_git_revision(project_root: Path) -> str:
     git = shutil.which("git") or "git"
+    # Keep ``cwd`` unset: on macOS this lets subprocess select posix_spawn even
+    # after the local embedding runtime has initialized native worker threads.
+    # Git's own -C preserves the repository binding without changing process cwd.
+    git_at_root = [git, "-C", str(project_root)]
     head = subprocess.run(
-        [git, "rev-parse", "HEAD"], cwd=project_root,
+        [*git_at_root, "rev-parse", "HEAD"],
         text=True, capture_output=True, timeout=15, check=False,
         close_fds=False,
     )
     status = subprocess.run(
-        [git, "status", "--porcelain", "--untracked-files=all"],
-        cwd=project_root, text=True, capture_output=True, timeout=15, check=False,
+        [*git_at_root, "status", "--porcelain", "--untracked-files=all"],
+        text=True, capture_output=True, timeout=15, check=False,
         close_fds=False,
     )
     revision = head.stdout.strip()

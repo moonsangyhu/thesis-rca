@@ -650,3 +650,11 @@
 - **수정 내용**: Git executable을 absolute path로 resolve하고 `close_fds=False`를 지정해 `posix_spawn` 조건을 만족시킨다. HEAD SHA-256 identity 및 dirty-tree fail-closed 검사는 그대로 유지한다.
 - **수정 파일**: `experiments/v2_3/run.py:1`, `tests/test_kubectl_posix_spawn.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: Git/Kubernetes spawn·storage/main wiring 30 PASS, pycompile·diff-check PASS. 전체 회귀와 dry-run 뒤 clean commit으로 fresh campaign을 재시작한다.
+
+### 74. Git verifier의 `cwd` fork 경로 제거 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: #73의 absolute Git·`close_fds=False` 보강 뒤에도 `_verified_git_revision()`이 `cwd=project_root`를 전달해 macOS Python의 `posix_spawn` 선택 조건을 만족하지 못했다. Torch native runtime 뒤에는 같은 fork/exec 정체가 재발할 수 있다.
+- **수정 내용**: `cwd`를 사용하지 않고 absolute Git command에 `-C <absolute-project-root>`를 넣어 동일한 repository binding과 clean-tree fail-closed 검사를 유지한다. 이로써 Git verifier의 executable absolute path, `close_fds=False`, `cwd=None`을 함께 고정한다.
+- **수정 파일**: `experiments/v2_3/run.py:1`, `tests/test_kubectl_posix_spawn.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: Git/Kubernetes spawn·storage/run 29 PASS, `py_compile`·`git diff --check` PASS, Loki `/ready` HTTP 200 재확인. 이전 incomplete artifact는 보존·배제하고 clean commit에서 새 campaign을 시작한다.

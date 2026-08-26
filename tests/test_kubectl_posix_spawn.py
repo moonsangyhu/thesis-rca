@@ -55,6 +55,9 @@ class KubectlPosixSpawnTests(unittest.TestCase):
 
         self.assertEqual(run.call_args_list[0].args[0][0], "/usr/bin/git")
         self.assertEqual(run.call_args_list[1].args[0][0], "/usr/bin/git")
+        self.assertEqual(run.call_args_list[0].args[0][1:3], ["-C", "/repo"])
+        self.assertEqual(run.call_args_list[1].args[0][1:3], ["-C", "/repo"])
+        self.assertTrue(all("cwd" not in call.kwargs for call in run.call_args_list))
         self.assertTrue(all(not call.kwargs["close_fds"] for call in run.call_args_list))
 
 if __name__ == "__main__":
