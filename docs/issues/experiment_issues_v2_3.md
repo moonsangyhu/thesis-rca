@@ -2,8 +2,8 @@
 
 ## 요약
 
-- 총 이슈: 46건
-- 심각(실험 무효화): 40건
+- 총 이슈: 47건
+- 심각(실험 무효화): 41건
 - 경고(실행 전 수정): 5건
 - 참고(영향 미미): 1건
 
@@ -561,3 +561,14 @@
 - **근본 원인**: Terra 서비스 지연이 SDK의 180초 inference deadline과 30초 cleanup grace를 넘었다. watchdog과 charged receipt·복구는 의도대로 fail-closed했지만, 현재 실측 지연분포에는 deadline 여유가 부족했다.
 - **수정 내용**: 본실험 전용 SDK inference deadline을 300초로 확대하고, manifest schema v5에 `copilot_inference_timeout_seconds=300`을 봉인한다. SDK의 process-group watchdog·30초 cleanup grace, 30 AIC session cap, incomplete-usage hard-stop, model/tool/skill isolation은 유지한다.
 - **현재 영향**: Primary29 artifact는 append-only로 보존하고 fresh campaign에서 F1 t1부터 재시작한다. main wiring·SDK·live caller 29 tests와 180-row/2,160-call offline dry-run으로 변경을 검증한다.
+
+### [ISS-047] 로컬 Torch 초기화 후 kubectl fork/exec가 state snapshot에서 정체
+
+- **카테고리**: code / infra / execution
+- **심각도**: critical (P0)
+- **영향**: `primary30`은 authorization·preflight까지만, `primary31`은 F1 t1 `incident_scheduled`까지만 기록하고 종료됐다. 두 artifact에는 Flux suspend·fault injection·Copilot call·AIC·result/raw/call/attempt/charged ledger가 없다. primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 재시작 2회.
+- **관찰한 사실**: local `SentenceTransformerEmbeddingFunction`가 `torch` native import/model load를 수행한 뒤 `StateValidator._kubectl_json()`의 bare `kubectl` subprocess가 `Popen._execute_child()` errpipe read에서 30초씩 timeout됐다. 동일 KUBECONFIG로 shell에서 실행한 `kubectl get pods/rs/deploy -o json`은 각 1초 미만이었다. Flux app/root는 suspend=false였고 injection event는 없었다.
+- **근본 원인**: macOS Python 3.11은 bare executable과 기본 `close_fds=True` 조합에서 fork/exec 경로를 사용한다. ML runtime thread가 초기화된 뒤 이 fork 경로의 child exec 준비가 정체될 수 있다. absolute executable과 `close_fds=False`이면 Python의 macOS `posix_spawn` 조건을 만족한다.
+- **수정 내용**: fault injector·state validator·kubectl/GitOps collector에서 executable을 절대 경로로 resolve하고 `close_fds=False`를 고정했다. 이는 model, corpus, retrieval query, fault schedule, context condition을 바꾸지 않는다.
+- **현재 영향**: 관련 regression 65개·syntax·diff 검사를 통과했다. 실제 Torch-after-spawn read-only smoke는 local import가 장기화되어 Copilot/cluster mutation 전에 interrupt했으므로, clean commit의 fresh campaign에서 F1 t1 pre-injection snapshot이 정상 진행되는지 재검증한다.

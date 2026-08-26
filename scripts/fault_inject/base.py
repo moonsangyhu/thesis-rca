@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import shutil
 import subprocess
 import tempfile
 from typing import Optional
@@ -13,9 +14,21 @@ from .config import KUBECONFIG, KUBECTL, NAMESPACE, GIT_REPO_PATH
 logger = logging.getLogger(__name__)
 
 
+def _kubectl_executable() -> str:
+    """Resolve kubectl before spawning to keep macOS on posix_spawn.
+
+    The live runner loads the local sentence-transformer model before it
+    performs state validation.  On macOS, a bare executable name together
+    with ``close_fds=True`` forces ``subprocess`` through fork/exec, which can
+    hang while native ML worker threads are present.  An absolute executable
+    and ``close_fds=False`` select the safe posix_spawn path instead.
+    """
+    return shutil.which(KUBECTL) or KUBECTL
+
+
 def kubectl(*args: str, namespace: str = NAMESPACE, timeout: int = 60) -> str:
     """Run kubectl command."""
-    cmd = [KUBECTL]
+    cmd = [_kubectl_executable()]
     if namespace:
         cmd += ["-n", namespace]
     cmd += list(args)
@@ -26,6 +39,7 @@ def kubectl(*args: str, namespace: str = NAMESPACE, timeout: int = 60) -> str:
     logger.debug("kubectl: %s", " ".join(cmd))
     result = subprocess.run(
         cmd, capture_output=True, text=True, timeout=timeout, env=env,
+        close_fds=False,
     )
     if result.returncode != 0:
         logger.warning("kubectl stderr: %s", result.stderr.strip())
@@ -38,7 +52,7 @@ def kubectl_apply(manifest: dict, namespace: str = NAMESPACE) -> str:
     env = os.environ.copy()
     env["KUBECONFIG"] = KUBECONFIG
 
-    cmd = [KUBECTL, "apply", "-f", "-"]
+    cmd = [_kubectl_executable(), "apply", "-f", "-"]
     if namespace:
         cmd += ["-n", namespace]
 
@@ -49,6 +63,7 @@ def kubectl_apply(manifest: dict, namespace: str = NAMESPACE) -> str:
         text=True,
         timeout=30,
         env=env,
+        close_fds=False,
     )
     if result.returncode != 0:
         logger.error("kubectl apply failed: %s", result.stderr)

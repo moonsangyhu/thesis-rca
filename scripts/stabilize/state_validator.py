@@ -10,6 +10,7 @@ abnormal pod)를 자동 정정한다. 정정 실패 시 trial을 skipped로 표�
 import json
 import logging
 import os
+import shutil
 import subprocess
 import time
 from dataclasses import dataclass, field
@@ -20,6 +21,11 @@ from scripts.fault_inject.config import KUBECONFIG, KUBECTL
 logger = logging.getLogger(__name__)
 
 NAMESPACE = "boutique"
+
+
+def _kubectl_executable() -> str:
+    """Return an absolute kubectl path so macOS can use posix_spawn safely."""
+    return shutil.which(KUBECTL) or KUBECTL
 
 # Fault category map (가정 §0-2 + 필수 수정 1)
 # - "service": target_service 컬럼이 application service 이름. 해당 deployment의 비정상 pod는
@@ -67,12 +73,13 @@ class ValidationResult:
 
 def _kubectl_json(*args: str) -> dict:
     """Run kubectl with -o json and parse output."""
-    cmd = [KUBECTL, "-n", NAMESPACE, *args, "-o", "json"]
+    cmd = [_kubectl_executable(), "-n", NAMESPACE, *args, "-o", "json"]
     env = os.environ.copy()
     env["KUBECONFIG"] = KUBECONFIG
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, timeout=30, env=env,
+            close_fds=False,
         )
         if result.returncode != 0:
             logger.warning("kubectl stderr: %s", result.stderr.strip())
@@ -84,12 +91,13 @@ def _kubectl_json(*args: str) -> dict:
 
 
 def _kubectl_run(*args: str, timeout: int = 60) -> tuple[int, str, str]:
-    cmd = [KUBECTL, "-n", NAMESPACE, *args]
+    cmd = [_kubectl_executable(), "-n", NAMESPACE, *args]
     env = os.environ.copy()
     env["KUBECONFIG"] = KUBECONFIG
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, timeout=timeout, env=env,
+            close_fds=False,
         )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:

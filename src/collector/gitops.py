@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import shutil
 import subprocess
 
 from .config import KUBECONFIG, KUBECTL, FLUX_NAMESPACE, ARGOCD_NAMESPACE
@@ -9,17 +10,25 @@ from .config import KUBECONFIG, KUBECTL, FLUX_NAMESPACE, ARGOCD_NAMESPACE
 logger = logging.getLogger(__name__)
 
 
+def _kubectl_executable() -> str:
+    """Resolve kubectl before spawning so macOS uses posix_spawn after ML init."""
+    return shutil.which(KUBECTL) or KUBECTL
+
+
 def _run(args: list[str], timeout: int = 30) -> str:
     """Run command and return stdout."""
     env = os.environ.copy()
     env["KUBECONFIG"] = KUBECONFIG
+    command = list(args)
+    command[0] = shutil.which(command[0]) or command[0]
     try:
         result = subprocess.run(
-            args,
+            command,
             capture_output=True,
             text=True,
             timeout=timeout,
             env=env,
+            close_fds=False,
         )
         return result.stdout
     except Exception as e:
@@ -42,7 +51,7 @@ class GitOpsCollector:
         """Collect FluxCD Kustomization and HelmRelease status."""
         # Kustomizations
         ks_output = _run([
-            KUBECTL, "get", "kustomization", "-n", FLUX_NAMESPACE,
+            _kubectl_executable(), "get", "kustomization", "-n", FLUX_NAMESPACE,
             "-o", "json",
         ])
         kustomizations = []
@@ -68,7 +77,7 @@ class GitOpsCollector:
 
         # HelmReleases
         hr_output = _run([
-            KUBECTL, "get", "helmrelease", "-A", "-o", "json",
+            _kubectl_executable(), "get", "helmrelease", "-A", "-o", "json",
         ])
         helmreleases = []
         if hr_output:
@@ -92,7 +101,7 @@ class GitOpsCollector:
 
         # GitRepository source status
         git_output = _run([
-            KUBECTL, "get", "gitrepository", "-n", FLUX_NAMESPACE,
+            _kubectl_executable(), "get", "gitrepository", "-n", FLUX_NAMESPACE,
             "-o", "json",
         ])
         git_repos = []
@@ -120,7 +129,7 @@ class GitOpsCollector:
     def _collect_argocd(self) -> dict:
         """Collect ArgoCD Application status."""
         output = _run([
-            KUBECTL, "get", "application", "-n", ARGOCD_NAMESPACE,
+            _kubectl_executable(), "get", "application", "-n", ARGOCD_NAMESPACE,
             "-o", "json",
         ])
         applications = []
