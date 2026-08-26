@@ -1,6 +1,7 @@
 """Infrastructure checks: preflight, health, port-forward management."""
 import logging
 import os
+import shutil
 import signal
 import subprocess
 import time
@@ -8,6 +9,11 @@ import time
 logger = logging.getLogger(__name__)
 
 KUBECONFIG = os.environ.get("KUBECONFIG", os.path.expanduser("~/.kube/config-k8s-lab"))
+
+
+def _executable(name: str) -> str:
+    """Return an absolute executable path when available for posix_spawn."""
+    return shutil.which(name) or name
 
 
 def _run_kubectl_check(
@@ -26,15 +32,18 @@ def _run_kubectl_check(
         or timeout_retries not in (0, 1)
     ):
         raise ValueError("kubectl check timeout retries must be zero or one")
+    safe_command = [_executable(command[0]), *command[1:]]
     for attempt in range(timeout_retries + 1):
         try:
             process = subprocess.Popen(
-                command,
+                safe_command,
                 env={**os.environ, "KUBECONFIG": KUBECONFIG},
                 text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                start_new_session=True,
+                # Avoid fork/exec after local ML native threads initialize.
+                # These read-only kubectl checks do not create child processes.
+                close_fds=False,
             )
         except Exception:
             return None
@@ -42,7 +51,7 @@ def _run_kubectl_check(
             stdout, stderr = process.communicate(timeout=timeout_seconds)
         except subprocess.TimeoutExpired:
             try:
-                os.killpg(process.pid, signal.SIGKILL)
+                process.kill()
             except ProcessLookupError:
                 pass
             process.communicate()
@@ -51,13 +60,13 @@ def _run_kubectl_check(
             return None
         except BaseException:
             try:
-                os.killpg(process.pid, signal.SIGKILL)
+                process.kill()
             except ProcessLookupError:
                 pass
             process.communicate()
             raise
         return subprocess.CompletedProcess(
-            command, process.returncode, stdout=stdout, stderr=stderr
+            safe_command, process.returncode, stdout=stdout, stderr=stderr
         )
     return None
 
@@ -75,15 +84,23 @@ def _check_port(port: int) -> bool:
 
 def _restart_port_forward(namespace: str, service: str, port: int) -> bool:
     """Kill existing port-forward and restart."""
-    subprocess.run(
-        f"lsof -ti tcp:{port} | xargs kill -9 2>/dev/null",
-        shell=True, capture_output=True,
+    listeners = subprocess.run(
+        [_executable("lsof"), "-tiTCP:%d" % port, "-sTCP:LISTEN"],
+        text=True, capture_output=True, check=False, close_fds=False,
     )
+    for value in listeners.stdout.splitlines():
+        if value.isdigit():
+            try:
+                os.kill(int(value), signal.SIGTERM)
+            except ProcessLookupError:
+                pass
     time.sleep(1)
     subprocess.Popen(
-        ["kubectl", "port-forward", "-n", namespace, f"svc/{service}", f"{port}:{port}"],
+        [_executable("kubectl"), "port-forward", "-n", namespace,
+         f"svc/{service}", f"{port}:{port}"],
         env={**os.environ, "KUBECONFIG": KUBECONFIG},
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        close_fds=False,
     )
     time.sleep(3)
     if _check_port(port):

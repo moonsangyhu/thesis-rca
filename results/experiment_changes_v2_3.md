@@ -675,3 +675,11 @@
 - **수정 내용**: expected GitHub login identity probe를 Git revision 직후로 옮겨 모든 live/ML dependency import 전에 실행한다. expected-login fail-closed 및 manifest의 startup active-account provenance는 그대로 유지한다.
 - **수정 파일**: `experiments/v2_3/main_campaign.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: main wiring 재검증 및 clean commit 뒤 fresh campaign에서 Git/account preflight를 함께 runtime 확인한다.
+
+### 77. Torch 이후 infra preflight kubectl spawn 경로 보강 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary35는 `authorization_verified` 뒤 preflight read-only `kubectl get`가 Torch 이후 fork/exec에서 정체했다. Ctrl-C 전 Flux suspend·fault injection·Copilot·AIC·ledger·result는 0이었고 Flux는 exact unsuspended/Ready였다.
+- **수정 내용**: `_run_kubectl_check()`를 absolute executable·`close_fds=False`·direct child `kill()` timeout cleanup으로 바꿔 `posix_spawn` 조건을 충족한다. local port-forward recovery도 shell pipeline을 제거하고 exact listening PID에 SIGTERM 후 absolute `kubectl`을 `close_fds=False`로 시작한다.
+- **수정 파일**: `experiments/shared/infra.py:1`, `tests/test_infra.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: infra/main wiring 6 PASS, `py_compile`·`git diff --check` PASS. 새 clean commit의 fresh campaign preflight에서 runtime 재검증한다.

@@ -6,9 +6,9 @@ from experiments.shared.infra import _run_kubectl_check, preflight_check
 
 
 class InfraCheckTests(unittest.TestCase):
-    @patch("experiments.shared.infra.os.killpg")
+    @patch("experiments.shared.infra.shutil.which", return_value="/usr/local/bin/kubectl")
     @patch("experiments.shared.infra.subprocess.Popen")
-    def test_timeout_kills_group_then_retries_once(self, popen, killpg):
+    def test_timeout_kills_direct_child_then_retries_once(self, popen, _which):
         first = unittest.mock.Mock(pid=1101)
         first.communicate.side_effect = (
             subprocess.TimeoutExpired(cmd=["kubectl"], timeout=30),
@@ -22,12 +22,13 @@ class InfraCheckTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0)
         self.assertEqual(popen.call_count, 2)
-        killpg.assert_called_once_with(1101, 9)
-        self.assertTrue(popen.call_args_list[0].kwargs["start_new_session"])
+        first.kill.assert_called_once_with()
+        self.assertEqual(popen.call_args_list[0].args[0][0], "/usr/local/bin/kubectl")
+        self.assertFalse(popen.call_args_list[0].kwargs["close_fds"])
 
-    @patch("experiments.shared.infra.os.killpg")
+    @patch("experiments.shared.infra.shutil.which", return_value="/usr/local/bin/kubectl")
     @patch("experiments.shared.infra.subprocess.Popen")
-    def test_second_timeout_returns_failure(self, popen, killpg):
+    def test_second_timeout_returns_failure(self, popen, _which):
         processes = []
         for pid in (1201, 1202):
             process = unittest.mock.Mock(pid=pid)
@@ -39,17 +40,17 @@ class InfraCheckTests(unittest.TestCase):
         popen.side_effect = processes
 
         self.assertIsNone(_run_kubectl_check(["kubectl", "get", "nodes"]))
-        self.assertEqual(killpg.call_count, 2)
+        self.assertTrue(all(process.kill.called for process in processes))
 
-    @patch("experiments.shared.infra.os.killpg")
+    @patch("experiments.shared.infra.shutil.which", return_value="/usr/local/bin/kubectl")
     @patch("experiments.shared.infra.subprocess.Popen")
-    def test_interruption_kills_group_and_propagates(self, popen, killpg):
+    def test_interruption_kills_direct_child_and_propagates(self, popen, _which):
         process = popen.return_value
         process.pid = 1301
         process.communicate.side_effect = (KeyboardInterrupt(), ("", ""))
         with self.assertRaises(KeyboardInterrupt):
             _run_kubectl_check(["kubectl", "get", "nodes"])
-        killpg.assert_called_once_with(1301, 9)
+        process.kill.assert_called_once_with()
 
     @patch("experiments.shared.infra._check_port", return_value=True)
     @patch("experiments.shared.infra._run_kubectl_check")
