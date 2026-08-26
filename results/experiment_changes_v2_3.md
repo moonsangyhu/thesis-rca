@@ -614,3 +614,12 @@
 - **수정 내용**: UTF-8 Buffer와 offset loop로 record 전체 write를 보장하고, `EAGAIN`은 bounded 1 ms retry로 처리한다. 0-byte·비정상·retry 소진 write는 예외로 fail-closed한다. 70,000-byte SDK event의 JSONL 완결성 회귀를 추가했다.
 - **수정 파일**: `experiments/shared/copilot_sdk_runner.mjs:1`, `tests/test_copilot_sdk_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 검증 완료 — SDK/live-caller targeted 29 PASS, 전체 292 unittest PASS, `node --check`·`git diff --check` PASS. Primary27은 append-only 불완전 artifact로 보존하며 새 campaign을 F1 t1부터 실행한다.
+
+### 70. 주입 observation wait 진행 provenance 기록 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary28 F1 t2에서 `injection_started`와 `injection_verified` 사이 120초 fixed wait의 시작/기한이 durable event에 없어 정상 실행이 정지로 오인돼 operator interrupt가 발생했다. F1 t1 3 rows/36 calls만 유효하고 campaign은 불완전하다.
+- **원인**: runner가 injection result의 wait interval을 검증하기 전에 blocking validation helper로 진입했고, fixed-wait phase를 event journal에 표현하지 않았다.
+- **수정 내용**: injection result의 wait interval을 bool 제외 integer·0..600으로 먼저 봉인하고 `injection_observation_started`를 fsync한다. fixed wait와 F4 t3 bounded poll mode를 구분해 모니터가 사전 정의 deadline을 계산할 수 있게 한다.
+- **수정 파일**: `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: targeted 91 PASS, full unittest·dry-run·clean commit 후 새 primary campaign을 F1 t1부터 실행한다.

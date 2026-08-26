@@ -539,3 +539,14 @@
 - **근본 원인**: Node SDK runner는 `fs.writeSync(stdout, string)`의 반환 byte 수를 무시했다. stdout이 pipe일 때 write는 부분 기록하거나 `EAGAIN`을 낼 수 있으며, 큰 SDK event가 약 64 KiB에서 newline 전에 절단됐다. 기존 parser/retry는 절단을 올바르게 fail-close했지만, 근본 runner write 경계는 보장하지 못했다.
 - **수정 내용**: JSONL record를 UTF-8 Buffer로 만들고 offset을 전진시키며 전체 byte가 기록될 때까지 `writeSync`를 반복한다. transient `EAGAIN`은 짧게 대기 후 동일 offset에서 재시도하고, 비정상/0-byte write는 예외로 fail-closed한다. 70,000-byte SDK assistant event가 완전한 JSONL event와 result record로 parse되는 Node runner 회귀를 추가했다.
 - **현재 영향**: SDK/live-caller 포함 targeted 29 tests와 전체 292 unittest, `node --check`, `git diff --check`를 통과했다. 새 clean revision에서 F1 t1부터 fresh 60-incident campaign을 실행해야 한다.
+
+### [ISS-045] 주입 관찰 대기 구간의 durable 진행 상태가 없어 operator가 정상 실행을 중단
+
+- **카테고리**: orchestration / observability
+- **심각도**: warning (P1)
+- **영향**: campaign `v2-3-main-20260827-primary28`은 F1 t1만 1 incident·3 rows/raw·36 validated calls로 commit했고 F1 t2에서 종료됐다. 이 campaign은 불완전하므로 primary estimand와 분석에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회, F1 t2.
+- **관찰한 사실**: F1 t2는 `injection_started` 후 120초의 사전 정의된 OOM observation wait를 거쳐 `injection_verified`에 도달했다. 그러나 해당 wait의 시작/기한이 event journal에 없어 external monitor가 장기 정지로 오인했고, SDK judge 호출이 시작된 뒤 정상 interrupt를 보냈다. `incident_failed(error_type=KeyboardInterrupt)→flux_restored(exact original/CAS)→recovery_green`을 확인했으며 Boutique 12/12과 nodes/Flux는 복구됐다. F1 t2 call/result/raw는 0이고 F1 t1의 36/3/3만 남았다.
+- **근본 원인**: runner는 `injection_started`와 wait 이후의 `injection_verified`만 journal에 남겼다. F1/F2 등 fixed wait fault의 현재 phase·계획된 deadline을 durable하게 알 수 없었다.
+- **수정 내용**: injection 결과의 typed/bounded wait interval을 검증한 뒤, blocking wait 이전에 `injection_observation_started` event를 fsync한다. event에는 fault/trial, `wait_seconds`, F4 t3의 `bounded-poll` 또는 기타 fault의 `fixed-wait` mode만 기록한다. event append 실패는 기존 mandatory recovery 경로로 fail-closed한다.
+- **현재 영향**: live runner/main campaign 및 SDK/live caller targeted 91 tests와 전체 회귀를 clean revision에서 재확인한 뒤, fresh campaign을 F1 t1부터 시작한다.

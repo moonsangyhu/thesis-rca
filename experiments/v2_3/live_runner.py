@@ -1079,6 +1079,23 @@ class PilotIncidentRunner:
             injection_result = self.injector.inject(
                 fault_id, trial, recovery_context=prepared_recovery
             )
+            wait_seconds = injection_result.get("wait_seconds")
+            if isinstance(wait_seconds, bool) or not isinstance(wait_seconds, int):
+                raise PilotError("injection result wait interval is invalid")
+            if not 0 <= wait_seconds <= 600:
+                raise PilotError("injection result wait interval is invalid")
+            if hasattr(self.store, "append_event"):
+                self.store.append_event(
+                    "injection_observation_started",
+                    fault_id=fault_id,
+                    trial=trial,
+                    wait_seconds=wait_seconds,
+                    mode=(
+                        "bounded-poll"
+                        if (fault_id, trial) == ("F4", 3)
+                        else "fixed-wait"
+                    ),
+                )
             injection_validation = validate_injection_in_observation_window(
                 fault_id=fault_id,
                 trial=trial,
