@@ -528,3 +528,14 @@
 - **관찰한 사실**: Primary25 event는 `flux_suspended` 뒤 `recovery_failed`로 끝나고 `flux_restored` event가 없다. 2026-08-26 현재 Flux `app`과 `flux-system`의 `spec.suspend=true`가 남아 있었다. Primary25 sealed receipt는 양쪽의 original suspend field가 absent임을 기록한다.
 - **복구 조치**: exact-original semantics로 두 Kustomization의 `spec.suspend`를 merge-patch null로 제거하고 reconcile annotation을 요청했다. 양쪽 모두 new generation=observedGeneration, `Ready=True`, `ReconciliationSucceeded`로 확인했다.
 - **현재 영향**: Primary26의 pre-injection artifact는 append-only로 보존하며 primary estimand에 포함하지 않는다. 이후 실행은 새 campaign ID에서 full preflight부터 시작한다.
+
+### [ISS-044] SDK runner의 부분 stdout write가 JSONL record를 절단
+
+- **카테고리**: code / provenance / runtime
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260826-primary27`은 F1–F5 전부와 F6 t1까지 26 incidents·78 rows/raw·936 validated logical calls를 commit한 뒤 F6 t2에서 중단됐다. 이 campaign은 불완전하므로 primary estimand와 분석에 포함하지 않는다.
+- **발생 빈도**: 본실험 F6 t2에서 동일 logical call의 최초 시도와 허용된 1회 재시도, 총 2회.
+- **관찰한 사실**: F6 t2는 `injection_verified` 뒤 `LiveCallerError: Copilot SDK emitted malformed JSONL`로 fail-closed했다. Python JSON decoder는 line 1 column 65,537에서 `Expecting ',' delimiter`를 보고했다. logical call/result/raw는 직전 boundary 936/78/78에서 증가하지 않았고, attempt/call ledger는 936, durable charged ledger는 938이었다. `flux_restored(exact original/CAS)→recovery_green`을 확인했으며 이후 nodes 6/6 Ready, active Online Boutique replicas 12/12 Running이었다.
+- **근본 원인**: Node SDK runner는 `fs.writeSync(stdout, string)`의 반환 byte 수를 무시했다. stdout이 pipe일 때 write는 부분 기록하거나 `EAGAIN`을 낼 수 있으며, 큰 SDK event가 약 64 KiB에서 newline 전에 절단됐다. 기존 parser/retry는 절단을 올바르게 fail-close했지만, 근본 runner write 경계는 보장하지 못했다.
+- **수정 내용**: JSONL record를 UTF-8 Buffer로 만들고 offset을 전진시키며 전체 byte가 기록될 때까지 `writeSync`를 반복한다. transient `EAGAIN`은 짧게 대기 후 동일 offset에서 재시도하고, 비정상/0-byte write는 예외로 fail-closed한다. 70,000-byte SDK assistant event가 완전한 JSONL event와 result record로 parse되는 Node runner 회귀를 추가했다.
+- **현재 영향**: SDK/live-caller 포함 targeted 29 tests와 전체 292 unittest, `node --check`, `git diff --check`를 통과했다. 새 clean revision에서 F1 t1부터 fresh 60-incident campaign을 실행해야 한다.
