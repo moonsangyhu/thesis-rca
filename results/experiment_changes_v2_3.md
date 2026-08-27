@@ -708,3 +708,12 @@
 - **수정 내용**: `sdk_quota_null_auth_pre_session_zero_usage` 코드만 최대 두 번 재시도하고 1초·2초 backoff를 둔다. exact zero AIC·zero premium·complete-usage receipt 조건과 다른 모든 retry class의 1회 한계는 유지한다.
 - **수정 파일**: `experiments/v2_3/live_caller.py:1`, `tests/test_v2_3_live_caller.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: SDK/live-caller 32 PASS, `git diff --check` PASS. Primary40은 보존·배제하고 clean revision의 새 campaign에서 재검증한다.
+
+### 81. 짧은 field-value redaction 표식의 compact scanner 자기-누출 제거 — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary41 F7 t2는 injection verification 뒤 RAG procedure leakage gate에서 `field_values/compact_substring`으로 fail-closed했다. 해당 incident는 result/raw/call/attempt/charged ledger를 추가하지 않았고 exact Flux/CPU recovery 뒤 GREEN이었다.
+- **원인**: `[MASKED]`의 `M`이 인접한 숫자와 scanner compact folding 후 짧은 금지 field value를 재구성했다. 원문 scalar 마스킹 자체가 아니라 redaction placeholder의 lexical collision이다.
+- **수정 내용**: marker를 `[REDACTED]`로 교체하고 procedure masker provenance version을 갱신했다. five-minute range 스타일의 short scalar mask 후 scanner clean을 직접 회귀로 검증한다.
+- **수정 파일**: `experiments/v2_3/retrieval.py:1`, `tests/test_v2_3_retrieval.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: retrieval/scanner/live-runner 82 PASS, corpus short-value masking 52 matching documents clean, offline dry-run 180 rows/2,160 calls·external/filesystem 0, `git diff --check` PASS. Primary41은 append-only 보존·배제하며 clean commit에서 fresh campaign을 시작한다.

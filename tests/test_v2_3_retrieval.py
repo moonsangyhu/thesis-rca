@@ -2,7 +2,9 @@ import unittest
 from dataclasses import replace
 
 from experiments.v2_3.conditions import ConditionAssembler
-from experiments.v2_3.retrieval import BlindProcedureBuilder, RetrievalChunk
+from experiments.v2_3.retrieval import (
+    REDACTION_MARKER, BlindProcedureBuilder, RetrievalChunk,
+)
 from experiments.v2_3.scanner import ForbiddenLexicon, LeakageDetected
 
 
@@ -74,6 +76,22 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(LeakageScanner().scan(sanitized, lexicon).match_count, 0)
         self.assertIn("frontend", sanitized)
 
+    def test_short_field_value_redaction_marker_cannot_recreate_forbidden_prefix(self):
+        """A mask placeholder must stay clean after compact scanner folding."""
+        from experiments.v2_3.scanner import LeakageScanner
+
+        lexicon = ForbiddenLexicon(field_values=("5m",))
+        source = "inspect the five-minute rate window [5m] before triage"
+        result = BlindProcedureBuilder().build(
+            runtime_context="runtime error rate increased",
+            runtime_query="runtime error rate increased",
+            chunks=(RetrievalChunk("runbook", source, 0.9, 0, len(source)),),
+            corpus_version="corpus-1",
+            lexicon=lexicon,
+        )
+        self.assertIn(REDACTION_MARKER, result.text)
+        self.assertEqual(LeakageScanner().scan(result.text, lexicon).match_count, 0)
+
     def test_sanitizer_masks_fault_id_internal_separator_variants(self):
         from experiments.v2_3.scanner import ForbiddenLexicon, LeakageScanner
 
@@ -116,7 +134,7 @@ class RetrievalTests(unittest.TestCase):
                     corpus_version="corpus-1",
                     lexicon=lexicon,
                 )
-                self.assertIn("[MASKED]", result.text)
+                self.assertIn(REDACTION_MARKER, result.text)
                 self.assertEqual(
                     LeakageScanner().scan(result.text, lexicon).match_count, 0
                 )

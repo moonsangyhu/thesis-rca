@@ -2,12 +2,23 @@
 
 ## 요약
 
-- 총 이슈: 48건
-- 심각(실험 무효화): 42건
+- 총 이슈: 49건
+- 심각(실험 무효화): 43건
 - 경고(실행 전 수정): 5건
 - 참고(영향 미미): 1건
 
 ## 이슈 목록
+
+### [ISS-049] 짧은 field-value 마스킹 표식이 compact scanner에서 자기-누출을 재생성
+
+- **카테고리**: code / data
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260827-primary41`은 F1–F6 전체와 F7 t1까지 31 incidents·93 rows/raw·1,116 validated calls를 commit했지만, F7 t2의 `injection_verified` 직후 RAG procedure gate에서 `LeakageDetected`로 중단됐다. F7 t2의 result/raw/call/attempt/charged ledger 추가는 0건이며 campaign 전체는 불완전하므로 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회, F7 t2 retrieval procedure gate.
+- **관찰한 사실**: 안전 진단은 `field_values` 1건·`compact_substring` 1건을 기록했고, term hash는 F7 t2의 CPU 처치 scalar와 일치했다. `incident_failed(LeakageDetected) → flux_restored(exact original/CAS) → recovery_green`이 순서대로 기록됐다. 이후 nodes 6/6 Ready·DiskPressure=False, Boutique 12/12 Running, Flux 5/5 Ready를 재확인했다.
+- **근본 원인**: 기존 procedure redaction marker `[MASKED]`의 선행 `M`이 마스킹 인접 숫자와 compact scanner의 공백·문장부호 제거 후 다시 짧은 금지 scalar prefix를 만들었다. 즉 원문 처치값은 마스킹됐지만 marker 자체가 scanner false positive를 만들었다.
+- **수정 내용**: marker를 scanner-안전한 `[REDACTED]`로 바꾸고 masker provenance version을 올렸다. 짧은 field value가 PromQL range처럼 나타나는 case에서 redaction 뒤 scanner가 clean임을 회귀로 고정했다.
+- **현재 영향**: Primary41 artifact는 append-only로 보존·배제한다. retrieval/scanner/live-runner 82 tests, corpus short-value masking 52 matching documents, offline dry-run 180 rows/2,160 calls·external/filesystem 0, diff-check를 통과한 clean revision에서 새 campaign을 F1 t1부터 시작한다.
 
 ### [ISS-001] 실행 agent의 nohup child가 executor 종료와 함께 소멸
 
