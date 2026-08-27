@@ -3,7 +3,7 @@ import unittest
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from experiments.shared.copilot_cli import (
     RETRYABLE_MALFORMED_JSONL_FAILURE_CODE,
@@ -145,7 +145,7 @@ class RetryableZeroUsageAuthBackend(FakeBackend):
 
 class RetryableQuotaNullAuthBackend(RetryableZeroUsageAuthBackend):
     def call(self, prompt, system_prompt, max_tokens):
-        if len(self.calls) == 0:
+        if len(self.calls) == 0 or (self.fail_twice and len(self.calls) == 1):
             self.calls.append((prompt, system_prompt, max_tokens))
             receipt = {
                 "attempt_id": "quota-null-auth", "ai_credits": 0.0,
@@ -404,6 +404,27 @@ class LiveCallerTests(unittest.TestCase):
         self.assertAlmostEqual(caller.cumulative_aic, 0.1)
         self.assertAlmostEqual(result.ledger_entry.ai_credits, 0.1)
         self.assertAlmostEqual(result.ledger_entry.premium_requests, 1.0)
+
+    @patch("experiments.v2_3.live_caller.time.sleep")
+    def test_quota_null_pre_session_failure_allows_two_backoff_retries(self, sleep):
+        backend = RetryableQuotaNullAuthBackend(fail_twice=True)
+        caller = AuthorizedTerraCaller(
+            self.authorization(), backend, "main-campaign", "copilot-1.0.78",
+            max_campaign_aic=None,
+        )
+        runtime, procedure, lexicon = clean_fixture("F1", 1)
+        context = ConditionAssembler().assemble_all(runtime, procedure, lexicon)["runtime"]
+        from experiments.v2_3.engine import Invocation
+
+        result = caller(Invocation(
+            "generator", "F1", 1, "runtime", 1, None,
+            context.full_context, context,
+        ))
+
+        self.assertEqual(len(backend.calls), 3)
+        self.assertEqual(len(backend.receipts), 3)
+        sleep.assert_has_calls([call(1), call(2)])
+        self.assertAlmostEqual(result.ledger_entry.ai_credits, 0.1)
 
     def test_second_zero_usage_auth_failure_aborts_without_third_call(self):
         backend = RetryableZeroUsageAuthBackend(fail_twice=True)

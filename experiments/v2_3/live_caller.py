@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from dataclasses import dataclass
 
 from experiments.shared.copilot_cli import (
@@ -120,7 +121,11 @@ class AuthorizedTerraCaller:
 
         retry_aic = 0.0
         retry_premium_requests = 0.0
-        for attempt in range(2):
+        # A session-create failure carrying the exact quota-null envelope is
+        # proven pre-inference/zero-usage.  GitHub served it twice in a row in
+        # Primary40, so permit two bounded backoff retries for that *single*
+        # failure code; every other retry class remains one retry.
+        for attempt in range(3):
             if (
                 self.max_campaign_aic is not None
                 and self.cumulative_aic + session_cap > self.max_campaign_aic
@@ -165,7 +170,11 @@ class AuthorizedTerraCaller:
                     and not self.usage_uncertain
                 )
                 retryable_zero_usage_auth = (
-                    attempt == 0
+                    (
+                        attempt < 2
+                        if exc.failure_code == RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE
+                        else attempt == 0
+                    )
                     and exc.retryable_zero_usage_authentication
                     and exc.failure_code in {
                         RETRYABLE_ZERO_USAGE_AUTH_FAILURE_CODE,
@@ -192,6 +201,8 @@ class AuthorizedTerraCaller:
                 if retryable:
                     retry_aic += charged
                     retry_premium_requests += premium
+                    if exc.failure_code == RETRYABLE_QUOTA_NULL_AUTH_FAILURE_CODE:
+                        time.sleep(2 ** attempt)
                     continue
                 self.campaign_aborted = True
                 raise LiveCallerError(
