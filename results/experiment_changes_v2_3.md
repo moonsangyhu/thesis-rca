@@ -700,3 +700,11 @@
 - **수정 내용**: 정확히 하나의 `thesis.sdk.error`, schema v1, 그리고 관측된 세-field null message 전체가 일치할 때만 zero-AIC/zero-premium complete-usage receipt로 분류해 1회 재시도한다. extra record·message drift·일반 authentication failure·tool/model/usage event는 재시도하지 않는다.
 - **수정 파일**: `experiments/shared/copilot_cli.py:1`, `experiments/shared/copilot_sdk.py:1`, `experiments/v2_3/live_caller.py:1`, `tests/test_copilot_sdk.py:1`, `tests/test_v2_3_live_caller.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: SDK/live-caller targeted 31 PASS, `git diff --check` PASS. Primary39은 append-only artifact로 보존·배제하고, clean revision에서 read-only auth 확인 후 fresh campaign을 시작한다.
+
+### 80. 연속 quota-null session 생성 오류의 bounded backoff — 2026-08-27
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary40 F1 t4에서 #79의 exact quota-null pre-session 오류가 두 번 연속 발생해 single retry 후 campaign이 fail-closed됐다. F1 t1–t3의 9 rows/raw·108 validated calls만 commit됐고 campaign은 불완전하다.
+- **수정 내용**: `sdk_quota_null_auth_pre_session_zero_usage` 코드만 최대 두 번 재시도하고 1초·2초 backoff를 둔다. exact zero AIC·zero premium·complete-usage receipt 조건과 다른 모든 retry class의 1회 한계는 유지한다.
+- **수정 파일**: `experiments/v2_3/live_caller.py:1`, `tests/test_v2_3_live_caller.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: SDK/live-caller 32 PASS, `git diff --check` PASS. Primary40은 보존·배제하고 clean revision의 새 campaign에서 재검증한다.

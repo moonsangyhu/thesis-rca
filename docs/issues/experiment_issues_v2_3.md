@@ -595,3 +595,5 @@
 - **근본 원인**: GitHub CLI가 business-seat 계정의 세 overage entitlement field를 null로 직렬화했고, pinned Copilot SDK 1.0.77이 이를 number-only schema로 검증해 session creation을 거부했다. 이 경로는 session/model/tool/usage event가 생성되기 전이다.
 - **수정 내용**: runner의 sole `thesis.sdk.error`가 관측된 완전한 세-field null message와 exact schema에 일치할 때에만 zero-usage receipt로 봉인하고 최대 1회 재시도한다. 추가 event, message drift, 일반 인증 오류, usage/model/tool event가 있으면 기존처럼 fail-closed한다. Live caller는 이 새 failure code에도 zero AIC·zero premium·complete usage가 모두 성립할 때만 재시도한다.
 - **현재 영향**: primary39 artifact는 append-only로 보존·배제한다. SDK/live caller regression을 통과하고, read-only quota/auth preflight를 재검증한 clean revision에서 fresh main campaign을 새 ID로 시작한다.
+
+- **후속 수정(append-only)**: Primary40 F1 t4에서 위 exact null envelope가 1.379초 간격으로 두 번 연속 발생해 기존 단일 retry를 모두 소진했다. exact sole-record·zero AIC·zero premium·complete-usage 조건은 그대로 둔 채 이 failure code만 1초·2초 backoff를 거쳐 최대 두 번 재시도한다. 일반 authentication/metadata/malformed/usage 오류의 retry 횟수는 변경하지 않는다.
