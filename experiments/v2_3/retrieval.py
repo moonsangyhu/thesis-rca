@@ -12,7 +12,12 @@ from .scanner import (
     LeakageScanner, minimum_token_ngrams, normalize, sha256_text,
 )
 
-MASKER_VERSION = "v2.3-procedure-mask-4"
+# ``[MASKED]`` is not safe when a two-character field value is forbidden: its
+# leading ``m`` can concatenate with an adjacent digit after scanner folding
+# (for example, a masked five-minute PromQL range).  Keep the marker lexical
+# form independent from the mask vocabulary and version the provenance change.
+MASKER_VERSION = "v2.3-procedure-mask-5"
+REDACTION_MARKER = "[REDACTED]"
 
 
 @dataclass(frozen=True)
@@ -242,7 +247,7 @@ class BlindProcedureBuilder:
 
         masked = value
         for item in sorted(removed, key=lambda match: match.start, reverse=True):
-            masked = masked[:item.start] + "[MASKED]" + masked[item.end:]
+            masked = masked[:item.start] + REDACTION_MARKER + masked[item.end:]
         return masked, sorted(removed, key=lambda match: match.start)
 
     def sanitize_runtime_query(
