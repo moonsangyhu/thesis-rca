@@ -2,12 +2,21 @@
 
 ## 요약
 
-- 총 이슈: 50건
-- 심각(실험 무효화): 44건
+- 총 이슈: 51건
+- 심각(실험 무효화): 45건
 - 경고(실행 전 수정): 5건
 - 참고(영향 미미): 1건
 
 ## 이슈 목록
+
+### [ISS-051] Full reset이 host-crash 뒤 잔류한 F6 NetworkPolicy를 삭제하지 못함
+
+- **카테고리**: recovery / code
+- **심각도**: critical (P0)
+- **영향**: `v2-3-main-20260828-primary44`는 F1 t1의 36 calls를 생성했지만, F6 t4 crash가 남긴 `fault-block-dns` 때문에 post-trial comprehensive health check가 실패했다. result/raw/logical ledger는 0이고 campaign은 불완전하므로 primary estimand에 포함하지 않는다.
+- **근본 원인**: `Recovery._full_reset()`은 Boutique manifest만 재적용했다. manifest가 소유하지 않는 NetworkPolicy는 apply로 삭제되지 않으며 F6 policy에 experiment label도 없었다.
+- **수정 내용**: full reset은 알려진 F6 policy 다섯 개(`fault-deny-all`, `fault-block-cart`, `fault-block-payment`, `fault-block-dns`, `fault-block-redis`)만 삭제한 뒤 original manifest를 적용한다. 임의 정책이나 일반 policy에는 영향을 주지 않는다.
+- **현재 영향**: `fault-block-dns`를 단일 명시 대상으로 제거한 뒤 Boutique 12/12, nodes 6/6 Ready, Flux 5/5 Ready를 확인했다. full-reset regression 4 PASS·py_compile·diff-check를 통과한 clean revision에서 새 campaign을 재시작한다.
 
 ### [ISS-050] 실행 호스트 재부팅으로 primary campaign이 durable 종료 처리 없이 소실
 

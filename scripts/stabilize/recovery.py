@@ -39,6 +39,13 @@ ORIGINAL_MANIFEST = str(
 F4_T4_RECOVERY_ATTEMPTS = 10
 F4_T4_CONDITION_POLL_ATTEMPTS = 15
 F4_T4_RETRY_DELAY_SECONDS = 2
+F6_POLICY_NAMES = {
+    1: "fault-deny-all",
+    2: "fault-block-cart",
+    3: "fault-block-payment",
+    4: "fault-block-dns",
+    5: "fault-block-redis",
+}
 
 
 class Recovery:
@@ -110,8 +117,15 @@ class Recovery:
         return result
 
     def _full_reset(self) -> dict:
-        """Nuclear option: re-apply original manifests."""
+        """Re-apply manifests and remove every known fault NetworkPolicy.
+
+        Applying the Boutique manifest cannot delete an unowned policy.  A
+        coordinator/host crash during F6 can therefore survive into the next
+        incident unless the bounded, known fault names are removed here.
+        """
         logger.info("Full reset: re-applying original manifests")
+        for name in F6_POLICY_NAMES.values():
+            kubectl_delete("networkpolicy", name)
         result = kubectl("apply", "-f", ORIGINAL_MANIFEST, namespace=NAMESPACE)
         return {"action": "full_reset", "output": result}
 
@@ -600,14 +614,7 @@ class Recovery:
 
     def _recover_f6(self, trial: int, ctx: dict) -> dict:
         """Delete injected NetworkPolicies."""
-        policy_names = {
-            1: "fault-deny-all",
-            2: "fault-block-cart",
-            3: "fault-block-payment",
-            4: "fault-block-dns",
-            5: "fault-block-redis",
-        }
-        name = policy_names.get(trial, "")
+        name = F6_POLICY_NAMES.get(trial, "")
         if name:
             kubectl_delete("networkpolicy", name)
         return {"action": "delete_network_policy", "name": name}
