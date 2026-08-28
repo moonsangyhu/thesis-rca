@@ -14,6 +14,8 @@ class CopilotIdentityError(RuntimeError):
     pass
 
 
+IDENTITY_PROBE_REAP_SECONDS = 5
+
 @dataclass(frozen=True)
 class CopilotAccountIdentity:
     login: str
@@ -53,7 +55,18 @@ def _run_identity_probe(
             process.kill()
         except ProcessLookupError:
             pass
-        process.communicate()
+        try:
+            process.communicate(timeout=IDENTITY_PROBE_REAP_SECONDS)
+        except subprocess.TimeoutExpired:
+            # A leaked descendant can retain stdout/stderr after the directly
+            # owned gh process is gone.  Do not turn an identity preflight
+            # timeout into an unbounded hang before any experiment artifact.
+            for stream in (process.stdin, process.stdout, process.stderr):
+                try:
+                    if stream is not None:
+                        stream.close()
+                except OSError:
+                    pass
         raise
     return subprocess.CompletedProcess(
         command, process.returncode, stdout=stdout, stderr=stderr

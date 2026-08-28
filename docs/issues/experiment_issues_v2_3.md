@@ -665,3 +665,12 @@
 - **근본 원인**: native ML thread 초기화 뒤 fork-required SDK runner launch가 process tree/pipe lifecycle을 불안정하게 만들었을 가능성이 높다. `kubectl` timeout은 같은 시점의 독립 관찰이지만 단일 직접 원인으로 확정하지 않는다.
 - **수정 내용**: SDK request가 이미 `working_directory`를 봉인해 전달하므로 Python child의 `cwd`를 제거했다. `start_new_session` 대신 absolute Node executable과 `close_fds=False`를 사용해 posix_spawn-safe launch를 강제한다. watchdog은 process group이 아닌 직접 소유 runner PID만 kill하며, timeout receipt·AIC uncertainty·fail-closed recovery 경계는 유지한다.
 - **현재 영향**: SDK 15 PASS, full V2.3 178 PASS, health/spawn 26 PASS, dry-run 180 rows/2,160 calls·external/filesystem 0, cartservice/Flux recovery GREEN을 확인했다. Primary47은 append-only로 보존·배제하고 clean revision의 fresh campaign에서 재검증한다.
+
+### [ISS-051] Identity probe timeout cleanup이 artifact 전 무기한 대기
+
+- **카테고리**: code / infra
+- **심각도**: critical (P0)
+- **영향**: Primary48은 GitHub identity probe 실패로 artifact·fault injection·Copilot/AIC 0에서 종료됐다. Primary49는 같은 artifact 전 probe가 timeout 뒤 2분 이상 대기해 operator가 안전 종료했다. 두 run 모두 primary estimand에 포함하지 않는다.
+- **관찰한 사실**: 별도 `/opt/homebrew/bin/gh api user --jq .login`은 승인된 login을 즉시 반환했다. `_run_identity_probe()`는 `TimeoutExpired` 뒤 직접 `gh` child를 kill하지만 timeout 없는 두 번째 `communicate()`를 호출했다. child descendant가 pipe descriptor를 유지하면 이 경로가 완료되지 않을 수 있다.
+- **수정 내용**: timeout/interrupt cleanup의 second communicate를 5초 bounded reap로 제한하고, 재차 timeout이면 owned stream만 close한 뒤 원래 exception을 전파한다. identity가 확정되지 않으면 artifact 전 fail-closed하는 기존 계약은 유지한다.
+- **현재 영향**: identity+SDK 22 PASS, full V2.3 178 PASS, `git diff --check` PASS. clean revision에서 artifact-free preflight를 재검증한다.
