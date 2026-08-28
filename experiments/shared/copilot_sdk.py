@@ -324,21 +324,25 @@ class CopilotSDKBackend:
     def _run_runner(
         self, command: list[str], request: str, cwd: Path, env: dict[str, str],
     ) -> tuple[subprocess.CompletedProcess, bool]:
-        """Run Node and its Copilot child in one killable process group.
+        """Run the isolated Node SDK runner with a bounded direct-child kill.
 
         The timer is a second, independent liveness boundary.  In particular,
         it still kills the whole process group if `communicate()` is delayed by
         retained pipe descriptors after a child-side SDK failure.
         """
+        # ``working_directory`` is supplied inside the sealed SDK request, so
+        # the Python child does not need ``cwd``.  On macOS, either ``cwd`` or
+        # ``start_new_session`` forces fork/exec after Torch/tokenizers have
+        # initialized native threads.  Preserve the watchdog while keeping
+        # this launch on the posix_spawn-safe path.
         process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            cwd=cwd,
             env=env,
             text=True,
-            start_new_session=True,
+            close_fds=False,
         )
         watchdog_expired = threading.Event()
         watchdog_lock = threading.Lock()
@@ -349,7 +353,7 @@ class CopilotSDKBackend:
                 if watchdog_closed:
                     return
                 watchdog_expired.set()
-            self._kill_process_group(process.pid)
+            self._kill_runner(process.pid)
 
         watchdog = threading.Timer(
             self.timeout_seconds + SDK_RUNNER_GRACE_SECONDS,
@@ -375,24 +379,24 @@ class CopilotSDKBackend:
                 # A process can close its inherited stdout/stderr descriptors
                 # before its parent has been reaped.  Preserve the watchdog
                 # outcome and wait only for the fixed reap boundary.
-                self._kill_process_group(process.pid)
+                self._kill_runner(process.pid)
                 try:
                     process.wait(timeout=SDK_RUNNER_REAP_SECONDS)
                 except subprocess.TimeoutExpired:
-                    self._kill_process_group(process.pid)
+                    self._kill_runner(process.pid)
             return subprocess.CompletedProcess(
                 command, process.returncode, stdout, stderr
             ), watchdog_expired.is_set()
         except subprocess.TimeoutExpired:
             close_watchdog()
             watchdog_expired.set()
-            self._kill_process_group(process.pid)
+            self._kill_runner(process.pid)
             try:
                 stdout, stderr = process.communicate(timeout=SDK_RUNNER_REAP_SECONDS)
             except subprocess.TimeoutExpired as exc:
                 # The group was already killed.  Do not let an inherited pipe
                 # descriptor hold the fault-injection/recovery state forever.
-                self._kill_process_group(process.pid)
+                self._kill_runner(process.pid)
                 stdout = self._as_text(exc.output)
                 stderr = self._as_text(exc.stderr)
                 for stream in (process.stdin, process.stdout, process.stderr):
@@ -404,30 +408,21 @@ class CopilotSDKBackend:
             return subprocess.CompletedProcess(command, None, stdout, stderr), True
         except BaseException:
             close_watchdog()
-            self._kill_process_group(process.pid)
+            self._kill_runner(process.pid)
             try:
                 process.communicate(timeout=SDK_RUNNER_REAP_SECONDS)
             except subprocess.TimeoutExpired:
-                self._kill_process_group(process.pid)
+                self._kill_runner(process.pid)
             raise
         finally:
             close_watchdog()
 
     @staticmethod
-    def _kill_process_group(pid: int) -> None:
+    def _kill_runner(pid: int) -> None:
         try:
-            os.killpg(pid, signal.SIGKILL)
+            os.kill(pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
-        except PermissionError:
-            # The production runner is created as a new session, so killpg is
-            # the normal process-tree cleanup path.  Some host test/process
-            # configurations can nevertheless reject a group signal; never
-            # leave the directly owned runner alive in that case.
-            try:
-                os.kill(pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
 
     @staticmethod
     def _json_lines(output: str) -> list[dict]:

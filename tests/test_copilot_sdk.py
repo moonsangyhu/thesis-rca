@@ -492,11 +492,11 @@ class CopilotSDKBackendTest(unittest.TestCase):
                 backend.call("p", "s", 128)
         run.assert_not_called()
 
-    @patch("experiments.shared.copilot_sdk.os.killpg")
+    @patch("experiments.shared.copilot_sdk.os.kill")
     @patch("experiments.shared.copilot_sdk.subprocess.Popen")
     @patch("experiments.shared.copilot_sdk.shutil.which")
     def test_outer_timeout_kills_entire_sdk_process_group(
-        self, which, popen, killpg
+        self, which, popen, kill
     ):
         which.side_effect = lambda name: f"/opt/bin/{name}"
         process = popen.return_value
@@ -513,15 +513,17 @@ class CopilotSDKBackendTest(unittest.TestCase):
         self.assertTrue(timed_out)
         self.assertIsNone(completed.returncode)
         self.assertEqual(completed.stdout, "partial usage")
-        killpg.assert_called_once_with(4321, 9)
-        self.assertTrue(popen.call_args.kwargs["start_new_session"])
+        kill.assert_called_once_with(4321, 9)
+        self.assertFalse(popen.call_args.kwargs["close_fds"])
+        self.assertNotIn("cwd", popen.call_args.kwargs)
+        self.assertNotIn("start_new_session", popen.call_args.kwargs)
 
     @patch("experiments.shared.copilot_sdk.threading.Timer")
-    @patch("experiments.shared.copilot_sdk.os.killpg")
+    @patch("experiments.shared.copilot_sdk.os.kill")
     @patch("experiments.shared.copilot_sdk.subprocess.Popen")
     @patch("experiments.shared.copilot_sdk.shutil.which")
     def test_independent_watchdog_marks_runner_timeout_when_communicate_returns(
-        self, which, popen, killpg, timer
+        self, which, popen, kill, timer
     ):
         """A watchdog expiry is timeout even if communicate later returns."""
         which.side_effect = lambda name: f"/opt/bin/{name}"
@@ -550,7 +552,7 @@ class CopilotSDKBackendTest(unittest.TestCase):
             )
         self.assertTrue(timed_out)
         self.assertEqual(completed.returncode, -9)
-        killpg.assert_any_call(4323, 9)
+        kill.assert_any_call(4323, 9)
 
     @patch("experiments.shared.copilot_sdk.SDK_RUNNER_REAP_SECONDS", 1)
     @patch("experiments.shared.copilot_sdk.SDK_RUNNER_GRACE_SECONDS", 0)
@@ -569,10 +571,8 @@ class CopilotSDKBackendTest(unittest.TestCase):
         self.assertLess(time.monotonic() - started, 5)
 
     @patch("experiments.shared.copilot_sdk.os.kill")
-    @patch("experiments.shared.copilot_sdk.os.killpg", side_effect=PermissionError)
-    def test_group_kill_permission_failure_still_kills_runner_pid(self, killpg, kill):
-        CopilotSDKBackend._kill_process_group(4323)
-        killpg.assert_called_once_with(4323, 9)
+    def test_runner_kill_targets_only_the_direct_sdk_runner(self, kill):
+        CopilotSDKBackend._kill_runner(4323)
         kill.assert_called_once_with(4323, 9)
 
     @patch("experiments.shared.copilot_sdk.shutil.which")
@@ -583,11 +583,11 @@ class CopilotSDKBackendTest(unittest.TestCase):
                 with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                     self.backend(temp_dir, timeout_seconds=invalid)
 
-    @patch("experiments.shared.copilot_sdk.os.killpg")
+    @patch("experiments.shared.copilot_sdk.os.kill")
     @patch("experiments.shared.copilot_sdk.subprocess.Popen")
     @patch("experiments.shared.copilot_sdk.shutil.which")
     def test_keyboard_interrupt_also_kills_sdk_process_group(
-        self, which, popen, killpg
+        self, which, popen, kill
     ):
         which.side_effect = lambda name: f"/opt/bin/{name}"
         process = popen.return_value
@@ -599,7 +599,7 @@ class CopilotSDKBackendTest(unittest.TestCase):
                 backend._run_runner(
                     ["node", "runner"], "{}", Path(temp_dir), {},
                 )
-        killpg.assert_called_once_with(4322, 9)
+        kill.assert_called_once_with(4322, 9)
 
     @patch("experiments.shared.copilot_sdk.shutil.which")
     @patch.object(CopilotSDKBackend, "_run_runner")
