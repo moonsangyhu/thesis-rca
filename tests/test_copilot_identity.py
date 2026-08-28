@@ -80,6 +80,20 @@ class CopilotIdentityTests(unittest.TestCase):
             process.kill.assert_called_with()
             process.communicate.reset_mock()
 
+    @patch("experiments.shared.copilot_identity.subprocess.Popen")
+    def test_timeout_reap_cannot_hold_identity_probe_forever(self, popen):
+        process = popen.return_value
+        process.communicate.side_effect = (
+            subprocess.TimeoutExpired(cmd=["gh"], timeout=3),
+            subprocess.TimeoutExpired(cmd=["gh"], timeout=5),
+        )
+        with self.assertRaises(subprocess.TimeoutExpired):
+            _run_identity_probe(["gh"], timeout_seconds=3)
+        process.kill.assert_called_once_with()
+        self.assertEqual(process.communicate.call_count, 2)
+        process.stdout.close.assert_called_once_with()
+        process.stderr.close.assert_called_once_with()
+
     def test_invalid_contract_is_rejected(self):
         for kwargs in (
             {"expected_login": ""},

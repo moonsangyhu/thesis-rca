@@ -771,3 +771,12 @@
 - **수정 내용**: sealed request의 `working_directory` binding은 유지하면서 Python runner subprocess의 `cwd`와 `start_new_session`을 제거하고 absolute Node+`close_fds=False`로 launch한다. watchdog cleanup은 직접 소유 runner PID로 한정한다.
 - **수정 파일**: `experiments/shared/copilot_sdk.py`, `tests/test_copilot_sdk.py`, `docs/issues/experiment_issues_v2_3.md`, `results/experiment_changes_v2_3.md`
 - **상태**: SDK 15 PASS, full V2.3 178 PASS, health/spawn 26 PASS, dry-run 180 rows/2,160 calls·external/filesystem 0, `git diff --check` PASS. Primary47은 append-only 보존·배제하고 clean revision에서 재시작한다.
+
+### 88. GitHub identity probe의 bounded timeout reap — 2026-08-28
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary49는 artifact 생성 전 GitHub identity subprocess timeout 뒤 무기한 reap 대기에 머물렀다.
+- **원인**: killed direct `gh` child 뒤에도 descendant가 stdout/stderr descriptor를 보유하면 timeout 없는 `communicate()`가 종료되지 않을 수 있었다.
+- **수정 내용**: 5초 bounded reap 뒤 pipe를 close하고 원래 timeout을 fail-closed로 전파하도록 변경했다.
+- **수정 파일**: `experiments/shared/copilot_identity.py`, `tests/test_copilot_identity.py`, `docs/issues/experiment_issues_v2_3.md`, `results/experiment_changes_v2_3.md`
+- **상태**: identity+SDK 22 PASS, full V2.3 178 PASS, `git diff --check` PASS. Primary48/49는 artifact-free 실행으로 보존·배제한다.
