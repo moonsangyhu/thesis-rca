@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -34,10 +35,52 @@ class HealthVerifyTests(unittest.TestCase):
         for output in malformed:
             with self.subTest(output=output), patch.object(
                 health_verify, "ssh_node", return_value=output
+            ), patch.object(
+                health_verify, "_nodefs_usage_from_kubelet", side_effect=ValueError("unavailable")
             ):
                 issues = health_verify._check_disk_usage()
                 self.assertEqual(len(issues), len(health_verify.WORKER_NODES))
                 self.assertTrue(all("marker is malformed" in item for item in issues))
+
+    def test_disk_usage_uses_fresh_kubelet_nodefs_summary_after_ssh_timeout(self):
+        now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        def kubelet_summary(*args, **_kwargs):
+            node_name = args[2].split("/")[4]
+            return __import__("json").dumps(
+                {
+                    "node": {
+                        "nodeName": node_name,
+                        "fs": {
+                            "capacityBytes": 1000,
+                            "availableBytes": 800,
+                            "time": now,
+                        },
+                    }
+                }
+            )
+
+        with patch.object(health_verify, "ssh_node", side_effect=TimeoutError("ssh")), patch.object(
+            health_verify, "kubectl", side_effect=kubelet_summary
+        ) as kubectl:
+            self.assertEqual(health_verify._check_disk_usage(), [])
+
+        self.assertEqual(kubectl.call_count, len(health_verify.WORKER_NODES))
+        self.assertTrue(all("/proxy/stats/summary" in call.args[2] for call in kubectl.call_args_list))
+
+    def test_kubelet_nodefs_rejects_stale_summary(self):
+        summary = {
+            "node": {
+                "nodeName": "yms-proxmox-02",
+                "fs": {
+                    "capacityBytes": 1000,
+                    "availableBytes": 800,
+                    "time": "2020-01-01T00:00:00Z",
+                },
+            }
+        }
+        with patch.object(health_verify, "kubectl", return_value=__import__("json").dumps(summary)):
+            with self.assertRaisesRegex(ValueError, "stale"):
+                health_verify._nodefs_usage_from_kubelet("yms-proxmox-02")
 
     def test_disk_usage_preserves_threshold_gate(self):
         with patch.object(

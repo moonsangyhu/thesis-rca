@@ -5,6 +5,17 @@ from unittest.mock import patch
 
 
 class KubectlPosixSpawnTests(unittest.TestCase):
+    def test_fault_inject_ssh_keeps_fds_after_local_ml_initialization(self):
+        from scripts.fault_inject import base
+
+        completed = subprocess.CompletedProcess(["ssh"], 0, "ok\n", "")
+        with patch("scripts.fault_inject.base.shutil.which", return_value="/usr/bin/ssh"), \
+                patch("scripts.fault_inject.base.subprocess.run", return_value=completed) as run:
+            self.assertEqual(base.ssh_node("yms-proxmox-02", "true", timeout=15), "ok\n")
+
+        self.assertEqual(run.call_args.args[0][0], "/usr/bin/ssh")
+        self.assertFalse(run.call_args.kwargs["close_fds"])
+
     def test_fault_inject_kubectl_uses_absolute_executable_and_keeps_fds(self):
         from scripts.fault_inject import base
 

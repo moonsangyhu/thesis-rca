@@ -753,3 +753,12 @@
 - **수정 내용**: F7-t5 unready 상태를 성공으로 재분류하지 않는다. immutable ground truth를 보존한 채 main schedule에서 이 identity만 제외하고, manifest와 analysis CLI가 59 incidents·177 rows·2,124 calls 및 exact exclusion을 명시하게 했다.
 - **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/analyze.py:1`, `tests/test_v2_3_main_campaign.py:1`, `tests/test_v2_3_analyze.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: targeted 29 PASS, `git diff --check` PASS. Primary45는 append-only로 보존·배제하며 clean revision에서 새 59-incident campaign을 시작한다.
+
+### 86. SSH disk health의 posix-spawn 보강과 kubelet fail-closed fallback — 2026-08-28
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary46 F2 t3은 injection·모델 평가·Flux restore 뒤 worker disk health marker를 읽지 못해 recovery를 false-RED 처리했고, 7/59 committed incidents에서 중단됐다.
+- **원인**: worker SSH 관리 경로가 TCP 연결 뒤 banner/auth 단계에서 timeout됐다. `ssh_node()`도 local ML 초기화 후 fork/exec 경로를 사용할 수 있어 동일 계열 정체 위험이 남아 있었다. standalone SSH도 timeout되어 local spawn 경로만이 이번 인프라 단절의 원인이라고 단정하지 않는다.
+- **수정 내용**: SSH executable을 absolute path로 resolve하고 subprocess에 `close_fds=False`를 고정하는 regression을 추가했다. SSH marker를 검증할 수 없을 때만 authenticated kubelet nodefs summary의 node identity·capacity/available·5분 freshness를 검증해 `<80%` gate를 적용한다. stale/malformed/inconsistent kubelet 응답은 pass하지 않으며 F4의 SSH-dependent mutation/recovery는 계속 fail-closed다.
+- **수정 파일**: `scripts/fault_inject/base.py`, `scripts/stabilize/health_verify.py`, `tests/test_kubectl_posix_spawn.py`, `tests/test_health_verify.py`, `docs/lab-environment.md`, `docs/issues/experiment_issues_v2_3.md`, `results/experiment_changes_v2_3.md`
+- **상태**: targeted 11 PASS, actual worker disk health `[]`, `git diff --check` PASS. Primary46은 append-only 보존·배제하고 clean revision의 fresh 59-incident campaign에서 재검증한다.
