@@ -717,3 +717,12 @@
 - **수정 내용**: marker를 `[REDACTED]`로 교체하고 procedure masker provenance version을 갱신했다. five-minute range 스타일의 short scalar mask 후 scanner clean을 직접 회귀로 검증한다.
 - **수정 파일**: `experiments/v2_3/retrieval.py:1`, `tests/test_v2_3_retrieval.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: retrieval/scanner/live-runner 82 PASS, corpus short-value masking 52 matching documents clean, offline dry-run 180 rows/2,160 calls·external/filesystem 0, `git diff --check` PASS. Primary41은 append-only 보존·배제하며 clean commit에서 fresh campaign을 시작한다.
+
+### 82. Primary42 host-reboot 중단을 불완전 artifact로 격리 — 2026-08-28
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary42가 F6 t4 `injection_verified` 뒤 terminal event 없이 종료됐다.
+- **원인**: 2026-08-28 실행 호스트 재부팅으로 tmux와 parent/SDK child process가 소실됐다. Python exception/recovery failure는 artifact에 기록되지 않았다.
+- **수정 내용**: incomplete artifact를 보존·배제하고 ISS-050에 durable event 경계와 재연결 후 클러스터 GREEN 상태를 기록했다. 새 campaign ID로 F1 t1부터 fresh 60-incident run을 재개한다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: nodes 6/6 Ready·DiskPressure/MemoryPressure=False, Boutique 12/12, Flux 5/5, Prometheus/Loki GREEN을 재확인했다.
