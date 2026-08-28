@@ -18,6 +18,7 @@
 - **관찰한 사실**: artifact event journal의 마지막 record는 F6 t4 `injection_verified`이며 `incident_failed`, `recovery_green`, `recovery_failed`, `campaign_complete` 중 어느 것도 뒤따르지 않았다. 이전 실행 PID와 tmux session은 존재하지 않고 새 tmux server boot timestamp는 2026-08-28 09:50 KST였다. 터널은 모두 내려가 있었지만 재연결 뒤 nodes 6/6 Ready·DiskPressure/MemoryPressure=False, Boutique 12/12 Running, Flux 5/5 Ready, Prometheus/Loki Running을 확인했다.
 - **근본 원인**: 실행 호스트 재부팅으로 parent process와 그 하위 SDK/CLI process가 외부 종료됐다. artifact에 Python exception 또는 recovery failure 증거는 없으므로 이를 코드 결함으로 단정하지 않는다.
 - **현재 영향**: Primary42 artifact는 append-only로 보존·배제한다. 새 campaign ID에서 F1 t1부터 fresh 60-incident run을 시작하며, 재실행 전 tunnel/preflight GREEN을 다시 확인한다.
+- **복구·재시도 후속(append-only)**: Primary43은 F1 t1 pre-injection Flux guard에서 `app`·`flux-system`의 stale `spec.suspend=true`를 발견해 fail-closed했다. 결과/raw/logical ledger/charged ledger와 Copilot call은 모두 0이다. Primary42 F6 t4 sealed receipt의 original state(두 field absent)에 맞춰 해당 두 Kustomization만 merge-patch null로 원복하고 reconcile을 요청했다. 두 대상 모두 `suspend=<absent>`, Ready=True(및 app Healthy=True)를 확인했다. Primary43도 불완전 artifact로 보존·배제한다.
 
 ### [ISS-049] 짧은 field-value 마스킹 표식이 compact scanner에서 자기-누출을 재생성
 

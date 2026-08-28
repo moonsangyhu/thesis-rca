@@ -726,3 +726,12 @@
 - **수정 내용**: incomplete artifact를 보존·배제하고 ISS-050에 durable event 경계와 재연결 후 클러스터 GREEN 상태를 기록했다. 새 campaign ID로 F1 t1부터 fresh 60-incident run을 재개한다.
 - **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: nodes 6/6 Ready·DiskPressure/MemoryPressure=False, Boutique 12/12, Flux 5/5, Prometheus/Loki GREEN을 재확인했다.
+
+### 83. Host-reboot 뒤 잔류한 Flux suspend를 exact original로 복구 — 2026-08-28
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary43은 F1 t1 전 Flux guard가 `app`·`flux-system`의 stale `spec.suspend=true`를 감지해 fail-closed했다.
+- **원인**: Primary42 host-reboot가 F6 t4 후 mandatory Flux restore 이전에 process를 종료했다.
+- **수정 내용**: Primary42 receipt의 original absence semantics에 맞춰 두 Kustomization에만 `spec.suspend:null` merge patch 및 reconcile request를 적용했다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: Primary43은 call/result/raw/ledger 0의 pre-injection artifact로 보존·배제한다. app과 flux-system 모두 `suspend=<absent>`, Ready=True이며 app Healthy=True를 확인했다.
