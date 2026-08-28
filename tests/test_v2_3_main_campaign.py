@@ -71,6 +71,11 @@ class MainCampaignWiringTests(unittest.TestCase):
             }, clear=False))
             stack.enter_context(patch("experiments.v2_3.main_campaign.FAULTS", ("F1",)))
             stack.enter_context(patch("experiments.v2_3.main_campaign.TRIALS", (1,)))
+            stack.enter_context(patch("experiments.v2_3.main_campaign.MAIN_INCIDENTS", (("F1", 1),)))
+            stack.enter_context(patch("experiments.v2_3.main_campaign.MAIN_EXCLUDED_INCIDENTS", frozenset()))
+            stack.enter_context(patch("experiments.v2_3.main_campaign.MAIN_EXPECTED_INCIDENTS", 1))
+            stack.enter_context(patch("experiments.v2_3.main_campaign.MAIN_EXPECTED_ROWS", 3))
+            stack.enter_context(patch("experiments.v2_3.main_campaign.MAIN_EXPECTED_CALLS", 36))
             stack.enter_context(patch("experiments.v2_3.main_campaign.time.sleep"))
             mocks = {name: stack.enter_context(patch(name, value)) for name, value in replacements.items()}
             summary = run_authorized_main(
@@ -88,7 +93,7 @@ class MainCampaignWiringTests(unittest.TestCase):
             1,
         )
         manifest = store.write_manifest.call_args.args[0]
-        self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-5")
+        self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-6")
         self.assertEqual(manifest["copilot_inference_timeout_seconds"], 300)
         self.assertIsNone(manifest["billing_confirmed_at"])
         self.assertEqual(

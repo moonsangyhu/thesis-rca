@@ -1,7 +1,7 @@
 import unittest
 
 from experiments.v2_3.analyze import AnalysisError, analyze_rows
-from experiments.v2_3.config import CONDITIONS, FAULTS, TRIALS
+from experiments.v2_3.config import CONDITIONS, FAULTS, MAIN_INCIDENTS, TRIALS
 
 
 def complete_rows():
@@ -53,6 +53,17 @@ class AnalyzeTests(unittest.TestCase):
         mixed[-1]["campaign_id"] = "other"
         with self.assertRaises(AnalysisError):
             analyze_rows(mixed)
+
+    def test_main_schedule_requires_the_preregistered_f7_t5_exclusion(self):
+        rows = [
+            row for row in complete_rows()
+            if not (row["fault_id"] == "F7" and row["trial"] == 5)
+        ]
+        result = analyze_rows(rows, expected_incidents=frozenset(MAIN_INCIDENTS))
+        self.assertEqual(result["rows"], 177)
+        self.assertEqual(result["incidents"], 59)
+        with self.assertRaises(AnalysisError):
+            analyze_rows(rows)
 
 
 if __name__ == "__main__":

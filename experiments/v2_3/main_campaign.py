@@ -1,4 +1,4 @@
-"""Authorized 60-incident V2.3 primary campaign orchestration."""
+"""Authorized V2.3 primary campaign orchestration."""
 
 from __future__ import annotations
 
@@ -10,9 +10,11 @@ from pathlib import Path
 
 from .authorization import LiveAuthorization, PAID_OVERAGE_MODE
 from .config import (
-    COPILOT_ACCOUNT_LOGIN, COPILOT_SESSION_MAX_AIC, EXPECTED_CALLS,
-    EXPECTED_ROWS, FAULTS, FLUX_RECONCILIATION_POLICY, MAIN_MANIFEST_SCHEMA,
-    PRIMARY_COPILOT_TIMEOUT_SECONDS, REQUESTED_MODEL, TRIALS,
+    COPILOT_ACCOUNT_LOGIN, COPILOT_SESSION_MAX_AIC, FAULTS,
+    FLUX_RECONCILIATION_POLICY, MAIN_EXCLUDED_INCIDENTS,
+    MAIN_EXPECTED_CALLS, MAIN_EXPECTED_INCIDENTS, MAIN_EXPECTED_ROWS,
+    MAIN_INCIDENTS, MAIN_MANIFEST_SCHEMA, PRIMARY_COPILOT_TIMEOUT_SECONDS,
+    REQUESTED_MODEL, TRIALS,
 )
 
 
@@ -108,11 +110,20 @@ def run_authorized_main(
         "copilot_inference_timeout_seconds": PRIMARY_COPILOT_TIMEOUT_SECONDS,
         "projected_main_aic_from_pilot": 4055,
         "model": REQUESTED_MODEL,
-        "expected_incidents": len(FAULTS) * len(TRIALS),
-        "expected_rows": EXPECTED_ROWS,
-        "expected_calls": EXPECTED_CALLS,
+        "expected_incidents": MAIN_EXPECTED_INCIDENTS,
+        "expected_rows": MAIN_EXPECTED_ROWS,
+        "expected_calls": MAIN_EXPECTED_CALLS,
         "faults": list(FAULTS),
         "trials": list(TRIALS),
+        "included_incidents": [
+            {"fault_id": fault_id, "trial": trial}
+            for fault_id, trial in MAIN_INCIDENTS
+        ],
+        "excluded_incidents": [
+            {"fault_id": fault_id, "trial": trial,
+             "reason": "invalidated-f7-t5-rollout-confounding"}
+            for fault_id, trial in sorted(MAIN_EXCLUDED_INCIDENTS)
+        ],
         "corpus_version": corpus_version,
         "cli_version": cli_version,
         "cli_version_source": "local-package-and-native-sha256",
@@ -129,11 +140,12 @@ def run_authorized_main(
     store.append_event("preflight_green")
 
     ground_truth = load_ground_truth(project_root / "results" / "ground_truth.csv")
-    expected_identities = frozenset(
+    ground_truth_identities = frozenset(
         (fault_id, trial) for fault_id in FAULTS for trial in TRIALS
     )
-    if set(ground_truth) != expected_identities:
+    if set(ground_truth) != ground_truth_identities:
         raise RuntimeError("ground truth identity set does not match V2.3 schedule")
+    expected_identities = frozenset(MAIN_INCIDENTS)
     journal = AttemptJournal(output_dir / "attempt_call_ledger.jsonl")
     caller = AuthorizedTerraCaller(
         authorization=authorization,
@@ -177,35 +189,34 @@ def run_authorized_main(
     )
 
     completed = 0
-    for fault_id in FAULTS:
-        for trial in TRIALS:
-            authorization.revalidate()
-            store.append_event(
-                "incident_scheduled", fault_id=fault_id, trial=trial,
-                ordinal=completed + 1,
-            )
-            summary = runner.run(fault_id, trial, ground_truth[(fault_id, trial)])
-            completed += 1
-            progress = {
-                "event": "campaign_progress",
-                "campaign_id": campaign_id,
-                "completed_incidents": completed,
-                "expected_incidents": len(expected_identities),
-                "rows": completed * 3,
-                "calls": completed * 36,
-                "aic_used": caller.cumulative_aic,
-                "fault_id": fault_id,
-                "trial": trial,
-                "incident": summary,
-            }
-            store.append_event(
-                "campaign_progress", fault_id=fault_id, trial=trial,
-                completed_incidents=completed, rows=completed * 3,
-                calls=completed * 36, aic_used=caller.cumulative_aic,
-            )
-            print(json.dumps(progress, ensure_ascii=False, sort_keys=True), flush=True)
-            if completed < len(expected_identities):
-                time.sleep(30)
+    for fault_id, trial in MAIN_INCIDENTS:
+        authorization.revalidate()
+        store.append_event(
+            "incident_scheduled", fault_id=fault_id, trial=trial,
+            ordinal=completed + 1,
+        )
+        summary = runner.run(fault_id, trial, ground_truth[(fault_id, trial)])
+        completed += 1
+        progress = {
+            "event": "campaign_progress",
+            "campaign_id": campaign_id,
+            "completed_incidents": completed,
+            "expected_incidents": len(expected_identities),
+            "rows": completed * 3,
+            "calls": completed * 36,
+            "aic_used": caller.cumulative_aic,
+            "fault_id": fault_id,
+            "trial": trial,
+            "incident": summary,
+        }
+        store.append_event(
+            "campaign_progress", fault_id=fault_id, trial=trial,
+            completed_incidents=completed, rows=completed * 3,
+            calls=completed * 36, aic_used=caller.cumulative_aic,
+        )
+        print(json.dumps(progress, ensure_ascii=False, sort_keys=True), flush=True)
+        if completed < len(expected_identities):
+            time.sleep(30)
 
     final = {
         "campaign_id": campaign_id,
