@@ -643,3 +643,14 @@
 - **현재 영향**: primary39 artifact는 append-only로 보존·배제한다. SDK/live caller regression을 통과하고, read-only quota/auth preflight를 재검증한 clean revision에서 fresh main campaign을 새 ID로 시작한다.
 
 - **후속 수정(append-only)**: Primary40 F1 t4에서 위 exact null envelope가 1.379초 간격으로 두 번 연속 발생해 기존 단일 retry를 모두 소진했다. exact sole-record·zero AIC·zero premium·complete-usage 조건은 그대로 둔 채 이 failure code만 1초·2초 backoff를 거쳐 최대 두 번 재시도한다. 일반 authentication/metadata/malformed/usage 오류의 retry 횟수는 변경하지 않는다.
+
+### [ISS-049] SSH 관리 경로 단절이 healthy worker disk gate를 false-RED로 처리
+
+- **카테고리**: infra / recovery / code
+- **심각도**: critical (P0)
+- **영향**: `v2-3-main-20260828-primary46`은 F1 t1–t5 및 F2 t1–t2의 7 incidents·21 rows/raw·252 logical calls를 commit한 뒤 F2 t3 recovery에서 중단됐다. F2 t3의 36 attempt/charged calls와 미확정 출력은 logical ledger/result/raw에 commit되지 않았으며, 이 incomplete artifact 전체는 primary estimand에서 제외한다.
+- **발생 빈도**: 본실험 1회(모든 worker disk probe), 2026-08-28 현재 후속 read-only 확인에서도 5/5 worker와 master의 신규 SSH session이 banner 전 5–15초 timeout.
+- **관찰한 사실**: F2 t3은 `injection_verified`와 exact Flux restore를 기록했으나 post-trial health check가 다섯 worker에서 `disk usage marker is malformed`로 3회, full-reset 뒤 2회 실패해 `recovery_failed`가 기록됐다. 직후 실제 Kubernetes API는 nodes 6/6 Ready·DiskPressure/MemoryPressure=False, Boutique 12/12 Running, Flux 5/5 Ready, NetworkPolicy/ResourceQuota/LimitRange 0이었다. 인증된 kubelet `/api/v1/nodes/{node}/proxy/stats/summary`는 각 nodefs capacity/available을 반환했으며 사용률은 21–45%였다. TCP 22016–22020 연결은 성공하지만 신규 SSH command는 timeout됐다.
+- **근본 원인**: worker SSH 관리 경로의 banner/auth 단계가 응답하지 않아 exact SSH marker를 수집할 수 없었다. 이 외부 상태와 별개로 `ssh_node()`가 local ML 초기화 뒤 macOS fork/exec 경로를 택할 수 있었던 구현 결함도 확인했으나, standalone SSH도 timeout됐으므로 이번 단절의 단일 원인으로 단정하지 않는다.
+- **수정 내용**: SSH executable을 absolute path로 resolve하고 subprocess를 kubectl과 같은 `close_fds=False` posix_spawn-safe 경로로 고정한다. SSH timeout·malformed marker에는 authenticated read-only kubelet nodefs summary를 fallback으로 사용하되 node identity, integer capacity/available 범위, 관측시각 5분 freshness를 모두 검증하고 어느 하나라도 실패하면 RED를 유지한다. SSH가 필요한 F4 node-fault injection/recovery는 fallback으로 우회하지 않고 여전히 fail-closed한다.
+- **현재 영향**: targeted 11 PASS 및 actual disk health `[]`를 확인했다. Primary46 artifact는 append-only로 보존·배제하며, full V2.3 regression·dry-run·clean commit 뒤 새 campaign에서 F1 t1부터 재시작한다.

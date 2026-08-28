@@ -2,6 +2,7 @@
 import json
 import logging
 import time
+from datetime import datetime, timezone
 
 from scripts.fault_inject.base import kubectl, ssh_node
 from scripts.fault_inject.config import WORKER_NODES
@@ -12,6 +13,8 @@ NAMESPACE = "boutique"
 EXPECTED_DEPLOYMENTS = 12
 DISK_THRESHOLD_PCT = 80
 DISK_USAGE_MARKER = "__V23_DISK_USAGE_PCT__="
+KUBELET_STATS_MAX_AGE_SECONDS = 300
+SSH_DISK_PROBE_TIMEOUT_SECONDS = 5
 
 
 def comprehensive_health_check(
@@ -166,7 +169,7 @@ def _check_disk_usage() -> list[str]:
                 "awk 'NR == 2 {gsub(\"%\", \"\", $5); print $5}'); "
                 "case \"$pct\" in ''|*[!0-9]*) exit 41;; esac; "
                 f"printf '{DISK_USAGE_MARKER}%s\\n' \"$pct\"",
-                timeout=15,
+                timeout=SSH_DISK_PROBE_TIMEOUT_SECONDS,
             )
             values = [
                 line.removeprefix(DISK_USAGE_MARKER)
@@ -180,11 +183,52 @@ def _check_disk_usage() -> list[str]:
             ):
                 raise ValueError("disk usage marker is malformed")
             pct = int(values[0])
-            if pct >= DISK_THRESHOLD_PCT:
-                issues.append(f"{node_name} disk={pct}% (>={DISK_THRESHOLD_PCT}%)")
         except Exception as e:
-            issues.append(f"{node_name} disk check failed: {e}")
+            try:
+                pct = _nodefs_usage_from_kubelet(node_name)
+                logger.warning(
+                    "SSH disk probe failed for %s (%s); using kubelet nodefs summary",
+                    node_name,
+                    e,
+                )
+            except Exception as fallback_error:
+                issues.append(
+                    f"{node_name} disk check failed: {e}; "
+                    f"kubelet fallback failed: {fallback_error}"
+                )
+                continue
+        if pct >= DISK_THRESHOLD_PCT:
+            issues.append(f"{node_name} disk={pct}% (>={DISK_THRESHOLD_PCT}%)")
     return issues
+
+
+def _nodefs_usage_from_kubelet(node_name: str) -> int:
+    """Return current rootfs usage from the authenticated kubelet summary API.
+
+    This is a read-only fallback for a transient SSH management-path outage.
+    A missing, stale, or internally inconsistent summary remains a health-check
+    failure; it must never be interpreted as a healthy disk by default.
+    """
+    raw = kubectl(
+        "get", "--raw", f"/api/v1/nodes/{node_name}/proxy/stats/summary",
+        namespace="",
+        timeout=15,
+    )
+    data = json.loads(raw)
+    fs = data["node"]["fs"]
+    if data["node"].get("nodeName") != node_name:
+        raise ValueError("node name does not match kubelet summary")
+    capacity = fs["capacityBytes"]
+    available = fs["availableBytes"]
+    if type(capacity) is not int or type(available) is not int or capacity <= 0:
+        raise ValueError("nodefs capacity/availability is invalid")
+    if not 0 <= available <= capacity:
+        raise ValueError("nodefs availability is outside capacity")
+    observed_at = datetime.fromisoformat(fs["time"].replace("Z", "+00:00"))
+    age_seconds = (datetime.now(timezone.utc) - observed_at).total_seconds()
+    if age_seconds < -5 or age_seconds > KUBELET_STATS_MAX_AGE_SECONDS:
+        raise ValueError("nodefs summary is stale or from the future")
+    return (capacity - available) * 100 // capacity
 
 
 def _check_monitoring() -> list[str]:

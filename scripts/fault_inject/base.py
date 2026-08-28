@@ -26,6 +26,11 @@ def _kubectl_executable() -> str:
     return shutil.which(KUBECTL) or KUBECTL
 
 
+def _ssh_executable() -> str:
+    """Resolve SSH so macOS can use the posix_spawn execution path."""
+    return shutil.which("ssh") or "ssh"
+
+
 def kubectl(*args: str, namespace: str = NAMESPACE, timeout: int = 60) -> str:
     """Run kubectl command."""
     cmd = [_kubectl_executable()]
@@ -135,7 +140,7 @@ def ssh_node(node_name: str, command: str, timeout: int = 30) -> str:
         raise ValueError(f"Unknown node: {node_name}")
 
     ssh_cmd = [
-        "ssh",
+        _ssh_executable(),
         "-o", "StrictHostKeyChecking=no",
         "-o", "ConnectTimeout=10",
         "-p", str(node["port"]),
@@ -150,6 +155,11 @@ def ssh_node(node_name: str, command: str, timeout: int = 30) -> str:
     logger.info("SSH to %s: %s", node_name, command)
     result = subprocess.run(
         ssh_cmd, capture_output=True, text=True, timeout=timeout,
+        # The live runner has already initialized local ML worker threads.
+        # On macOS, close_fds=True selects fork/exec and can deadlock the SSH
+        # child before it emits health-check markers.  Keep the same
+        # posix_spawn-safe contract used by kubectl above.
+        close_fds=False,
     )
     return result.stdout + result.stderr
 
