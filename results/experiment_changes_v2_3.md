@@ -735,3 +735,12 @@
 - **수정 내용**: Primary42 receipt의 original absence semantics에 맞춰 두 Kustomization에만 `spec.suspend:null` merge patch 및 reconcile request를 적용했다.
 - **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: Primary43은 call/result/raw/ledger 0의 pre-injection artifact로 보존·배제한다. app과 flux-system 모두 `suspend=<absent>`, Ready=True이며 app Healthy=True를 확인했다.
+
+### 84. Full reset에서 알려진 F6 crash 잔여 NetworkPolicy를 제거 — 2026-08-28
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary44 F1 t1 복구가 host-crash 뒤 남은 `fault-block-dns` 때문에 fail-closed했다.
+- **원인**: `kubectl apply`는 original Boutique manifest에 없는 F6 NetworkPolicy를 prune하지 않는다.
+- **수정 내용**: full reset이 bounded known F6 policy name 다섯 개만 먼저 삭제하고 manifest를 적용하도록 보강했다.
+- **수정 파일**: `scripts/stabilize/recovery.py:1`, `tests/test_health_verify.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: recovery regression 4 PASS, `py_compile`, `git diff --check` PASS. Primary44는 append-only로 보존·배제한다.

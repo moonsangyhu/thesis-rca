@@ -60,9 +60,15 @@ class RecoveryManifestTests(unittest.TestCase):
         self.assertTrue(expected.is_file())
         self.assertNotIn("/tmp/thesis-rca-work", recovery.ORIGINAL_MANIFEST)
 
-        with patch.object(recovery, "kubectl", return_value="applied") as apply:
+        with patch.object(recovery, "kubectl", return_value="applied") as apply, patch.object(
+            recovery, "kubectl_delete"
+        ) as delete:
             result = recovery.Recovery()._full_reset()
         self.assertEqual(result, {"action": "full_reset", "output": "applied"})
+        self.assertEqual(
+            [call.args for call in delete.call_args_list],
+            [("networkpolicy", name) for name in recovery.F6_POLICY_NAMES.values()],
+        )
         apply.assert_called_once_with(
             "apply", "-f", str(expected), namespace=recovery.NAMESPACE
         )
