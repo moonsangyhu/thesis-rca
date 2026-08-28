@@ -654,3 +654,14 @@
 - **근본 원인**: worker SSH 관리 경로의 banner/auth 단계가 응답하지 않아 exact SSH marker를 수집할 수 없었다. 이 외부 상태와 별개로 `ssh_node()`가 local ML 초기화 뒤 macOS fork/exec 경로를 택할 수 있었던 구현 결함도 확인했으나, standalone SSH도 timeout됐으므로 이번 단절의 단일 원인으로 단정하지 않는다.
 - **수정 내용**: SSH executable을 absolute path로 resolve하고 subprocess를 kubectl과 같은 `close_fds=False` posix_spawn-safe 경로로 고정한다. SSH timeout·malformed marker에는 authenticated read-only kubelet nodefs summary를 fallback으로 사용하되 node identity, integer capacity/available 범위, 관측시각 5분 freshness를 모두 검증하고 어느 하나라도 실패하면 RED를 유지한다. SSH가 필요한 F4 node-fault injection/recovery는 fallback으로 우회하지 않고 여전히 fail-closed한다.
 - **현재 영향**: targeted 11 PASS 및 actual disk health `[]`를 확인했다. Primary46 artifact는 append-only로 보존·배제하며, full V2.3 regression·dry-run·clean commit 뒤 새 campaign에서 F1 t1부터 재시작한다.
+
+### [ISS-050] Torch 이후 SDK process-group fork가 inference와 recovery subprocess를 정체
+
+- **카테고리**: code / infra / recovery
+- **심각도**: critical (P0)
+- **영향**: `v2-3-main-20260828-primary47`은 F1 t1에서 첫 Terra generator call 1건(203.663초, 1.5286 AIC)을 완료한 뒤 두 번째 call이 outer watchdog으로 종료되어 logical result/raw/call ledger 0으로 중단됐다. 이어 F1 exact recovery의 Python `kubectl set resources`가 60초 timeout되어 자동 recovery가 실패했다. artifact 전체는 primary estimand에서 제외한다.
+- **발생 빈도**: 본실험 1회. F1 post-injection lifecycle에서만 1회 직접 관측됐다.
+- **관찰한 사실**: SDK runner launch는 local Torch/tokenizers 초기화 뒤 `cwd=<temporary working>`와 `start_new_session=True`를 함께 설정했다. 이는 macOS `posix_spawn` 조건을 깨고 fork/exec를 강제한다. failure 시 parent는 poll wait였고 Node SDK child는 관측되지 않았다. 이후 같은 terminal의 direct `kubectl`로 cartservice의 sealed resource pre-state(64Mi request/128Mi limit)를 복구했고 1/1 Running 및 Flux root/app exact unsuspend를 확인했다.
+- **근본 원인**: native ML thread 초기화 뒤 fork-required SDK runner launch가 process tree/pipe lifecycle을 불안정하게 만들었을 가능성이 높다. `kubectl` timeout은 같은 시점의 독립 관찰이지만 단일 직접 원인으로 확정하지 않는다.
+- **수정 내용**: SDK request가 이미 `working_directory`를 봉인해 전달하므로 Python child의 `cwd`를 제거했다. `start_new_session` 대신 absolute Node executable과 `close_fds=False`를 사용해 posix_spawn-safe launch를 강제한다. watchdog은 process group이 아닌 직접 소유 runner PID만 kill하며, timeout receipt·AIC uncertainty·fail-closed recovery 경계는 유지한다.
+- **현재 영향**: SDK 15 PASS, full V2.3 178 PASS, health/spawn 26 PASS, dry-run 180 rows/2,160 calls·external/filesystem 0, cartservice/Flux recovery GREEN을 확인했다. Primary47은 append-only로 보존·배제하고 clean revision의 fresh campaign에서 재검증한다.

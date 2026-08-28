@@ -762,3 +762,12 @@
 - **수정 내용**: SSH executable을 absolute path로 resolve하고 subprocess에 `close_fds=False`를 고정하는 regression을 추가했다. SSH marker를 검증할 수 없을 때만 authenticated kubelet nodefs summary의 node identity·capacity/available·5분 freshness를 검증해 `<80%` gate를 적용한다. stale/malformed/inconsistent kubelet 응답은 pass하지 않으며 F4의 SSH-dependent mutation/recovery는 계속 fail-closed다.
 - **수정 파일**: `scripts/fault_inject/base.py`, `scripts/stabilize/health_verify.py`, `tests/test_kubectl_posix_spawn.py`, `tests/test_health_verify.py`, `docs/lab-environment.md`, `docs/issues/experiment_issues_v2_3.md`, `results/experiment_changes_v2_3.md`
 - **상태**: targeted 11 PASS, actual worker disk health `[]`, `git diff --check` PASS. Primary46은 append-only 보존·배제하고 clean revision의 fresh 59-incident campaign에서 재검증한다.
+
+### 87. Terra SDK runner의 Torch-after-fork 경로 제거 — 2026-08-28
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary47 F1 t1의 첫 Terra 호출 뒤 다음 SDK call이 watchdog timeout되고, 이어지는 recovery `kubectl` mutation도 Python subprocess timeout으로 실패했다.
+- **원인**: SDK runner가 Torch/tokenizers 초기화 뒤 `cwd`와 `start_new_session=True`를 사용해 macOS posix_spawn 대신 fork/exec를 강제했다. Node/pipe lifecycle 정체와 같은 실행 구간에서 관측됐다.
+- **수정 내용**: sealed request의 `working_directory` binding은 유지하면서 Python runner subprocess의 `cwd`와 `start_new_session`을 제거하고 absolute Node+`close_fds=False`로 launch한다. watchdog cleanup은 직접 소유 runner PID로 한정한다.
+- **수정 파일**: `experiments/shared/copilot_sdk.py`, `tests/test_copilot_sdk.py`, `docs/issues/experiment_issues_v2_3.md`, `results/experiment_changes_v2_3.md`
+- **상태**: SDK 15 PASS, full V2.3 178 PASS, health/spawn 26 PASS, dry-run 180 rows/2,160 calls·external/filesystem 0, `git diff --check` PASS. Primary47은 append-only 보존·배제하고 clean revision에서 재시작한다.
