@@ -9,7 +9,7 @@ import json
 import random
 from pathlib import Path
 
-from .config import CONDITIONS, FAULTS, TRIALS
+from .config import CONDITIONS, FAULTS, MAIN_INCIDENTS, TRIALS
 
 BOOTSTRAP_SEED = 20260809
 BOOTSTRAP_ITERATIONS = 50_000
@@ -30,9 +30,17 @@ def _binary(value) -> int:
     return parsed
 
 
-def validate_rows(rows: list[dict]) -> dict[tuple[str, int, str], dict]:
-    if len(rows) != 180:
-        raise AnalysisError(f"expected 180 rows, found {len(rows)}")
+def _full_incidents() -> frozenset[tuple[str, int]]:
+    return frozenset((fault, trial) for fault in FAULTS for trial in TRIALS)
+
+
+def validate_rows(
+    rows: list[dict], *, expected_incidents: frozenset[tuple[str, int]] | None = None
+) -> dict[tuple[str, int, str], dict]:
+    incidents = _full_incidents() if expected_incidents is None else expected_incidents
+    expected_rows = len(incidents) * len(CONDITIONS)
+    if len(rows) != expected_rows:
+        raise AnalysisError(f"expected {expected_rows} rows, found {len(rows)}")
     indexed: dict[tuple[str, int, str], dict] = {}
     campaigns = set()
     for row in rows:
@@ -51,8 +59,8 @@ def validate_rows(rows: list[dict]) -> dict[tuple[str, int, str], dict]:
         for threshold in THRESHOLDS:
             _binary(row.get(f"correct_at_{threshold}"))
         indexed[key] = row
-    expected = {(fault, trial, condition) for fault in FAULTS
-                for trial in TRIALS for condition in CONDITIONS}
+    expected = {(fault, trial, condition) for fault, trial in incidents
+                for condition in CONDITIONS}
     missing = expected - set(indexed)
     if missing:
         raise AnalysisError(f"missing result identities: {len(missing)}")
@@ -72,14 +80,16 @@ def _percentile(sorted_values: list[float], probability: float) -> float:
 
 
 def _fault_cluster_differences(
-    indexed, threshold: float, *, excluded_incidents: frozenset[tuple[str, int]] = frozenset()
+    indexed, threshold: float, *, available_incidents: frozenset[tuple[str, int]],
+    excluded_incidents: frozenset[tuple[str, int]] = frozenset(),
 ) -> dict[str, float]:
     field = f"correct_at_{threshold}"
     differences = {}
     for fault in FAULTS:
         included_trials = [
             trial for trial in TRIALS
-            if (fault, trial) not in excluded_incidents
+            if (fault, trial) in available_incidents
+            and (fault, trial) not in excluded_incidents
         ]
         if not included_trials:
             raise AnalysisError(f"sensitivity excludes every trial for {fault}")
@@ -91,11 +101,16 @@ def _fault_cluster_differences(
     return differences
 
 
-def _sensitivity_result(indexed, excluded: frozenset[tuple[str, int]]) -> dict:
+def _sensitivity_result(
+    indexed, excluded: frozenset[tuple[str, int]], *, available_incidents: frozenset[tuple[str, int]]
+) -> dict:
+    if not excluded.issubset(available_incidents):
+        raise AnalysisError("sensitivity exclusion is outside the observed schedule")
     threshold_results = {}
     for threshold in THRESHOLDS:
         differences = _fault_cluster_differences(
-            indexed, threshold, excluded_incidents=excluded
+            indexed, threshold, available_incidents=available_incidents,
+            excluded_incidents=excluded
         )
         threshold_results[str(threshold)] = {
             "blind_minus_placebo": sum(differences.values()) / len(differences),
@@ -108,7 +123,7 @@ def _sensitivity_result(indexed, excluded: frozenset[tuple[str, int]]) -> dict:
             {"fault_id": fault, "trial": trial}
             for fault, trial in sorted(excluded)
         ],
-        "incidents": 60 - len(excluded),
+        "incidents": len(available_incidents) - len(excluded),
         "primary_delta": threshold_results["0.5"]["blind_minus_placebo"],
         "fault_cluster_bootstrap_ci_95": [ci_low, ci_high],
         "exact_fault_cluster_sign_flip_p": exact_cluster_sign_flip_p(primary),
@@ -149,11 +164,16 @@ def exact_cluster_sign_flip_p(fault_differences: dict[str, float]) -> float:
     return extreme / total
 
 
-def analyze_rows(rows: list[dict]) -> dict:
-    indexed = validate_rows(rows)
+def analyze_rows(
+    rows: list[dict], *, expected_incidents: frozenset[tuple[str, int]] | None = None
+) -> dict:
+    available_incidents = _full_incidents() if expected_incidents is None else expected_incidents
+    indexed = validate_rows(rows, expected_incidents=available_incidents)
     threshold_results = {}
     for threshold in THRESHOLDS:
-        fault_differences = _fault_cluster_differences(indexed, threshold)
+        fault_differences = _fault_cluster_differences(
+            indexed, threshold, available_incidents=available_incidents
+        )
         delta = sum(fault_differences.values()) / len(fault_differences)
         threshold_results[str(threshold)] = {
             "blind_minus_placebo": delta,
@@ -169,7 +189,7 @@ def analyze_rows(rows: list[dict]) -> dict:
     )
     return {
         "rows": len(rows),
-        "incidents": 60,
+        "incidents": len(available_incidents),
         "campaign_id": next(iter({row["campaign_id"] for row in rows})),
         "primary_estimand": "blind_procedural_rag-length_placebo",
         "primary_delta": primary_delta,
@@ -186,13 +206,16 @@ def analyze_rows(rows: list[dict]) -> dict:
         "final_hypothesis_status": "pending_human_review",
         "treatment_integrity_sensitivity": {
             "exclude_f4_t3": _sensitivity_result(
-                indexed, frozenset({("F4", 3)})
+                indexed, frozenset({("F4", 3)}),
+                available_incidents=available_incidents,
             ),
             "exclude_f4_t4": _sensitivity_result(
-                indexed, frozenset({("F4", 4)})
+                indexed, frozenset({("F4", 4)}),
+                available_incidents=available_incidents,
             ),
             "exclude_f4_t3_and_t4": _sensitivity_result(
-                indexed, frozenset({("F4", 3), ("F4", 4)})
+                indexed, frozenset({("F4", 3), ("F4", 4)}),
+                available_incidents=available_incidents,
             ),
         },
     }
@@ -206,8 +229,15 @@ def load_rows(path: Path) -> list[dict]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Analyze complete V2.3 primary CSV")
     parser.add_argument("csv_path", type=Path)
+    parser.add_argument(
+        "--main-schedule", action="store_true",
+        help="require the approved 59-incident live schedule (F7-t5 excluded)",
+    )
     args = parser.parse_args(argv)
-    result = analyze_rows(load_rows(args.csv_path))
+    result = analyze_rows(
+        load_rows(args.csv_path),
+        expected_incidents=frozenset(MAIN_INCIDENTS) if args.main_schedule else None,
+    )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

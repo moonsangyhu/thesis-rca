@@ -199,6 +199,20 @@ Copilot의 output-token limit도 API hard cap이 아니라 prompt의 approximate
 
 ## 6. 표본수와 통계 계획
 
+### 6.4 실행 중 고정 schedule amendment — F7-t5 제외 (2026-08-28)
+
+F7-t5(`currencyservice`, CPU 5m)는 120초 관찰 창에서 target pod가 Ready가 되지 않아
+`CPUThrottle`의 사전 등록 latency phenotype 대신 rollout/startup failure를 만들었다. 이는
+동일한 5m 처치에서 이미 기록된 ISS-003의 재발이며, unready를 CPU throttling 성공으로
+재분류하면 구성 타당성을 훼손한다. 따라서 원시 `ground_truth.csv`는 불변으로 보존하고,
+새 main campaign에서는 F7-t5를 명시적으로 제외한다.
+
+- live estimand: 59 paired incidents × 3 conditions = **177 rows**, 2,124 logical calls
+- F7 fault-cluster 평균은 유효한 4 trials만으로 계산한다. 전체 효과는 fault-cluster를 동일 가중한다.
+- 분석 CLI는 `--main-schedule`일 때만 이 정확한 제외 집합을 수용한다. 누락 177행을 일반 180행 결과처럼 해석하지 않는다.
+- 이미 중단된 Primary45 및 이전 incomplete artifact는 모두 primary estimand에서 제외한다.
+- F7-t5는 별도의 injector 설계와 승인된 ground truth amendment 없이는 재도입하지 않는다.
+
 ### 6.1 표본과 호출 예산
 
 | 단위 | 수 |

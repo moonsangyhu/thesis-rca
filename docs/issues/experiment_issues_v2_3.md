@@ -1,6 +1,21 @@
 # V2.3 실험 이슈 트래커
 
+## 2026-08-28 append-only update
+
+### [ISS-052] F7-t5 CPU 5m rollout이 사전 등록된 latency phenotype을 재현하지 못함
+
+- **카테고리**: injection / methodology
+- **심각도**: critical (P0)
+- **영향**: `v2-3-main-20260828-primary45`는 F1–F6 전체와 F7 t1–t4의 34 incidents(102 rows, 1,224 logical calls)를 정상 commit한 뒤 F7-t5에서 중단됐다. F7-t5는 result/raw/logical call ledger를 추가하지 않았고, campaign 전체는 불완전하므로 primary estimand에 포함하지 않는다.
+- **관찰한 사실**: `currencyservice`에 CPU limit/request 5m를 적용한 뒤 120초 fixed observation window에서 요청 CPU를 가진 target pod가 Ready가 되지 않았다. `incident_failed(PilotError) → flux_restored(exact original) → recovery_green` 순서가 event journal에 기록됐고, 이후 nodes 6/6 Ready와 Boutique 12/12 Running을 확인했다.
+- **근본 원인**: F7-t5의 5m Deployment rollout은 사전 등록된 “currency conversion latency”가 아니라 startup/rollout failure를 만든다. 동일 교락은 ISS-003에서 이미 확인돼 F7-t5 pilot을 무효화한 바 있다.
+- **수정 내용**: unready 상태를 CPUThrottle 성공으로 허용하지 않는다. immutable ground truth를 수정하지 않은 채 main schedule에서 F7-t5만 명시 제외하고, manifest·analysis gate가 59 incidents/177 rows/2,124 calls와 정확한 제외 사유를 기록하도록 변경했다.
+- **현재 영향**: Primary45 artifact는 append-only로 보존·배제한다. 새 clean revision에서 F1-t1부터 fresh 59-incident campaign을 실행한다. F7-t5는 별도의 injector/ground-truth amendment 없이는 재시도하지 않는다.
+
 ## 요약
+
+> 아래 기존 집계는 ISS-052 이전 수치다. ISS-052를 포함한 재집계는 총 52건,
+> 심각 46건, 경고 5건, 참고 1건이다.
 
 - 총 이슈: 51건
 - 심각(실험 무효화): 45건

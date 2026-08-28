@@ -744,3 +744,12 @@
 - **수정 내용**: full reset이 bounded known F6 policy name 다섯 개만 먼저 삭제하고 manifest를 적용하도록 보강했다.
 - **수정 파일**: `scripts/stabilize/recovery.py:1`, `tests/test_health_verify.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: recovery regression 4 PASS, `py_compile`, `git diff --check` PASS. Primary44는 append-only로 보존·배제한다.
+
+### 85. F7-t5 rollout 교락을 main schedule에서 명시 제외 — 2026-08-28
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary45는 F1–F6 전체와 F7 t1–t4를 정상 commit한 뒤 F7-t5의 currencyservice CPU 5m rollout이 120초 안에 Ready가 되지 않아 `PilotError`로 중단됐다.
+- **원인**: 5m Deployment rollout이 사전 등록된 currency-conversion latency가 아니라 startup/rollout failure를 만들었다. ISS-003에서 이미 확인된 구성 타당성 위협의 재발이다.
+- **수정 내용**: F7-t5 unready 상태를 성공으로 재분류하지 않는다. immutable ground truth를 보존한 채 main schedule에서 이 identity만 제외하고, manifest와 analysis CLI가 59 incidents·177 rows·2,124 calls 및 exact exclusion을 명시하게 했다.
+- **수정 파일**: `experiments/v2_3/config.py:1`, `experiments/v2_3/main_campaign.py:1`, `experiments/v2_3/analyze.py:1`, `tests/test_v2_3_main_campaign.py:1`, `tests/test_v2_3_analyze.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: targeted 29 PASS, `git diff --check` PASS. Primary45는 append-only로 보존·배제하며 clean revision에서 새 59-incident campaign을 시작한다.
