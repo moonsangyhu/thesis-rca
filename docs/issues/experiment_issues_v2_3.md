@@ -2,12 +2,22 @@
 
 ## 요약
 
-- 총 이슈: 49건
-- 심각(실험 무효화): 43건
+- 총 이슈: 50건
+- 심각(실험 무효화): 44건
 - 경고(실행 전 수정): 5건
 - 참고(영향 미미): 1건
 
 ## 이슈 목록
+
+### [ISS-050] 실행 호스트 재부팅으로 primary campaign이 durable 종료 처리 없이 소실
+
+- **카테고리**: infra / orchestration
+- **심각도**: critical (P0)
+- **영향**: campaign `v2-3-main-20260827-primary42`는 F1–F5 전체와 F6 t1–t3까지 28 incidents·84 rows/raw·1,008 validated logical calls를 commit한 뒤 F6 t4의 `injection_verified` 직후 종료됐다. campaign은 불완전하므로 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 1회, 2026-08-28 host boot boundary.
+- **관찰한 사실**: artifact event journal의 마지막 record는 F6 t4 `injection_verified`이며 `incident_failed`, `recovery_green`, `recovery_failed`, `campaign_complete` 중 어느 것도 뒤따르지 않았다. 이전 실행 PID와 tmux session은 존재하지 않고 새 tmux server boot timestamp는 2026-08-28 09:50 KST였다. 터널은 모두 내려가 있었지만 재연결 뒤 nodes 6/6 Ready·DiskPressure/MemoryPressure=False, Boutique 12/12 Running, Flux 5/5 Ready, Prometheus/Loki Running을 확인했다.
+- **근본 원인**: 실행 호스트 재부팅으로 parent process와 그 하위 SDK/CLI process가 외부 종료됐다. artifact에 Python exception 또는 recovery failure 증거는 없으므로 이를 코드 결함으로 단정하지 않는다.
+- **현재 영향**: Primary42 artifact는 append-only로 보존·배제한다. 새 campaign ID에서 F1 t1부터 fresh 60-incident run을 시작하며, 재실행 전 tunnel/preflight GREEN을 다시 확인한다.
 
 ### [ISS-049] 짧은 field-value 마스킹 표식이 compact scanner에서 자기-누출을 재생성
 
