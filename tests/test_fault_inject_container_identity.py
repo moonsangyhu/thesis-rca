@@ -77,14 +77,26 @@ class WorkloadContainerIdentityTests(unittest.TestCase):
 
     @patch("scripts.fault_inject.injector.kubectl_patch", return_value="patched")
     @patch(
+        "scripts.fault_inject.injector.kubectl_get_json",
+        return_value={"spec": {"template": {"spec": {"containers": [
+            {"name": "server", "env": [{"name": "REDIS_ADDR", "value": "redis-cart:6379"}]},
+        ]}}}},
+    )
+    @patch(
         "scripts.fault_inject.injector.get_primary_container",
         return_value=("server", "example/cartservice:stable"),
     )
-    def test_f9_patches_primary_container_not_deployment_name(self, primary, patcher):
+    def test_f9_t1_replaces_existing_redis_env_entry(self, primary, deployment, patcher):
         self.injector._inject_f9_secret_configmap("cartservice", 1, {})
 
         patch = patcher.call_args.args[2]
-        self.assertEqual(patch["spec"]["template"]["spec"]["containers"][0]["name"], "server")
+        self.assertEqual(patcher.call_args.kwargs["patch_type"], "json")
+        self.assertEqual(patch[0]["op"], "replace")
+        self.assertEqual(patch[0]["path"], "/spec/template/spec/containers/0/env/0")
+        self.assertEqual(
+            patch[0]["value"]["valueFrom"]["secretKeyRef"]["name"],
+            "redis-cart-secret-nonexistent",
+        )
 
     def test_validator_binds_f2_to_receipted_primary_container(self):
         deployment = {

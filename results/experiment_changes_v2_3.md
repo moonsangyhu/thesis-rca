@@ -834,3 +834,12 @@
 - **수정 내용**: F8-t4는 exact container-index JSON Patch로 readinessProbe 전체를 교체하고, sealed original probe receipt로 같은 path만 복원한다. full reset은 exact F2 `exit 1` command만 제거한다. 실제 F8-t4 no-model injection/recovery와 health GREEN을 별도 확인한다.
 - **수정 파일**: `scripts/fault_inject/{base,injector}.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_fault_inject_container_identity.py:1`, `tests/test_health_verify.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — incomplete Primary02는 append-only 보존·배제. clean revision에서 fresh 59-incident campaign을 실행한다.
+
+### 95. F9 env와 F8 service list의 sealed JSON Patch 복구 — 2026-08-30
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary03은 F8 전체까지 39 incidents를 commit한 뒤 F9-t1의 existing `REDIS_ADDR.value`와 injected `valueFrom` 충돌로 validator에서 중단됐다. F8-t5 service port도 manifest apply만으로 extra port 삭제가 보장되지 않았다.
+- **원인**: strategic-merge가 env/list scalar의 mutually exclusive field와 changed Service port list key를 제거하지 않고 병합했다.
+- **수정 내용**: F9-t1의 env entry·recovery env list, F8 service selector/ports를 pre-mutation sealed receipt에서 JSON Patch로 정확 교체/복원한다. full reset은 manifest의 Service selector/ports drift도 bounded JSON Patch로 수렴시킨다.
+- **수정 파일**: `scripts/fault_inject/injector.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_fault_inject_container_identity.py:1`, `tests/test_health_verify.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — incomplete Primary03은 append-only 보존·배제. live no-model verification과 clean revision에서 fresh campaign을 실행한다.

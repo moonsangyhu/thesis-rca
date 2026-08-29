@@ -104,7 +104,7 @@ class FaultInjector:
             result = injector(target, trial, gt, recovery_context)
         else:
             result = injector(target, trial, gt)
-        if fault_id in {"F4", "F8"} and isinstance(recovery_context, dict):
+        if fault_id in {"F4", "F8", "F9"} and isinstance(recovery_context, dict):
             # Preserve the durably sealed pre-mutation identity alongside the
             # post-launch process receipt.  Runner recovery must receive both.
             result = {**recovery_context, **result}
@@ -270,6 +270,42 @@ class FaultInjector:
                 "target_service": target,
                 "container_name": container_name,
                 "original_readiness_probe": matches[0]["readinessProbe"],
+            }
+        if fault_id == "F8" and trial in {1, 2, 5}:
+            service = kubectl_get_json("service", target, namespace=NAMESPACE)
+            spec = service.get("spec", {})
+            if not isinstance(spec.get("ports"), list):
+                raise RuntimeError("F8 service pre-state ports are invalid")
+            context = {
+                "fault_id": fault_id,
+                "trial": trial,
+                "target_service": target,
+                "original_service_ports": spec["ports"],
+            }
+            if trial == 1:
+                if not isinstance(spec.get("selector"), dict):
+                    raise RuntimeError("F8 selector pre-state is invalid")
+                context["original_service_selector"] = spec["selector"]
+            return context
+        if (fault_id, trial) == ("F9", 1):
+            deployment = kubectl_get_json("deployment", target, namespace=NAMESPACE)
+            container_name, _ = get_primary_container(target)
+            containers = (
+                deployment.get("spec", {}).get("template", {}).get("spec", {})
+                .get("containers", [])
+            )
+            matches = [
+                container for container in containers
+                if isinstance(container, dict) and container.get("name") == container_name
+            ]
+            if len(matches) != 1 or not isinstance(matches[0].get("env"), list):
+                raise RuntimeError("F9 trial 1 environment pre-state is invalid")
+            return {
+                "fault_id": fault_id,
+                "trial": trial,
+                "target_service": target,
+                "container_name": container_name,
+                "original_env": matches[0]["env"],
             }
         if fault_id != "F7":
             return {
@@ -1047,28 +1083,52 @@ class FaultInjector:
 
         if trial == 1:
             # Set env var pointing to non-existent secret
-            patch = {
-                "spec": {
-                    "template": {
-                        "spec": {
-                            "containers": [{
-                                "name": container_name,
-                                "image": image,
-                                "env": [{
-                                    "name": "REDIS_ADDR",
-                                    "valueFrom": {
-                                        "secretKeyRef": {
-                                            "name": "redis-cart-secret-nonexistent",
-                                            "key": "addr",
-                                        },
-                                    },
-                                }],
-                            }],
-                        },
+            deployment = kubectl_get_json("deployment", target, namespace=NAMESPACE)
+            containers = (
+                deployment.get("spec", {}).get("template", {}).get("spec", {})
+                .get("containers", [])
+            )
+            container_indexes = [
+                index for index, container in enumerate(containers)
+                if isinstance(container, dict) and container.get("name") == container_name
+            ]
+            if len(container_indexes) != 1:
+                raise RuntimeError("F9 trial 1 target container is ambiguous")
+            container_index = container_indexes[0]
+            env = containers[container_index].get("env", [])
+            env_indexes = [
+                index for index, item in enumerate(env)
+                if isinstance(item, dict) and item.get("name") == "REDIS_ADDR"
+            ]
+            replacement = {
+                "name": "REDIS_ADDR",
+                "valueFrom": {
+                    "secretKeyRef": {
+                        "name": "redis-cart-secret-nonexistent",
+                        "key": "addr",
                     },
                 },
             }
-            result = kubectl_patch("deployment", target, patch)
+            if len(env_indexes) == 1:
+                patch = [{
+                    "op": "replace",
+                    "path": (
+                        f"/spec/template/spec/containers/{container_index}/env/"
+                        f"{env_indexes[0]}"
+                    ),
+                    "value": replacement,
+                }]
+            elif not env_indexes:
+                patch = [{
+                    "op": "add",
+                    "path": f"/spec/template/spec/containers/{container_index}/env/-",
+                    "value": replacement,
+                }]
+            else:
+                raise RuntimeError("F9 trial 1 REDIS_ADDR is ambiguous")
+            result = kubectl_patch("deployment", target, patch, patch_type="json")
+            if not result.strip():
+                raise RuntimeError("F9 trial 1 secret patch was rejected")
             return {
                 "action": "ref_nonexistent_secret", "container_name": container_name,
                 "kubectl_output": result,
