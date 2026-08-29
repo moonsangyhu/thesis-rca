@@ -780,3 +780,12 @@
 - **수정 내용**: 5초 bounded reap 뒤 pipe를 close하고 원래 timeout을 fail-closed로 전파하도록 변경했다.
 - **수정 파일**: `experiments/shared/copilot_identity.py`, `tests/test_copilot_identity.py`, `docs/issues/experiment_issues_v2_3.md`, `results/experiment_changes_v2_3.md`
 - **상태**: identity+SDK 22 PASS, full V2.3 178 PASS, `git diff --check` PASS. Primary48/49는 artifact-free 실행으로 보존·배제한다.
+
+### 89. 실제 workload container identity로 F2/F3/F8/F9 patch 및 검증 결합 — 2026-08-29
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary52 F8 t4에서 readiness treatment validator가 실패하고 일반 recovery도 GREEN에 도달하지 못했다. 조사 결과 F2 t4 shippingservice에 `exit 1` sidecar가 남아 있었고, 이전 F2 t1 paymentservice에서도 같은 패턴의 과거 ReplicaSet가 확인됐다.
+- **원인**: injector가 strategic-merge patch의 `containers[].name`에 deployment/service명(`shippingservice`)을 사용했지만 실제 workload 컨테이너명은 `server`였다. Kubernetes가 기존 container를 mutate하지 않고 새 sidecar를 추가했고, validator도 deployment명 기반 lookup을 사용했다.
+- **수정 내용**: base helper가 primary container name/image를 fail-closed로 해석한다. F2/F3/F8-t4/F9는 receipt의 `container_name`과 함께 정확한 container만 patch하며, validator는 receipt-bound container를 검증한다. 긴급 복원 뒤 잔류 shippingservice sidecar를 exact JSON patch로 제거하고 Flux/GitOps 상태를 GREEN으로 수렴시켰다.
+- **수정 파일**: `scripts/fault_inject/base.py:1`, `scripts/fault_inject/injector.py:1`, `experiments/v2_3/injection_validator.py:1`, `tests/test_fault_inject_container_identity.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: identity regression 5 PASS, full V2.3 178 PASS, `git diff --check` PASS. Primary52는 append-only 보존·배제하고 fresh main campaign으로 처음부터 재시작한다.

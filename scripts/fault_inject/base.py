@@ -108,6 +108,36 @@ def get_container_image(deployment: str, container: str = "", namespace: str = N
     return ""
 
 
+def get_primary_container(deployment: str, namespace: str = NAMESPACE) -> tuple[str, str]:
+    """Return the mutable workload container name and image, fail-closed.
+
+    Deployment names and container names are not interchangeable in Online
+    Boutique (for example, ``shippingservice`` uses the ``server`` container).
+    Strategic-merge patches keyed by a deployment name would append a second
+    container instead of mutating the workload container, leaving a persistent
+    fault after recovery.  Prefer an exact deployment-name match, then the
+    conventional ``server`` name, then a sole container; reject ambiguity.
+    """
+    deploy = kubectl_get_json("deployment", deployment, namespace=namespace)
+    containers = (
+        deploy.get("spec", {}).get("template", {}).get("spec", {})
+        .get("containers", [])
+    )
+    if not isinstance(containers, list):
+        raise RuntimeError(f"deployment containers are malformed: {deployment}")
+    candidates = [
+        container for container in containers
+        if isinstance(container, dict) and isinstance(container.get("name"), str)
+    ]
+    for preferred_name in (deployment, "server"):
+        matched = [c for c in candidates if c["name"] == preferred_name]
+        if len(matched) == 1 and isinstance(matched[0].get("image"), str):
+            return matched[0]["name"], matched[0]["image"]
+    if len(candidates) == 1 and isinstance(candidates[0].get("image"), str):
+        return candidates[0]["name"], candidates[0]["image"]
+    raise RuntimeError(f"primary container is ambiguous: {deployment}")
+
+
 def kubectl_get_json(
     resource: str,
     name: str = "",

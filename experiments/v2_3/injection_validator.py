@@ -81,6 +81,15 @@ class LiveInjectionValidator:
             raise PilotError("post-injection target container is missing")
         return matched
 
+    @staticmethod
+    def _receipt_container(result: dict, target: str) -> str:
+        """Bind validation to the exact container mutated by the injector."""
+        name = result.get("container_name")
+        if isinstance(name, str) and name:
+            return name
+        # Legacy unit fixtures predate durable container identity receipts.
+        return target
+
     def _identity(self, fault_id: str, trial: int, ground_truth: dict, result: dict) -> str:
         target = str(ground_truth.get("target_service") or "")
         try:
@@ -122,7 +131,8 @@ class LiveInjectionValidator:
 
     def _validate_f2(self, trial: int, target: str, result: dict) -> dict:
         container = self._find_container(
-            self.load("deployment", target, "boutique"), target
+            self.load("deployment", target, "boutique"),
+            self._receipt_container(result, target),
         )
         if container.get("command") != result.get("command"):
             raise PilotError("F2 crash command treatment is absent")
@@ -130,7 +140,8 @@ class LiveInjectionValidator:
 
     def _validate_f3(self, trial: int, target: str, result: dict) -> dict:
         container = self._find_container(
-            self.load("deployment", target, "boutique"), target
+            self.load("deployment", target, "boutique"),
+            self._receipt_container(result, target),
         )
         if not result.get("image") or container.get("image") != result["image"]:
             raise PilotError("F3 image treatment is absent")
@@ -560,7 +571,9 @@ class LiveInjectionValidator:
                     .get("labels", {}).get("app-disabled") == "paymentservice"
                 )
             else:
-                probe = self._find_container(deployment, target).get("readinessProbe", {})
+                probe = self._find_container(
+                    deployment, self._receipt_container(result, target)
+                ).get("readinessProbe", {})
                 valid = probe.get("httpGet", {}).get("path") == "/nonexistent"
         if not valid:
             raise PilotError("F8 endpoint treatment is absent")
@@ -568,7 +581,9 @@ class LiveInjectionValidator:
 
     def _validate_f9(self, trial: int, target: str, result: dict) -> dict:
         deployment = self.load("deployment", target, "boutique")
-        container = self._find_container(deployment, target)
+        container = self._find_container(
+            deployment, self._receipt_container(result, target)
+        )
         serialized = str(container)
         markers = {
             1: "redis-cart-secret-nonexistent", 2: ":9999",

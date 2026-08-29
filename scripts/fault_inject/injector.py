@@ -13,7 +13,7 @@ from typing import Optional
 
 from .base import (
     kubectl, kubectl_apply, kubectl_delete, kubectl_patch,
-    kubectl_get_json, get_container_image, ssh_node, git_commit_and_push,
+    kubectl_get_json, get_primary_container, ssh_node, git_commit_and_push,
 )
 from .config import (
     F4_T3_STRESS_BYTES,
@@ -346,13 +346,13 @@ class FaultInjector:
         }
         cmd = crash_commands.get(trial, ["/bin/sh", "-c", "exit 1"])
 
-        image = get_container_image(target)
+        container_name, image = get_primary_container(target)
         patch = {
             "spec": {
                 "template": {
                     "spec": {
                         "containers": [{
-                            "name": target,
+                            "name": container_name,
                             "image": image,
                             "command": cmd,
                         }],
@@ -363,7 +363,10 @@ class FaultInjector:
         result = kubectl_patch("deployment", target, patch)
         logger.info("F2 injected: %s command → crash", target)
 
-        return {"action": "override_command", "command": cmd, "kubectl_output": result}
+        return {
+            "action": "override_command", "command": cmd,
+            "container_name": container_name, "kubectl_output": result,
+        }
 
     # ── F3: ImagePullBackOff ───────────────────────────────────────
 
@@ -376,6 +379,7 @@ class FaultInjector:
             4: f"{target}@sha256:000000000000000000000000000000", # bad digest
             5: f"docker.io/ratelimited/{target}:latest",        # rate-limited
         }
+        container_name, _ = get_primary_container(target)
         image = bad_images.get(trial, f"{target}:nonexistent")
 
         patch = {
@@ -383,7 +387,7 @@ class FaultInjector:
                 "template": {
                     "spec": {
                         "containers": [{
-                            "name": target,
+                            "name": container_name,
                             "image": image,
                         }],
                     },
@@ -393,7 +397,10 @@ class FaultInjector:
         result = kubectl_patch("deployment", target, patch)
         logger.info("F3 injected: %s image → %s", target, image)
 
-        return {"action": "change_image", "image": image, "kubectl_output": result}
+        return {
+            "action": "change_image", "image": image,
+            "container_name": container_name, "kubectl_output": result,
+        }
 
     # ── F4: NodeNotReady ───────────────────────────────────────────
 
@@ -973,13 +980,13 @@ class FaultInjector:
 
         elif trial == 4:
             # Add always-failing readiness probe
-            image = get_container_image(target, "server")
+            container_name, image = get_primary_container(target)
             patch = {
                 "spec": {
                     "template": {
                         "spec": {
                             "containers": [{
-                                "name": "server",
+                                "name": container_name,
                                 "image": image,
                                 "readinessProbe": {
                                     "httpGet": {"path": "/nonexistent", "port": 9999},
@@ -993,7 +1000,10 @@ class FaultInjector:
                 },
             }
             result = kubectl_patch("deployment", target, patch)
-            return {"action": "add_failing_readiness", "kubectl_output": result}
+            return {
+                "action": "add_failing_readiness", "container_name": container_name,
+                "kubectl_output": result,
+            }
 
         elif trial == 5:
             # Change service port
@@ -1007,7 +1017,7 @@ class FaultInjector:
 
     def _inject_f9_secret_configmap(self, target: str, trial: int, gt: dict) -> dict:
         """Mess with Secrets/ConfigMaps."""
-        image = get_container_image(target)
+        container_name, image = get_primary_container(target)
 
         if trial == 1:
             # Set env var pointing to non-existent secret
@@ -1016,7 +1026,7 @@ class FaultInjector:
                     "template": {
                         "spec": {
                             "containers": [{
-                                "name": target,
+                                "name": container_name,
                                 "image": image,
                                 "env": [{
                                     "name": "REDIS_ADDR",
@@ -1033,7 +1043,10 @@ class FaultInjector:
                 },
             }
             result = kubectl_patch("deployment", target, patch)
-            return {"action": "ref_nonexistent_secret", "kubectl_output": result}
+            return {
+                "action": "ref_nonexistent_secret", "container_name": container_name,
+                "kubectl_output": result,
+            }
 
         elif trial == 2:
             # Set wrong port via env var
@@ -1042,7 +1055,7 @@ class FaultInjector:
                     "template": {
                         "spec": {
                             "containers": [{
-                                "name": target,
+                                "name": container_name,
                                 "image": image,
                                 "env": [{
                                     "name": "PRODUCT_CATALOG_SERVICE_ADDR",
@@ -1057,7 +1070,10 @@ class FaultInjector:
                 },
             }
             result = kubectl_patch("deployment", target, patch)
-            return {"action": "wrong_env_port", "kubectl_output": result}
+            return {
+                "action": "wrong_env_port", "container_name": container_name,
+                "kubectl_output": result,
+            }
 
         elif trial == 3:
             # Mount non-existent ConfigMap as volume
@@ -1070,7 +1086,7 @@ class FaultInjector:
                                 "configMap": {"name": "paymentservice-config-nonexistent"},
                             }],
                             "containers": [{
-                                "name": target,
+                                "name": container_name,
                                 "image": image,
                                 "volumeMounts": [{
                                     "name": "config-vol",
@@ -1082,7 +1098,10 @@ class FaultInjector:
                 },
             }
             result = kubectl_patch("deployment", target, patch)
-            return {"action": "mount_nonexistent_configmap", "kubectl_output": result}
+            return {
+                "action": "mount_nonexistent_configmap", "container_name": container_name,
+                "kubectl_output": result,
+            }
 
         elif trial == 4:
             # Wrong secret key name
@@ -1091,7 +1110,7 @@ class FaultInjector:
                     "template": {
                         "spec": {
                             "containers": [{
-                                "name": target,
+                                "name": container_name,
                                 "image": image,
                                 "env": [{
                                     "name": "CHECKOUT_WRONG_KEY",
@@ -1117,7 +1136,10 @@ class FaultInjector:
             }
             kubectl_apply(secret)
             result = kubectl_patch("deployment", target, patch)
-            return {"action": "wrong_secret_key", "kubectl_output": result}
+            return {
+                "action": "wrong_secret_key", "container_name": container_name,
+                "kubectl_output": result,
+            }
 
         elif trial == 5:
             # Env var with bad value
@@ -1126,7 +1148,7 @@ class FaultInjector:
                     "template": {
                         "spec": {
                             "containers": [{
-                                "name": target,
+                                "name": container_name,
                                 "image": image,
                                 "env": [{
                                     "name": "DISABLE_TRACING",
@@ -1138,7 +1160,10 @@ class FaultInjector:
                 },
             }
             result = kubectl_patch("deployment", target, patch)
-            return {"action": "corrupted_env", "kubectl_output": result}
+            return {
+                "action": "corrupted_env", "container_name": container_name,
+                "kubectl_output": result,
+            }
 
         return {"action": "unknown_trial"}
 
