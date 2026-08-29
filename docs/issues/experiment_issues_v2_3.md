@@ -674,3 +674,13 @@
 - **관찰한 사실**: 별도 `/opt/homebrew/bin/gh api user --jq .login`은 승인된 login을 즉시 반환했다. `_run_identity_probe()`는 `TimeoutExpired` 뒤 직접 `gh` child를 kill하지만 timeout 없는 두 번째 `communicate()`를 호출했다. child descendant가 pipe descriptor를 유지하면 이 경로가 완료되지 않을 수 있다.
 - **수정 내용**: timeout/interrupt cleanup의 second communicate를 5초 bounded reap로 제한하고, 재차 timeout이면 owned stream만 close한 뒤 원래 exception을 전파한다. identity가 확정되지 않으면 artifact 전 fail-closed하는 기존 계약은 유지한다.
 - **현재 영향**: identity+SDK 22 PASS, full V2.3 178 PASS, `git diff --check` PASS. clean revision에서 artifact-free preflight를 재검증한다.
+
+### [ISS-053] Deployment명으로 container strategic-merge patch를 수행해 F2/F3/F9 fault가 sidecar를 생성
+
+- **카테고리**: injection / recovery / code
+- **심각도**: critical (P0)
+- **영향**: `v2-3-main-20260829-primary52`는 F1 전체, F2 전체, F3 전체, F4 전체, F5 전체, F6 전체, F7 유효 4건, F8 t1–t3까지 37 incidents·111 rows/raw·1,332 logical calls를 commit한 뒤 F8 t4에서 종료됐다. F2 t4의 shippingservice와 F2 t1의 paymentservice에 Deployment명 기반 sidecar가 추가·잔류했으므로, primary52 전체는 primary estimand에서 제외한다.
+- **관찰한 사실**: Online Boutique `shippingservice`와 `paymentservice`의 workload container는 `server`이지만 F2/F3/F9 injector는 patch list key를 service/deployment명으로 사용했다. Kubernetes strategic merge는 이를 기존 `server` container 변경이 아니라 새 container로 해석한다. F8 t4가 `server` readiness probe를 검증해야 할 때 잔류 `shippingservice` sidecar를 찾으며 `PilotError`가 발생했고, 일반 recovery는 `recovery_failed(RecoveryFailure)`로 끝났다. Flux reconcile 뒤에도 unowned list item이 남았고, exact JSON patch로 해당 `exit 1` sidecar를 제거한 뒤 shippingservice rollout·endpoint가 정상화됐다.
+- **근본 원인**: Deployment명과 PodSpec container명이 항상 같다는 잘못된 가정, 그리고 receipt/validator가 실제 mutation container identity를 봉인하지 않은 결함이다.
+- **수정 내용**: fail-closed `get_primary_container()`가 exact deployment명, `server`, 단일 container 순으로 실제 workload container를 해석한다. F2/F3/F8-t4/F9 patch는 이 이름을 사용하고 receipt에 `container_name`을 기록한다. validator는 새 receipt의 exact container identity를 검증한다. F8 t4 emergency restore 후 cluster는 nodes 6/6 Ready, Flux app/root Ready, Boutique 정상 상태로 복구했다.
+- **현재 영향**: primary52 artifact는 append-only로 보존·배제한다. 새 identity regression 5 PASS와 V2.3 178 PASS를 확인했으며, clean revision에서 새 campaign ID로 F1 t1부터 재시작한다.
