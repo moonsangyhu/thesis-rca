@@ -105,7 +105,9 @@ class RecoveryManifestTests(unittest.TestCase):
 
         with patch.object(recovery, "kubectl", return_value="applied") as apply, patch.object(
             recovery, "kubectl_delete"
-        ) as delete, patch.object(recovery, "kubectl_get_json", return_value={"items": []}):
+        ) as delete, patch.object(recovery, "kubectl_get_json", return_value={"items": []}), patch.object(
+            recovery.yaml, "safe_load_all", return_value=[]
+        ):
             result = recovery.Recovery()._full_reset()
         self.assertEqual(result, {"action": "full_reset", "output": "applied"})
         self.assertEqual(
@@ -128,7 +130,7 @@ class RecoveryManifestTests(unittest.TestCase):
             recovery, "kubectl_delete"
         ), patch.object(recovery, "kubectl_get_json", return_value=deployments), patch.object(
             recovery, "kubectl_patch", return_value="patched"
-        ) as patcher:
+        ) as patcher, patch.object(recovery.yaml, "safe_load_all", return_value=[]):
             recovery.Recovery()._full_reset()
         patcher.assert_called_once_with(
             "deployment", "shippingservice",
@@ -156,6 +158,48 @@ class RecoveryManifestTests(unittest.TestCase):
                 "op": "replace",
                 "path": "/spec/template/spec/containers/0/readinessProbe",
                 "value": original_probe,
+            }],
+            patch_type="json",
+        )
+        self.assertNotIn("undo", " ".join(str(call.args) for call in kubectl.call_args_list))
+
+    def test_f8_t5_recovery_restores_sealed_service_ports(self):
+        service = {"spec": {"ports": [{"name": "grpc", "port": 9999, "targetPort": 8080}]}}
+        original_ports = [{"name": "grpc", "port": 5000, "targetPort": 8080}]
+        with patch.object(recovery, "kubectl_get_json", return_value=service), patch.object(
+            recovery, "kubectl_patch", return_value="patched"
+        ) as patcher:
+            result = recovery.Recovery()._recover_f8(5, {
+                "target_service": "emailservice",
+                "original_service_ports": original_ports,
+            })
+        self.assertEqual(result, {"action": "restore_service", "trial": 5})
+        patcher.assert_called_once_with(
+            "service", "emailservice",
+            [{"op": "replace", "path": "/spec/ports", "value": original_ports}],
+            patch_type="json",
+        )
+
+    def test_f9_t1_recovery_restores_sealed_env_without_rollout_undo(self):
+        deployment = {"spec": {"template": {"spec": {"containers": [
+            {"name": "server", "env": [{"name": "REDIS_ADDR", "valueFrom": {}}]},
+        ]}}}}
+        original_env = [{"name": "REDIS_ADDR", "value": "redis-cart:6379"}]
+        with patch.object(recovery, "kubectl_get_json", return_value=deployment), patch.object(
+            recovery, "kubectl_patch", return_value="patched"
+        ) as patcher, patch.object(recovery, "kubectl", return_value="rolled out") as kubectl:
+            result = recovery.Recovery()._recover_f9(1, {
+                "target_service": "cartservice",
+                "container_name": "server",
+                "original_env": original_env,
+            })
+        self.assertEqual(result["action"], "rollout_undo_and_cleanup")
+        patcher.assert_called_once_with(
+            "deployment", "cartservice",
+            [{
+                "op": "replace",
+                "path": "/spec/template/spec/containers/0/env",
+                "value": original_env,
             }],
             patch_type="json",
         )

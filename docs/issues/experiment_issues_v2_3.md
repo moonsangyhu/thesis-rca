@@ -730,3 +730,13 @@
 - **근본 원인**: Kubernetes strategic merge는 readinessProbe 내부 handler object를 교체하지 않고 병합한다. 또한 manifest apply는 다른 field manager가 추가한 F2 command를 absent 선언만으로 삭제하지 않는다. 따라서 revision history에 의존한 F8-t4 recovery는 failure-before-mutation branch에서 안전하지 않았다.
 - **수정 내용**: F8-t4는 receipted container index의 readinessProbe 전체를 JSON Patch로 교체한다. pre-mutation recovery receipt에 original probe를 봉인하고 recovery도 같은 container·probe만 JSON Patch로 정확 복원한다. full reset은 확인된 exact F2 crash command만 제거하며 다른 command/args는 보존한다.
 - **현재 영향**: Primary02 artifact는 append-only 보존·배제한다. F8-t4 live no-model injection/recovery와 full regression·dry-run·clean revision 검증 뒤 fresh 59-incident campaign으로 재시작한다.
+
+### [ISS-059] F9-t1 env value/valueFrom 병합 충돌과 F8 service port의 비정확 복구
+
+- **카테고리**: injection / recovery / code
+- **심각도**: critical (P0)
+- **영향**: `v2-3-codex-20260830-primary03`은 F1–F8 전체의 39 incidents·117 rows/raw·1,404 logical calls를 commit한 뒤 F9-t1에서 중단됐다. F9-t1은 model call과 result/raw/logical ledger를 추가하지 않았다. 또한 F8-t5의 기존 recovery는 health gate를 통과할 수 있어도 추가 `9999` service port를 선언적으로 제거하지 못할 수 있어, Primary03 전체는 primary estimand에서 제외한다.
+- **관찰한 사실**: cartservice는 `REDIS_ADDR.value=redis-cart:6379`를 이미 가진다. F9-t1 strategic-merge patch가 same env name에 `valueFrom.secretKeyRef`만 추가해 API server가 `valueFrom may not be specified when value is not empty`로 거부했고 validator가 treatment absent를 기록했다. F8-t5 뒤 `emailservice`에는 동일 name `grpc`의 extra port가 남아 manifest apply가 duplicate port 오류를 출력했으며, health check만으로 field-level exact restore를 증명할 수 없었다.
+- **근본 원인**: Kubernetes strategic merge는 같은 env entry의 mutually exclusive `value`와 `valueFrom`을 원자적으로 교체하지 않으며, client-side manifest apply는 changed list key/port를 삭제하지 않는다.
+- **수정 내용**: F9-t1은 `REDIS_ADDR` env entry 전체를 JSON Patch로 교체하고, sealed original `env` list를 exact restore한다. F8 t1/t2/t5는 sealed original service selector/ports를 JSON Patch로 restore한다. full reset도 manifest의 Service selector/ports를 비교해 drift field만 JSON Patch로 수렴시킨다.
+- **현재 영향**: Primary03 artifact는 append-only 보존·배제한다. F9-t1 live no-model injection/recovery와 comprehensive health GREEN, full regression·dry-run·clean revision 검증 뒤 fresh 59-incident campaign을 실행한다.

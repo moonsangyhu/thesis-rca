@@ -8,6 +8,8 @@ from pathlib import Path
 import subprocess
 import time
 
+import yaml
+
 from scripts.fault_inject.base import (
     kubectl, kubectl_apply, kubectl_delete, kubectl_patch,
     kubectl_get_json, ssh_node,
@@ -144,6 +146,25 @@ class Recovery:
                         [{"op": "remove", "path": f"/spec/template/spec/containers/{index}/command"}],
                         patch_type="json",
                     )
+        desired_services = {
+            document["metadata"]["name"]: document.get("spec", {})
+            for document in yaml.safe_load_all(Path(ORIGINAL_MANIFEST).read_text())
+            if isinstance(document, dict)
+            and document.get("kind") == "Service"
+            and isinstance(document.get("metadata", {}).get("name"), str)
+        }
+        for name, desired in desired_services.items():
+            current = kubectl_get_json("service", name, namespace=NAMESPACE).get("spec", {})
+            patch = []
+            for field in ("selector", "ports"):
+                if field in desired and current.get(field) != desired[field]:
+                    patch.append({
+                        "op": "replace" if field in current else "add",
+                        "path": f"/spec/{field}",
+                        "value": desired[field],
+                    })
+            if patch:
+                kubectl_patch("service", name, patch, patch_type="json")
         return {"action": "full_reset", "output": result}
 
     def _wait_for_healthy(self, timeout: int = 300, min_pods: int = 12):
@@ -687,8 +708,27 @@ class Recovery:
     def _recover_f8(self, trial: int, ctx: dict) -> dict:
         """Fix service configuration."""
         if trial in (1, 2, 5):
-            # Re-apply original manifests to fix service
-            kubectl("apply", "-f", ORIGINAL_MANIFEST, namespace=NAMESPACE)
+            target = ctx.get("target_service")
+            original_ports = ctx.get("original_service_ports")
+            if not isinstance(target, str) or not isinstance(original_ports, list):
+                raise RuntimeError("F8 service recovery receipt is incomplete")
+            service = kubectl_get_json("service", target, namespace=NAMESPACE)
+            spec = service.get("spec", {})
+            patch = [{
+                "op": "replace" if "ports" in spec else "add",
+                "path": "/spec/ports",
+                "value": original_ports,
+            }]
+            if trial == 1:
+                selector = ctx.get("original_service_selector")
+                if not isinstance(selector, dict):
+                    raise RuntimeError("F8 selector recovery receipt is incomplete")
+                patch.append({
+                    "op": "replace" if "selector" in spec else "add",
+                    "path": "/spec/selector",
+                    "value": selector,
+                })
+            kubectl_patch("service", target, patch, patch_type="json")
         elif trial == 3:
             # Rollout undo to restore labels
             kubectl("rollout", "undo", "deployment/paymentservice")
@@ -725,7 +765,33 @@ class Recovery:
     def _recover_f9(self, trial: int, ctx: dict) -> dict:
         """Fix secrets/configmaps."""
         target = ctx.get("target_service", "")
-        kubectl("rollout", "undo", f"deployment/{target}")
+        if trial == 1:
+            container_name = ctx.get("container_name")
+            original_env = ctx.get("original_env")
+            if not isinstance(container_name, str) or not isinstance(original_env, list):
+                raise RuntimeError("F9 trial 1 recovery receipt is incomplete")
+            deployment = kubectl_get_json("deployment", target, namespace=NAMESPACE)
+            containers = (
+                deployment.get("spec", {}).get("template", {}).get("spec", {})
+                .get("containers", [])
+            )
+            indexes = [
+                index for index, container in enumerate(containers)
+                if isinstance(container, dict) and container.get("name") == container_name
+            ]
+            if len(indexes) != 1:
+                raise RuntimeError("F9 trial 1 recovery container is ambiguous")
+            kubectl_patch(
+                "deployment", target,
+                [{
+                    "op": "replace",
+                    "path": f"/spec/template/spec/containers/{indexes[0]}/env",
+                    "value": original_env,
+                }],
+                patch_type="json",
+            )
+        else:
+            kubectl("rollout", "undo", f"deployment/{target}")
         # Clean up any dummy secrets
         kubectl_delete("secret", "checkout-secret-bad")
         kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
