@@ -693,3 +693,12 @@
 - **관찰한 사실**: F3 t1의 injection verification 뒤 29건의 Terra call이 정상 완료됐고, 다음 official SDK runner가 4.163초 후 `exit_code=1`로 종료했다. durable charged receipt는 session ID만 남기고 `actual_model`, `output_tokens`, `ai_credits`, `premium_requests`가 모두 null이며 `usage_metadata_complete=false`였다. stderr는 비어 있고 stdout 원문은 개인정보·프롬프트 비노출 정책상 hash만 보존한다. `incident_failed(LiveCallerError) → flux_restored(exact original/CAS) → recovery_green`을 기록했으며, 후속 확인에서 Boutique 12/12 Running, Flux 5/5 Ready, comprehensive health GREEN이었다.
 - **근본 원인**: receipt만으로는 SDK/provider의 종료 세부 메시지를 복원할 수 없어 확정하지 않는다. 알려진 zero-usage authentication envelope나 complete-usage retry 조건에도 일치하지 않는 미분류 사전응답 종료다.
 - **처리**: 모델/토큰/AIC provenance가 불완전한 호출은 재시도하거나 결과에 포함하지 않는 existing fail-closed policy를 유지한다. primary53 artifact를 append-only로 보존·배제하고, clean cluster에서 새 campaign을 F1 t1부터 실행한다.
+
+### [ISS-055] 회사 Copilot 월간 quota 초과로 Terra inference가 차단
+
+- **카테고리**: provider / billing-policy
+- **심각도**: critical (P0)
+- **영향**: `v2-3-main-20260829-primary54`는 F1 t1 injection verification 직후 첫 Terra call에서 중단됐으며, result/raw/logical ledger는 0이다. 이 artifact는 primary estimand에 포함하지 않는다.
+- **관찰한 사실**: primary54의 charged receipt는 `exit_code=1`, `actual_model/output_tokens/ai_credits/premium_requests=null`, `usage_metadata_complete=false`였다. recovery는 exact Flux restore와 GREEN health까지 완료됐다. 이어 동일 empty-mode SDK와 `gpt-5.6-terra`로 수행한 격리 probe가 `session.error statusCode=402`, `errorCode=quota_exceeded`, `You have exceeded your monthly quota`를 반환했고 `totalPremiumRequests=0`, `totalNanoAiu=0`으로 종료했다.
+- **근본 원인**: 회사 Copilot 계정의 월간 quota가 provider 측에서 소진되어 request가 모델 추론 전에 거부된다. 이 상태는 local RAG/harness, Kubernetes, injection/recovery 또는 사용자의 과금 승인과 무관하게 계정 정책에서 결정된다.
+- **처리**: incomplete artifact를 append-only로 보존·배제한다. quota reset 또는 조직 관리자에 의한 quota 복구 후 동일 clean revision에서 새 59-incident campaign을 F1 t1부터 실행해야 한다. quota가 복구되기 전에는 추가 유료 호출을 재시도하지 않는다.

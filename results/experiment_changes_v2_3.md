@@ -798,3 +798,12 @@
 - **수정 내용**: 코드의 usage-uncertain hard-stop과 exact Flux restore/recovery 경계를 유지하고, incomplete artifact를 primary 분석에서 배제한다. F3 recovery 뒤 Boutique 12/12·Flux 5/5·health GREEN을 검증해 새 campaign 시작 조건을 재확인했다.
 - **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: Primary53은 append-only 보존·배제. clean cluster에서 새 59-incident campaign을 F1 t1부터 시작한다.
+
+### 91. Copilot 월간 quota 차단을 provider blocker로 확정 — 2026-08-29
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary54는 F1 t1 모델 평가의 첫 SDK call에서 provenance 불완전 exit 1로 중단됐다.
+- **원인**: 격리된 동일 Terra SDK probe가 `402 quota_exceeded`와 `You have exceeded your monthly quota`를 명시했고, session shutdown metric은 premium request와 AIC가 모두 0이었다. 따라서 provider 계정 quota가 추론 전 request를 차단한다.
+- **수정 내용**: 기존 fail-closed receipt/recovery를 유지하고 Primary54를 append-only로 배제했다. 추가 provider 호출은 quota 복구 전 중단한다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 외부 quota blocker. Primary54 recovery 뒤 Flux exact original 및 comprehensive health GREEN을 확인했다.
