@@ -46,6 +46,7 @@ F6_POLICY_NAMES = {
     4: "fault-block-dns",
     5: "fault-block-redis",
 }
+F2_CRASH_COMMAND = ["/bin/sh", "-c", "exit 1"]
 
 
 class Recovery:
@@ -127,6 +128,22 @@ class Recovery:
         for name in F6_POLICY_NAMES.values():
             kubectl_delete("networkpolicy", name)
         result = kubectl("apply", "-f", ORIGINAL_MANIFEST, namespace=NAMESPACE)
+        deployments = kubectl_get_json("deployment", namespace=NAMESPACE).get("items", [])
+        for deployment in deployments:
+            name = deployment.get("metadata", {}).get("name")
+            containers = (
+                deployment.get("spec", {}).get("template", {}).get("spec", {})
+                .get("containers", [])
+            )
+            if not isinstance(name, str) or not isinstance(containers, list):
+                continue
+            for index, container in enumerate(containers):
+                if isinstance(container, dict) and container.get("command") == F2_CRASH_COMMAND:
+                    kubectl_patch(
+                        "deployment", name,
+                        [{"op": "remove", "path": f"/spec/template/spec/containers/{index}/command"}],
+                        patch_type="json",
+                    )
         return {"action": "full_reset", "output": result}
 
     def _wait_for_healthy(self, timeout: int = 300, min_pods: int = 12):
@@ -678,7 +695,30 @@ class Recovery:
             kubectl("rollout", "status", "deployment/paymentservice", "--timeout=120s", timeout=150)
         elif trial == 4:
             target = ctx.get("target_service", "shippingservice")
-            kubectl("rollout", "undo", f"deployment/{target}")
+            container_name = ctx.get("container_name")
+            original_probe = ctx.get("original_readiness_probe")
+            if not isinstance(container_name, str) or not isinstance(original_probe, dict):
+                raise RuntimeError("F8 trial 4 recovery receipt is incomplete")
+            deployment = kubectl_get_json("deployment", target, namespace=NAMESPACE)
+            containers = (
+                deployment.get("spec", {}).get("template", {}).get("spec", {})
+                .get("containers", [])
+            )
+            indexes = [
+                index for index, container in enumerate(containers)
+                if isinstance(container, dict) and container.get("name") == container_name
+            ]
+            if len(indexes) != 1:
+                raise RuntimeError("F8 trial 4 recovery container is ambiguous")
+            kubectl_patch(
+                "deployment", target,
+                [{
+                    "op": "replace",
+                    "path": f"/spec/template/spec/containers/{indexes[0]}/readinessProbe",
+                    "value": original_probe,
+                }],
+                patch_type="json",
+            )
             kubectl("rollout", "status", f"deployment/{target}", "--timeout=120s", timeout=150)
         return {"action": "restore_service", "trial": trial}
 

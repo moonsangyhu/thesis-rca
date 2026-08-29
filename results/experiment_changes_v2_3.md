@@ -825,3 +825,12 @@
 - **수정 내용**: `container_name`을 non-lexical execution envelope로 분류했다. 실제 image treatment value는 계속 lexical scanner 대상이며, 재현 회귀는 `main` 제외·image 유지·2,112-character placebo clean을 고정한다.
 - **수정 파일**: `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — incomplete Primary01은 append-only 보존·배제. full verification과 clean commit 뒤 fresh 59-incident campaign에서 재검증한다.
+
+### 94. F8-t4 probe handler 충돌 및 F2 command 잔류 복구 보강 — 2026-08-30
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary02는 37 incidents·111 rows/raw·1,332 logical calls 뒤 F8-t4에서 readiness injection validation과 recovery에 실패했다.
+- **원인**: shippingservice의 existing gRPC readinessProbe에 strategic-merge HTTP handler를 더해 Kubernetes가 invalid multi-handler probe로 거부했다. injection 없이 rollout undo가 이전 F2 crash-command revision을 선택했고 manifest apply는 absent command를 제거하지 않았다.
+- **수정 내용**: F8-t4는 exact container-index JSON Patch로 readinessProbe 전체를 교체하고, sealed original probe receipt로 같은 path만 복원한다. full reset은 exact F2 `exit 1` command만 제거한다. 실제 F8-t4 no-model injection/recovery와 health GREEN을 별도 확인한다.
+- **수정 파일**: `scripts/fault_inject/{base,injector}.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_fault_inject_container_identity.py:1`, `tests/test_health_verify.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — incomplete Primary02는 append-only 보존·배제. clean revision에서 fresh 59-incident campaign을 실행한다.

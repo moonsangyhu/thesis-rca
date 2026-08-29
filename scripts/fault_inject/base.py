@@ -83,7 +83,7 @@ def kubectl_delete(resource: str, name: str, namespace: str = NAMESPACE) -> str:
 def kubectl_patch(
     resource: str,
     name: str,
-    patch: dict,
+    patch: dict | list[dict],
     patch_type: str = "strategic",
     namespace: str = NAMESPACE,
 ) -> str:

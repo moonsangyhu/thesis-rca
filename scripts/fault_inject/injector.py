@@ -104,7 +104,7 @@ class FaultInjector:
             result = injector(target, trial, gt, recovery_context)
         else:
             result = injector(target, trial, gt)
-        if fault_id == "F4" and isinstance(recovery_context, dict):
+        if fault_id in {"F4", "F8"} and isinstance(recovery_context, dict):
             # Preserve the durably sealed pre-mutation identity alongside the
             # post-launch process receipt.  Runner recovery must receive both.
             result = {**recovery_context, **result}
@@ -251,6 +251,26 @@ class FaultInjector:
                     ),
                 })
             return context
+        if (fault_id, trial) == ("F8", 4):
+            deployment = kubectl_get_json("deployment", target, namespace=NAMESPACE)
+            container_name, _ = get_primary_container(target)
+            containers = (
+                deployment.get("spec", {}).get("template", {}).get("spec", {})
+                .get("containers", [])
+            )
+            matches = [
+                container for container in containers
+                if isinstance(container, dict) and container.get("name") == container_name
+            ]
+            if len(matches) != 1 or not isinstance(matches[0].get("readinessProbe"), dict):
+                raise RuntimeError("F8 trial 4 readiness pre-state is invalid")
+            return {
+                "fault_id": fault_id,
+                "trial": trial,
+                "target_service": target,
+                "container_name": container_name,
+                "original_readiness_probe": matches[0]["readinessProbe"],
+            }
         if fault_id != "F7":
             return {
                 "fault_id": fault_id, "trial": trial,
@@ -980,26 +1000,32 @@ class FaultInjector:
 
         elif trial == 4:
             # Add always-failing readiness probe
-            container_name, image = get_primary_container(target)
-            patch = {
-                "spec": {
-                    "template": {
-                        "spec": {
-                            "containers": [{
-                                "name": container_name,
-                                "image": image,
-                                "readinessProbe": {
-                                    "httpGet": {"path": "/nonexistent", "port": 9999},
-                                    "initialDelaySeconds": 1,
-                                    "periodSeconds": 5,
-                                    "failureThreshold": 1,
-                                },
-                            }],
-                        },
-                    },
+            deployment = kubectl_get_json("deployment", target, namespace=NAMESPACE)
+            container_name, _ = get_primary_container(target)
+            containers = (
+                deployment.get("spec", {}).get("template", {}).get("spec", {})
+                .get("containers", [])
+            )
+            indexes = [
+                index for index, container in enumerate(containers)
+                if isinstance(container, dict) and container.get("name") == container_name
+            ]
+            if len(indexes) != 1:
+                raise RuntimeError("F8 trial 4 target container is ambiguous")
+            container = containers[indexes[0]]
+            patch = [{
+                "op": "replace" if "readinessProbe" in container else "add",
+                "path": f"/spec/template/spec/containers/{indexes[0]}/readinessProbe",
+                "value": {
+                    "httpGet": {"path": "/nonexistent", "port": 9999},
+                    "initialDelaySeconds": 1,
+                    "periodSeconds": 5,
+                    "failureThreshold": 1,
                 },
-            }
-            result = kubectl_patch("deployment", target, patch)
+            }]
+            result = kubectl_patch("deployment", target, patch, patch_type="json")
+            if not result.strip():
+                raise RuntimeError("F8 trial 4 readiness patch was rejected")
             return {
                 "action": "add_failing_readiness", "container_name": container_name,
                 "kubectl_output": result,

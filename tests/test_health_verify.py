@@ -105,7 +105,7 @@ class RecoveryManifestTests(unittest.TestCase):
 
         with patch.object(recovery, "kubectl", return_value="applied") as apply, patch.object(
             recovery, "kubectl_delete"
-        ) as delete:
+        ) as delete, patch.object(recovery, "kubectl_get_json", return_value={"items": []}):
             result = recovery.Recovery()._full_reset()
         self.assertEqual(result, {"action": "full_reset", "output": "applied"})
         self.assertEqual(
@@ -115,6 +115,51 @@ class RecoveryManifestTests(unittest.TestCase):
         apply.assert_called_once_with(
             "apply", "-f", str(expected), namespace=recovery.NAMESPACE
         )
+
+    def test_full_reset_removes_only_exact_f2_command_residual(self):
+        deployments = {"items": [{
+            "metadata": {"name": "shippingservice"},
+            "spec": {"template": {"spec": {"containers": [
+                {"name": "server", "command": ["/bin/sh", "-c", "exit 1"]},
+                {"name": "sidecar", "command": ["/bin/sh", "-c", "keep"]},
+            ]}}},
+        }]}
+        with patch.object(recovery, "kubectl", return_value="applied"), patch.object(
+            recovery, "kubectl_delete"
+        ), patch.object(recovery, "kubectl_get_json", return_value=deployments), patch.object(
+            recovery, "kubectl_patch", return_value="patched"
+        ) as patcher:
+            recovery.Recovery()._full_reset()
+        patcher.assert_called_once_with(
+            "deployment", "shippingservice",
+            [{"op": "remove", "path": "/spec/template/spec/containers/0/command"}],
+            patch_type="json",
+        )
+
+    def test_f8_t4_recovery_restores_sealed_probe_without_rollout_undo(self):
+        deployment = {"spec": {"template": {"spec": {"containers": [
+            {"name": "server", "readinessProbe": {"httpGet": {"path": "/nonexistent"}}},
+        ]}}}}
+        original_probe = {"grpc": {"port": 50051}, "periodSeconds": 5}
+        with patch.object(recovery, "kubectl_get_json", return_value=deployment), patch.object(
+            recovery, "kubectl_patch", return_value="patched"
+        ) as patcher, patch.object(recovery, "kubectl", return_value="rolled out") as kubectl:
+            result = recovery.Recovery()._recover_f8(4, {
+                "target_service": "shippingservice",
+                "container_name": "server",
+                "original_readiness_probe": original_probe,
+            })
+        self.assertEqual(result, {"action": "restore_service", "trial": 4})
+        patcher.assert_called_once_with(
+            "deployment", "shippingservice",
+            [{
+                "op": "replace",
+                "path": "/spec/template/spec/containers/0/readinessProbe",
+                "value": original_probe,
+            }],
+            patch_type="json",
+        )
+        self.assertNotIn("undo", " ".join(str(call.args) for call in kubectl.call_args_list))
 
 
 if __name__ == "__main__":
