@@ -760,7 +760,7 @@ def build_forbidden_lexicon(
     # remain independently represented by the other receipt fields below.
     non_lexical_fields = {
         "action", "command", "ssh_output", "kubectl_output", "wait_seconds",
-        "fault_id", "trial", "target_service",
+        "fault_id", "trial", "target_service", "container_name",
     }
     field_values = tuple(
         str(value) for key, value in sorted(injection_result.items())

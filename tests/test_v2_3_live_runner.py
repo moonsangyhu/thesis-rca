@@ -881,6 +881,33 @@ class LiveRunnerTests(unittest.TestCase):
         self.assertNotIn(injection["kubectl_output"], lexicon.field_values)
         self.assertIn("a" * 32, lexicon.field_values)
 
+    def test_container_identity_is_not_a_treatment_field_value(self):
+        """A target container name is execution metadata, not injected evidence."""
+        from experiments.v2_3.conditions import make_length_placebo
+        from experiments.v2_3.live_runner import build_forbidden_lexicon
+        from experiments.v2_3.scanner import LeakageScanner
+
+        injection = {
+            "action": "change_image",
+            "image": "docker.io/ratelimited/loadgenerator:latest",
+            "container_name": "main",
+            "kubectl_output": "patched",
+        }
+        ground_truth = {
+            **GROUND_TRUTH,
+            "fault_id": "F3",
+            "trial": "5",
+            "target_service": "loadgenerator",
+        }
+        lexicon = build_forbidden_lexicon("F3", 5, ground_truth, injection)
+
+        self.assertNotIn("main", lexicon.field_values)
+        self.assertIn(injection["image"], lexicon.field_values)
+        self.assertEqual(
+            LeakageScanner().scan(make_length_placebo(2112, 2112), lexicon).match_count,
+            0,
+        )
+
     def test_production_fault_marker_is_structured_not_bare_short_id(self):
         from experiments.v2_3.live_runner import build_forbidden_lexicon
         from experiments.v2_3.scanner import LeakageScanner
