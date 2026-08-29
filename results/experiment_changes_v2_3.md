@@ -789,3 +789,12 @@
 - **수정 내용**: base helper가 primary container name/image를 fail-closed로 해석한다. F2/F3/F8-t4/F9는 receipt의 `container_name`과 함께 정확한 container만 patch하며, validator는 receipt-bound container를 검증한다. 긴급 복원 뒤 잔류 shippingservice sidecar를 exact JSON patch로 제거하고 Flux/GitOps 상태를 GREEN으로 수렴시켰다.
 - **수정 파일**: `scripts/fault_inject/base.py:1`, `scripts/fault_inject/injector.py:1`, `experiments/v2_3/injection_validator.py:1`, `tests/test_fault_inject_container_identity.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: identity regression 5 PASS, full V2.3 178 PASS, `git diff --check` PASS. Primary52는 append-only 보존·배제하고 fresh main campaign으로 처음부터 재시작한다.
+
+### 90. Primary53의 provenance 불완전 SDK 종료을 append-only로 격리 — 2026-08-29
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary53은 F1·F2를 완료한 뒤 F3 t1의 모델 평가 중 official SDK runner가 exit 1로 종료했다.
+- **원인**: 마지막 durable receipt에 session ID만 있고 model/token/AIC/premium 사용량이 null이라 provider/SDK의 세부 종료 원인을 증명할 수 없었다. 완전 usage 또는 알려진 zero-usage authentication envelope 조건도 충족하지 않았다.
+- **수정 내용**: 코드의 usage-uncertain hard-stop과 exact Flux restore/recovery 경계를 유지하고, incomplete artifact를 primary 분석에서 배제한다. F3 recovery 뒤 Boutique 12/12·Flux 5/5·health GREEN을 검증해 새 campaign 시작 조건을 재확인했다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: Primary53은 append-only 보존·배제. clean cluster에서 새 59-incident campaign을 F1 t1부터 시작한다.

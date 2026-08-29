@@ -684,3 +684,12 @@
 - **근본 원인**: Deployment명과 PodSpec container명이 항상 같다는 잘못된 가정, 그리고 receipt/validator가 실제 mutation container identity를 봉인하지 않은 결함이다.
 - **수정 내용**: fail-closed `get_primary_container()`가 exact deployment명, `server`, 단일 container 순으로 실제 workload container를 해석한다. F2/F3/F8-t4/F9 patch는 이 이름을 사용하고 receipt에 `container_name`을 기록한다. validator는 새 receipt의 exact container identity를 검증한다. F8 t4 emergency restore 후 cluster는 nodes 6/6 Ready, Flux app/root Ready, Boutique 정상 상태로 복구했다.
 - **현재 영향**: primary52 artifact는 append-only로 보존·배제한다. 새 identity regression 5 PASS와 V2.3 178 PASS를 확인했으며, clean revision에서 새 campaign ID로 F1 t1부터 재시작한다.
+
+### [ISS-054] Copilot SDK의 미분류 사전응답 종료가 F3 trial을 중단
+
+- **카테고리**: provider / execution
+- **심각도**: critical (P0)
+- **영향**: `v2-3-main-20260829-primary53`은 F1·F2의 10 incidents·30 rows/raw·360 logical calls를 commit한 뒤 F3 t1에서 중단됐다. 불완전 campaign 전체는 primary estimand에 포함하지 않는다.
+- **관찰한 사실**: F3 t1의 injection verification 뒤 29건의 Terra call이 정상 완료됐고, 다음 official SDK runner가 4.163초 후 `exit_code=1`로 종료했다. durable charged receipt는 session ID만 남기고 `actual_model`, `output_tokens`, `ai_credits`, `premium_requests`가 모두 null이며 `usage_metadata_complete=false`였다. stderr는 비어 있고 stdout 원문은 개인정보·프롬프트 비노출 정책상 hash만 보존한다. `incident_failed(LiveCallerError) → flux_restored(exact original/CAS) → recovery_green`을 기록했으며, 후속 확인에서 Boutique 12/12 Running, Flux 5/5 Ready, comprehensive health GREEN이었다.
+- **근본 원인**: receipt만으로는 SDK/provider의 종료 세부 메시지를 복원할 수 없어 확정하지 않는다. 알려진 zero-usage authentication envelope나 complete-usage retry 조건에도 일치하지 않는 미분류 사전응답 종료다.
+- **처리**: 모델/토큰/AIC provenance가 불완전한 호출은 재시도하거나 결과에 포함하지 않는 existing fail-closed policy를 유지한다. primary53 artifact를 append-only로 보존·배제하고, clean cluster에서 새 campaign을 F1 t1부터 실행한다.
