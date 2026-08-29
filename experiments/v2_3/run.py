@@ -66,6 +66,10 @@ def main(argv: list[str] | None = None) -> int:
         "--allow-paid-overage", action="store_true",
         help="record explicit user authorization for metered Copilot usage",
     )
+    parser.add_argument(
+        "--use-codex-subscription", action="store_true",
+        help="use the locally logged-in ChatGPT Codex subscription",
+    )
     parser.add_argument("--approval-id")
     parser.add_argument("--campaign-id")
     parser.add_argument("--max-campaign-aic", type=float, default=360.0)
@@ -78,17 +82,22 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(
                 "live modes require --approval-id, --campaign-id, and --chroma-dir"
             )
-        if bool(args.billing_evidence) == bool(args.allow_paid_overage):
+        if sum(bool(value) for value in (
+            args.billing_evidence, args.allow_paid_overage, args.use_codex_subscription,
+        )) != 1:
             parser.error(
-                "live modes require exactly one of --billing-evidence or "
-                "--allow-paid-overage"
+                "live modes require exactly one authorization mode"
             )
-        if args.main and not args.allow_paid_overage:
-            parser.error("--main requires --allow-paid-overage")
+        if args.main and not (args.allow_paid_overage or args.use_codex_subscription):
+            parser.error("--main requires --allow-paid-overage or --use-codex-subscription")
         if re.fullmatch(r"[A-Za-z0-9_.-]{8,128}", args.campaign_id) is None:
             parser.error("--campaign-id is invalid")
         if args.allow_paid_overage:
             authorization = LiveAuthorization.require_paid_overage(
+                approval_id=args.approval_id
+            )
+        elif args.use_codex_subscription:
+            authorization = LiveAuthorization.require_codex_subscription(
                 approval_id=args.approval_id
             )
         else:
@@ -116,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
             f"V2.3 real execution is disabled (follow-up approval flag{approval})"
         )
     if any((
-        args.billing_evidence, args.allow_paid_overage, args.approval_id,
+        args.billing_evidence, args.allow_paid_overage, args.use_codex_subscription, args.approval_id,
         args.campaign_id, args.chroma_dir,
     )):
         parser.error("live authorization arguments are valid only with --pilot")

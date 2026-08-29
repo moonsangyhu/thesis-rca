@@ -2,7 +2,7 @@
 
 EXPERIMENT = "v2.3"
 REQUESTED_MODEL = "gpt-5.6-terra"
-PROVIDER = "copilot"
+PROVIDER = "codex-cli-chatgpt-subscription"
 
 CONDITIONS = ("runtime", "length_placebo", "blind_procedural_rag")
 FAULTS = tuple(f"F{i}" for i in range(1, 13))
@@ -17,7 +17,7 @@ SCHEDULE_SEED = 20260809
 PILOT_FAULT_ID = "F7"
 PILOT_TRIAL = 1
 PILOT_MANIFEST_SCHEMA = "v2.3-pilot-campaign-5"
-MAIN_MANIFEST_SCHEMA = "v2.3-main-campaign-6"
+MAIN_MANIFEST_SCHEMA = "v2.3-main-campaign-7"
 COPILOT_SESSION_MAX_AIC = 30
 # The primary campaign runs sequentially while a fault remains injected.  The
 # SDK's process-group watchdog adds its fixed 30-second cleanup grace to this

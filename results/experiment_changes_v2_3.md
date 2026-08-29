@@ -807,3 +807,12 @@
 - **수정 내용**: 기존 fail-closed receipt/recovery를 유지하고 Primary54를 append-only로 배제했다. 추가 provider 호출은 quota 복구 전 중단한다.
 - **수정 파일**: `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 외부 quota blocker. Primary54 recovery 뒤 Flux exact original 및 comprehensive health GREEN을 확인했다.
+
+### 92. V2.3 main inference를 ChatGPT Codex subscription으로 전환 — 2026-08-29
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 회사 Copilot provider가 월간 quota 초과(402)로 Terra inference를 추론 전에 거부했다.
+- **원인**: 외부 Copilot 계정 quota 정책이며 RAG, fault injection, cluster recovery와 무관하다.
+- **수정 내용**: `codex exec` ChatGPT subscription adapter를 추가하고, empty temporary workspace·read-only sandbox·ephemeral JSON event parser로 호출을 격리했다. `agent_message` 외 event는 reject한다. manifest에는 Codex CLI version, command-bound Terra model, thread ID, output tokens와 AIC 미보고 원칙을 봉인한다.
+- **수정 파일**: `experiments/shared/codex_cli.py:1`, `experiments/v2_3/{authorization,config,ledger,live_caller,main_campaign,run}.py:1`, `tests/test_codex_cli.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: isolated live probe success, focused 21 PASS, V2.3 regression 178 PASS. 다음 clean revision에서 Codex provider F1 live smoke 후 fresh 59-incident campaign을 실행한다.

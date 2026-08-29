@@ -86,7 +86,7 @@ class CallLedgerEntry:
             raise ProvenanceError("invalid judge repeat")
         if self.requested_model != REQUESTED_MODEL or self.actual_model != REQUESTED_MODEL:
             raise ProvenanceError("requested/actual model mismatch")
-        if self.provider not in {"copilot", "mock-copilot"}:
+        if self.provider not in {"copilot", "mock-copilot", "codex-cli-chatgpt-subscription"}:
             raise ProvenanceError("invalid provider")
         if not self.session_id:
             raise ProvenanceError("missing session ID")
@@ -145,7 +145,7 @@ class CallLedgerEntry:
         ):
             raise ProvenanceError("non-finite AIC metadata")
         if self.input_tokens != "unsupported/not_reported":
-            raise ProvenanceError("Copilot input tokens must be marked unsupported")
+            raise ProvenanceError("provider input tokens must be marked unsupported")
 
     def to_dict(self) -> dict:
         return asdict(self)

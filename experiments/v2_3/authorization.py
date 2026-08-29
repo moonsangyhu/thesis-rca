@@ -21,8 +21,10 @@ AUTH_SCHEMA = "v2.3-zero-overage-1"
 ZERO_OVERAGE_ENV = "THESIS_COPILOT_ZERO_OVERAGE_CONFIRMED"
 PILOT_APPROVAL_ENV = "THESIS_V23_PILOT_USER_APPROVED"
 PAID_OVERAGE_ENV = "THESIS_V23_PAID_OVERAGE_AUTHORIZED"
+CODEX_SUBSCRIPTION_ENV = "THESIS_V23_CODEX_SUBSCRIPTION_AUTHORIZED"
 ZERO_OVERAGE_MODE = "zero-overage-evidence"
 PAID_OVERAGE_MODE = "paid-overage-user-authorized"
+CODEX_SUBSCRIPTION_MODE = "chatgpt-subscription-user-authorized"
 _AUTH_SEAL = object()
 
 
@@ -182,7 +184,7 @@ class LiveAuthorization:
         if billing_mode == ZERO_OVERAGE_MODE:
             if evidence is None or evidence._seal is not _AUTH_SEAL:
                 raise AuthorizationError("zero-overage evidence seal is invalid")
-        elif billing_mode == PAID_OVERAGE_MODE:
+        elif billing_mode in {PAID_OVERAGE_MODE, CODEX_SUBSCRIPTION_MODE}:
             if evidence is not None:
                 raise AuthorizationError("paid-overage authorization cannot claim evidence")
         else:
@@ -238,6 +240,23 @@ class LiveAuthorization:
             seal=_AUTH_SEAL,
         )
 
+    @classmethod
+    def require_codex_subscription(
+        cls, *, approval_id: str, environment: Mapping[str, str] | None = None,
+    ) -> "LiveAuthorization":
+        """Seal explicit use of the already logged-in ChatGPT Codex plan."""
+        env = os.environ if environment is None else environment
+        if env.get(CODEX_SUBSCRIPTION_ENV) != "1":
+            raise AuthorizationError("Codex subscription process gate is not enabled")
+        if env.get(PILOT_APPROVAL_ENV) != "1":
+            raise AuthorizationError("pilot user-approval process gate is not enabled")
+        if not approval_id or re.fullmatch(r"[A-Za-z0-9_.-]{8,128}", approval_id) is None:
+            raise AuthorizationError("pilot approval ID is missing or invalid")
+        return cls._create(
+            evidence=None, approval_id=approval_id,
+            billing_mode=CODEX_SUBSCRIPTION_MODE, seal=_AUTH_SEAL,
+        )
+
     def revalidate(
         self,
         *,
@@ -266,6 +285,12 @@ class LiveAuthorization:
             refreshed = type(self).require_paid_overage(
                 approval_id=self.approval_id,
                 environment=environment,
+            )
+        elif self.billing_mode == CODEX_SUBSCRIPTION_MODE:
+            if self.evidence is not None:
+                raise AuthorizationError("Codex subscription authorization evidence is invalid")
+            refreshed = type(self).require_codex_subscription(
+                approval_id=self.approval_id, environment=environment,
             )
         else:
             raise AuthorizationError("live billing authorization mode is invalid")
