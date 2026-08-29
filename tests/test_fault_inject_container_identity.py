@@ -38,15 +38,42 @@ class WorkloadContainerIdentityTests(unittest.TestCase):
 
     @patch("scripts.fault_inject.injector.kubectl_patch", return_value="patched")
     @patch(
+        "scripts.fault_inject.injector.kubectl_get_json",
+        return_value={"spec": {"template": {"spec": {"containers": [
+            {"name": "server", "readinessProbe": {"grpc": {"port": 50051}}},
+        ]}}}},
+    )
+    @patch(
         "scripts.fault_inject.injector.get_primary_container",
         return_value=("server", "example/shippingservice:stable"),
     )
-    def test_f8_t4_patches_primary_container_not_a_sidecar(self, primary, patcher):
+    def test_f8_t4_replaces_probe_on_primary_container(self, primary, deployment, patcher):
         result = self.injector._inject_f8_service_endpoint("shippingservice", 4, {})
 
         patch = patcher.call_args.args[2]
-        self.assertEqual(patch["spec"]["template"]["spec"]["containers"][0]["name"], "server")
+        self.assertEqual(patcher.call_args.kwargs["patch_type"], "json")
+        self.assertEqual(patch[0]["op"], "replace")
+        self.assertEqual(patch[0]["path"], "/spec/template/spec/containers/0/readinessProbe")
+        self.assertEqual(patch[0]["value"]["httpGet"]["path"], "/nonexistent")
         self.assertEqual(result["container_name"], "server")
+
+    @patch("scripts.fault_inject.injector.load_trial", return_value={
+        "target_service": "shippingservice",
+    })
+    @patch(
+        "scripts.fault_inject.injector.kubectl_get_json",
+        return_value={"spec": {"template": {"spec": {"containers": [
+            {"name": "server", "readinessProbe": {"grpc": {"port": 50051}}},
+        ]}}}},
+    )
+    @patch(
+        "scripts.fault_inject.injector.get_primary_container",
+        return_value=("server", "example/shippingservice:stable"),
+    )
+    def test_f8_t4_seals_original_probe_before_mutation(self, primary, deployment, trial):
+        context = self.injector.prepare_recovery_context("F8", 4)
+        self.assertEqual(context["container_name"], "server")
+        self.assertEqual(context["original_readiness_probe"], {"grpc": {"port": 50051}})
 
     @patch("scripts.fault_inject.injector.kubectl_patch", return_value="patched")
     @patch(

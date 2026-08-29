@@ -720,3 +720,13 @@
 - **근본 원인**: `container_name`은 strategic-merge patch와 validator가 정확한 container를 가리키기 위한 실행 receipt 메타데이터인데, `build_forbidden_lexicon()`이 이를 처치 scalar처럼 `field_values`에 포함했다. scanner의 2-character compact value 보호가 neutral corpus의 `remains` 등에 포함된 `main`을 감지해 fail-closed했다. 실제 F3 image 처치 문자열은 이 오탐의 원인이 아니며 계속 금지 lexicon에 남는다.
 - **수정 내용**: `container_name`을 `action`, command/output, fault/trial/target과 같은 non-lexical execution envelope로 분류했다. 이미지 처치값의 scanner 차단을 유지하고, F3-t5 재현 fixture가 container name을 제외하면서 실제 image를 보존하고 placebo scanner를 clean하게 통과하는 회귀 테스트를 추가했다.
 - **현재 영향**: Primary01 artifact는 append-only로 보존·배제한다. targeted regression, full V2.3 regression, dry-run과 clean revision 검증 뒤 새 campaign ID에서 F1-t1부터 fresh 59-incident campaign을 실행한다.
+
+### [ISS-058] F8-t4 readiness patch가 기존 gRPC handler와 충돌하고 failure recovery가 구 F2 command를 재도입
+
+- **카테고리**: injection / recovery / code
+- **심각도**: critical (P0)
+- **영향**: `v2-3-codex-20260829-primary02`는 F1–F7 유효 회차와 F8 t1–t3의 37 incidents·111 rows/raw·1,332 logical calls를 commit한 뒤 F8-t4에서 종료됐다. F8-t4는 model call과 result/raw/logical ledger를 추가하지 않았고, campaign 전체는 primary estimand에 포함하지 않는다.
+- **관찰한 사실**: shippingservice의 production readiness probe는 gRPC handler를 사용한다. F8-t4 strategic-merge patch가 HTTP handler만 선언하면서 gRPC handler를 제거하지 않아 API server가 “may not specify more than 1 handler type”로 거부했다. 이후 generic F8-t4 rollout undo는 새 rollout이 없는 상태에서 직전 F2 crash-command revision을 선택했고, full reset의 manifest apply도 absent `command` field를 제거하지 않아 새 shippingservice pod가 `/bin/sh -c 'exit 1'`로 CrashLoopBackOff가 됐다. exact JSON command field removal과 failed pod cleanup 뒤 health check는 GREEN으로 회복됐다.
+- **근본 원인**: Kubernetes strategic merge는 readinessProbe 내부 handler object를 교체하지 않고 병합한다. 또한 manifest apply는 다른 field manager가 추가한 F2 command를 absent 선언만으로 삭제하지 않는다. 따라서 revision history에 의존한 F8-t4 recovery는 failure-before-mutation branch에서 안전하지 않았다.
+- **수정 내용**: F8-t4는 receipted container index의 readinessProbe 전체를 JSON Patch로 교체한다. pre-mutation recovery receipt에 original probe를 봉인하고 recovery도 같은 container·probe만 JSON Patch로 정확 복원한다. full reset은 확인된 exact F2 crash command만 제거하며 다른 command/args는 보존한다.
+- **현재 영향**: Primary02 artifact는 append-only 보존·배제한다. F8-t4 live no-model injection/recovery와 full regression·dry-run·clean revision 검증 뒤 fresh 59-incident campaign으로 재시작한다.
