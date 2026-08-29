@@ -709,3 +709,14 @@
 - **영향**: Copilot 기반 primary53·54는 계속 append-only excluded다. 이후 수집은 `v2-3-codex-*`로 분리하며 Copilot campaign과 row/ledger를 결합하지 않는다.
 - **변경 근거**: 사용자가 현재 로그인된 Codex subscription을 사용하도록 명시 지시했다. local `codex login status`는 ChatGPT login을 확인했고, empty temporary directory에서 `codex exec --ephemeral --json --sandbox read-only --model gpt-5.6-terra` probe는 exact JSON 응답과 thread ID·output token usage를 반환했다.
 - **통제**: generator/judge requested model, 59-incident schedule, context conditions, corpus, prompt/rubric은 유지한다. Codex JSON은 actual model ID/AIC를 제공하지 않으므로 command-bound model provenance와 token-only usage를 명시하며 provider 간 절대 성능·비용 비교를 금지한다. non-message item event는 tool access로 간주해 fail-closed한다.
+
+### [ISS-057] F3-t5의 실행 컨테이너 이름이 length placebo 누출로 오탐됨
+
+- **카테고리**: code / data
+- **심각도**: critical (P0)
+- **영향**: `v2-3-codex-20260829-primary01`은 F1 전체, F2 전체, F3 t1–t4의 14 incidents·42 rows/raw·504 logical calls를 commit한 뒤 F3-t5에서 중단됐다. F3-t5는 model call과 result/raw/logical ledger를 추가하지 않았고, 이 campaign 전체는 primary estimand에 포함하지 않는다.
+- **발생 빈도**: 본실험 1회, F3-t5 `length_placebo` 조립 gate.
+- **관찰한 사실**: `incident_failed(LeakageDetected) → flux_restored(exact original/CAS) → recovery_green` 순서가 event journal에 남았다. 안전 진단은 `field_values`의 동일 term hash 13개를 보고했다. 해당 hash는 `loadgenerator`의 실제 container identity `main`과 일치하며, 2,112-character deterministic placebo를 같은 lexicon으로 scanner에 통과시키면 13개의 compact-substring match가 재현됐다.
+- **근본 원인**: `container_name`은 strategic-merge patch와 validator가 정확한 container를 가리키기 위한 실행 receipt 메타데이터인데, `build_forbidden_lexicon()`이 이를 처치 scalar처럼 `field_values`에 포함했다. scanner의 2-character compact value 보호가 neutral corpus의 `remains` 등에 포함된 `main`을 감지해 fail-closed했다. 실제 F3 image 처치 문자열은 이 오탐의 원인이 아니며 계속 금지 lexicon에 남는다.
+- **수정 내용**: `container_name`을 `action`, command/output, fault/trial/target과 같은 non-lexical execution envelope로 분류했다. 이미지 처치값의 scanner 차단을 유지하고, F3-t5 재현 fixture가 container name을 제외하면서 실제 image를 보존하고 placebo scanner를 clean하게 통과하는 회귀 테스트를 추가했다.
+- **현재 영향**: Primary01 artifact는 append-only로 보존·배제한다. targeted regression, full V2.3 regression, dry-run과 clean revision 검증 뒤 새 campaign ID에서 F1-t1부터 fresh 59-incident campaign을 실행한다.

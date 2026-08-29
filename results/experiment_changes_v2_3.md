@@ -816,3 +816,12 @@
 - **수정 내용**: `codex exec` ChatGPT subscription adapter를 추가하고, empty temporary workspace·read-only sandbox·ephemeral JSON event parser로 호출을 격리했다. `agent_message` 외 event는 reject한다. manifest에는 Codex CLI version, command-bound Terra model, thread ID, output tokens와 AIC 미보고 원칙을 봉인한다.
 - **수정 파일**: `experiments/shared/codex_cli.py:1`, `experiments/v2_3/{authorization,config,ledger,live_caller,main_campaign,run}.py:1`, `tests/test_codex_cli.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: isolated live probe success, focused 21 PASS, V2.3 regression 178 PASS. 다음 clean revision에서 Codex provider F1 live smoke 후 fresh 59-incident campaign을 실행한다.
+
+### 93. F3-t5 container receipt의 length-placebo scanner 오탐 제거 — 2026-08-29
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Codex campaign Primary01은 14 incidents·42 rows/raw·504 logical calls를 commit한 뒤 F3-t5의 첫 모델 호출 전에 `LeakageDetected(field_values=13)`로 중단됐다.
+- **원인**: `loadgenerator`의 실제 container name `main`이 injection receipt에서 treatment scalar로 lexicon에 들어갔다. deterministic neutral placebo의 `remains` 등에 `main` compact substring이 13회 있어, scanner가 실제 RAG 누출이 아닌 실행 메타데이터를 차단했다.
+- **수정 내용**: `container_name`을 non-lexical execution envelope로 분류했다. 실제 image treatment value는 계속 lexical scanner 대상이며, 재현 회귀는 `main` 제외·image 유지·2,112-character placebo clean을 고정한다.
+- **수정 파일**: `experiments/v2_3/live_runner.py:1`, `tests/test_v2_3_live_runner.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — incomplete Primary01은 append-only 보존·배제. full verification과 clean commit 뒤 fresh 59-incident campaign에서 재검증한다.
