@@ -702,3 +702,10 @@
 - **관찰한 사실**: primary54의 charged receipt는 `exit_code=1`, `actual_model/output_tokens/ai_credits/premium_requests=null`, `usage_metadata_complete=false`였다. recovery는 exact Flux restore와 GREEN health까지 완료됐다. 이어 동일 empty-mode SDK와 `gpt-5.6-terra`로 수행한 격리 probe가 `session.error statusCode=402`, `errorCode=quota_exceeded`, `You have exceeded your monthly quota`를 반환했고 `totalPremiumRequests=0`, `totalNanoAiu=0`으로 종료했다.
 - **근본 원인**: 회사 Copilot 계정의 월간 quota가 provider 측에서 소진되어 request가 모델 추론 전에 거부된다. 이 상태는 local RAG/harness, Kubernetes, injection/recovery 또는 사용자의 과금 승인과 무관하게 계정 정책에서 결정된다.
 - **처리**: incomplete artifact를 append-only로 보존·배제한다. quota reset 또는 조직 관리자에 의한 quota 복구 후 동일 clean revision에서 새 59-incident campaign을 F1 t1부터 실행해야 한다. quota가 복구되기 전에는 추가 유료 호출을 재시도하지 않는다.
+
+### [ISS-056] Copilot quota blocker를 ChatGPT Codex subscription provider로 전환
+
+- **카테고리**: execution / reproducibility
+- **영향**: Copilot 기반 primary53·54는 계속 append-only excluded다. 이후 수집은 `v2-3-codex-*`로 분리하며 Copilot campaign과 row/ledger를 결합하지 않는다.
+- **변경 근거**: 사용자가 현재 로그인된 Codex subscription을 사용하도록 명시 지시했다. local `codex login status`는 ChatGPT login을 확인했고, empty temporary directory에서 `codex exec --ephemeral --json --sandbox read-only --model gpt-5.6-terra` probe는 exact JSON 응답과 thread ID·output token usage를 반환했다.
+- **통제**: generator/judge requested model, 59-incident schedule, context conditions, corpus, prompt/rubric은 유지한다. Codex JSON은 actual model ID/AIC를 제공하지 않으므로 command-bound model provenance와 token-only usage를 명시하며 provider 간 절대 성능·비용 비교를 금지한다. non-message item event는 tool access로 간주해 fail-closed한다.

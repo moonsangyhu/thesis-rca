@@ -82,7 +82,7 @@ class AuthorizedTerraCaller:
         ):
             raise LiveCallerError("campaign AIC cap must be positive and finite")
         if not self.backend._billing_guard_passes():
-            raise LiveCallerError("Copilot backend billing guard is not enabled")
+            raise LiveCallerError("inference backend authorization guard is not enabled")
         if getattr(self.backend, "charge_observer", None) is None:
             raise LiveCallerError("durable charged-call observer is required")
         session_cap = getattr(self.backend, "max_ai_credits", None)
@@ -233,7 +233,7 @@ class AuthorizedTerraCaller:
             judge_repeat=invocation.judge_repeat,
             requested_model=REQUESTED_MODEL,
             actual_model=response.model,
-            provider="copilot",
+            provider=getattr(self.backend, "provider", "copilot"),
             cli_executable=response.cli_executable,
             cli_version=self.cli_version,
             session_id=response.session_id,

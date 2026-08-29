@@ -6,6 +6,8 @@
 > 상태: **설계 승인·Step 3A/3B 코드 검증 완료** — 2026-08-12 사용자의 paid-overage 허용 지시에 따라 36-call 파일럿 재개 준비 완료
 > Step 3B: zero-overage evidence verifier, gated Terra caller, runtime-only retriever, post-injection validator, recovery-before-commit pilot runner와 고정 분석 스크립트가 독립 재리뷰를 통과했다. 실행 runbook은 `docs/plans/v2_3_pilot_runbook.md`.
 
+> **2026-08-29 실행 provider 정정:** Copilot의 회사 월간 quota가 추론 전 402로 차단되어, 사용자의 명시 지시에 따라 provider를 현재 로그인된 ChatGPT Codex subscription CLI로 변경한다. generator/judge의 요청 model은 계속 `gpt-5.6-terra`이고 `context_condition`·fault schedule·RAG corpus·prompt/rubric은 바꾸지 않는다. Codex CLI JSON은 provider-reported model ID나 AIC를 내보내지 않으므로 command-bound model, CLI version, thread ID, output-token count를 봉인하고 AIC는 `0`(subscription monetary metric 미보고)으로만 기록한다. 이 새 provider campaign은 이전 Copilot/다른 model provider 캠페인과 절대 성능·비용을 직접 비교하지 않고 같은 campaign 안의 paired condition contrast만 해석한다.
+
 ## 0. 설계 결정과 선행 조건
 
 ### 0.1 이번 라운드의 단일 질문
@@ -21,19 +23,16 @@ GitOps 처치와 context-position 처치는 포함하지 않는다. GitOps 신�
 
 repo 정본은 실험 간 `gpt-4o-mini` 고정을 요구하지만, 이번 라운드는 사용자의 명시적 승인에 따라 다음처럼 예외를 적용한다.
 
-- provider: GitHub Copilot CLI prompt mode
+- provider: ChatGPT subscription으로 로그인된 Codex CLI (`codex exec --json`)
 - generator: `gpt-5.6-terra`
 - judge: `gpt-5.6-terra`
 - 본실험 SDK inference deadline: 300초(+독립 watchdog cleanup grace 30초). 이 값은
   `campaign_manifest.json`에 봉인하며, timeout은 사용량 불확실성으로 fail-closed한다.
-- auto routing: 명시적 모델 지정과 실제 응답 model ID 검증으로 차단
-- tools: `--available-tools=none`; tool event가 관찰되면 fail-closed
-- built-in MCP: `--disable-builtin-mcps`
-- remote/remote export: `--no-remote`, `--no-remote-export`
-- custom instructions: `--no-custom-instructions`
-- repository 접근: 매 호출마다 빈 임시 작업 디렉터리를 사용하고 prompt에도 파일·명령·tool 사용 금지를 명시
+- model provenance: `--model gpt-5.6-terra` command binding과 `codex --version`을 봉인한다. CLI event가 actual model ID를 제공하지 않는 한 provider-reported identity라고 주장하지 않는다.
+- tools/repository 접근: 매 호출마다 빈 임시 작업 디렉터리에서 `--sandbox read-only --ephemeral --skip-git-repo-check`로 실행하고, `agent_message` 이외 item event가 하나라도 있으면 fail-closed한다.
+- network/remote/custom instructions: prompt의 명시 금지와 empty workspace를 결합하며, CLI event whitelist 밖의 record는 fail-closed한다.
 
-현재 adapter의 `--allow-all-tools`는 비대화형 승인 flag이지만 `--available-tools=none`과 함께 전달된다. Step 2/3에서는 이 조합의 **실효 tool surface가 빈 집합**임을 테스트해야 하며, tool이 하나라도 노출되면 사용자 승인 조건 위반으로 중단한다.
+Codex adapter는 event parser가 non-message item을 거부하는 회귀 테스트를 가져야 하며, tool이 하나라도 관찰되면 해당 call·incident·campaign을 분석에 포함하지 않는다.
 
 따라서 V2.2의 `gpt-4o-mini` 절대 정확도(예: RAG 65.0%, placebo 36.7%)와 V2.3 Terra 절대 정확도를 직접 비교하지 않는다. V2.2 수치는 결함과 설계 동기의 근거로만 사용하며, V2.3의 1차 주장은 같은 Terra·같은 incident 안의 paired contrast로 한정한다.
 

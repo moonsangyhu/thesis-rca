@@ -8,9 +8,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .authorization import LiveAuthorization, PAID_OVERAGE_MODE
+from .authorization import CODEX_SUBSCRIPTION_MODE, LiveAuthorization
 from .config import (
-    COPILOT_ACCOUNT_LOGIN, COPILOT_SESSION_MAX_AIC, FAULTS,
+    FAULTS,
     FLUX_RECONCILIATION_POLICY, MAIN_EXCLUDED_INCIDENTS,
     MAIN_EXPECTED_CALLS, MAIN_EXPECTED_INCIDENTS, MAIN_EXPECTED_ROWS,
     MAIN_INCIDENTS, MAIN_MANIFEST_SCHEMA, PRIMARY_COPILOT_TIMEOUT_SECONDS,
@@ -31,15 +31,13 @@ def run_authorized_main(
     # This must precede every live/ML dependency import.  The local retriever
     # initializes native Torch components; running Git afterwards can stall on
     # macOS even when the command itself is otherwise spawn-safe.
-    from .run import _local_cli_build_identity, _verified_git_revision
+    from .run import _probe_cli_version, _verified_git_revision
 
     git_revision = _verified_git_revision(project_root)
-    from experiments.shared.copilot_identity import inspect_active_gh_account
-
-    account = inspect_active_gh_account(expected_login=COPILOT_ACCOUNT_LOGIN)
-
     # Local imports keep offline/dry-run imports free of live dependencies.
-    from experiments.shared.copilot_sdk import CopilotSDKBackend
+    from experiments.shared.codex_cli import (
+        CODEX_MODEL_PROVENANCE, CODEX_PROVIDER, CodexCLIBackend,
+    )
     from experiments.shared.csv_io import load_ground_truth
     from experiments.shared.infra import preflight_check
     from scripts.fault_inject import FaultInjector
@@ -61,15 +59,13 @@ def run_authorized_main(
         PilotIncidentRunner, RuntimeOnlyRetriever, snapshot_tree,
     )
     output_dir = project_root / "artifacts" / "v2_3_main" / campaign_id
-    paid_overage_authorized = authorization.billing_mode == PAID_OVERAGE_MODE
-    if not paid_overage_authorized:
-        raise RuntimeError("primary campaign requires explicit paid-overage authorization")
+    if authorization.billing_mode != CODEX_SUBSCRIPTION_MODE:
+        raise RuntimeError("primary campaign requires explicit Codex subscription authorization")
 
-    backend = CopilotSDKBackend(
+    backend = CodexCLIBackend(
         model=REQUESTED_MODEL,
         timeout_seconds=PRIMARY_COPILOT_TIMEOUT_SECONDS,
-        max_ai_credits=COPILOT_SESSION_MAX_AIC,
-        billing_execution_authorized=True,
+        subscription_authorized=True,
     )
 
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -81,7 +77,7 @@ def run_authorized_main(
     store = MainOutputStore(output_dir)
     charged_journal = ChargedCallJournal(output_dir / "charged_call_ledger.jsonl")
     backend.charge_observer = charged_journal.append
-    cli_version = _local_cli_build_identity(backend.executable)
+    cli_version = _probe_cli_version(backend.executable)
     corpus_version = snapshot_tree(
         (DEBUGGING_DIR, RUNBOOKS_DIR, KNOWN_ISSUES_DIR, resolved_chroma)
     )
@@ -93,22 +89,19 @@ def run_authorized_main(
         "created_at": datetime.now(timezone.utc).isoformat(),
         "billing_authorization_mode": authorization.billing_mode,
         "approval_id": authorization.approval_id,
-        "account_scope": f"github:{account.login}",
+        "account_scope": "chatgpt-subscription:locally-authenticated-codex-cli",
         "billing_confirmed_at": None,
         "billing_confirmed_by": "user",
-        "billing_confirmation_method": "explicit-paid-overage-authorization",
+        "billing_confirmation_method": "explicit-chatgpt-subscription-authorization",
         "billing_confirmation_timestamp_status": "not-recorded-in-authorization-seal",
         "included_aic_balance_before": None,
         "aic_balance_observed_at": None,
-        "server_quota": {
-            "status": "not-queried-paid-overage-mode",
-            "reason": "explicit-user-authorization",
+        "subscription_usage": {
+            "status": "token-count-only",
+            "reason": "Codex ChatGPT subscription does not emit monetary AIC in CLI JSON",
         },
-        "active_account": account.to_dict(),
         "max_campaign_aic": None,
-        "copilot_session_max_aic": COPILOT_SESSION_MAX_AIC,
-        "copilot_inference_timeout_seconds": PRIMARY_COPILOT_TIMEOUT_SECONDS,
-        "projected_main_aic_from_pilot": 4055,
+        "codex_inference_timeout_seconds": PRIMARY_COPILOT_TIMEOUT_SECONDS,
         "model": REQUESTED_MODEL,
         "expected_incidents": MAIN_EXPECTED_INCIDENTS,
         "expected_rows": MAIN_EXPECTED_ROWS,
@@ -126,10 +119,17 @@ def run_authorized_main(
         ],
         "corpus_version": corpus_version,
         "cli_version": cli_version,
-        "cli_version_source": "local-package-and-native-sha256",
-        "copilot_backend": "official-sdk-empty",
-        "copilot_sdk_sha256": backend.sdk_sha256,
-        "copilot_sdk_runner_sha256": backend.runner_sha256,
+        "cli_version_source": "codex-cli---version",
+        "provider": CODEX_PROVIDER,
+        "codex_backend": "chatgpt-subscription-empty-readonly-ephemeral",
+        "model_provenance": CODEX_MODEL_PROVENANCE,
+        "isolation": {
+            "working_directory": "empty-temporary-directory",
+            "sandbox": "read-only",
+            "ephemeral": True,
+            "skip_git_repo_check": True,
+            "tool_event_policy": "reject-any-non-agent-message-item",
+        },
         "flux_reconciliation_policy": FLUX_RECONCILIATION_POLICY,
     }
     store.write_manifest(manifest)

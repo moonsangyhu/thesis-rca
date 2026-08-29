@@ -1,33 +1,25 @@
 import tempfile
 import unittest
 from contextlib import ExitStack
-from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from experiments.shared.copilot_identity import CopilotAccountIdentity
 from experiments.v2_3.authorization import LiveAuthorization
 from experiments.v2_3.main_campaign import run_authorized_main
 
 
 class MainCampaignWiringTests(unittest.TestCase):
-    def test_paid_main_records_startup_account_without_quota(self):
-        authorization = LiveAuthorization.require_paid_overage(
-            approval_id="paid-overage-20260812",
+    def test_codex_subscription_main_seals_isolated_provider_provenance(self):
+        authorization = LiveAuthorization.require_codex_subscription(
+            approval_id="codex-subscription-20260829",
             environment={
-                "THESIS_V23_PAID_OVERAGE_AUTHORIZED": "1",
+                "THESIS_V23_CODEX_SUBSCRIPTION_AUTHORIZED": "1",
                 "THESIS_V23_PILOT_USER_APPROVED": "1",
             },
         )
-        startup = CopilotAccountIdentity(
-            login="moonsangyhu", source="gh-api-active-user",
-            observed_at=datetime(2026, 8, 16, 1, tzinfo=timezone.utc).isoformat(),
-        )
         backend = SimpleNamespace(
-            executable="/opt/bin/copilot", sdk_sha256="a" * 64,
-            runner_sha256="b" * 64, pre_call_guard=None,
-            charge_observer=None,
+            executable="/opt/bin/codex", charge_observer=None,
         )
         store = MagicMock()
         runner = MagicMock()
@@ -36,9 +28,7 @@ class MainCampaignWiringTests(unittest.TestCase):
         ground_truth = {("F1", 1): {"fault_id": "F1", "trial": 1}}
 
         replacements = {
-            "experiments.shared.copilot_sdk.CopilotSDKBackend": MagicMock(return_value=backend),
-            "experiments.shared.copilot_identity.inspect_active_gh_account": MagicMock(return_value=startup),
-            "experiments.shared.copilot_quota.inspect_copilot_quota": MagicMock(side_effect=AssertionError("quota must not run")),
+            "experiments.shared.codex_cli.CodexCLIBackend": MagicMock(return_value=backend),
             "experiments.shared.csv_io.load_ground_truth": MagicMock(return_value=ground_truth),
             "experiments.shared.infra.preflight_check": MagicMock(return_value=True),
             "scripts.fault_inject.FaultInjector": MagicMock(),
@@ -59,14 +49,12 @@ class MainCampaignWiringTests(unittest.TestCase):
             "experiments.v2_3.live_runner.PilotIncidentRunner": MagicMock(return_value=runner),
             "experiments.v2_3.live_runner.RuntimeOnlyRetriever": MagicMock(),
             "experiments.v2_3.live_runner.snapshot_tree": MagicMock(return_value="corpus"),
-            "experiments.v2_3.run._local_cli_build_identity": MagicMock(
-                return_value="package-and-native-sha"
-            ),
+            "experiments.v2_3.run._probe_cli_version": MagicMock(return_value="codex-cli 0.150.1"),
             "experiments.v2_3.run._verified_git_revision": MagicMock(return_value="c" * 40),
         }
         with tempfile.TemporaryDirectory() as chroma, ExitStack() as stack:
             stack.enter_context(patch.dict("os.environ", {
-                "THESIS_V23_PAID_OVERAGE_AUTHORIZED": "1",
+                "THESIS_V23_CODEX_SUBSCRIPTION_AUTHORIZED": "1",
                 "THESIS_V23_PILOT_USER_APPROVED": "1",
             }, clear=False))
             stack.enter_context(patch("experiments.v2_3.main_campaign.FAULTS", ("F1",)))
@@ -84,28 +72,20 @@ class MainCampaignWiringTests(unittest.TestCase):
             )
 
         self.assertEqual(summary["incidents"], 1)
-        backend_factory = mocks["experiments.shared.copilot_sdk.CopilotSDKBackend"]
+        backend_factory = mocks["experiments.shared.codex_cli.CodexCLIBackend"]
         self.assertEqual(backend_factory.call_args.kwargs["timeout_seconds"], 300)
-        self.assertIsNone(backend.pre_call_guard)
-        mocks["experiments.shared.copilot_quota.inspect_copilot_quota"].assert_not_called()
-        self.assertEqual(
-            mocks["experiments.shared.copilot_identity.inspect_active_gh_account"].call_count,
-            1,
-        )
         manifest = store.write_manifest.call_args.args[0]
-        self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-6")
-        self.assertEqual(manifest["copilot_inference_timeout_seconds"], 300)
+        self.assertEqual(manifest["schema_version"], "v2.3-main-campaign-7")
+        self.assertEqual(manifest["codex_inference_timeout_seconds"], 300)
         self.assertIsNone(manifest["billing_confirmed_at"])
         self.assertEqual(
             manifest["billing_confirmation_timestamp_status"],
             "not-recorded-in-authorization-seal",
         )
         self.assertIsNone(manifest["included_aic_balance_before"])
-        self.assertEqual(manifest["server_quota"]["status"], "not-queried-paid-overage-mode")
-        self.assertEqual(manifest["active_account"], startup.to_dict())
-        self.assertEqual(
-            manifest["cli_version_source"], "local-package-and-native-sha256"
-        )
+        self.assertEqual(manifest["subscription_usage"]["status"], "token-count-only")
+        self.assertEqual(manifest["provider"], "codex-cli-chatgpt-subscription")
+        self.assertEqual(manifest["cli_version_source"], "codex-cli---version")
         self.assertFalse(any(
             call.args and call.args[0] == "account_identity_verified"
             for call in store.append_event.call_args_list
