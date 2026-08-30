@@ -852,3 +852,12 @@
 - **수정 내용**: 첫 Loki query 실패 시 local port-forward를 한 번만 교체해 동일 query를 재시도하고, 두 번째 실패는 `LokiQueryError`로 incident commit 전에 차단한다. 두 query의 success receipt를 raw에 봉인한다. preflight와 incident health를 functional JSON API 검사로 바꾸고, main 시작 시 comprehensive health를 추가했으며, Service selector/ports exact drift check를 복구 gate에 포함했다.
 - **수정 파일**: `src/collector/loki.py:1`, `experiments/shared/infra.py:1`, `experiments/v2_3/main_campaign.py:1`, `scripts/stabilize/health_verify.py:1`, `tests/test_loki_collector.py:1`, `tests/test_infra.py:1`, `tests/test_health_verify.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — F4-t3 model-free evidence 70.561초<175초·Loki 2/2 success, stalled-listener live recovery 34.169초, V2.3 179 PASS, targeted 22 PASS, dry-run 180 rows/2,160 calls·external/write 0, comprehensive health GREEN. Primary04는 append-only 보존·배제하고 clean revision에서 fresh Primary05를 실행한다.
+
+### 97. V2.3 quality-stop과 독립 판정 불가 분석 — 2026-08-30
+
+- **수정 에이전트**: @Codex orchestrator + fresh @results-critic
+- **증상/문제**: V2.3 live 실행이 19번째 달력일까지 장기화됐고, 49개 artifact directory 전체에 `campaign_complete`가 없었다. 최신 동일-provider Primary01–04도 각각 14·37·39·30/59 incidents에서 서로 다른 경계 결함으로 중단 또는 무효화돼 확증 dataset을 구성할 수 없었다.
+- **원인**: scanner false positive, Kubernetes patch/recovery semantics, exact desired-state 복구 결손, Loki fail-open 수집이라는 이질적 lifecycle 결함이 순차적으로 발견됐다. 수정마다 fresh campaign을 요구하는 fail-closed 정책은 데이터 오염을 막았지만 높은 campaign-level attrition과 장기화를 만들었다.
+- **수정 내용**: 사용자의 장기화 중단 결정에 따라 Primary05를 시작하지 않고 V2.3 artifact를 append-only 동결했다. fresh results critic이 전체 tree와 최신 네 campaign의 row/raw/ledger/event/provenance를 독립 감사해 가설을 `판정 불가`로 확정했다. 계획서에 실행 후 조기 종료 기록을 추가하고, 연구 정본·버전 색인을 갱신했다. 다음 checkpoint는 새 모델 호출과 fault injection이 없는 Primary03 12-incident·36-output human/semantic audit로 제한했으며 TickTick `ai-continue` handoff를 생성했다.
+- **수정 파일**: `results/analysis_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/next_experiment_goal_v2_4.md:1`, `docs/research-charter.md:1`, `docs/experiment-versions.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 조기 종료·분석 완료 — campaign 간 prefix 결합 0, 원본 CSV/raw/artifact 수정 0. 종료 뒤 comprehensive health `ok=True, issues=[]`, nodes 6/6·Boutique 12/12·Flux 5/5·Prometheus/Loki GREEN. V2.3은 효과 없음이 아니라 확증 **판정 불가**로 종료한다.

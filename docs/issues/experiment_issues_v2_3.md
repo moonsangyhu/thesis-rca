@@ -752,3 +752,14 @@
 - **수정 내용**: Loki query는 첫 실패 시 exact local port-forward를 한 번만 교체하고 동일 query를 재시도한다. 두 번째 실패·HTTP error·invalid success schema는 `LokiQueryError`로 incident commit 전에 fail-closed하며, 성공한 두 query는 raw `query_status` receipt로 남긴다. preflight/incident health는 functional Loki JSON API를 검사하고, comprehensive health는 checked-out manifest의 Service selector/ports와 live spec을 정규화 비교한다.
 - **검증**: targeted 22 tests가 통과했다. 실제 F4-t3 model-free probe는 NodeNotReady treatment를 49.220초에 검증하고, pressure 중 Loki pod/event query 모두 success·pod log 1건·14 metric groups·6 kubectl groups를 70.561초(<175초 deadline)에 수집했다. exact stress cleanup 13회 재시도 뒤 final comprehensive health는 GREEN이었다. fresh main campaign 전에 의도적으로 정체시킨 local listener의 live repair, full regression, dry-run, clean commit을 추가 검증한다.
 - **후속 검증(append-only)**: 3100 포트에 TCP accept 후 HTTP 응답을 하지 않는 listener를 세운 live probe에서 첫 query가 정확히 30초 timeout됐다. collector가 해당 listener만 종료하고 Loki port-forward를 재생성해 총 34.169초에 두 query success·pod log 1건을 회수했다. V2.3 179 tests, infra/collector/recovery 22 tests, dry-run 180 rows·2,160 calls·external 0·filesystem write 0, compileall, diff check가 모두 통과했고 final live preflight/comprehensive health는 GREEN이다.
+
+### [ISS-061] 반복된 campaign-level attrition으로 V2.3 확증 estimand를 구성할 수 없음
+
+- **카테고리**: data / execution / reproducibility
+- **심각도**: critical (P0)
+- **영향**: 동일 Codex subscription provider의 `Primary01`–`Primary04`는 각각 14·37·39·30 incidents와 42·111·117·90 rows를 commit했지만 완결 campaign은 0개다. 계획서가 금지한 서로 다른 revision/campaign의 연결 없이는 59 incidents·177 rows·2,124 logical calls의 1차 estimand를 만들 수 없으므로 V2.3 가설은 확증적으로 판정할 수 없다.
+- **발생 빈도**: 최신 동일-provider main campaign 4/4. 각각 ISS-057, ISS-058, ISS-059, ISS-060의 서로 다른 무효화 사유가 확인됐다.
+- **관찰한 사실**: 네 campaign의 CSV/raw는 360/360개, committed incident는 합계 120개지만 revision SHA와 중단 위치가 다르며 `campaign_complete` event는 모두 0개다. `Primary04`의 1,080 logical calls 외에 미커밋 F7-t1 attempt/charged 20건이 남아 있다. 2026-08-30 09:20 KST 점검에서 V2.3 실행 프로세스와 `Primary05` 결과 경로는 모두 없었다. V2.3 live 실행을 처음 시작한 2026-08-12부터는 19번째 달력일이었다.
+- **근본 원인**: 단일 원인으로 축약할 수 없다. 최신 네 campaign은 scanner false positive, Kubernetes patch/recovery semantics, env/service list 복구, Loki fail-open 수집이라는 서로 다른 경계 결함 때문에 각각 중단 또는 사후 무효화됐다. 매 수정 후 fresh campaign을 요구하는 올바른 fail-closed 정책이 결과적으로 높은 campaign-level attrition과 장기화를 만들었다.
+- **처리**: 사용자의 장기화 중단 결정에 따라 `Primary05`를 시작하지 않고 기존 artifact를 append-only로 동결한다. campaign 간 row를 합쳐 1차 효과를 추정하지 않으며, fresh `results_critic`이 운영 attrition과 가능한 탐색적 분석만 독립 평가한다. 계획서의 즉시 중단 규칙인 장시간 중단·campaign 연결 금지 및 반복 오류 경계를 적용해 V2.3 확증 판정은 `판정 불가` 후보로 둔다.
+- **현재 환경**: 조기 종료 뒤 comprehensive health gate `ok=True, issues=[]`, nodes 6/6 Ready, Boutique 12/12 Running, Flux 5/5 Ready, 잔여 NetworkPolicy/ResourceQuota/LimitRange 0, Prometheus/Loki functional readiness를 확인했다.

@@ -20,13 +20,14 @@
 | **v8** | V7 + 확장 네트워크 메트릭 (gRPC latency, TCP retransmissions) — 가설 기각, 환경 오염 발견 | 25% / 35% | `experiments/v8/` |
 | **V2.1** (옛 v10) | **Try 2 시작** — 클러스터 재구축 후 re-baseline + V9 Pre-Trial State Validator 탑재 | 34.5% / 43.1% (`≥0.5` 재분석) | `experiments/v2_1/` |
 | **V2.2** | 5-arm 처치 분해 + 길이 placebo + 반복 생성·blinded 다수결 채점·임계 sweep | C1 31.7% / GitOps 36.7% / RAG 65.0% / Both 60.0% / Placebo 36.7% (`≥0.5`) | `experiments/v2_2/` |
+| **V2.3** | 누출 통제 blind procedural RAG vs 길이 placebo; 반복 campaign lifecycle 결함으로 조기 종료 | **판정 불가** — 완결 campaign 0/49 artifact dirs, 최신 4회 14·37·39·30/59 incidents | `experiments/v2_3/` |
 
 ## 현재 체크포인트
 
-- **최신 완료:** V2.2
-- **핵심 판정:** RAG 우위는 관찰됐으나 75%의 자기 런북 회수로 retrieval leakage 가능성이 높다. GitOps는 placebo와 동률이지만 fault 비연동·경로 오류로 신호가 손상돼 효과 판정을 보류한다.
-- **다음 실험:** V2.3 — blind retrieval, retrieval 내용 ablation, fault-linked GitOps 신호, 동일 캠페인 재수집
-- **재개 문서:** [`plans/next_experiment_goal_v2_3.md`](plans/next_experiment_goal_v2_3.md)
+- **최신 종료:** V2.3 — 2026-08-30 quality/operational futility로 조기 종료
+- **핵심 판정:** 최신 동일-provider 4개 campaign을 포함해 완결 단일 campaign이 없어 blind procedural RAG의 순기여는 판정 불가다. prefix의 0/음의 탐색 차이를 효과 없음으로 해석하지 않는다.
+- **다음 checkpoint:** V2.4 — Primary03의 12 incidents·36 outputs를 대상으로 새 모델 호출 없는 blinded human/semantic measurement audit 설계
+- **재개 문서:** [`plans/next_experiment_goal_v2_4.md`](plans/next_experiment_goal_v2_4.md)
 - **연구 정본:** [`research-charter.md`](research-charter.md)
 
 ## 아카이브된 버전 (저유용 — `archive/` 로 이동, 2026-06-20)

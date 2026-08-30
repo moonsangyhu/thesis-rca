@@ -25,7 +25,9 @@
 3. 반복 생성·blinded 다수결 채점·임계값 sweep을 결합한 측정 신뢰성 평가
 4. trial contamination과 수집 캠페인 차이를 포함한 Kubernetes RCA 내적 타당성 위협 분석
 
-기여는 잠정적이다. V2.3에서 검색 누출과 GitOps 신호 손상을 통제한 뒤 최종 확정한다.
+기여는 잠정적이다. V2.3은 검색 누출 통제 효과를 판정하기 전에 campaign lifecycle과
+evidence completeness가 무너져 조기 종료됐다. 따라서 컨텍스트 효과 주장은 아직 확정하지
+않고, 측정 파이프라인 실패 자체를 내적 타당성 근거로 분리한다.
 
 ## 현재까지 확인된 증거
 
@@ -42,19 +44,27 @@
 - GitOps-only와 길이 placebo는 모두 36.7%였다. 다만 GitOps 신호가 fault와 연동되지 않았고 경로 오류도 있어 “GitOps 무용”으로 일반화할 수 없다.
 - 상세 근거: [`results/analysis_v2_2.md`](../results/analysis_v2_2.md)
 
+### V2.3
+
+- F7-t5를 사전 제외한 목표는 단일 campaign 59 incidents·177 rows·2,124 logical calls였으나, 전체 49개 artifact directory에서 `campaign_complete`는 0건이었다.
+- 최신 Codex-provider 캠페인 네 개는 각각 14·37·39·30 incidents에서 scanner, treatment/recovery, evidence-collection 문제로 중단 또는 무효화됐다.
+- 서로 다른 revision의 prefix를 연결하지 않았으며, blind procedural RAG의 순기여는 **판정 불가**다. 이는 효과 없음의 증거가 아니다.
+- 상세 근거: [`results/analysis_v2_3.md`](../results/analysis_v2_3.md)
+
 ## 주장 경계
 
 - V1의 84%는 힌트 누출 사례이며 성능 근거로 사용하지 않는다.
 - 통제된 단일 클러스터·Online Boutique·`gpt-4o-mini` 결과를 production readiness나 일반적 MTTR 개선으로 확대하지 않는다.
 - 누출 통제 전 RAG 향상을 추론 능력 향상으로 표현하지 않는다.
 - fault-linked GitOps 신호를 재수집하기 전 GitOps의 효과 또는 무효를 단정하지 않는다.
+- V2.3의 불완전 campaign prefix를 합쳐 RAG 효과량·CI·p-value를 제시하지 않는다.
 - 원시 CSV·JSON과 ground truth는 불변이며, 모든 수치는 해당 분석 문서로 추적 가능해야 한다.
 
 ## 현재 상태와 다음 행동
 
-- 최신 완료 실험: **V2.2**
-- 다음 실험: **V2.3 — RAG 검색 누출 통제 + GitOps 신호 정상화 + 동일 캠페인 재수집**
-- 재개 문서: [`docs/plans/next_experiment_goal_v2_3.md`](plans/next_experiment_goal_v2_3.md)
+- 최신 종료 실험: **V2.3 — quality/operational futility 조기 종료, 가설 판정 불가**
+- 다음 checkpoint: **V2.4 — 새 모델 호출 없는 retrospective human/semantic measurement audit 설계**
+- 재개 문서: [`docs/plans/next_experiment_goal_v2_4.md`](plans/next_experiment_goal_v2_4.md)
 - 버전 색인: [`docs/experiment-versions.md`](experiment-versions.md)
 
 ## 문서 소유권
@@ -69,4 +79,3 @@
 | 결과 해석 | `results/analysis_*.md` |
 | 선행연구 | `docs/papers/`, `docs/surveys/` |
 | 논문 원고 | `paper/chapters/` |
-
