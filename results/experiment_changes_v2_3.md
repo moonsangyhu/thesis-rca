@@ -861,3 +861,4 @@
 - **수정 내용**: 사용자의 장기화 중단 결정에 따라 Primary05를 시작하지 않고 V2.3 artifact를 append-only 동결했다. fresh results critic이 전체 tree와 최신 네 campaign의 row/raw/ledger/event/provenance를 독립 감사해 가설을 `판정 불가`로 확정했다. 계획서에 실행 후 조기 종료 기록을 추가하고, 연구 정본·버전 색인을 갱신했다. 다음 checkpoint는 새 모델 호출과 fault injection이 없는 Primary03 12-incident·36-output human/semantic audit로 제한했으며 TickTick `ai-continue` handoff를 생성했다.
 - **수정 파일**: `results/analysis_v2_3.md:1`, `docs/issues/experiment_issues_v2_3.md:1`, `docs/plans/experiment_plan_v2_3.md:1`, `docs/plans/next_experiment_goal_v2_4.md:1`, `docs/research-charter.md:1`, `docs/experiment-versions.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 조기 종료·분석 완료 — campaign 간 prefix 결합 0, 원본 CSV/raw/artifact 수정 0. 종료 뒤 comprehensive health `ok=True, issues=[]`, nodes 6/6·Boutique 12/12·Flux 5/5·Prometheus/Loki GREEN. V2.3은 효과 없음이 아니라 확증 **판정 불가**로 종료한다.
+- **후속 형식 검증**: staged diff 검사에서 분석 문서 머리말 3줄의 trailing whitespace를 발견해 제거했고, 내용·수치·원본 데이터는 변경하지 않았다.
