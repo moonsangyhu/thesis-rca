@@ -8,6 +8,38 @@ from scripts.stabilize import recovery
 
 
 class HealthVerifyTests(unittest.TestCase):
+    def test_service_spec_check_rejects_healthy_endpoint_with_fault_port(self):
+        live = {"items": [{
+            "metadata": {"name": "emailservice"},
+            "spec": {
+                "selector": {"app": "emailservice"},
+                "ports": [{
+                    "name": "grpc", "port": 9999,
+                    "targetPort": 8080, "protocol": "TCP",
+                }],
+            },
+        }]}
+        desired = {"emailservice": {
+            "selector": {"app": "emailservice"},
+            "ports": [{"name": "grpc", "port": 5000, "targetPort": 8080}],
+        }}
+        with patch.object(
+            health_verify, "kubectl", return_value=__import__("json").dumps(live)
+        ), patch.object(health_verify, "_desired_service_specs", return_value=desired):
+            self.assertEqual(
+                health_verify._check_service_specs(),
+                ["Service emailservice ports drift"],
+            )
+
+    def test_monitoring_check_requires_functional_api(self):
+        with patch.object(
+            health_verify, "_check_port", side_effect=lambda port: port == 9090
+        ):
+            self.assertEqual(
+                health_verify._check_monitoring(),
+                ["Loki API (port 3100) not functional"],
+            )
+
     def test_disk_usage_ignores_unrelated_ssh_stderr_after_exact_marker(self):
         commands = []
 

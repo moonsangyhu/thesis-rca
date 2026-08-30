@@ -1,4 +1,5 @@
 """Infrastructure checks: preflight, health, port-forward management."""
+import json
 import logging
 import os
 import shutil
@@ -72,12 +73,19 @@ def _run_kubectl_check(
 
 
 def _check_port(port: int) -> bool:
-    """Check if a local port is responding."""
+    """Check the monitoring API, not merely whether a listener accepts TCP."""
     import urllib.request
     try:
-        url = f"http://localhost:{port}/ready" if port == 3100 else f"http://localhost:{port}/api/v1/status/runtimeinfo"
-        req = urllib.request.urlopen(url, timeout=5)
-        return req.status == 200
+        url = (
+            f"http://localhost:{port}/loki/api/v1/labels?since=1m"
+            if port == 3100
+            else f"http://localhost:{port}/api/v1/status/runtimeinfo"
+        )
+        response = urllib.request.urlopen(url, timeout=5)
+        if response.status != 200:
+            return False
+        data = json.loads(response.read())
+        return data.get("status") == "success"
     except Exception:
         return False
 

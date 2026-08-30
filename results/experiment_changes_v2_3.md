@@ -843,3 +843,12 @@
 - **수정 내용**: F9-t1의 env entry·recovery env list, F8 service selector/ports를 pre-mutation sealed receipt에서 JSON Patch로 정확 교체/복원한다. full reset은 manifest의 Service selector/ports drift도 bounded JSON Patch로 수렴시킨다.
 - **수정 파일**: `scripts/fault_inject/injector.py:1`, `scripts/stabilize/recovery.py:1`, `tests/test_fault_inject_container_identity.py:1`, `tests/test_health_verify.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
 - **상태**: 수정됨 — incomplete Primary03은 append-only 보존·배제. live no-model verification과 clean revision에서 fresh campaign을 실행한다.
+
+### 96. Loki query fail-closed와 desired Service drift health gate — 2026-08-30
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: Primary04는 F4-t3 이후 13개 committed incident에서 Loki pod/event logs가 모두 0건이었지만 30초 query timeout을 빈 정상 결과로 처리해 계속 진행했다. 동시에 `emailservice`의 잔류 port 9999가 endpoint-only health를 통과해 Flux reconcile을 duplicate `grpc` 오류로 만들었다.
+- **원인**: collector가 Loki의 request/HTTP/schema 실패를 `[]`로 변환했고, monitoring gate는 TCP/readiness만 확인했다. comprehensive health도 Service endpoint 존재만 확인하고 checked-out desired selector/ports와 live spec을 비교하지 않았다.
+- **수정 내용**: 첫 Loki query 실패 시 local port-forward를 한 번만 교체해 동일 query를 재시도하고, 두 번째 실패는 `LokiQueryError`로 incident commit 전에 차단한다. 두 query의 success receipt를 raw에 봉인한다. preflight와 incident health를 functional JSON API 검사로 바꾸고, main 시작 시 comprehensive health를 추가했으며, Service selector/ports exact drift check를 복구 gate에 포함했다.
+- **수정 파일**: `src/collector/loki.py:1`, `experiments/shared/infra.py:1`, `experiments/v2_3/main_campaign.py:1`, `scripts/stabilize/health_verify.py:1`, `tests/test_loki_collector.py:1`, `tests/test_infra.py:1`, `tests/test_health_verify.py:1`, `tests/test_v2_3_main_campaign.py:1`, `docs/issues/experiment_issues_v2_3.md:1`, `results/experiment_changes_v2_3.md:1`
+- **상태**: 수정됨 — F4-t3 model-free evidence 70.561초<175초·Loki 2/2 success, stalled-listener live recovery 34.169초, V2.3 179 PASS, targeted 22 PASS, dry-run 180 rows/2,160 calls·external/write 0, comprehensive health GREEN. Primary04는 append-only 보존·배제하고 clean revision에서 fresh Primary05를 실행한다.

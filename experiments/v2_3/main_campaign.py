@@ -39,11 +39,12 @@ def run_authorized_main(
         CODEX_MODEL_PROVENANCE, CODEX_PROVIDER, CodexCLIBackend,
     )
     from experiments.shared.csv_io import load_ground_truth
-    from experiments.shared.infra import preflight_check
+    from experiments.shared.infra import health_check, preflight_check
     from scripts.fault_inject import FaultInjector
     from scripts.fault_inject.base import kubectl_get_json, ssh_node
     from scripts.fault_inject.config import F4_T3_NODE_NAME
     from scripts.stabilize import Recovery
+    from scripts.stabilize.health_verify import comprehensive_health_check
     from scripts.stabilize.state_validator import StateValidator
     from src.collector import SignalCollector
     from src.rag.config import DEBUGGING_DIR, KNOWN_ISSUES_DIR, RUNBOOKS_DIR
@@ -137,6 +138,12 @@ def run_authorized_main(
     if not preflight_check():
         store.append_event("preflight_failed")
         raise RuntimeError("cluster preflight failed")
+    health_ok, health_issues = comprehensive_health_check(
+        max_retries=1, retry_delay=0,
+    )
+    if not health_ok:
+        store.append_event("preflight_failed", checks=health_issues)
+        raise RuntimeError("comprehensive cluster preflight failed")
     store.append_event("preflight_green")
 
     ground_truth = load_ground_truth(project_root / "results" / "ground_truth.csv")
@@ -191,6 +198,11 @@ def run_authorized_main(
     completed = 0
     for fault_id, trial in MAIN_INCIDENTS:
         authorization.revalidate()
+        if not health_check(fault_id, trial):
+            store.append_event(
+                "incident_preflight_failed", fault_id=fault_id, trial=trial,
+            )
+            raise RuntimeError("incident infrastructure preflight failed")
         store.append_event(
             "incident_scheduled", fault_id=fault_id, trial=trial,
             ordinal=completed + 1,
