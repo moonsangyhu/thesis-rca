@@ -1,7 +1,7 @@
 """Loki log collector."""
 import logging
 import time
-from typing import Optional
+from collections.abc import Callable
 
 import requests
 
@@ -10,11 +10,29 @@ from .config import LOKI_URL, QUERY_TIMEOUT, TARGET_NAMESPACE
 logger = logging.getLogger(__name__)
 
 
+class LokiQueryError(RuntimeError):
+    """Raised when a Loki query cannot be proven successful."""
+
+
 class LokiCollector:
     """Collect logs from Loki for RCA analysis."""
 
-    def __init__(self, base_url: str = LOKI_URL):
+    def __init__(
+        self,
+        base_url: str = LOKI_URL,
+        *,
+        recover_query_path: Callable[[], bool] | None = None,
+    ):
         self.base_url = base_url.rstrip("/")
+        self._recover_query_path = recover_query_path
+
+    def _recover_once(self) -> bool:
+        if self._recover_query_path is not None:
+            return self._recover_query_path() is True
+        # Keep the generic collector importable in offline tests.  The live
+        # experiment owns this bounded local port-forward repair path.
+        from experiments.shared.infra import _restart_port_forward
+        return _restart_port_forward("monitoring", "loki", 3100)
 
     def _query(
         self,
@@ -24,36 +42,53 @@ class LokiCollector:
         limit: int = 200,
     ) -> list[dict]:
         """Execute LogQL query."""
-        try:
-            resp = requests.get(
-                f"{self.base_url}/loki/api/v1/query_range",
-                params={
-                    "query": logql,
-                    "start": start_ns,
-                    "end": end_ns,
-                    "limit": limit,
-                },
-                timeout=QUERY_TIMEOUT,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            if data["status"] != "success":
-                logger.warning("Loki query failed: %s", data.get("error", ""))
-                return []
+        last_error: Exception | None = None
+        for attempt in range(2):
+            try:
+                resp = requests.get(
+                    f"{self.base_url}/loki/api/v1/query_range",
+                    params={
+                        "query": logql,
+                        "start": start_ns,
+                        "end": end_ns,
+                        "limit": limit,
+                    },
+                    timeout=QUERY_TIMEOUT,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                if data.get("status") != "success":
+                    raise LokiQueryError(
+                        f"Loki returned non-success status: {data.get('error', '')}"
+                    )
+                result = data.get("data", {}).get("result")
+                if not isinstance(result, list):
+                    raise LokiQueryError("Loki success response has invalid result schema")
 
-            entries = []
-            for stream in data["data"]["result"]:
-                labels = stream.get("stream", {})
-                for ts, line in stream.get("values", []):
-                    entries.append({
-                        "timestamp": ts,
-                        "labels": labels,
-                        "line": line,
-                    })
-            return entries
-        except Exception as e:
-            logger.error("Loki query error: %s (query: %s)", e, logql)
-            return []
+                entries = []
+                for stream in result:
+                    labels = stream.get("stream", {})
+                    for ts, line in stream.get("values", []):
+                        entries.append({
+                            "timestamp": ts,
+                            "labels": labels,
+                            "line": line,
+                        })
+                return entries
+            except Exception as exc:
+                last_error = exc
+                logger.error(
+                    "Loki query attempt %d/2 failed: %s (query: %s)",
+                    attempt + 1, exc, logql,
+                )
+                if attempt == 0:
+                    try:
+                        if self._recover_once():
+                            continue
+                    except Exception as recovery_error:
+                        last_error = recovery_error
+                break
+        raise LokiQueryError("Loki query failed after bounded recovery") from last_error
 
     def collect(
         self,
@@ -65,12 +100,17 @@ class LokiCollector:
         now_ns = int(time.time() * 1e9)
         start_ns = now_ns - int(window_minutes * 60 * 1e9)
 
-        return {
+        result = {
             "pod_logs": self._collect_pod_logs(
                 namespace, start_ns, now_ns, error_only
             ),
             "k8s_events": self._collect_events(namespace, start_ns, now_ns),
         }
+        result["query_status"] = {
+            "pod_logs": "success",
+            "k8s_events": "success",
+        }
+        return result
 
     def _collect_pod_logs(
         self,

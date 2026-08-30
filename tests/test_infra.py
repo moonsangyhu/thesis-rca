@@ -1,11 +1,23 @@
 import subprocess
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from experiments.shared.infra import _run_kubectl_check, preflight_check
+from experiments.shared.infra import _check_port, _run_kubectl_check, preflight_check
 
 
 class InfraCheckTests(unittest.TestCase):
+    @patch("urllib.request.urlopen")
+    def test_loki_health_requires_functional_json_api(self, urlopen):
+        response = MagicMock(status=200)
+        response.read.return_value = b'{"status":"success","data":["namespace"]}'
+        urlopen.return_value = response
+
+        self.assertTrue(_check_port(3100))
+        self.assertIn("/loki/api/v1/labels", urlopen.call_args.args[0])
+
+        response.read.return_value = b'{"status":"error"}'
+        self.assertFalse(_check_port(3100))
+
     @patch("experiments.shared.infra.shutil.which", return_value="/usr/local/bin/kubectl")
     @patch("experiments.shared.infra.subprocess.Popen")
     def test_timeout_kills_direct_child_then_retries_once(self, popen, _which):

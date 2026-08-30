@@ -31,10 +31,14 @@ class MainCampaignWiringTests(unittest.TestCase):
             "experiments.shared.codex_cli.CodexCLIBackend": MagicMock(return_value=backend),
             "experiments.shared.csv_io.load_ground_truth": MagicMock(return_value=ground_truth),
             "experiments.shared.infra.preflight_check": MagicMock(return_value=True),
+            "experiments.shared.infra.health_check": MagicMock(return_value=True),
             "scripts.fault_inject.FaultInjector": MagicMock(),
             "scripts.fault_inject.base.kubectl_get_json": MagicMock(),
             "scripts.fault_inject.base.ssh_node": MagicMock(),
             "scripts.stabilize.Recovery": MagicMock(),
+            "scripts.stabilize.health_verify.comprehensive_health_check": MagicMock(
+                return_value=(True, [])
+            ),
             "scripts.stabilize.state_validator.StateValidator": MagicMock(),
             "src.collector.SignalCollector": MagicMock(),
             "src.rag.retriever.KnowledgeRetriever": MagicMock(),
@@ -72,6 +76,12 @@ class MainCampaignWiringTests(unittest.TestCase):
             )
 
         self.assertEqual(summary["incidents"], 1)
+        mocks[
+            "scripts.stabilize.health_verify.comprehensive_health_check"
+        ].assert_called_once_with(max_retries=1, retry_delay=0)
+        mocks["experiments.shared.infra.health_check"].assert_called_once_with(
+            "F1", 1
+        )
         backend_factory = mocks["experiments.shared.codex_cli.CodexCLIBackend"]
         self.assertEqual(backend_factory.call_args.kwargs["timeout_seconds"], 300)
         manifest = store.write_manifest.call_args.args[0]

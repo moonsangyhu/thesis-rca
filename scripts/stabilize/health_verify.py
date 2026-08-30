@@ -3,9 +3,13 @@ import json
 import logging
 import time
 from datetime import datetime, timezone
+from pathlib import Path
+
+import yaml
 
 from scripts.fault_inject.base import kubectl, ssh_node
 from scripts.fault_inject.config import WORKER_NODES
+from experiments.shared.infra import _check_port
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +19,9 @@ DISK_THRESHOLD_PCT = 80
 DISK_USAGE_MARKER = "__V23_DISK_USAGE_PCT__="
 KUBELET_STATS_MAX_AGE_SECONDS = 300
 SSH_DISK_PROBE_TIMEOUT_SECONDS = 5
+ORIGINAL_MANIFEST = (
+    Path(__file__).resolve().parents[2] / "k8s" / "app" / "online-boutique.yaml"
+)
 
 
 def comprehensive_health_check(
@@ -29,7 +36,7 @@ def comprehensive_health_check(
     2. All 12 deployments: readyReplicas == replicas
     3. No Failed/Pending/CrashLoopBackOff pods
     4. No residual NetworkPolicy, ResourceQuota, LimitRange
-    5. All service endpoints populated
+    5. All service endpoints populated and fault-mutated Service fields exact
     6. Disk usage < 80% on all workers
     7. Prometheus and Loki functional
     """
@@ -56,6 +63,7 @@ def _run_all_checks() -> list[str]:
     issues.extend(_check_pods())
     issues.extend(_check_residuals())
     issues.extend(_check_endpoints())
+    issues.extend(_check_service_specs())
     issues.extend(_check_disk_usage())
     issues.extend(_check_monitoring())
     return issues
@@ -157,6 +165,57 @@ def _check_endpoints() -> list[str]:
     return issues
 
 
+def _desired_service_specs() -> dict[str, dict]:
+    return {
+        document["metadata"]["name"]: document.get("spec", {})
+        for document in yaml.safe_load_all(ORIGINAL_MANIFEST.read_text())
+        if isinstance(document, dict)
+        and document.get("kind") == "Service"
+        and isinstance(document.get("metadata", {}).get("name"), str)
+    }
+
+
+def _normalized_ports(ports: object) -> list[dict] | None:
+    if not isinstance(ports, list):
+        return None
+    normalized = []
+    for port in ports:
+        if not isinstance(port, dict):
+            return None
+        normalized.append({
+            "name": port.get("name"),
+            "port": port.get("port"),
+            "targetPort": port.get("targetPort", port.get("port")),
+            "protocol": port.get("protocol", "TCP"),
+        })
+    return normalized
+
+
+def _check_service_specs() -> list[str]:
+    """Reject healthy-looking endpoints whose selector/ports still carry a fault."""
+    issues = []
+    try:
+        live = json.loads(kubectl("get", "services", "-o", "json"))
+        by_name = {
+            item.get("metadata", {}).get("name"): item.get("spec", {})
+            for item in live.get("items", [])
+        }
+        for name, desired in _desired_service_specs().items():
+            current = by_name.get(name)
+            if current is None:
+                issues.append(f"Service {name} missing")
+                continue
+            if current.get("selector") != desired.get("selector"):
+                issues.append(f"Service {name} selector drift")
+            if _normalized_ports(current.get("ports")) != _normalized_ports(
+                desired.get("ports")
+            ):
+                issues.append(f"Service {name} ports drift")
+    except Exception as exc:
+        issues.append(f"Service spec check failed: {exc}")
+    return issues
+
+
 def _check_disk_usage() -> list[str]:
     """Check 6: Disk usage < threshold on all workers."""
     issues = []
@@ -232,13 +291,9 @@ def _nodefs_usage_from_kubelet(node_name: str) -> int:
 
 
 def _check_monitoring() -> list[str]:
-    """Check 7: Prometheus and Loki responsive."""
-    import socket
+    """Check 7: Prometheus and Loki APIs return valid functional responses."""
     issues = []
     for name, port in [("Prometheus", 9090), ("Loki", 3100)]:
-        try:
-            sock = socket.create_connection(("127.0.0.1", port), timeout=5)
-            sock.close()
-        except (socket.timeout, ConnectionRefusedError, OSError):
-            issues.append(f"{name} (port {port}) not reachable")
+        if not _check_port(port):
+            issues.append(f"{name} API (port {port}) not functional")
     return issues
