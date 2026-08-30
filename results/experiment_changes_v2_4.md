@@ -17,3 +17,30 @@
 - **수정 내용**: 조작 독립변수 없음과 Terra-human paired discordance 하나를 primary estimand로 고정했다. n=36에서 Green 0~2, Gray 3~11, Red 12~36의 Wilson 정수 gate와 abstain/incident-cluster bootstrap을 사전 명시했다. correctness adjudication을 완전 lock·close한 뒤 semantic package를 배포하도록 순서를 교정하고, Chroma quiescence·byte-equivalent reconstruction, phase별 scanner, canonical JSON/HMAC replay, network-none/credential-unmounted execution isolation을 구현 gate로 만들었다. 108 generation identity 선봉인, reviewer qualification·피로 통제, package-only/measurement-complete 상태 분리도 반영했다. fresh reviewer는 P0 8개를 재검증해 8 PASS/0 FAIL, 최종 `approve plan`을 기록했다. Step 3 진입은 plan/review hash bundle에 대한 사용자 단일 명시 승인 뒤로 제한했다.
 - **수정 파일**: `docs/plans/experiment_plan_v2_4.md:1`, `docs/plans/review_v2_4.md:1`, `results/experiment_changes_v2_4.md:12`
 - **상태**: 설계 완료·승인 대기 — plan SHA-256 `65ce766364f57c1fd2a8fbbf829cd50ba55cdb7d788ad1123a37667c713dcf63`, review SHA-256 `d16b1aea52bbe863d234cba2741a4784606f39c4102cee003bf0a35bd22aed64`. 미해결 비차단 dependency는 qualified R3 adjudicator 확보 여부와 Step 3의 실제 isolation/replay 검증이다. 구현·dry-run·Chroma open/copy·package 생성·사람 채점 0.
+
+### 3. V2.4 Step 3 승인 provenance 고정 — 2026-08-31
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: 승인된 plan/review bundle과 실제 구현 허가의 연결이 대화에만 남으면 이후 package가 어떤 protocol을 기준으로 생성됐는지 재현할 수 없다.
+- **원인**: 계획 승인 이후 Step 3 진입 전에 사용자 지시, branch/commit, 문서 hash를 묶은 저장소 내 승인 기록이 없었다.
+- **수정 내용**: 사용자의 `v2.4 실험 완료해` 지시를 단일 명시 승인으로 기록하고 승인 시각, base commit, plan/review SHA-256, 계속 적용되는 0-call·0-K8s·원본 불변·human score 비생성 경계를 고정했다.
+- **수정 파일**: `docs/plans/approval_v2_4.md:1`
+- **상태**: 승인 기록 완료 — 사람 reviewer가 없으면 완료 주장을 `PACKAGE_READY_AWAITING_HUMAN_REVIEW`로 제한한다.
+
+### 4. Zero-call 측정 감사 harness와 실제 package 생성 — 2026-08-31
+
+- **수정 에이전트**: @experiment, fresh @code-reviewer, @Codex
+- **증상/문제**: Primary03의 Terra 자동 correctness와 사람이 판단한 RCA correctness의 불일치를 측정하려면 reviewer blinding, phase 순서, 입력 불변성, archive leakage, replay를 실제 파일 수준에서 보장하는 offline harness가 필요했다.
+- **원인**: 기존 artifact에는 대표 output과 자동 점수는 있지만 독립 human measurement lifecycle과 immutable commitment가 없었다. 초기 구현은 frozen 제출 변조, adjudication 변조, 부분 publish, 불완전 scanner, semantic training 전 sample 공개를 독립 공격 리뷰에서 차단하지 못했다.
+- **수정 내용**: outcome-blind 12-incident selector, 36-output correctness package, 12-block semantic package, canonical HMAC identity/order, Chroma byte reconstruction, recursive archive scanner, full-source fingerprint replay, phase-specific reviewer qualification, atomic close/release/rollback, 50,000회 incident-cluster bootstrap analyzer를 구현했다. 독립 리뷰의 P0를 모두 수정하고 V2.4 28 tests와 V2.3 179 regression tests를 통과했다. 실제 audit package를 absent path에 원자적으로 생성하고 4 archives byte replay, correctness 36행×2, sealed semantic 12행×2, mapping 36, generation seal 108, 공개 semantic archive 0을 검증했다.
+- **수정 파일**: `.gitignore`, `experiments/v2_4/`, `tests/test_v2_4_audit.py`, `docs/issues/experiment_issues_v2_4.md`, `results/experiment_changes_v2_4.md`
+- **상태**: 기술 package 완료·human measurement 대기 — audit ID `v2-4-primary03-audit-20260831`, `zero_call_assurance=OBSERVED_ONLY`, observed external/K8s calls 0, 동일 audit replay PASS. 인간 rating/adjudication 0이므로 measurement gate와 RAG/RCA 효과는 `NOT_EVALUATED`; 비대표 generation 72개 본문 부재로 108-output sensitivity는 fail-closed 상태다.
+
+### 5. 독립 결과 비평과 V2.4 human-review handoff — 2026-08-31
+
+- **수정 에이전트**: fresh @results-critic, @Codex
+- **증상/문제**: 기술 package 완료를 V2.4 측정 가설 완료나 RAG→RCA 효과로 오인할 위험이 있고, 다음 session이 새 효과 실험으로 건너뛸 수 있었다.
+- **원인**: 실제 human rating/adjudication이 0건이라 primary discordance, reviewer reliability, semantic L3와 Green/Gray/Red를 계산할 관측값이 없다.
+- **수정 내용**: fresh results critic이 Primary03 117행/117 raw/39 incidents, ledger, input/Chroma digest, archive 36·12 record, 108 generation seal, 4 archive commitment/replay를 독립 재검증하고 `results/analysis_v2_4.md`에 필수 5개 섹션과 타당성 비평을 작성했다. 다음 checkpoint를 새 V2.5 효과 실험이 아닌 V2.4 qualified human measurement continuation으로 고정하고, 새 session [GOAL]과 TickTick `ai-continue` handoff를 생성했다.
+- **수정 파일**: `results/analysis_v2_4.md:1`, `docs/plans/next_experiment_goal_v2_5.md:1`, `results/experiment_changes_v2_4.md`
+- **상태**: Step 5·6 package-only handoff 완료 — technical package PASS, zero-call `OBSERVED_ONLY`, H-V2.4·semantic eligibility·RAG→RCA `NOT_EVALUATED`. TickTick task ID `6a94bf8a8f0861e0f0ffa43a`; qualified R1/R2가 없으면 현재 상태에서 멈춘다.
