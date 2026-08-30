@@ -528,3 +528,15 @@ Step 5 분석은 대화 성공 기대를 전달받지 않은 fresh `results_crit
 | Step 6 | `docs/plans/next_experiment_goal_v2_4.md`, 새 session prompt, TickTick handoff |
 
 **다음 checkpoint:** clean feature-branch SHA에서 클러스터 preflight를 통과한 뒤 `paid-overage-user-authorized` F7 trial 1 최대-context 36-call 파일럿을 실행하고, 결과·호출 ledger·recovery GREEN을 검증한다.
+
+## 12. 실행 후 조기 종료 기록 — 2026-08-30
+
+이 절은 사전 계획을 변경하거나 불완전 campaign을 유효화하지 않는 실행 후 기록이다.
+
+- V2.3 live 실행은 2026-08-12에 시작했고 2026-08-30은 19번째 달력일이었다.
+- `artifacts/v2_3_main/`의 49개 artifact directory 어디에도 `campaign_complete` event가 없다.
+- 최신 동일-provider `Primary01`–`Primary04`는 각각 14·37·39·30 incidents에서 중단되거나 사후 무효화됐다. 서로 다른 revision의 prefix는 연결하지 않는다.
+- 2026-08-30 09:20 KST에 실행 중인 V2.3 process와 `Primary05` 결과 경로가 모두 없음을 확인했다. 사용자의 장기화 중단 결정에 따라 `Primary05`는 시작하지 않는다.
+- 종료 뒤 comprehensive health는 `ok=True, issues=[]`였고 nodes 6/6, Boutique 12/12, Flux 5/5, Prometheus/Loki가 모두 GREEN이었다.
+- 계획서 §9.2에 따라 최종 가설 판정은 **판정 불가**다. 조기 종료는 quality/operational futility 결정이며 H0 채택이나 H1 기각이 아니다.
+- 독립 분석과 주장 경계는 `results/analysis_v2_3.md`, 다음 비용 제한 checkpoint는 `docs/plans/next_experiment_goal_v2_4.md`를 정본으로 한다.
