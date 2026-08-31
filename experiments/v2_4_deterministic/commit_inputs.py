@@ -66,6 +66,35 @@ def _digest_at(parent_fd: int, name: str) -> tuple[int, str, tuple[int, int]]:
     return before.st_size, first.hexdigest(), (before.st_dev, before.st_ino)
 
 
+def _read_stable_metadata_bytes(path: Path) -> bytes:
+    """Read a small authorization artifact through an anchored no-follow fd."""
+    path=Path(path)
+    name=path.name
+    if not name or name in {".",".."} or "/" in name or "\\" in name: raise ValueError("UNSAFE_METADATA")
+    parent_fd, parent_info, parent_lexical=_open_dir_chain(path.parent)
+    try:
+        before_path=os.stat(name,dir_fd=parent_fd,follow_symlinks=False)
+        if not stat.S_ISREG(before_path.st_mode) or before_path.st_nlink!=1: raise ValueError("UNSAFE_METADATA")
+        fd=os.open(name,_FILE_FLAGS,dir_fd=parent_fd)
+        try:
+            before=os.fstat(fd)
+            if not stat.S_ISREG(before.st_mode) or before.st_nlink!=1 or (before.st_dev,before.st_ino,before.st_size)!=(before_path.st_dev,before_path.st_ino,before_path.st_size): raise ValueError("TOCTOU")
+            blocks=[]
+            while block:=os.read(fd,1<<20): blocks.append(block)
+            payload=b"".join(blocks)
+            after=os.fstat(fd)
+            final_path=os.stat(name,dir_fd=parent_fd,follow_symlinks=False)
+        finally:
+            os.close(fd)
+        identity=(before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns,before.st_ctime_ns)
+        if len(payload)!=before.st_size or identity!=(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns) or (before.st_dev,before.st_ino)!=(final_path.st_dev,final_path.st_ino): raise ValueError("TOCTOU")
+        current=os.stat(parent_lexical,follow_symlinks=False)
+        if (current.st_dev,current.st_ino)!=(parent_info.st_dev,parent_info.st_ino): raise ValueError("TOCTOU")
+        return payload
+    finally:
+        os.close(parent_fd)
+
+
 def _commit_core(csv_path: Path, raw_dir: Path) -> dict:
     raw_fd, raw_info, raw_lexical = _open_dir_chain(raw_dir)
     try:
@@ -176,18 +205,17 @@ def _reject_duplicate_pairs(items):
     return value
 
 
-def _load_json(path: Path) -> dict:
-    value=json.loads(path.read_text(encoding="utf-8"),object_pairs_hook=_reject_duplicate_pairs)
+def _parse_json_bytes(payload: bytes) -> dict:
+    value=json.loads(payload.decode("utf-8"),object_pairs_hook=_reject_duplicate_pairs)
     if not isinstance(value,dict): raise ValueError("INVALID_PROVENANCE")
     return value
 
 
 def _parse_legacy_reference(legacy_path: Path) -> dict:
     """Require the fixed historical artifact identity before duplicate-safe parsing."""
-    payload=legacy_path.read_bytes()
+    payload=_read_stable_metadata_bytes(legacy_path)
     if hashlib.sha256(payload).hexdigest()!=HISTORICAL_LEGACY_REFERENCE_IDENTITY["sha256"] or _blob_oid_bytes(payload)!=HISTORICAL_LEGACY_REFERENCE_IDENTITY["blob_oid"]: raise ValueError("LEGACY_IDENTITY")
-    legacy=json.loads(payload.decode("utf-8"),object_pairs_hook=lambda items: _reject_duplicate_pairs(items))
-    if not isinstance(legacy,dict): raise ValueError("INVALID_PROVENANCE")
+    legacy=_parse_json_bytes(payload)
     allowed={"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256","provenance"}
     if set(legacy)-allowed or not {"raw_files","raw_count","csv"} <= set(legacy) or legacy.get("raw_count") != 117 or not isinstance(legacy["raw_files"],list) or len(legacy["raw_files"]) != 117 or not isinstance(legacy["csv"],dict): raise ValueError("LEGACY_SCHEMA")
     raw_files=legacy["raw_files"]
@@ -205,7 +233,7 @@ def _parse_legacy_reference(legacy_path: Path) -> dict:
 def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) -> tuple[dict, str, dict]:
     """Validate all non-input authorization artifacts before opening candidate inputs."""
     if len(reviewed_i0)!=40 or any(ch not in "0123456789abcdef" for ch in reviewed_i0): raise ValueError("INVALID_REVIEWED_I0")
-    receipt=_load_json(receipt_path); tool_oid=_blob_oid(Path(__file__))
+    receipt_bytes=_read_stable_metadata_bytes(receipt_path); receipt=_parse_json_bytes(receipt_bytes)
     required={"reviewer_id","session_id","review_utc","reviewed_i0","result","status","safety_targets","semantic_review_sha256","interpreter","commands","fixture_sha256","sentinel_sha256","real_source_open_count","candidate_text_egress","prior_failures_closed"}
     if set(receipt)!=required or receipt.get("status")!="PASS" or receipt.get("result")!="PASS" or receipt.get("reviewed_i0")!=reviewed_i0 or not all(isinstance(receipt[key],str) and receipt[key] for key in ("reviewer_id","session_id","review_utc")) or not all(_is_sha256(receipt[key]) for key in ("semantic_review_sha256","fixture_sha256","sentinel_sha256")) or type(receipt.get("real_source_open_count")) is not int or receipt["real_source_open_count"]!=0 or receipt.get("candidate_text_egress") is not False or not isinstance(receipt.get("prior_failures_closed"),list) or any(not isinstance(item,str) or not item for item in receipt["prior_failures_closed"]): raise ValueError("SAFETY_RECEIPT_MISMATCH")
     targets=receipt["safety_targets"]
@@ -213,9 +241,13 @@ def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) 
     found={item.get("path"):item for item in targets if isinstance(item,dict) and set(item)=={"path","blob_oid","sha256"}}
     root=Path(__file__).resolve().parents[2]
     if set(found)!=set(_SAFETY_TARGETS) or any(not _is_blob_oid(item.get("blob_oid")) or not _is_sha256(item.get("sha256")) for item in found.values()): raise ValueError("SAFETY_RECEIPT_MISMATCH")
+    target_bytes={}
     for target, record in found.items():
         target_path=root/target
-        if not target_path.is_file() or _blob_oid(target_path)!=record["blob_oid"] or hashlib.sha256(target_path.read_bytes()).hexdigest()!=record["sha256"]: raise ValueError("SAFETY_RECEIPT_MISMATCH")
+        payload=_read_stable_metadata_bytes(target_path)
+        if _blob_oid_bytes(payload)!=record["blob_oid"] or hashlib.sha256(payload).hexdigest()!=record["sha256"]: raise ValueError("SAFETY_RECEIPT_MISMATCH")
+        target_bytes[target]=payload
+    tool_oid=_blob_oid_bytes(target_bytes["experiments/v2_4_deterministic/commit_inputs.py"])
     if found["experiments/v2_4_deterministic/commit_inputs.py"]["blob_oid"]!=tool_oid: raise ValueError("SAFETY_RECEIPT_MISMATCH")
     interpreter=receipt["interpreter"]
     if not isinstance(interpreter,dict) or set(interpreter)!={"path","version","sha256"} or not isinstance(interpreter["path"],str) or not interpreter["path"] or not isinstance(interpreter["version"],str) or not interpreter["version"] or not _is_sha256(interpreter["sha256"]): raise ValueError("SAFETY_RECEIPT_MISMATCH")
@@ -224,7 +256,7 @@ def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) 
     commands=receipt["commands"]
     if not isinstance(commands,list) or not commands or any(not isinstance(item,dict) or set(item)!={"command","exit_status","stdout_sha256","stderr_sha256"} or not isinstance(item["command"],str) or not item["command"] or type(item["exit_status"]) is not int or item["exit_status"]!=0 or not _is_sha256(item["stdout_sha256"]) or not _is_sha256(item["stderr_sha256"]) for item in commands): raise ValueError("SAFETY_RECEIPT_MISMATCH")
     legacy=_parse_legacy_reference(legacy_path)
-    return receipt, hashlib.sha256(receipt_path.read_bytes()).hexdigest(), legacy
+    return receipt, hashlib.sha256(receipt_bytes).hexdigest(), legacy
 
 
 def _compare_legacy_reference(legacy: dict, data: dict) -> None:
