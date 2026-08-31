@@ -80,3 +80,12 @@
 - **수정 내용**: primary를 `JLC-D=CM∧FLM∧MCA`로 낮춰 RCA/JRA 호환 주장을 철회하고 FLM을 canonical orthographic mention으로 제한했다. raw regex와 broad contradiction을 제거하고 finite negation·unsupported fail-close, same-item RA, secondary inference 0, GT projection hash, exact `I→B→A` freeze chain을 고정했다. review 자체 SHA는 파일 외부 provenance에서만 기록하도록 자기참조도 제거했다. 동일 fresh reviewer가 누적 실패 기록을 보존한 채 revision 4를 재검토해 P0 18 PASS/0 FAIL로 semantic plan 승인을 권고했다.
 - **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md:1`, `docs/plans/review_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
 - **상태**: Step 2 완료·implementation candidate `I` 대기 — plan SHA-256 `24385717f3de42f3288ca44e80ab040d498fb1a5cabf59ec7ac43424e10145db`, review SHA-256(외부 보고) `2c0013d0dc2695c366536d19f35ecf63bb6120c18abdc46c80e74c673cffd689`; candidate 본문 접근/채점 0.
+
+### 10. V2.4-D implementation candidate와 입력 commitment 생성 — 2026-08-31
+
+- **수정 에이전트**: @implementation-worker, @implementation-handoff-worker, @Codex
+- **증상/문제**: 승인된 lexical concordance 계획을 실제로 재현하려면 ontology 단일 정본 scorer, fail-closed 입력 gate, paired statistics, immutable input commitment와 atomic replay runner가 필요했다.
+- **원인**: 최초 구현은 ontology provenance가 불완전했고 scorer에 중복 hardcode가 있었으며 paired bootstrap이 pair를 깨고 36행 primary validation이 runtime 때문에 항상 실패하는 결함이 있었다. full publish/replay 경로도 없었다.
+- **수정 내용**: 12-incident static ontology에 모든 axis/path/matcher provenance를 전개하고 scorer의 semantic hardcode를 제거했다. finite negation, same-item remediation, schema/language/size gate, exact paired test·Clopper–Pearson·paired bootstrap을 구현했다. approval-before-open, 117:117 commitment, no-follow/lstat/hardlink/TOCTOU, 36행 score, text-free trace, atomic publish와 second replay를 구현하고 synthetic 117-row E2E를 포함한 25 tests를 통과했다. 실제 Primary03에는 hash-only commitment만 수행해 raw 117·CSV digest를 봉인했고 V2.4-D scorer/full run은 실행하지 않았다.
+- **수정 파일**: `docs/plans/input_commitment_v2_4_deterministic.json:1`, `experiments/v2_4_deterministic/`, `tests/test_v2_4_deterministic.py:1`, `results/experiment_changes_v2_4.md`
+- **상태**: implementation candidate `I` 준비·fresh review 대기 — ontology SHA-256 `456bc7c562b5c1896fa37041f4f6ceda6184994be77af9c2a55b3daee086035d`, commitment raw 117/CSV `5fd2c1c5…f8c5b`. 절차 편차: 신규·기존 회귀 검증 중 `tests.test_v2_4_audit`의 real-input integration code가 Primary03을 machine-only로 파싱했다. 본문 stdout/stderr·agent context 노출과 V2.4-D scoring은 0이나 process-level access 0 주장은 철회하며 fresh reviewer가 confirmatory 유지 여부를 판정해야 한다.
