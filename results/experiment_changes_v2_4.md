@@ -215,3 +215,12 @@
 - **수정 내용**: `type(value) is int` 기반 nonnegative integer predicate를 size·inode와 인접 receipt/evidence 정수 필드에 적용했다. CSV parent의 최초 dev/inode와 digest 이후 lexical parent dev/inode를 비교해 ancestor exchange를 fail-close한다. tool blob/SHA, exact interpreter path/SHA, canonical stdout SHA와 reviewed-I0 redacted argv SHA를 validator에서 재계산해 교차 검증한다. boolean 3종, CSV ancestor exchange, provenance mutation 4종 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 62 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
+
+### 25. V2.4-D revision 8 I0 pre-open receipt·legacy 검증 보완 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: safety receipt의 command `exit_status=false`가 정수 0으로 수용됐고, legacy reference의 비-JSON/nested raw path가 pre-open schema를 통과해 실제 input commitment 함수가 호출된 뒤에야 drift로 거부됐다. 성공 provenance의 stderr digest도 임의 64-hex를 허용했다.
+- **원인**: receipt command 정수 필드에 exact JSON type 검사가 없었고, legacy parser가 active commitment보다 약한 path/CSV schema를 사용했다. stderr는 형식만 검사하고 성공 실행의 빈 stderr bytes와 재계산 결합하지 않았다.
+- **수정 내용**: receipt command exit status를 exact `int`로 강제해 boolean을 source-open 전에 거부한다. legacy raw path를 direct ASCII `.json` basename 117개 sorted/unique로, CSV를 exact `id_sha256,size,sha256` 객체로 pre-open 검증한다. provenance stderr SHA-256는 empty bytes digest로 고정했다. boolean receipt와 malformed legacy에서 `_commit_core` 호출 0회를 확인하는 spy 및 stderr mutation 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 64 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
