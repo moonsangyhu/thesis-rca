@@ -206,3 +206,12 @@
 - **수정 내용**: producer 23-key provenance를 exact type/const/cross-binding으로 검증하고 missing/extra를 거부했다. raw path는 direct ASCII `.json` basename 117개 sorted/unique만 허용한다. runner commitment identity를 `reviewed_i0`로 통일하고 actual full producer envelope를 non-synthetic runner commitment gate에 직접 전달하는 bridge test를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 I0 safety review 대기 — fixed Python 3.11 60 tests, pycompile, redaction, runner self-test, diff-check PASS; actual source 접근 0, receipt 0.
+
+### 24. V2.4-D revision 8 I0 타입·TOCTOU·provenance 결합 보완 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: 60개 합성 테스트는 통과했지만 JSON boolean이 size·inode 정수 필드로 허용됐고, CSV parent가 descriptor anchor 뒤 rename/symlink로 교체돼도 commitment가 성공했다. 또한 tool·interpreter·stdout·reviewed-I0 argv provenance는 64-hex 형식만 확인해 실제 identity와 다른 값도 수용했다.
+- **원인**: Python의 `bool`이 `int`의 subclass라는 점을 exact JSON type contract에서 배제하지 않았고, raw directory에만 적용한 lexical parent identity 재검증이 CSV parent에는 없었다. provenance validator는 필드 집합과 형식은 고정했지만 현재 tool/interpreter 및 canonical output과의 재계산 결합을 누락했다.
+- **수정 내용**: `type(value) is int` 기반 nonnegative integer predicate를 size·inode와 인접 receipt/evidence 정수 필드에 적용했다. CSV parent의 최초 dev/inode와 digest 이후 lexical parent dev/inode를 비교해 ancestor exchange를 fail-close한다. tool blob/SHA, exact interpreter path/SHA, canonical stdout SHA와 reviewed-I0 redacted argv SHA를 validator에서 재계산해 교차 검증한다. boolean 3종, CSV ancestor exchange, provenance mutation 4종 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 62 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.

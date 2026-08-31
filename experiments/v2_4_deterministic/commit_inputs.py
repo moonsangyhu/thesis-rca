@@ -20,6 +20,11 @@ _FILE_FLAGS = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
 _SAFETY_TARGETS=("experiments/v2_4_deterministic/__init__.py","experiments/v2_4_deterministic/build_ontology.py","experiments/v2_4_deterministic/commit_inputs.py","experiments/v2_4_deterministic/scorer.py","experiments/v2_4_deterministic/analyze.py","experiments/v2_4_deterministic/run.py","experiments/v2_4_deterministic/ontology_v1.json","tests/test_v2_4_deterministic.py")
 
 
+def _nonnegative_int(value: object) -> bool:
+    """JSON booleans are not integers in this commitment contract."""
+    return type(value) is int and value >= 0
+
+
 def _open_dir_chain(path: Path) -> tuple[int, os.stat_result, Path]:
     """Anchor a lexical absolute directory via openat; do not resolve symlinks."""
     lexical = Path(os.path.abspath(os.fspath(path)))
@@ -72,9 +77,11 @@ def _commit_core(csv_path: Path, raw_dir: Path) -> dict:
         if (current.st_dev, current.st_ino) != (raw_info.st_dev, raw_info.st_ino): raise ValueError("TOCTOU")
     finally:
         os.close(raw_fd)
-    csv_fd, _, csv_parent = _open_dir_chain(csv_path.parent)
+    csv_fd, csv_info, csv_lexical = _open_dir_chain(csv_path.parent)
     try:
         size, digest, _ = _digest_at(csv_fd, csv_path.name)
+        current = os.stat(csv_lexical, follow_symlinks=False)
+        if (current.st_dev, current.st_ino) != (csv_info.st_dev, csv_info.st_ino): raise ValueError("TOCTOU")
     finally:
         os.close(csv_fd)
     manifest = {"raw_files": raws, "raw_count": 117, "csv": {"id_sha256": hashlib.sha256(csv_path.name.encode()).hexdigest(), "size": size, "sha256": digest}}
@@ -96,9 +103,9 @@ def validate_commitment_schema(value: object, *, require_provenance: bool) -> di
     required=base | ({"provenance"} if require_provenance else set())
     if not isinstance(value,dict) or set(value)!=required or value.get("raw_count")!=117 or not isinstance(value.get("raw_files"),list) or len(value["raw_files"])!=117: raise ValueError("COMMITMENT_SCHEMA")
     raw=value["raw_files"]
-    if raw != sorted(raw,key=lambda item:item.get("path", "")) or len({item.get("path") for item in raw})!=117 or any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*\.json",item["path"]) or "/" in item["path"] or "\\" in item["path"] or item["path"].startswith(".") or not isinstance(item["size"],int) or item["size"]<0 or not _is_sha256(item["sha256"]) for item in raw): raise ValueError("COMMITMENT_SCHEMA")
+    if raw != sorted(raw,key=lambda item:item.get("path", "")) or len({item.get("path") for item in raw})!=117 or any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*\.json",item["path"]) or "/" in item["path"] or "\\" in item["path"] or item["path"].startswith(".") or not _nonnegative_int(item["size"]) or not _is_sha256(item["sha256"]) for item in raw): raise ValueError("COMMITMENT_SCHEMA")
     csv=value["csv"]
-    if not isinstance(csv,dict) or set(csv)!={"id_sha256","size","sha256"} or not _is_sha256(csv["id_sha256"]) or not isinstance(csv["size"],int) or csv["size"]<0 or not _is_sha256(csv["sha256"]): raise ValueError("COMMITMENT_SCHEMA")
+    if not isinstance(csv,dict) or set(csv)!={"id_sha256","size","sha256"} or not _is_sha256(csv["id_sha256"]) or not _nonnegative_int(csv["size"]) or not _is_sha256(csv["sha256"]): raise ValueError("COMMITMENT_SCHEMA")
     if not _is_sha256(value["entry_manifest_sha256"]) or value["entry_manifest_sha256"] != hashlib.sha256(json.dumps(raw,sort_keys=True,separators=(",",":")).encode()).hexdigest(): raise ValueError("COMMITMENT_SCHEMA")
     preimage={key:value[key] for key in ("raw_files","raw_count","csv","entry_manifest_sha256")}
     if not _is_sha256(value["commitment_sha256"]) or value["commitment_sha256"] != hashlib.sha256(json.dumps(preimage,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest(): raise ValueError("COMMITMENT_SCHEMA")
@@ -107,16 +114,19 @@ def validate_commitment_schema(value: object, *, require_provenance: bool) -> di
         exact={"tool_blob_oid","tool_sha256","interpreter_path","interpreter_sha256","python_version","cwd","argv","allowlisted_environment","source_root_device_inode","started_utc","finished_utc","exit_status","stdout_sha256","stderr_sha256","redaction_self_test","raw_count","csv_sha256","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256","reviewed_i0","legacy_source_drift","operator_attestation"}
         option_names=("--csv","--raw-dir","--out","--reviewed-i0","--safety-receipt","--legacy-reference")
         argv=provenance.get("argv") if isinstance(provenance,dict) else None
-        if not isinstance(provenance,dict) or set(provenance)!=exact or not _is_blob_oid(provenance["tool_blob_oid"]) or not all(_is_sha256(provenance[name]) for name in ("tool_sha256","interpreter_sha256","stdout_sha256","stderr_sha256","csv_sha256","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256")) or not all(isinstance(provenance[name],str) and provenance[name] for name in ("interpreter_path","python_version","cwd","started_utc","finished_utc","operator_attestation")) or provenance["python_version"]!=sys.version or not provenance["started_utc"].endswith("Z") or not provenance["finished_utc"].endswith("Z") or not isinstance(argv,list) or tuple(argv[::2])!=option_names or len(argv)!=12 or any(not isinstance(item,str) or not re.fullmatch(r"sha256:[0-9a-f]{64}",item) for item in argv[1::2]) or provenance["allowlisted_environment"]!={} or not isinstance(provenance["source_root_device_inode"],list) or len(provenance["source_root_device_inode"])!=2 or any(not isinstance(item,int) or item<0 for item in provenance["source_root_device_inode"]) or provenance["exit_status"]!=0 or not _valid_evidence(provenance["redaction_self_test"]) or provenance["raw_count"]!=117 or provenance["csv_sha256"]!=csv["sha256"] or provenance["entry_manifest_sha256"]!=value["entry_manifest_sha256"] or provenance["commitment_sha256"]!=value["commitment_sha256"] or not _is_blob_oid(provenance["reviewed_i0"]) or provenance["legacy_source_drift"]!="EXACT_MATCH" or provenance["operator_attestation"]!="hash-only streaming": raise ValueError("COMMITMENT_SCHEMA")
+        tool=Path(__file__).resolve(); interpreter=Path(sys.executable).resolve()
+        expected_stdout=json.dumps({"raw_count":117,"commitment_sha256":value["commitment_sha256"]},separators=(",",":"))+"\n"
+        expected_reviewed="sha256:"+hashlib.sha256(provenance.get("reviewed_i0","").encode()).hexdigest() if isinstance(provenance,dict) else ""
+        if not isinstance(provenance,dict) or set(provenance)!=exact or provenance["tool_blob_oid"]!=_blob_oid(tool) or provenance["tool_sha256"]!=hashlib.sha256(tool.read_bytes()).hexdigest() or provenance["interpreter_path"]!=str(interpreter) or provenance["interpreter_sha256"]!=hashlib.sha256(interpreter.read_bytes()).hexdigest() or not all(_is_sha256(provenance[name]) for name in ("tool_sha256","interpreter_sha256","stdout_sha256","stderr_sha256","csv_sha256","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256")) or not all(isinstance(provenance[name],str) and provenance[name] for name in ("interpreter_path","python_version","cwd","started_utc","finished_utc","operator_attestation")) or provenance["python_version"]!=sys.version or not provenance["started_utc"].endswith("Z") or not provenance["finished_utc"].endswith("Z") or not isinstance(argv,list) or tuple(argv[::2])!=option_names or len(argv)!=12 or any(not isinstance(item,str) or not re.fullmatch(r"sha256:[0-9a-f]{64}",item) for item in argv[1::2]) or argv[7]!=expected_reviewed or provenance["allowlisted_environment"]!={} or not isinstance(provenance["source_root_device_inode"],list) or len(provenance["source_root_device_inode"])!=2 or any(not _nonnegative_int(item) for item in provenance["source_root_device_inode"]) or type(provenance["exit_status"]) is not int or provenance["exit_status"]!=0 or provenance["stdout_sha256"]!=hashlib.sha256(expected_stdout.encode()).hexdigest() or not _valid_evidence(provenance["redaction_self_test"]) or provenance["raw_count"]!=117 or provenance["csv_sha256"]!=csv["sha256"] or provenance["entry_manifest_sha256"]!=value["entry_manifest_sha256"] or provenance["commitment_sha256"]!=value["commitment_sha256"] or not _is_blob_oid(provenance["reviewed_i0"]) or provenance["legacy_source_drift"]!="EXACT_MATCH" or provenance["operator_attestation"]!="hash-only streaming": raise ValueError("COMMITMENT_SCHEMA")
     return value
 
 
 def _valid_evidence(value: object) -> bool:
-    if not isinstance(value,dict) or set(value)!={"status","sentinel_match_count","fixture_sha256","sentinel_sha256","success","error"} or value["status"]!="REDACTION_SELF_TEST_PASS" or value["sentinel_match_count"]!=0: return False
+    if not isinstance(value,dict) or set(value)!={"status","sentinel_match_count","fixture_sha256","sentinel_sha256","success","error"} or value["status"]!="REDACTION_SELF_TEST_PASS" or type(value["sentinel_match_count"]) is not int or value["sentinel_match_count"]!=0: return False
     if not all(_is_sha256(value[key]) for key in ("fixture_sha256","sentinel_sha256")): return False
     for name in ("success","error"):
         item=value[name]
-        if not isinstance(item,dict) or set(item)!={"exit_status","stdout_sha256","stderr_sha256"} or not isinstance(item["exit_status"],int) or not all(_is_sha256(item[key]) for key in ("stdout_sha256","stderr_sha256")): return False
+        if not isinstance(item,dict) or set(item)!={"exit_status","stdout_sha256","stderr_sha256"} or type(item["exit_status"]) is not int or not all(_is_sha256(item[key]) for key in ("stdout_sha256","stderr_sha256")): return False
     return value["success"]["exit_status"]==0 and value["error"]["exit_status"]!=0
 
 
@@ -168,9 +178,9 @@ def _parse_legacy_reference(legacy_path: Path) -> dict:
     allowed={"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256","provenance"}
     if set(legacy)-allowed or not {"raw_files","raw_count","csv"} <= set(legacy) or legacy.get("raw_count") != 117 or not isinstance(legacy["raw_files"],list) or len(legacy["raw_files"]) != 117 or not isinstance(legacy["csv"],dict): raise ValueError("LEGACY_SCHEMA")
     raw_files=legacy["raw_files"]
-    if any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not item["path"] or "/" in item["path"] or not isinstance(item["size"],int) or item["size"] < 0 or not _is_sha256(item["sha256"]) for item in raw_files) or raw_files != sorted(raw_files,key=lambda item:item["path"]) or len({item["path"] for item in raw_files}) != 117: raise ValueError("LEGACY_SCHEMA")
+    if any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not item["path"] or "/" in item["path"] or not _nonnegative_int(item["size"]) or not _is_sha256(item["sha256"]) for item in raw_files) or raw_files != sorted(raw_files,key=lambda item:item["path"]) or len({item["path"] for item in raw_files}) != 117: raise ValueError("LEGACY_SCHEMA")
     csv_map=legacy["csv"]
-    if set(csv_map)-{"path","id_sha256","size","sha256"} or not {"size","sha256"} <= set(csv_map) or not isinstance(csv_map["size"],int) or csv_map["size"] < 0 or not _is_sha256(csv_map["sha256"]) or ("path" in csv_map and (not isinstance(csv_map["path"],str) or not csv_map["path"])) or ("id_sha256" in csv_map and not _is_sha256(csv_map["id_sha256"])): raise ValueError("LEGACY_SCHEMA")
+    if set(csv_map)-{"path","id_sha256","size","sha256"} or not {"size","sha256"} <= set(csv_map) or not _nonnegative_int(csv_map["size"]) or not _is_sha256(csv_map["sha256"]) or ("path" in csv_map and (not isinstance(csv_map["path"],str) or not csv_map["path"])) or ("id_sha256" in csv_map and not _is_sha256(csv_map["id_sha256"])): raise ValueError("LEGACY_SCHEMA")
     for name in ("entry_manifest_sha256","commitment_sha256"):
         if name in legacy and not _is_sha256(legacy[name]): raise ValueError("LEGACY_SCHEMA")
     if "provenance" in legacy and not isinstance(legacy["provenance"],dict): raise ValueError("LEGACY_SCHEMA")
@@ -182,7 +192,7 @@ def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) 
     if len(reviewed_i0)!=40 or any(ch not in "0123456789abcdef" for ch in reviewed_i0): raise ValueError("INVALID_REVIEWED_I0")
     receipt=_load_json(receipt_path); tool_oid=_blob_oid(Path(__file__))
     required={"reviewer_id","session_id","review_utc","reviewed_i0","result","status","safety_targets","semantic_review_sha256","interpreter","commands","fixture_sha256","sentinel_sha256","real_source_open_count","candidate_text_egress","prior_failures_closed"}
-    if set(receipt)!=required or receipt.get("status")!="PASS" or receipt.get("result")!="PASS" or receipt.get("reviewed_i0")!=reviewed_i0 or not all(isinstance(receipt[key],str) and receipt[key] for key in ("reviewer_id","session_id","review_utc")) or not all(_is_sha256(receipt[key]) for key in ("semantic_review_sha256","fixture_sha256","sentinel_sha256")) or receipt.get("real_source_open_count")!=0 or receipt.get("candidate_text_egress") is not False or not isinstance(receipt.get("prior_failures_closed"),list) or any(not isinstance(item,str) or not item for item in receipt["prior_failures_closed"]): raise ValueError("SAFETY_RECEIPT_MISMATCH")
+    if set(receipt)!=required or receipt.get("status")!="PASS" or receipt.get("result")!="PASS" or receipt.get("reviewed_i0")!=reviewed_i0 or not all(isinstance(receipt[key],str) and receipt[key] for key in ("reviewer_id","session_id","review_utc")) or not all(_is_sha256(receipt[key]) for key in ("semantic_review_sha256","fixture_sha256","sentinel_sha256")) or type(receipt.get("real_source_open_count")) is not int or receipt["real_source_open_count"]!=0 or receipt.get("candidate_text_egress") is not False or not isinstance(receipt.get("prior_failures_closed"),list) or any(not isinstance(item,str) or not item for item in receipt["prior_failures_closed"]): raise ValueError("SAFETY_RECEIPT_MISMATCH")
     targets=receipt["safety_targets"]
     if not isinstance(targets,list) or len(targets)!=8: raise ValueError("SAFETY_RECEIPT_MISMATCH")
     found={item.get("path"):item for item in targets if isinstance(item,dict) and set(item)=={"path","blob_oid","sha256"}}

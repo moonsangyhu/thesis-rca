@@ -510,12 +510,46 @@ class DeterministicSyntheticTests(unittest.TestCase):
             root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"id\n")
             for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
             base=commit_inputs.commit(csv_path,raw)
-            provenance={"tool_blob_oid":"a"*40,"tool_sha256":"b"*64,"interpreter_path":"/synthetic/python","interpreter_sha256":"c"*64,"python_version":sys.version,"cwd":"/synthetic","argv":["--csv","sha256:"+"d"*64,"--raw-dir","sha256:"+"e"*64,"--out","sha256:"+"f"*64,"--reviewed-i0","sha256:"+"0"*64,"--safety-receipt","sha256:"+"1"*64,"--legacy-reference","sha256:"+"2"*64],"allowlisted_environment":{},"source_root_device_inode":[1,2],"started_utc":"2026-09-01T00:00:00Z","finished_utc":"2026-09-01T00:00:01Z","exit_status":0,"stdout_sha256":"3"*64,"stderr_sha256":"4"*64,"redaction_self_test":{"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"5"*64,"sentinel_sha256":"6"*64,"success":{"exit_status":0,"stdout_sha256":"7"*64,"stderr_sha256":"8"*64},"error":{"exit_status":1,"stdout_sha256":"9"*64,"stderr_sha256":"a"*64}},"raw_count":117,"csv_sha256":base["csv"]["sha256"],"entry_manifest_sha256":base["entry_manifest_sha256"],"commitment_sha256":base["commitment_sha256"],"safety_receipt_sha256":"b"*64,"reviewed_i0":"c"*40,"legacy_source_drift":"EXACT_MATCH","operator_attestation":"hash-only streaming"}
+            tool=Path(commit_inputs.__file__).resolve(); interpreter=Path(sys.executable).resolve(); reviewed="c"*40
+            stdout=json.dumps({"raw_count":117,"commitment_sha256":base["commitment_sha256"]},separators=(",",":"))+"\n"
+            provenance={"tool_blob_oid":commit_inputs._blob_oid(tool),"tool_sha256":hashlib.sha256(tool.read_bytes()).hexdigest(),"interpreter_path":str(interpreter),"interpreter_sha256":hashlib.sha256(interpreter.read_bytes()).hexdigest(),"python_version":sys.version,"cwd":"/synthetic","argv":["--csv","sha256:"+"d"*64,"--raw-dir","sha256:"+"e"*64,"--out","sha256:"+"f"*64,"--reviewed-i0","sha256:"+hashlib.sha256(reviewed.encode()).hexdigest(),"--safety-receipt","sha256:"+"1"*64,"--legacy-reference","sha256:"+"2"*64],"allowlisted_environment":{},"source_root_device_inode":[1,2],"started_utc":"2026-09-01T00:00:00Z","finished_utc":"2026-09-01T00:00:01Z","exit_status":0,"stdout_sha256":hashlib.sha256(stdout.encode()).hexdigest(),"stderr_sha256":"4"*64,"redaction_self_test":{"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"5"*64,"sentinel_sha256":"6"*64,"success":{"exit_status":0,"stdout_sha256":"7"*64,"stderr_sha256":"8"*64},"error":{"exit_status":1,"stdout_sha256":"9"*64,"stderr_sha256":"a"*64}},"raw_count":117,"csv_sha256":base["csv"]["sha256"],"entry_manifest_sha256":base["entry_manifest_sha256"],"commitment_sha256":base["commitment_sha256"],"safety_receipt_sha256":"b"*64,"reviewed_i0":reviewed,"legacy_source_drift":"EXACT_MATCH","operator_attestation":"hash-only streaming"}
             envelope={**base,"provenance":provenance}
             commit_inputs.validate_commitment_schema(envelope,require_provenance=True)
-            for mutate in (lambda data:data["provenance"].pop("tool_sha256"),lambda data:data["provenance"].__setitem__("reviewed_code_candidate","c"*40),lambda data:data["raw_files"][0].__setitem__("path","evil.txt"),lambda data:data["raw_files"][0].__setitem__("path","dir\\evil.json")):
+            for mutate in (lambda data:data["provenance"].pop("tool_sha256"),lambda data:data["provenance"].__setitem__("reviewed_code_candidate",reviewed),lambda data:data["provenance"].__setitem__("tool_sha256","0"*64),lambda data:data["provenance"].__setitem__("interpreter_path","/wrong"),lambda data:data["provenance"].__setitem__("stdout_sha256","0"*64),lambda data:data["provenance"]["argv"].__setitem__(7,"sha256:"+"0"*64),lambda data:data["raw_files"][0].__setitem__("path","evil.txt"),lambda data:data["raw_files"][0].__setitem__("path","dir\\evil.json")):
                 altered=json.loads(json.dumps(envelope)); mutate(altered)
                 with self.assertRaises(ValueError): commit_inputs.validate_commitment_schema(altered,require_provenance=True)
+
+    def test_61_json_boolean_is_not_a_nonnegative_integer(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"id\n")
+            for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+            base=commit_inputs.commit(csv_path,raw)
+            def refresh(value):
+                value["entry_manifest_sha256"]=hashlib.sha256(json.dumps(value["raw_files"],sort_keys=True,separators=(",",":")).encode()).hexdigest()
+                preimage={key:value[key] for key in ("raw_files","raw_count","csv","entry_manifest_sha256")}
+                value["commitment_sha256"]=hashlib.sha256(json.dumps(preimage,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
+            for mutate in (lambda value:value["raw_files"][0].__setitem__("size",True),lambda value:value["csv"].__setitem__("size",False)):
+                altered=json.loads(json.dumps(base)); mutate(altered); refresh(altered)
+                with self.assertRaises(ValueError): commit_inputs.validate_commitment_schema(altered,require_provenance=False)
+            envelope=json.loads(json.dumps(base)); provenance={"tool_blob_oid":commit_inputs._blob_oid(Path(commit_inputs.__file__).resolve()),"tool_sha256":hashlib.sha256(Path(commit_inputs.__file__).read_bytes()).hexdigest(),"interpreter_path":str(Path(sys.executable).resolve()),"interpreter_sha256":hashlib.sha256(Path(sys.executable).resolve().read_bytes()).hexdigest(),"python_version":sys.version,"cwd":"/synthetic","argv":["--csv","sha256:"+"a"*64,"--raw-dir","sha256:"+"b"*64,"--out","sha256:"+"c"*64,"--reviewed-i0","sha256:"+hashlib.sha256(("d"*40).encode()).hexdigest(),"--safety-receipt","sha256:"+"e"*64,"--legacy-reference","sha256:"+"f"*64],"allowlisted_environment":{},"source_root_device_inode":[1,2],"started_utc":"2026-09-01T00:00:00Z","finished_utc":"2026-09-01T00:00:01Z","exit_status":0,"stdout_sha256":hashlib.sha256((json.dumps({"raw_count":117,"commitment_sha256":base["commitment_sha256"]},separators=(",",":"))+"\n").encode()).hexdigest(),"stderr_sha256":"1"*64,"redaction_self_test":{"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"2"*64,"sentinel_sha256":"3"*64,"success":{"exit_status":0,"stdout_sha256":"4"*64,"stderr_sha256":"5"*64},"error":{"exit_status":1,"stdout_sha256":"6"*64,"stderr_sha256":"7"*64}},"raw_count":117,"csv_sha256":base["csv"]["sha256"],"entry_manifest_sha256":base["entry_manifest_sha256"],"commitment_sha256":base["commitment_sha256"],"safety_receipt_sha256":"8"*64,"reviewed_i0":"d"*40,"legacy_source_drift":"EXACT_MATCH","operator_attestation":"hash-only streaming"}; envelope["provenance"]=provenance
+            commit_inputs.validate_commitment_schema(envelope,require_provenance=True)
+            envelope["provenance"]["source_root_device_inode"][0]=True
+            with self.assertRaises(ValueError): commit_inputs.validate_commitment_schema(envelope,require_provenance=True)
+
+    def test_62_csv_parent_exchange_after_fd_anchor_fails_closed(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_parent=root/"csv-parent"; csv_parent.mkdir(); csv_path=csv_parent/"input.csv"; csv_path.write_bytes(b"x")
+            replacement=root/"replacement"; replacement.mkdir(); (replacement/"input.csv").write_bytes(b"x")
+            for number in range(117): (raw/f"{number:03d}.json").write_bytes(b"x")
+            original=commit_inputs._digest_at
+            def exchange(fd,name):
+                result=original(fd,name)
+                if name=="input.csv":
+                    csv_parent.rename(root/"csv-parent-original")
+                    csv_parent.symlink_to(replacement,target_is_directory=True)
+                return result
+            with mock.patch("experiments.v2_4_deterministic.commit_inputs._digest_at",side_effect=exchange):
+                with self.assertRaises(ValueError): commit_inputs.commit(csv_path,raw)
 
 
 if __name__ == "__main__":
