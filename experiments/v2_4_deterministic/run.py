@@ -11,13 +11,23 @@ import csv
 import hashlib
 import json
 import os
+import re
+import shutil
 import stat
+import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import analyze, scorer
+if __package__ in {None, ""}:
+    _REPO = Path(__file__).resolve().parents[2]
+    if not (_REPO / "AGENTS.md").is_file() or not (_REPO / ".git").exists() or any(parent.is_symlink() for parent in (_REPO, *_REPO.parents)):
+        raise RuntimeError("UNTRUSTED_REPO_BOOTSTRAP")
+    sys.path.insert(0, str(_REPO))
+    from experiments.v2_4_deterministic import analyze, scorer
+else:
+    from . import analyze, scorer
 
 
 CONDITIONS = analyze.CONDITIONS
@@ -25,6 +35,30 @@ SELECTED = ("F1-t2", "F1-t3", "F2-t1", "F3-t3", "F3-t4", "F4-t1", "F5-t2", "F5-t
 RESULT_COLUMNS = ("incident_id", "fault_id", "trial", "condition", "cm", "flm", "mca", "ra", "jlc_d", "jlc_relaxed", "full", "component_mention_path", "fault_label_mention_path", "mechanism_path", "remediation_path", "contradiction_ids", "ontology_sha256", "scorer_sha256", "input_csv_sha256", "raw_manifest_sha256")
 GT_SHA256 = "d00115766dbfaa844b5325ff60aac8170b83689ccf2f2d2cd427faad9f8115c6"
 GT_PROJECTION_SHA256 = "be456f903354d581ae66c8f7051ea271a9add2cb7b6a58e28d1d768aaee57b1b"
+SEMANTIC_REVIEW = "docs/plans/review_v2_4_deterministic.md"
+IMPLEMENTATION_REVIEW = "docs/plans/review_v2_4_deterministic_implementation.md"
+APPROVAL_DOCUMENT = "docs/plans/approval_v2_4_deterministic.md"
+COMMITMENT_DOCUMENT = "docs/plans/input_commitment_v2_4_deterministic.json"
+DEVIATION_DOCUMENT = "docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json"
+I0_SAFETY_SCOPE = (
+    "experiments/v2_4_deterministic/ontology_v1.json",
+    "experiments/v2_4_deterministic/__init__.py",
+    "experiments/v2_4_deterministic/build_ontology.py",
+    "experiments/v2_4_deterministic/commit_inputs.py",
+    "experiments/v2_4_deterministic/scorer.py",
+    "experiments/v2_4_deterministic/analyze.py",
+    "experiments/v2_4_deterministic/run.py",
+    "tests/test_v2_4_deterministic.py",
+)
+I1_TARGETS = (
+    "docs/plans/experiment_plan_v2_4_deterministic.md",
+    SEMANTIC_REVIEW,
+    COMMITMENT_DOCUMENT,
+    DEVIATION_DOCUMENT,
+    *I0_SAFETY_SCOPE,
+)
+_HEX40 = re.compile(r"^[0-9a-f]{40}$")
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
 class RunInvalid(ValueError):
@@ -147,6 +181,219 @@ def _approval_identity_gate(approval: dict, *, commitment: Path, ontology: Path,
     expected = {"input_commitment_sha256": sha(commitment), "ontology_sha256": sha(ontology), "scorer_sha256": sha(Path(scorer.__file__)), "ground_truth_sha256": ground_truth_sha256, "ground_truth_projection_sha256": projection_sha256}
     if any(approval[key] != value for key, value in expected.items()):
         raise RunInvalid("APPROVAL_IDENTITY_MISMATCH")
+
+
+def _git(repo: Path, *args: str) -> str:
+    """Run a narrowly-scoped, text-only git query from the trusted checkout."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo), *args],
+            check=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            encoding="utf-8",
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RunInvalid("GIT_FREEZE_INVALID") from exc
+    return result.stdout.rstrip("\n")
+
+
+def _repo_root() -> Path:
+    root = Path(__file__).resolve().parents[2]
+    if not (root / "AGENTS.md").is_file() or not (root / ".git").exists():
+        raise RunInvalid("UNTRUSTED_REPO_BOOTSTRAP")
+    for item in (root, *root.parents):
+        if item.is_symlink():
+            raise RunInvalid("UNTRUSTED_REPO_BOOTSTRAP")
+        if item == item.parent:
+            break
+    return root
+
+
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _strict_hash_record(value, *, path: str) -> dict:
+    if not isinstance(value, dict) or set(value) != {"blob_oid", "sha256"}:
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if not _HEX40.fullmatch(value["blob_oid"]) or not _HEX64.fullmatch(value["sha256"]):
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if path not in I1_TARGETS and path not in I0_SAFETY_SCOPE:
+        raise RunInvalid("APPROVAL_SCHEMA")
+    return value
+
+
+def _strict_target_map(value, expected_paths: tuple[str, ...]) -> dict:
+    if not isinstance(value, dict) or set(value) != set(expected_paths):
+        raise RunInvalid("APPROVAL_SCHEMA")
+    return {path: _strict_hash_record(record, path=path) for path, record in value.items()}
+
+
+def _strict_approval_gate(path: Path) -> dict:
+    """Parse the release approval, whose schema intentionally freezes every gate."""
+    approval = _load_json_metadata(path)
+    required = {
+        "approval_version", "approval", "execution_commit", "approved_bundle",
+        "implementation_candidate", "code_candidate", "semantic_review",
+        "safety_receipt", "implementation_review", "i0_safety_scope",
+        "i1_targets", "commitment", "ground_truth", "interpreter", "deviation",
+        "execution_authorization",
+    }
+    if set(approval) != required or approval.get("approval_version") != "v2.4-d-approval-2" or approval.get("approval") != "APPROVED":
+        raise RunInvalid("APPROVAL_SCHEMA")
+    for name in ("execution_commit", "approved_bundle", "implementation_candidate", "code_candidate"):
+        if not isinstance(approval[name], str) or not _HEX40.fullmatch(approval[name]):
+            raise RunInvalid("APPROVAL_SCHEMA")
+    approval["i0_safety_scope"] = _strict_target_map(approval["i0_safety_scope"], I0_SAFETY_SCOPE)
+    approval["i1_targets"] = _strict_target_map(approval["i1_targets"], I1_TARGETS)
+    for name, required_keys in {
+        "semantic_review": {"path", "blob_oid", "sha256"},
+        "implementation_review": {"path", "blob_oid", "sha256", "code_candidate", "implementation_candidate"},
+        "safety_receipt": {"path", "sha256", "code_candidate", "tool_blob_oid"},
+        "commitment": {"path", "sha256", "commitment_sha256", "csv_sha256", "raw_manifest_sha256", "reviewed_tool_blob_oid", "safety_receipt_sha256", "reviewed_code_candidate"},
+        "ground_truth": {"sha256", "projection_sha256"},
+        "interpreter": {"path", "sha256", "version"},
+        "deviation": {"path", "sha256"},
+        "execution_authorization": {"path", "sha256", "execution_commit", "approval_blob_oid", "approval_sha256"},
+    }.items():
+        value = approval.get(name)
+        if not isinstance(value, dict) or set(value) != required_keys:
+            raise RunInvalid("APPROVAL_SCHEMA")
+        if any(not isinstance(item, str) or not item for item in value.values()):
+            raise RunInvalid("APPROVAL_SCHEMA")
+    for name in ("semantic_review", "implementation_review"):
+        if not _HEX40.fullmatch(approval[name]["blob_oid"]) or not _HEX64.fullmatch(approval[name]["sha256"]):
+            raise RunInvalid("APPROVAL_SCHEMA")
+    for name in ("safety_receipt", "commitment", "ground_truth", "deviation", "execution_authorization"):
+        for key, value in approval[name].items():
+            if key.endswith("sha256") and not _HEX64.fullmatch(value):
+                raise RunInvalid("APPROVAL_SCHEMA")
+    if not _HEX40.fullmatch(approval["safety_receipt"]["code_candidate"]) or not _HEX40.fullmatch(approval["safety_receipt"]["tool_blob_oid"]):
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if not _HEX40.fullmatch(approval["implementation_review"]["code_candidate"]) or not _HEX40.fullmatch(approval["implementation_review"]["implementation_candidate"]):
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if not _HEX40.fullmatch(approval["commitment"]["reviewed_tool_blob_oid"]) or not _HEX40.fullmatch(approval["commitment"]["reviewed_code_candidate"]):
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if not _HEX40.fullmatch(approval["execution_authorization"]["execution_commit"]) or not _HEX40.fullmatch(approval["execution_authorization"]["approval_blob_oid"]):
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if approval["semantic_review"]["path"] != SEMANTIC_REVIEW or approval["implementation_review"]["path"] != IMPLEMENTATION_REVIEW or approval["commitment"]["path"] != COMMITMENT_DOCUMENT or approval["deviation"]["path"] != DEVIATION_DOCUMENT:
+        raise RunInvalid("APPROVAL_SCHEMA")
+    return approval
+
+
+def _git_blob_record(repo: Path, commit: str, path: str) -> dict:
+    oid = _git(repo, "rev-parse", f"{commit}:{path}")
+    if not _HEX40.fullmatch(oid):
+        raise RunInvalid("TARGET_BLOB_INVALID")
+    try:
+        data = subprocess.run(
+            ["git", "-C", str(repo), "cat-file", "blob", f"{commit}:{path}"],
+            check=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RunInvalid("TARGET_BLOB_INVALID") from exc
+    return {"blob_oid": oid, "sha256": _sha256_bytes(data)}
+
+
+def _exact_diff(repo: Path, older: str, newer: str, expected: tuple[tuple[str, str], ...]) -> None:
+    lines = tuple(tuple(line.split("\t", 1)) for line in _git(repo, "diff", "--name-status", "--no-renames", older, newer).splitlines() if line)
+    if lines != expected:
+        raise RunInvalid("GIT_FREEZE_DIFF_INVALID")
+
+
+def _verified_external_file(root: Path, value: dict, *, expected_path: str | None = None) -> bytes:
+    raw_path = Path(value["path"])
+    if "\x00" in value["path"]:
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if expected_path is not None and value["path"] != expected_path:
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if raw_path.is_absolute() and expected_path is not None:
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if not raw_path.is_absolute() and ".." in raw_path.parts:
+        raise RunInvalid("APPROVAL_SCHEMA")
+    path = raw_path if raw_path.is_absolute() else root / raw_path
+    try:
+        data = path.read_bytes()
+    except OSError as exc:
+        raise RunInvalid("PROVENANCE_MISSING") from exc
+    if _sha256_bytes(data) != value["sha256"]:
+        raise RunInvalid("PROVENANCE_HASH_MISMATCH")
+    return data
+
+
+def _repository_gate(*, approval_path: Path, code_candidate: str, implementation_candidate: str, approved_bundle: str, execution_commit: str) -> tuple[dict, dict]:
+    """Validate all git/provenance identities before *any* candidate path operation."""
+    root = _repo_root()
+    approval = _strict_approval_gate(approval_path)
+    if (approval["code_candidate"], approval["implementation_candidate"], approval["approved_bundle"], approval["execution_commit"]) != (code_candidate, implementation_candidate, approved_bundle, execution_commit):
+        raise RunInvalid("APPROVAL_ARGUMENT_MISMATCH")
+    if _git(root, "rev-parse", "HEAD") != execution_commit:
+        raise RunInvalid("GIT_HEAD_INVALID")
+    if _git(root, "status", "--porcelain=v1"):
+        raise RunInvalid("GIT_WORKTREE_DIRTY")
+    if _git(root, "rev-parse", f"{execution_commit}^") != approved_bundle or _git(root, "rev-parse", f"{approved_bundle}^") != implementation_candidate or _git(root, "rev-parse", f"{implementation_candidate}^") != code_candidate:
+        raise RunInvalid("GIT_PARENT_CHAIN_INVALID")
+    _exact_diff(root, code_candidate, implementation_candidate, (("M", COMMITMENT_DOCUMENT), ("A", DEVIATION_DOCUMENT)))
+    _exact_diff(root, implementation_candidate, approved_bundle, (("M", IMPLEMENTATION_REVIEW),))
+    _exact_diff(root, approved_bundle, execution_commit, (("A", APPROVAL_DOCUMENT),))
+    for path, expected in approval["i0_safety_scope"].items():
+        if _git_blob_record(root, code_candidate, path) != expected:
+            raise RunInvalid("I0_TARGET_HASH_MISMATCH")
+        if _git_blob_record(root, implementation_candidate, path) != expected:
+            raise RunInvalid("I0_I1_CODE_MUTATION")
+    for path, expected in approval["i1_targets"].items():
+        if _git_blob_record(root, implementation_candidate, path) != expected or _git_blob_record(root, approved_bundle, path) != expected or _git_blob_record(root, execution_commit, path) != expected:
+            raise RunInvalid("I1_TARGET_HASH_MISMATCH")
+        current = root / path
+        if current.is_symlink() or not current.is_file() or _sha256_bytes(current.read_bytes()) != expected["sha256"]:
+            raise RunInvalid("CHECKOUT_TARGET_HASH_MISMATCH")
+    semantic = approval["semantic_review"]
+    if _git_blob_record(root, implementation_candidate, SEMANTIC_REVIEW) != {"blob_oid": semantic["blob_oid"], "sha256": semantic["sha256"]}:
+        raise RunInvalid("SEMANTIC_REVIEW_IDENTITY_MISMATCH")
+    implementation = approval["implementation_review"]
+    if (implementation["code_candidate"], implementation["implementation_candidate"]) != (code_candidate, implementation_candidate) or _git_blob_record(root, approved_bundle, IMPLEMENTATION_REVIEW) != {"blob_oid": implementation["blob_oid"], "sha256": implementation["sha256"]}:
+        raise RunInvalid("IMPLEMENTATION_REVIEW_IDENTITY_MISMATCH")
+    receipt = approval["safety_receipt"]
+    if receipt["code_candidate"] != code_candidate or receipt["tool_blob_oid"] != approval["i0_safety_scope"]["experiments/v2_4_deterministic/commit_inputs.py"]["blob_oid"]:
+        raise RunInvalid("SAFETY_RECEIPT_IDENTITY_MISMATCH")
+    _verified_external_file(root, receipt)
+    commitment_info = approval["commitment"]
+    if commitment_info["reviewed_code_candidate"] != code_candidate or commitment_info["reviewed_tool_blob_oid"] != receipt["tool_blob_oid"] or commitment_info["safety_receipt_sha256"] != receipt["sha256"]:
+        raise RunInvalid("COMMITMENT_PROVENANCE_MISMATCH")
+    commitment_bytes = _verified_external_file(root, commitment_info, expected_path=COMMITMENT_DOCUMENT)
+    if _sha256_bytes(commitment_bytes) != commitment_info["sha256"]:
+        raise RunInvalid("COMMITMENT_HASH_MISMATCH")
+    commitment = _load_json_metadata(root / COMMITMENT_DOCUMENT)
+    raw_manifest = hashlib.sha256(_canonical(commitment.get("raw_files"))).hexdigest()
+    if commitment.get("commitment_sha256") != commitment_info["commitment_sha256"] or commitment.get("csv", {}).get("sha256") != commitment_info["csv_sha256"] or raw_manifest != commitment_info["raw_manifest_sha256"]:
+        raise RunInvalid("COMMITMENT_ENVELOPE_MISMATCH")
+    provenance = commitment.get("provenance")
+    if not isinstance(provenance, dict) or (provenance.get("reviewed_code_candidate"), provenance.get("reviewed_tool_blob_oid"), provenance.get("safety_receipt_sha256")) != (code_candidate, receipt["tool_blob_oid"], receipt["sha256"]):
+        raise RunInvalid("COMMITMENT_PROVENANCE_MISMATCH")
+    deviation_bytes = _verified_external_file(root, approval["deviation"], expected_path=DEVIATION_DOCUMENT)
+    try:
+        deviation = json.loads(deviation_bytes.decode("utf-8", "strict"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RunInvalid("DEVIATION_PROVENANCE_INVALID") from exc
+    evidence = deviation.get("evidence") if isinstance(deviation, dict) else None
+    if deviation.get("status") != "NON_INFORMATIVE_MACHINE_PARSE_DEVIATION" or deviation.get("process_access_zero") is True or not isinstance(evidence, dict) or set(evidence) != {"command", "no_text_egress", "no_v2_4_d_execution", "no_observed_output_derived_change"} or any(not isinstance(item, str) or not _HEX64.fullmatch(item) for item in evidence.values()):
+        raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
+    authorization = approval["execution_authorization"]
+    if authorization["execution_commit"] != execution_commit:
+        raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
+    _verified_external_file(root, authorization)
+    approval_record = _git_blob_record(root, execution_commit, APPROVAL_DOCUMENT)
+    if approval_record != {"blob_oid": authorization["approval_blob_oid"], "sha256": authorization["approval_sha256"]}:
+        raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
+    if approval["ground_truth"]["sha256"] != GT_SHA256 or approval["ground_truth"]["projection_sha256"] != GT_PROJECTION_SHA256:
+        raise RunInvalid("GROUND_TRUTH_APPROVAL_MISMATCH")
+    interpreter = approval["interpreter"]
+    if Path(interpreter["path"]).resolve() != Path(sys.executable).resolve() or _sha256_bytes(Path(sys.executable).read_bytes()) != interpreter["sha256"] or interpreter["version"] != sys.version:
+        raise RunInvalid("INTERPRETER_IDENTITY_MISMATCH")
+    return approval, {"repository_root": str(root), "approval_sha256": _sha256_bytes(Path(approval_path).read_bytes())}
 
 
 def _commitment_gate(commitment_path: Path, raw_dir: Path, csv_path: Path) -> tuple[dict, list[tuple[str, int, str]], str]:
@@ -310,16 +557,17 @@ def _publish(stage: Path, output: Path) -> None:
     finally: os.close(descriptor)
 
 
-def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: Path, ground_truth: Path, ontology: Path, output: Path, synthetic: bool = False) -> dict:
+def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: Path, ground_truth: Path, ontology: Path, output: Path, synthetic: bool = False, approved_override: dict | None = None) -> dict:
     # This must remain before raw directory enumeration or candidate file opens.
     started_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    approved = _approval_gate(approval)
+    approved = approved_override if approved_override is not None else _approval_gate(approval)
     _, ground_truth_metadata = _open_verified(ground_truth)
     gt_hash = ground_truth_metadata["sha256"]
     projection = _projection_hash(ground_truth)
     if not synthetic and (gt_hash != GT_SHA256 or projection != GT_PROJECTION_SHA256):
         raise RunInvalid("GROUND_TRUTH_COMMITMENT_MISMATCH")
-    _approval_identity_gate(approved, commitment=commitment, ontology=ontology, ground_truth_sha256=gt_hash, projection_sha256=projection)
+    if approved_override is None:
+        _approval_identity_gate(approved, commitment=commitment, ontology=ontology, ground_truth_sha256=gt_hash, projection_sha256=projection)
     _, entries, raw_manifest_sha = _commitment_gate(commitment, raw_dir, csv_path)
     csv_bytes, _ = _open_verified(csv_path)
     csv_rows = _csv_identity(csv_bytes)
@@ -351,33 +599,155 @@ def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: P
     return {"status": "PASS", "canonical_output_sha256": canonical_hash, "output": str(output)}
 
 
+def _file_digest_map(directory: Path) -> dict:
+    names = ("scores.csv", "paired_table.csv", "summary.json", "input_manifest.json", "score_trace.jsonl", "execution.log")
+    result = {}
+    for name in names:
+        path = directory / name
+        if not path.is_file():
+            raise RunInvalid("HIDDEN_RUN_INCOMPLETE")
+        result[name] = sha(path)
+    return result
+
+
+def _write_invalid_receipt(output: Path, reason: str) -> Path:
+    """Publish only a body-free invalid receipt; never create the release root."""
+    destination = output.parent / ("." + output.name + ".invalid.json")
+    temporary = output.parent / ("." + output.name + ".invalid.tmp")
+    safe_reason = reason if re.fullmatch(r"[A-Z0-9_]+", reason) else "RUN_FAILURE"
+    _write_bytes(temporary, _canonical({"status": "INVALID", "reason": safe_reason, "candidate_text_emitted": False}) + b"\n")
+    os.replace(temporary, destination)
+    return destination
+
+
+def _copy_artifact(source: Path, destination: Path) -> None:
+    shutil.copyfile(source, destination)
+    with destination.open("rb") as handle:
+        os.fsync(handle.fileno())
+
+
+def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, approval: dict, preflight: dict) -> dict:
+    """Create the sole public tree only after both hidden runs prove byte equality."""
+    first_dir, second_dir = hidden / "run1", hidden / "run2"
+    first_files, second_files = _file_digest_map(first_dir), _file_digest_map(second_dir)
+    if first["canonical_output_sha256"] != second["canonical_output_sha256"] or first_files != second_files:
+        raise RunInvalid("REPLAY_MISMATCH")
+    release = hidden / "release"
+    final, replay = release / "final", release / "replay"
+    final.mkdir(parents=True, mode=0o700)
+    replay.mkdir(mode=0o700)
+    for name in first_files:
+        _copy_artifact(first_dir / name, final / name)
+        _copy_artifact(second_dir / name, replay / name)
+    result_export = release / "result_export.csv"
+    _copy_artifact(final / "scores.csv", result_export)
+    replay_manifest = {
+        "replay_result": "MATCH",
+        "canonical_output_sha256": first["canonical_output_sha256"],
+        "run1_files": first_files,
+        "run2_files": second_files,
+    }
+    _write_bytes(release / "replay_manifest.json", _canonical(replay_manifest) + b"\n")
+    manifest = {
+        "status": "PASS",
+        "replay_result": "MATCH",
+        "canonical_output_sha256": first["canonical_output_sha256"],
+        "run1_files": first_files,
+        "run2_files": second_files,
+        "release_contract": {"result_export": "result_export.csv", "sha256": sha(result_export), "rows": 36},
+        "approval": approval,
+        "preflight": preflight,
+        "external_call_count": 0,
+        "model_call_count": 0,
+        "k8s_call_count": 0,
+    }
+    _write_bytes(release / "manifest.json", _canonical(manifest) + b"\n")
+    _fsync_tree(final)
+    _fsync_tree(replay)
+    _fsync_tree(release)
+    _publish(release, output)
+    return {"status": "PASS", "canonical_output_sha256": first["canonical_output_sha256"], "output": str(output), "replay": "MATCH"}
+
+
+def run_full(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: Path, ground_truth: Path, ontology: Path, output: Path, code_candidate: str, implementation_candidate: str, approved_bundle: str, execution_commit: str, synthetic: bool = False) -> dict:
+    """Run two hidden full scorings and atomically release their matched result.
+
+    In non-synthetic mode this function is the only full-mode entrypoint.  The
+    repository/approval gate deliberately precedes *all* raw/csv path access.
+    """
+    output = Path(output)
+    hidden = None
+    try:
+        if output.exists():
+            raise RunInvalid("OUTPUT_EXISTS")
+        if synthetic:
+            # Synthetic fixtures are deliberately not authority to score a real input.
+            approved = _approval_gate(approval)
+            preflight = {"synthetic": True}
+        else:
+            approved, preflight = _repository_gate(
+                approval_path=Path(approval), code_candidate=code_candidate,
+                implementation_candidate=implementation_candidate,
+                approved_bundle=approved_bundle, execution_commit=execution_commit,
+            )
+        hidden = Path(tempfile.mkdtemp(prefix=".v2_4_deterministic_hidden-", dir=output.parent))
+        os.chmod(hidden, 0o700)
+        first = run_campaign(
+            approval=Path(approval), commitment=Path(commitment), raw_dir=Path(raw_dir), csv_path=Path(csv_path),
+            ground_truth=Path(ground_truth), ontology=Path(ontology), output=hidden / "run1", synthetic=synthetic,
+            approved_override=None if synthetic else approved,
+        )
+        second = run_campaign(
+            approval=Path(approval), commitment=Path(commitment), raw_dir=Path(raw_dir), csv_path=Path(csv_path),
+            ground_truth=Path(ground_truth), ontology=Path(ontology), output=hidden / "run2", synthetic=synthetic,
+            approved_override=None if synthetic else approved,
+        )
+        result = _assemble_release(hidden=hidden, output=output, first=first, second=second, approval=approved, preflight=preflight)
+        return result
+    except Exception as exc:
+        _write_invalid_receipt(output, str(exc) if isinstance(exc, RunInvalid) else "RUN_FAILURE")
+        if isinstance(exc, RunInvalid):
+            raise
+        raise RunInvalid("RUN_FAILURE") from exc
+    finally:
+        if hidden is not None and hidden.exists():
+            shutil.rmtree(hidden)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
+    parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--commitment", type=Path, required=True)
-    parser.add_argument("--raw-dir", type=Path, required=True)
-    parser.add_argument("--csv", type=Path, required=True)
+    parser.add_argument("--commitment", type=Path)
+    parser.add_argument("--raw-dir", type=Path)
+    parser.add_argument("--csv", type=Path)
     parser.add_argument("--approval", type=Path)
     parser.add_argument("--ground-truth", type=Path)
     parser.add_argument("--ontology", type=Path, default=Path(__file__).with_name("ontology_v1.json"))
     parser.add_argument("--out", type=Path)
-    parser.add_argument("--replay-out", type=Path)
+    parser.add_argument("--code-candidate")
+    parser.add_argument("--implementation-candidate")
+    parser.add_argument("--approved-bundle")
+    parser.add_argument("--execution-commit")
     parser.add_argument("--synthetic", action="store_true")
     args = parser.parse_args(argv)
+    if args.self_test:
+        scorer.load_ontology(args.ontology)
+        print(json.dumps({"status": "SELF_TEST_PASS", "candidate_text_opened": False}, sort_keys=True))
+        return 0
     if args.dry_run:
+        if not all((args.commitment, args.raw_dir, args.csv)): raise SystemExit("INPUT_REQUIRED")
         print(json.dumps(dry_run(args.commitment, args.raw_dir, args.csv), sort_keys=True))
         return 0
-    if not all((args.approval, args.ground_truth, args.out, args.replay_out)):
+    if not all((args.commitment, args.raw_dir, args.csv, args.approval, args.ground_truth, args.out, args.code_candidate, args.implementation_candidate, args.approved_bundle, args.execution_commit)):
         raise SystemExit("APPROVAL_REQUIRED")
-    first = run_campaign(approval=args.approval, commitment=args.commitment, raw_dir=args.raw_dir, csv_path=args.csv, ground_truth=args.ground_truth, ontology=args.ontology, output=args.out, synthetic=args.synthetic)
-    second = run_campaign(approval=args.approval, commitment=args.commitment, raw_dir=args.raw_dir, csv_path=args.csv, ground_truth=args.ground_truth, ontology=args.ontology, output=args.replay_out, synthetic=args.synthetic)
-    if first["canonical_output_sha256"] != second["canonical_output_sha256"]:
-        raise SystemExit("REPLAY_MISMATCH")
-    replay = _canonical({"replay_result": "MATCH", "canonical_output_sha256": first["canonical_output_sha256"]}) + b"\n"
-    temp = args.out / ".replay_manifest.tmp"
-    _write_bytes(temp, replay)
-    os.replace(temp, args.out / "replay_manifest.json")
-    print(json.dumps({"status": "PASS", "canonical_output_sha256": first["canonical_output_sha256"], "replay": "MATCH"}, sort_keys=True))
+    result = run_full(
+        approval=args.approval, commitment=args.commitment, raw_dir=args.raw_dir, csv_path=args.csv,
+        ground_truth=args.ground_truth, ontology=args.ontology, output=args.out,
+        code_candidate=args.code_candidate, implementation_candidate=args.implementation_candidate,
+        approved_bundle=args.approved_bundle, execution_commit=args.execution_commit, synthetic=args.synthetic,
+    )
+    print(json.dumps({"status": result["status"], "canonical_output_sha256": result["canonical_output_sha256"], "replay": result["replay"]}, sort_keys=True))
     return 0
 
 

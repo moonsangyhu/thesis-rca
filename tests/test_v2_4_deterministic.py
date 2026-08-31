@@ -7,6 +7,12 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+import sys
+
+_REPO = Path(__file__).resolve().parents[1]
+if not (_REPO / "AGENTS.md").is_file() or not (_REPO / ".git").exists() or any(parent.is_symlink() for parent in (_REPO, *_REPO.parents)):
+    raise RuntimeError("UNTRUSTED_REPO_BOOTSTRAP")
+sys.path.insert(0, str(_REPO))
 
 from experiments.v2_4_deterministic import analyze, build_ontology, commit_inputs, run, scorer
 
@@ -85,7 +91,9 @@ class DeterministicSyntheticTests(unittest.TestCase):
 
     def test_20_hash_only_commitment_redacts_content(self):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
-            root = Path(td); raw = root / "raw"; raw.mkdir(); (raw / "one.json").write_bytes(b"CANDIDATE_SECRET"); csv_path = root / "input.csv"; csv_path.write_bytes(b"CSV_SECRET")
+            root = Path(td); raw = root / "raw"; raw.mkdir()
+            for index in range(117): (raw / f"{index:03d}.json").write_bytes(b"CANDIDATE_SECRET")
+            csv_path = root / "input.csv"; csv_path.write_bytes(b"CSV_SECRET")
             out = io.StringIO(); err = io.StringIO()
             with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err): commit_inputs.main(["--csv", str(csv_path), "--raw-dir", str(raw), "--out", str(root / "commit.json")])
             self.assertNotIn("SECRET", out.getvalue() + err.getvalue())
@@ -146,6 +154,117 @@ class DeterministicSyntheticTests(unittest.TestCase):
             root = Path(td); raw_dir, csv_path, commitment, _, _ = self._fixture(root)
             (raw_dir / "raw-000.json").write_bytes(b"changed")
             with self.assertRaises(run.RunInvalid): run.dry_run(commitment, raw_dir, csv_path)
+
+    def test_26_empty_fault_rejected(self):
+        with self.assertRaises(scorer.InvalidInput): scorer.validate_candidate_bytes(candidate(fault=""))
+    def test_27_empty_root_rejected(self):
+        with self.assertRaises(scorer.InvalidInput): scorer.validate_candidate_bytes(candidate(root=""))
+    def test_28_replacement_rejected(self):
+        with self.assertRaises(scorer.InvalidInput): scorer.validate_candidate_bytes(candidate(root="\ufffd"))
+    def test_29_total_remediation_tokens_rejected(self):
+        with self.assertRaises(scorer.InvalidInput): scorer.validate_candidate_bytes(candidate(remediation=["x " * 256] * 5))
+    def test_30_neither_coordinate_is_suppressed(self): self.assertFalse(scorer.match("neither cpu throttling nor memory limit", ["memory limit"]))
+    def test_31_pre_rule_filler_is_suppressed(self): self.assertFalse(scorer.match("rule out the network policy", ["network policy"]))
+    def test_32_post_rule_has_been_is_suppressed(self): self.assertFalse(scorer.match("network policy has been ruled out", ["network policy"]))
+    def test_33_post_rule_have_been_is_suppressed(self): self.assertFalse(scorer.match("network policy have been ruled out", ["network policy"]))
+    def test_34_ontology_duplicate_key_rejected(self):
+        with tempfile.NamedTemporaryFile("w") as handle:
+            handle.write('{"ontology_version":"v2.4-d-ontology-1","ontology_version":"v2.4-d-ontology-1"}'); handle.flush()
+            with self.assertRaises(scorer.InvalidInput): scorer.load_ontology(handle.name)
+    def test_35_ontology_negation_order_rejected(self):
+        data=scorer.load_ontology(); data["negation"]["tokens"].reverse()
+        with tempfile.NamedTemporaryFile("w") as handle:
+            json.dump(data, handle); handle.flush()
+            with self.assertRaises(scorer.InvalidInput): scorer.load_ontology(handle.name)
+    def test_36_ontology_id_pattern_rejected(self):
+        data=scorer.load_ontology(); data["incidents"][0]["incident_id"]="bad"
+        with tempfile.NamedTemporaryFile("w") as handle:
+            json.dump(data, handle); handle.flush()
+            with self.assertRaises(scorer.InvalidInput): scorer.load_ontology(handle.name)
+    def test_37_bootstrap_exact_replay(self):
+        pairs=[(1,0)]*5+[(0,0)]*7
+        self.assertEqual(analyze.paired_bootstrap(pairs, seed=20260831, reps=50000), analyze.paired_bootstrap(pairs, seed=20260831, reps=50000))
+
+    def test_38_full_release_is_single_root_after_two_hidden_runs(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            raw_dir, csv_path, commitment, ground_truth, approval = self._fixture(root)
+            release = root / "release"
+            result = run.run_full(
+                approval=approval, commitment=commitment, raw_dir=raw_dir, csv_path=csv_path,
+                ground_truth=ground_truth, ontology=Path(scorer.__file__).with_name("ontology_v1.json"),
+                output=release, code_candidate="0" * 40, implementation_candidate="1" * 40,
+                approved_bundle="2" * 40, execution_commit="3" * 40, synthetic=True,
+            )
+            self.assertEqual(result["replay"], "MATCH")
+            self.assertTrue((release / "final" / "scores.csv").is_file())
+            self.assertTrue((release / "replay" / "scores.csv").is_file())
+            self.assertTrue((release / "replay_manifest.json").is_file())
+            manifest = json.loads((release / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["replay_result"], "MATCH")
+            self.assertEqual(manifest["release_contract"]["result_export"], "result_export.csv")
+            with (release / "result_export.csv").open(encoding="utf-8") as handle:
+                self.assertEqual(len(list(csv.DictReader(handle))), 36)
+
+    def test_39_second_hidden_run_failure_never_releases_first_result(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            raw_dir, csv_path, commitment, ground_truth, approval = self._fixture(root)
+            release = root / "release"
+            original = run.run_campaign
+            calls = 0
+            def second_fails(**kwargs):
+                nonlocal calls
+                calls += 1
+                if calls == 2:
+                    raise run.RunInvalid("SYNTHETIC_SECOND_FAILURE")
+                return original(**kwargs)
+            with mock.patch("experiments.v2_4_deterministic.run.run_campaign", side_effect=second_fails):
+                with self.assertRaises(run.RunInvalid):
+                    run.run_full(
+                        approval=approval, commitment=commitment, raw_dir=raw_dir, csv_path=csv_path,
+                        ground_truth=ground_truth, ontology=Path(scorer.__file__).with_name("ontology_v1.json"),
+                        output=release, code_candidate="0" * 40, implementation_candidate="1" * 40,
+                        approved_bundle="2" * 40, execution_commit="3" * 40, synthetic=True,
+                    )
+            self.assertFalse(release.exists())
+            receipt = root / ".release.invalid.json"
+            self.assertTrue(receipt.is_file())
+            self.assertNotIn("representative_output", receipt.read_text(encoding="utf-8"))
+
+    def test_40_replay_mismatch_never_releases_final_or_replay(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            raw_dir, csv_path, commitment, ground_truth, approval = self._fixture(root)
+            release = root / "release"
+            first = {"scores.csv": "a", "paired_table.csv": "a", "summary.json": "a", "input_manifest.json": "a", "score_trace.jsonl": "a", "execution.log": "a"}
+            second = dict(first); second["scores.csv"] = "different"
+            with mock.patch("experiments.v2_4_deterministic.run._file_digest_map", side_effect=(first, second)):
+                with self.assertRaisesRegex(run.RunInvalid, "REPLAY_MISMATCH"):
+                    run.run_full(
+                        approval=approval, commitment=commitment, raw_dir=raw_dir, csv_path=csv_path,
+                        ground_truth=ground_truth, ontology=Path(scorer.__file__).with_name("ontology_v1.json"),
+                        output=release, code_candidate="0" * 40, implementation_candidate="1" * 40,
+                        approved_bundle="2" * 40, execution_commit="3" * 40, synthetic=True,
+                    )
+            self.assertFalse(release.exists())
+            self.assertTrue((root / ".release.invalid.json").is_file())
+
+    def test_41_repository_gate_fails_before_candidate_path_enumeration(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            sentinel = root / "DO_NOT_OPEN_CANDIDATE"
+            approval = root / "approval.json"; approval.write_text("{}", encoding="utf-8")
+            with mock.patch("experiments.v2_4_deterministic.run.safe_metadata", side_effect=AssertionError("candidate opened")), \
+                 mock.patch("experiments.v2_4_deterministic.run._repository_gate", side_effect=run.RunInvalid("GIT_HEAD_INVALID")):
+                with self.assertRaisesRegex(run.RunInvalid, "GIT_HEAD_INVALID"):
+                    run.run_full(
+                        approval=approval, commitment=root / "commitment.json", raw_dir=sentinel, csv_path=sentinel,
+                        ground_truth=root / "ground_truth.csv", ontology=Path(scorer.__file__).with_name("ontology_v1.json"),
+                        output=root / "release", code_candidate="0" * 40, implementation_candidate="1" * 40,
+                        approved_bundle="2" * 40, execution_commit="3" * 40,
+                    )
+            self.assertFalse(sentinel.exists())
 
 
 if __name__ == "__main__":
