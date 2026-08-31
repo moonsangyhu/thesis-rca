@@ -40,6 +40,7 @@ IMPLEMENTATION_REVIEW = "docs/plans/review_v2_4_deterministic_implementation.md"
 APPROVAL_DOCUMENT = "docs/plans/approval_v2_4_deterministic.md"
 COMMITMENT_DOCUMENT = "docs/plans/input_commitment_v2_4_deterministic.json"
 DEVIATION_DOCUMENT = "docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json"
+ONTOLOGY_DOCUMENT = "experiments/v2_4_deterministic/ontology_v1.json"
 HISTORICAL_DEVIATION_EVIDENCE = {
     "changelog": {
         "path": "results/experiment_changes_v2_4.md",
@@ -73,6 +74,7 @@ I1_TARGETS = (
 )
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_FULL_AUTHORIZATION_MARKER = object()
 
 
 class RunInvalid(ValueError):
@@ -185,9 +187,26 @@ def safe_metadata(root: Path):
 
 def _load_json_metadata(path: Path) -> dict:
     try:
-        return json.loads(Path(path).read_text(encoding="utf-8"))
+        return _load_json_metadata_bytes(Path(path).read_bytes())
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RunInvalid("INVALID_METADATA") from exc
+
+
+def _load_json_metadata_bytes(payload: bytes) -> dict:
+    def pairs(items):
+        value = {}
+        for key, item in items:
+            if key in value:
+                raise RunInvalid("INVALID_METADATA")
+            value[key] = item
+        return value
+    try:
+        value = json.loads(payload.decode("utf-8", "strict"), object_pairs_hook=pairs)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RunInvalid("INVALID_METADATA") from exc
+    if not isinstance(value, dict):
+        raise RunInvalid("INVALID_METADATA")
+    return value
 
 
 def _approval_gate(path: Path) -> dict:
@@ -462,8 +481,8 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
         raise RunInvalid("COMMITMENT_PROVENANCE_MISMATCH")
     deviation_bytes = _verified_external_file(root, approval["deviation"], expected_path=DEVIATION_DOCUMENT)
     try:
-        deviation = json.loads(deviation_bytes.decode("utf-8", "strict"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        deviation = _load_json_metadata_bytes(deviation_bytes)
+    except RunInvalid as exc:
         raise RunInvalid("DEVIATION_PROVENANCE_INVALID") from exc
     _validate_deviation(deviation, root)
     authorization = approval["execution_authorization"]
@@ -478,7 +497,47 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
     interpreter = approval["interpreter"]
     if Path(interpreter["path"]).resolve() != Path(sys.executable).resolve() or _sha256_bytes(Path(sys.executable).read_bytes()) != interpreter["sha256"] or interpreter["version"] != sys.version:
         raise RunInvalid("INTERPRETER_IDENTITY_MISMATCH")
-    return approval, {"repository_root": str(root), "approval_sha256": _sha256_bytes(Path(approval_path).read_bytes())}
+    return approval, {"repository_root": str(root), "approval_sha256": _sha256_bytes(Path(approval_path).read_bytes()), "verified_identities": {"i0": code_candidate, "i1": implementation_candidate, "bundle": approved_bundle, "approval": execution_commit}, "i0_safety_scope": approval["i0_safety_scope"], "i1_targets": approval["i1_targets"]}
+
+
+def _exact_approved_path(root: Path, supplied: Path, expected: str) -> Path:
+    path=Path(os.path.abspath(os.fspath(supplied)))
+    canonical=root/expected
+    if path != canonical:
+        raise RunInvalid("APPROVED_INPUT_PATH_MISMATCH")
+    return canonical
+
+
+def _bind_full_inputs(approval: dict, preflight: dict, commitment: Path, ontology: Path) -> dict:
+    """Bind actual full-mode CLI metadata paths and bytes before any candidate open."""
+    root=Path(preflight["repository_root"])
+    commitment_path=_exact_approved_path(root,commitment,COMMITMENT_DOCUMENT)
+    ontology_path=_exact_approved_path(root,ontology,ONTOLOGY_DOCUMENT)
+    commitment_bytes,_=_open_verified(commitment_path)
+    ontology_bytes,_=_open_verified(ontology_path)
+    if _sha256_bytes(commitment_bytes)!=approval["commitment"]["sha256"] or _sha256_bytes(ontology_bytes)!=approval["i1_targets"][ONTOLOGY_DOCUMENT]["sha256"]:
+        raise RunInvalid("APPROVED_INPUT_HASH_MISMATCH")
+    try:
+        envelope=_load_json_metadata_bytes(commitment_bytes)
+        commit_inputs.validate_commitment_schema(envelope,require_provenance=True)
+    except (RunInvalid,ValueError) as exc:
+        raise RunInvalid("APPROVED_COMMITMENT_INVALID") from exc
+    scorer.load_ontology(ontology_path)
+    return {"_marker":_FULL_AUTHORIZATION_MARKER,"root":root,"commitment_path":commitment_path,"ontology_path":ontology_path,"commitment_sha256":_sha256_bytes(commitment_bytes),"ontology_sha256":_sha256_bytes(ontology_bytes),"identities":preflight["verified_identities"],"i1_targets":approval["i1_targets"]}
+
+
+def _revalidate_full_inputs(snapshot: dict, commitment: Path, ontology: Path) -> None:
+    root=snapshot.get("root") if isinstance(snapshot,dict) else None
+    if not isinstance(root,Path) or snapshot.get("_marker") is not _FULL_AUTHORIZATION_MARKER: raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    if _exact_approved_path(root,commitment,COMMITMENT_DOCUMENT)!=snapshot.get("commitment_path") or _exact_approved_path(root,ontology,ONTOLOGY_DOCUMENT)!=snapshot.get("ontology_path"):
+        raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    for path,record in snapshot.get("i1_targets",{}).items():
+        payload,_=_open_verified(root/path)
+        if _sha256_bytes(payload)!=record["sha256"] or _git_blob_record(root,snapshot["identities"]["approval"],path)!=record: raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    commitment_bytes,_=_open_verified(snapshot["commitment_path"])
+    ontology_bytes,_=_open_verified(snapshot["ontology_path"])
+    if _sha256_bytes(commitment_bytes)!=snapshot["commitment_sha256"] or _sha256_bytes(ontology_bytes)!=snapshot["ontology_sha256"]:
+        raise RunInvalid("APPROVAL_LIFETIME_INVALID")
 
 
 def _commitment_gate(commitment_path: Path, raw_dir: Path, csv_path: Path, *, synthetic: bool = False) -> tuple[dict, list[tuple[str, int, str]], str]:
@@ -625,6 +684,28 @@ def _write_bytes(path: Path, data: bytes) -> None:
         handle.write(data); handle.flush(); os.fsync(handle.fileno())
 
 
+def _exclusive_write(path: Path, data: bytes) -> None:
+    """Create a new regular file without following or replacing any existing name."""
+    path=Path(path)
+    _check_ancestors(path.parent)
+    flags=os.O_WRONLY|os.O_CREAT|os.O_EXCL|getattr(os,"O_NOFOLLOW",0)
+    try:
+        fd=os.open(path,flags,0o600)
+    except OSError as exc:
+        raise RunInvalid("SAFE_PUBLICATION_FAILED") from exc
+    try:
+        info=os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1: raise RunInvalid("SAFE_PUBLICATION_FAILED")
+        offset=0
+        while offset<len(data):
+            written=os.write(fd,data[offset:])
+            if written<=0: raise RunInvalid("SAFE_PUBLICATION_FAILED")
+            offset+=written
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
 def _fsync_tree(root: Path) -> None:
     for item in sorted(root.iterdir()):
         if item.is_file():
@@ -644,9 +725,12 @@ def _publish(stage: Path, output: Path) -> None:
     finally: os.close(descriptor)
 
 
-def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: Path, ground_truth: Path, ontology: Path, output: Path, synthetic: bool = False, approved_override: dict | None = None) -> dict:
+def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: Path, ground_truth: Path, ontology: Path, output: Path, synthetic: bool = False, approved_override: dict | None = None, full_authorization: dict | None = None) -> dict:
     # This must remain before raw directory enumeration or candidate file opens.
     started_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    if not synthetic:
+        if approved_override is None or full_authorization is None: raise RunInvalid("APPROVAL_BINDING_REQUIRED")
+        _revalidate_full_inputs(full_authorization,commitment,ontology)
     approved = approved_override if approved_override is not None else _approval_gate(approval)
     _, ground_truth_metadata = _open_verified(ground_truth)
     gt_hash = ground_truth_metadata["sha256"]
@@ -664,7 +748,7 @@ def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: P
     summary = analyze.primary(rows)
     paired = [{"incident_id": incident, "length_placebo_jlc_d": int(next(row["jlc_d"] for row in rows if row["incident_id"] == incident and row["condition"] == "length_placebo")), "blind_procedural_rag_jlc_d": int(next(row["jlc_d"] for row in rows if row["incident_id"] == incident and row["condition"] == "blind_procedural_rag"))} for incident in SELECTED]
     canonical_hash = hashlib.sha256(_canonical({"rows": rows, "paired": paired, "summary": summary, "trace": trace})).hexdigest()
-    manifest = {"approval": approved, "ontology_sha256": hashes["ontology_sha256"], "scorer_sha256": hashes["scorer_sha256"], "analyzer_sha256": sha(Path(analyze.__file__)), "input_commitment_sha256": sha(commitment), "input_csv_sha256": hashes["input_csv_sha256"], "raw_manifest_sha256": raw_manifest_sha, "ground_truth_sha256": gt_hash, "ground_truth_projection_sha256": projection, "python_version": sys.version, "seed": 20260831, "row_counts": {"raw": 117, "selected": 36, "conditions": {condition: 12 for condition in CONDITIONS}}, "started_utc": started_utc, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "replay_result": "PENDING_SECOND_REPLAY", "external_call_count": 0, "model_call_count": 0, "k8s_call_count": 0, "canonical_output_sha256": canonical_hash}
+    manifest = {"approval": approved, "ontology_sha256": hashes["ontology_sha256"], "scorer_sha256": hashes["scorer_sha256"], "analyzer_sha256": sha(Path(analyze.__file__)), "input_commitment_sha256": sha(commitment), "input_csv_sha256": hashes["input_csv_sha256"], "raw_manifest_sha256": raw_manifest_sha, "ground_truth_sha256": gt_hash, "ground_truth_projection_sha256": projection, "python_version": sys.version, "seed": 20260831, "row_counts": {"raw": 117, "selected": 36, "conditions": {condition: 12 for condition in CONDITIONS}}, "started_utc": started_utc, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "replay_result": "PENDING_SECOND_REPLAY", "external_call_count": 0, "model_call_count": 0, "k8s_call_count": 0, "canonical_output_sha256": canonical_hash, "actual_input_bindings": {"commitment_sha256": sha(commitment), "ontology_sha256": hashes["ontology_sha256"], "csv_sha256": hashes["input_csv_sha256"], "raw_manifest_sha256": raw_manifest_sha,"ground_truth_sha256":gt_hash,"ground_truth_projection_sha256":projection}}
     output = Path(output)
     if output.exists():
         raise RunInvalid("OUTPUT_EXISTS")
@@ -683,7 +767,7 @@ def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: P
             for item in stage.iterdir(): item.unlink()
             stage.rmdir()
         raise
-    return {"status": "PASS", "canonical_output_sha256": canonical_hash, "output": str(output)}
+    return {"status": "PASS", "canonical_output_sha256": canonical_hash, "output": str(output), "started_utc": started_utc, "finished_utc": manifest["finished_utc"], "actual_input_bindings":manifest["actual_input_bindings"]}
 
 
 def _file_digest_map(directory: Path) -> dict:
@@ -702,8 +786,14 @@ def _write_invalid_receipt(output: Path, reason: str) -> Path:
     destination = output.parent / ("." + output.name + ".invalid.json")
     temporary = output.parent / ("." + output.name + ".invalid.tmp")
     safe_reason = reason if re.fullmatch(r"[A-Z0-9_]+", reason) else "RUN_FAILURE"
-    _write_bytes(temporary, _canonical({"status": "INVALID", "reason": safe_reason, "candidate_text_emitted": False}) + b"\n")
-    os.replace(temporary, destination)
+    _exclusive_write(temporary, _canonical({"status": "INVALID", "reason": safe_reason, "candidate_text_emitted": False}) + b"\n")
+    try:
+        os.link(temporary,destination,follow_symlinks=False)
+        os.unlink(temporary)
+    except OSError as exc:
+        try: os.unlink(temporary)
+        except OSError: pass
+        raise RunInvalid("SAFE_PUBLICATION_FAILED") from exc
     return destination
 
 
@@ -713,7 +803,7 @@ def _copy_artifact(source: Path, destination: Path) -> None:
         os.fsync(handle.fileno())
 
 
-def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, approval: dict, preflight: dict) -> dict:
+def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, approval: dict, preflight: dict, authorization: dict | None = None, commitment: Path | None = None, ontology: Path | None = None) -> dict:
     """Create the sole public tree only after both hidden runs prove byte equality."""
     first_dir, second_dir = hidden / "run1", hidden / "run2"
     first_files, second_files = _file_digest_map(first_dir), _file_digest_map(second_dir)
@@ -728,6 +818,10 @@ def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, 
         _copy_artifact(second_dir / name, replay / name)
     result_export = release / "result_export.csv"
     _copy_artifact(final / "scores.csv", result_export)
+    summary = _load_json_metadata(final / "summary.json")
+    required_summary={"b","c","rd","p","discordance_ci","rd_bootstrap_ci","primary_status","remediation_regression_flag","methodology_disposition"}
+    if set(summary)!=required_summary or not isinstance(summary["primary_status"],str) or type(summary["remediation_regression_flag"]) is not bool or summary["methodology_disposition"]!=analyze.METHODOLOGY_DISPOSITION:
+        raise RunInvalid("SUMMARY_AUDIT_INVALID")
     replay_manifest = {
         "replay_result": "MATCH",
         "canonical_output_sha256": first["canonical_output_sha256"],
@@ -744,6 +838,18 @@ def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, 
         "release_contract": {"result_export": "result_export.csv", "sha256": sha(result_export), "rows": 36},
         "approval": approval,
         "preflight": preflight,
+        "primary_status": summary["primary_status"],
+        "remediation_regression_flag": summary["remediation_regression_flag"],
+        "methodology_disposition": summary["methodology_disposition"],
+        "started_utc": first["started_utc"],
+        "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "run1_started_utc": first["started_utc"],
+        "run1_finished_utc": first["finished_utc"],
+        "run2_started_utc": second["started_utc"],
+        "run2_finished_utc": second["finished_utc"],
+        "verified_i0_i1_bundle_approval": preflight.get("verified_identities",{}),
+        "actual_input_preflight": first["actual_input_bindings"],
+        "deviation_flags": {"status":"NON_INFORMATIVE_MACHINE_PARSE_DEVIATION","evidence_source_sha256":approval.get("deviation",{}).get("sha256",""),"process_access_zero":False,"text_egress":False,"v2_4_d_execution":False,"output_derived_tuning":False,"methodology_waiver_acknowledged":approval.get("methodology_waiver_acknowledged",False)},
         "external_call_count": 0,
         "model_call_count": 0,
         "k8s_call_count": 0,
@@ -752,6 +858,9 @@ def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, 
     _fsync_tree(final)
     _fsync_tree(replay)
     _fsync_tree(release)
+    if authorization is not None:
+        if commitment is None or ontology is None: raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+        _revalidate_full_inputs(authorization,commitment,ontology)
     _publish(release, output)
     return {"status": "PASS", "canonical_output_sha256": first["canonical_output_sha256"], "output": str(output), "replay": "MATCH"}
 
@@ -771,25 +880,29 @@ def run_full(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: Path,
             # Synthetic fixtures are deliberately not authority to score a real input.
             approved = _approval_gate(approval)
             preflight = {"synthetic": True}
+            authorization = None
         else:
             approved, preflight = _repository_gate(
                 approval_path=Path(approval), code_candidate=code_candidate,
                 implementation_candidate=implementation_candidate,
                 approved_bundle=approved_bundle, execution_commit=execution_commit,
             )
+            authorization = _bind_full_inputs(approved,preflight,Path(commitment),Path(ontology))
         hidden = Path(tempfile.mkdtemp(prefix=".v2_4_deterministic_hidden-", dir=output.parent))
         os.chmod(hidden, 0o700)
         first = run_campaign(
             approval=Path(approval), commitment=Path(commitment), raw_dir=Path(raw_dir), csv_path=Path(csv_path),
             ground_truth=Path(ground_truth), ontology=Path(ontology), output=hidden / "run1", synthetic=synthetic,
-            approved_override=None if synthetic else approved,
+            approved_override=None if synthetic else approved, full_authorization=authorization,
         )
+        if not synthetic: _revalidate_full_inputs(authorization,Path(commitment),Path(ontology))
         second = run_campaign(
             approval=Path(approval), commitment=Path(commitment), raw_dir=Path(raw_dir), csv_path=Path(csv_path),
             ground_truth=Path(ground_truth), ontology=Path(ontology), output=hidden / "run2", synthetic=synthetic,
-            approved_override=None if synthetic else approved,
+            approved_override=None if synthetic else approved, full_authorization=authorization,
         )
-        result = _assemble_release(hidden=hidden, output=output, first=first, second=second, approval=approved, preflight=preflight)
+        if not synthetic: _revalidate_full_inputs(authorization,Path(commitment),Path(ontology))
+        result = _assemble_release(hidden=hidden, output=output, first=first, second=second, approval=approved, preflight=preflight, authorization=authorization, commitment=Path(commitment), ontology=Path(ontology))
         return result
     except Exception as exc:
         _write_invalid_receipt(output, str(exc) if isinstance(exc, RunInvalid) else "RUN_FAILURE")
@@ -826,6 +939,8 @@ def main(argv=None):
         if not all((args.commitment, args.raw_dir, args.csv)): raise SystemExit("INPUT_REQUIRED")
         print(json.dumps(dry_run(args.commitment, args.raw_dir, args.csv), sort_keys=True))
         return 0
+    if args.synthetic:
+        raise SystemExit("SYNTHETIC_API_ONLY")
     if not all((args.commitment, args.raw_dir, args.csv, args.approval, args.ground_truth, args.out, args.code_candidate, args.implementation_candidate, args.approved_bundle, args.execution_commit)):
         raise SystemExit("APPROVAL_REQUIRED")
     result = run_full(

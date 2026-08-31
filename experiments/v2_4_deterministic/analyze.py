@@ -2,6 +2,7 @@
 from __future__ import annotations
 import math, random
 CONDITIONS=("runtime","length_placebo","blind_procedural_rag")
+METHODOLOGY_DISPOSITION="CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION"
 def mcnemar_one_sided(b,c):
     return 1.0 if b+c==0 else sum(math.comb(b+c,k) for k in range(b,b+c+1))/2**(b+c)
 def percentile(values,p):
@@ -53,4 +54,4 @@ def primary(rows):
         remediation_regression = sum(by_full[item]["blind_procedural_rag"] for item in by_full) < sum(by_full[item]["length_placebo"] for item in by_full)
     else:
         remediation_regression = False
-    return {"b":b,"c":c,"rd":canonical_float(rd),"p":canonical_float(p),"discordance_ci":None if cp is None else [canonical_float(x) for x in cp],"rd_bootstrap_ci":[canonical_float(x) for x in paired_bootstrap(pairs)],"primary_status":status,"remediation_regression_flag":remediation_regression}
+    return {"b":b,"c":c,"rd":canonical_float(rd),"p":canonical_float(p),"discordance_ci":None if cp is None else [canonical_float(x) for x in cp],"rd_bootstrap_ci":[canonical_float(x) for x in paired_bootstrap(pairs)],"primary_status":status,"remediation_regression_flag":remediation_regression,"methodology_disposition":METHODOLOGY_DISPOSITION}

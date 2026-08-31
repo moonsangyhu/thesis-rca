@@ -470,3 +470,245 @@ producer/runner 단일 commitment schema·provenance를 수정하고 위 반증 
 candidate를 봉인하는 것이다. machine-parse evidence는 plan의 exact 요구를 충족할 수 있는 원본이
 없다면, 이를 숨기거나 현재 digest로 대체하지 말고 사용자 승인 아래 protocol status를 명시적으로
 변경해야 한다.
+
+## 9. Revision 8 full implementation 독립 재검토
+
+> 재검토 시각: 2026-08-31T19:36:39Z
+>
+> reviewer/session: `codex-agent:/root/v24d_r8_full_final` /
+> `v24d-r8-full-final-20260901`
+>
+> code-only candidate `I0`:
+> `c2248dd16119ab76847f3f5b383e30acfd452afd`
+>
+> full implementation candidate `I1`:
+> `7a9bf10f767ea145efc2bda5d2dec1eb43eb0dfa`
+>
+> 최종 판정: **FAIL — P0 5개, P1 0개. bundle `B`, 사용자 승인 `A`, real scoring 진행 금지.**
+
+### 9.1 독립성·실데이터 비접근 선언
+
+이 재검토는 공유 브랜치를 switch/detach하지 않고 별도 detached clean worktree
+`/tmp/v24d-r8-i0.aLHg7y`와 `/tmp/v24d-r8-i1.9CbqpC`에서 수행했다. 실제 Primary03 CSV/raw,
+ground-truth 또는 candidate output body를 locate/list/hash/open/read/decode/parse하지 않았고,
+V2.4-D real scorer/campaign과 `tests.test_v2_4_audit`도 실행하지 않았다. 검토한 입력 provenance는
+Git에 봉인된 opaque path/size/SHA metadata, fixed digest와 외부 safety receipt뿐이다. 모델/API/K8s/
+network 호출은 0이다.
+
+```text
+$ git -C /tmp/v24d-r8-i0.aLHg7y rev-parse HEAD
+c2248dd16119ab76847f3f5b383e30acfd452afd
+$ git -C /tmp/v24d-r8-i1.9CbqpC rev-parse HEAD
+7a9bf10f767ea145efc2bda5d2dec1eb43eb0dfa
+$ git -C /tmp/v24d-r8-i1.9CbqpC rev-parse HEAD^
+c2248dd16119ab76847f3f5b383e30acfd452afd
+$ git -C /tmp/v24d-r8-i0.aLHg7y status --porcelain=v1
+<empty>
+$ git -C /tmp/v24d-r8-i1.9CbqpC status --porcelain=v1
+<empty>
+```
+
+재검토 시작 시 approval 문서는 absent였고, 이 누적 implementation review에는 Revision 8 full PASS
+기록이 없고 기존 FAIL 기록만 있었다.
+
+### 9.2 I0→I1 chain과 exact diff
+
+`I1^ == I0`이다. I0에는 active commitment와 deviation 경로가 모두 absent였고
+`git cat-file -e`는 두 경로에서 non-zero였다. exact diff는 다음 두 addition뿐이다.
+
+```text
+$ git diff --name-status --no-renames I0..I1
+A  docs/plans/input_commitment_v2_4_deterministic.json
+A  docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json
+```
+
+따라서 plan, semantic review와 여덟 safety-scope code/test blob은 I0→I1에서 불변이다.
+
+### 9.3 I1 전체 target hash map
+
+Git blob SHA-256는 `git cat-file blob I1:path` bytes, filesystem SHA-256는 detached I1 checkout
+bytes에서 독립 계산했다. 12 target 모두 두 SHA-256가 일치했다.
+
+| I1 target | Git blob OID | blob SHA-256 | filesystem SHA-256 |
+|---|---|---|---|
+| `docs/plans/experiment_plan_v2_4_deterministic.md` | `acdb8159d8c0fce2437bbd04b71e26fe09ee8a68` | `3a9c7586f51bc7444ea432a933bd149f31e4f06f47d3a5383fb561407e2870f1` | `3a9c7586f51bc7444ea432a933bd149f31e4f06f47d3a5383fb561407e2870f1` |
+| `docs/plans/review_v2_4_deterministic.md` | `0edcf3b80a7cafbb9085cfe237ba66d948819d10` | `842a484710461ed109a9263b387fb21fb4e78defe4a80d7daa5a818251e3b2d8` | `842a484710461ed109a9263b387fb21fb4e78defe4a80d7daa5a818251e3b2d8` |
+| `docs/plans/input_commitment_v2_4_deterministic.json` | `f26c99ddcc83d96a071112f24b84e452b99a1554` | `7b297bf23938bf23f0add0ba8800c6ee58a1dde0d1e0ece10c7c9e675b6138bb` | `7b297bf23938bf23f0add0ba8800c6ee58a1dde0d1e0ece10c7c9e675b6138bb` |
+| `docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json` | `b0f3e7c9fefe6ba27c9cf7f19aa779443029a97c` | `fa2475235be48778bb19a25a2465015a3f9444a781ac969e23bd1c4b3e491d1b` | `fa2475235be48778bb19a25a2465015a3f9444a781ac969e23bd1c4b3e491d1b` |
+| `experiments/v2_4_deterministic/ontology_v1.json` | `e4624a40f3f98acd85020c956fab167962d28904` | `ae9956f9a6a89523b2a6f57f1eaa707a132b9763a7c7a1b909ab7ee4376b2bd7` | `ae9956f9a6a89523b2a6f57f1eaa707a132b9763a7c7a1b909ab7ee4376b2bd7` |
+| `experiments/v2_4_deterministic/__init__.py` | `4f41104d187ceaeedbd576a3c6de418d3b4ce9b0` | `f0fb79df74c533d1634777b223e8330b45ae775050677a3c3530355e14b95816` | `f0fb79df74c533d1634777b223e8330b45ae775050677a3c3530355e14b95816` |
+| `experiments/v2_4_deterministic/build_ontology.py` | `37b979af4a35569cfea9d72cfe329d8957b4f7ae` | `50bc331bd51585b93f22257f09dad651afb87e0e408b1eae941f203efcd5ace8` | `50bc331bd51585b93f22257f09dad651afb87e0e408b1eae941f203efcd5ace8` |
+| `experiments/v2_4_deterministic/commit_inputs.py` | `2c3192b7c7fab3ca682d04ac4a280cdf1063e7d9` | `4b6d497e1f06b79fbed0b7d9ad4c642db69b6c56f9ec0fd37ce8b46a35775705` | `4b6d497e1f06b79fbed0b7d9ad4c642db69b6c56f9ec0fd37ce8b46a35775705` |
+| `experiments/v2_4_deterministic/scorer.py` | `6fd3d691189f2fa456b24d4ff332f7ec755e5639` | `9da0ed9a82717c8d39e774a8a57db8e9eaa034d230d7409fcf668c8165b5be2b` | `9da0ed9a82717c8d39e774a8a57db8e9eaa034d230d7409fcf668c8165b5be2b` |
+| `experiments/v2_4_deterministic/analyze.py` | `3bf804ff9f584c6a506fb5ae7f162e0dfab02613` | `b72040f8f0abe757ad842bae903238701c41049dc07381bea375814f06474be7` | `b72040f8f0abe757ad842bae903238701c41049dc07381bea375814f06474be7` |
+| `experiments/v2_4_deterministic/run.py` | `ad9c4286cb9f2a5decaa9880ba2f652ff71d856d` | `84850ab1b41e509542076ab20572791bdbe2c0123d870a3d14da88d9ea30d6c6` | `84850ab1b41e509542076ab20572791bdbe2c0123d870a3d14da88d9ea30d6c6` |
+| `tests/test_v2_4_deterministic.py` | `c00f51426ecbb6c3c5743564dacee2ba96e95cdf` | `a96a7d686a6e9c7a3f982cc97213b1ea2726e2f07f0c6960ff06777c6873f0c1` | `a96a7d686a6e9c7a3f982cc97213b1ea2726e2f07f0c6960ff06777c6873f0c1` |
+
+Plan SHA-256는 `3a9c7586...70f1`, cumulative semantic review의 외부 SHA-256는
+`842a4847...b2d8`이며 Revision 8 methodology section 내부 기록과 일치한다.
+
+### 9.4 I0 safety receipt, commitment와 deviation 검증
+
+외부 receipt
+`artifacts/v2_4_deterministic/i0_safety_receipt_c2248dd.json`의 filesystem SHA-256는
+`9d6d21a5f64ad8f9ba408dcd0abba58ea204b42dd2f61d4466fd5b2f73dbb813`다. exact I0, PASS/PASS,
+reviewer/session/UTC, Python 3.11.15 binary identity, 5개 command records, 8개 exact target,
+semantic-review digest, fixture/sentinel, `real_source_open_count=0`,
+`candidate_text_egress=false`와 prior-failure list를 full schema로 재검증했다. 여덟 target 각각의
+receipt blob OID/SHA-256는 `I0:path`와 detached filesystem bytes에 exact 일치했다.
+
+새 commitment는 duplicate-safe parse 후 canonical shared validator를 직접 호출해 다음을 확인했다.
+
+```text
+file SHA-256                 7b297bf23938bf23f0add0ba8800c6ee58a1dde0d1e0ece10c7c9e675b6138bb
+raw count/sorted/unique      117 / PASS / PASS
+entry manifest stored       05d5e002519307549714b8e309dfd042a82cd43483d571834c2675a3acf79835
+entry manifest recomputed   05d5e002519307549714b8e309dfd042a82cd43483d571834c2675a3acf79835
+commitment stored           48d4d9e6e652b05cf7321a80889dea9b963cc1cd0ea7a73d06690ab070ea0995
+commitment recomputed       48d4d9e6e652b05cf7321a80889dea9b963cc1cd0ea7a73d06690ab070ea0995
+reviewed_i0                 c2248dd16119ab76847f3f5b383e30acfd452afd
+tool blob/SHA-256           2c3192b7... / 4b6d497e...75705
+safety receipt SHA-256      9d6d21a5...bb813
+historical artifact SHA     c4d9bd1b0ee54a23e1f29a4f6483efe4f051126d5a8020277cad9bf764462085
+legacy CSV/raw map identity EXACT_MATCH
+```
+
+Historical artifact는 fixed Git blob `6e5a4cdb0a0950c27b12fc42ea0767da975ab22f`의 opaque metadata만
+읽었고 실제 source는 열지 않았다. Deviation file은 exact key/const schema, 두 immutable historical
+Git evidence blob의 unique ancestry match, conversation-derived attestation text/SHA를
+`run._validate_deviation()`으로 재검증해 PASS했다. 이는 attestation을 cryptographic non-egress proof로
+승격하지 않으며 `process_access_zero=false`와 `NOT_RETAINED` 한계를 그대로 유지한다.
+
+### 9.5 실행한 허용 검증
+
+고정 interpreter는
+`/Users/yumunsang/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/bin/python3.11`이다.
+
+| 검증 | exit/result | stdout SHA-256 | stderr SHA-256 |
+|---|---|---|---|
+| `-I tests/test_v2_4_deterministic.py` | 0, 72 tests, OK | `8ec1cd14a4bae3022785b9e137429dc009745c094656055799aa645855691202` | `3fe71fa1526f81f1518e88abfffa9e6bebff41b8b6d63da5e8276719d9aedc82` |
+| `-I -m py_compile` seven package/test Python targets | 0 | empty | empty |
+| `-I .../build_ontology.py --ontology .../ontology_v1.json` | 0, 12 incidents, PASS | `f392fad038ee59b278018249f3acf2744e49c981090cc420d9dab34f708ec6e4` | `e3b0c442...b855` |
+| `-I .../commit_inputs.py --self-test-redaction` | 0, PASS | `3c7cfae4b1142cd85e559d752889b7bd34743c4f4bc7db11180ca6f4044d3d63` | `e3b0c442...b855` |
+| `-I .../run.py --self-test` | 0, candidate opened false | `97e3fb7faccd84ee997f4713ad0df53edccde9e44706eaeb62fdcfd68af3da23` | `e3b0c442...b855` |
+
+Exact stats probe는 `b=c=0 → p=1`, `b=5,c=0 → p=0.03125`, no-discordance CP `null`, fixed
+50,000-replicate bootstrap `[-1/6,2/3]`를 반환했다. Reviewed negation counterexample
+`memory limit is not generally relevant`는 `UNSUPPORTED_NEGATION`으로 fail-close했다. 이 범위는 PASS다.
+
+그러나 green suite 뒤 별도 합성 adversarial probe는 다음을 재현했다.
+
+```text
+same-shape ontology literal mutation                    ACCEPTED
+duplicate top-level raw_count in commitment JSON       ACCEPTED
+approved_override에서 _approval_identity_gate calls    0
+unapproved commitment gate reached                     1
+summary contains methodology_disposition               false
+preexisting invalid-receipt tmp symlink victim kept    false
+```
+
+### 9.6 P0 findings
+
+#### P0-R8-1 — full mode가 승인된 commitment/ontology를 실제 scoring 인자에 결합하지 않음
+
+`run_full()`은 `_repository_gate()`에서 tracked I1 commitment와 approval target hash를 검증한 뒤
+`approved` dict를 `run_campaign(..., approved_override=approved)`에 넘긴다. 그러나
+`run_campaign()`은 `approved_override is not None`이면 `_approval_identity_gate()`를 명시적으로
+건너뛴다. 이후 CLI에서 받은 `commitment`, `raw_dir`, `csv_path`, `ontology`를 그대로 사용한다.
+
+따라서 repository에서 승인된 commitment file SHA, commitment digest/CSV/raw manifest,
+ontology/scorer hash는 검증되지만 **실제로 scoring에 전달된 path와 동일하다는 비교가 없다.** 별도
+commitment는 self-consistent provenance shape만 만들면 다른 raw/CSV를 열 수 있고, supplied ontology도
+아래 P0-R8-2의 same-shape mutation이면 runtime validator를 통과할 수 있다. 합성 spy에서
+`_approval_identity_gate` 호출 0인 상태로 unapproved commitment gate에 도달했다. 이는 outcome 입력을
+승인 bundle 밖에서 교체할 수 있는 result-changing authorization bypass이므로 P0다.
+
+또한 `_repository_gate()`는 full run 시작 때 한 번만 호출되고, 이후 candidate open 전·두 hidden run
+사이·public release 직전에 승인/target snapshot을 재검증하지 않는다. 외부 동시 mutation에 대한
+authorization lifetime도 봉합되지 않았다.
+
+#### P0-R8-2 — runtime ontology validator가 §4~§6 acceptance set을 exact 강제하지 않음
+
+`validate_ontology_exact()`는 normalization, negation, predicate, incident identity와 axis별 **개수
+inventory**는 고정하지만 canonical strings, path/group IDs, literal values/polarity/provenance를
+approved ontology와 exact 비교하지 않는다. 첫 component matcher literal만 synthetic 다른 phrase로
+교체하고 alias 수·shape·order를 보존한 ontology가 `scorer.load_ontology()`에서 ACCEPTED됐다.
+
+이는 Revision 7의 predicate/syntax/order mutation은 닫았지만 §3의 “§4~§6 값이 의미 정본”과 runtime
+exact acceptance-set 계약은 닫지 못한 것이다. P0-R8-1의 supplied ontology binding 누락과 결합하면
+실행 outcome을 승인 뒤 변경할 수 있다. 승인 ontology hash가 존재한다는 사실은 실제 CLI ontology
+identity를 비교하지 않는 full mode와 incomplete semantic validator를 대체하지 못한다.
+
+#### P0-R8-3 — runner metadata loader가 duplicate key를 거부하지 않음
+
+Producer/standalone verifier의 `_parse_json_bytes()`는 duplicate를 거부하지만 runner의
+`_load_json_metadata()`는 plain `json.loads()`를 사용한다. 승인/commitment/deviation을 읽는 runner
+경로에서 earlier duplicate key는 silently overwritten된다. Exact I1 commitment bytes 자체에는
+duplicate가 없지만, P0-R8-1 때문에 alternate CLI commitment가 approval identity check 없이 들어올 수
+있다. Frozen commitment 앞에 `"raw_count":999` duplicate를 추가한 합성 JSON은 runner loader와
+`validate_commitment_schema()`를 모두 PASS했다. Plan §9.1의 “모든 object duplicate-rejecting loader”와
+fail-close 계약 위반이며 승인 입력 binding 우회를 확장하므로 P0다.
+
+#### P0-R8-4 — 필수 methodology/output audit contract가 publication에서 소실됨
+
+Plan §13은 `summary.json`에 `primary_status`, `remediation_regression_flag`,
+`methodology_disposition`을 서로 독립된 required field로 저장하도록 한다. 그러나
+`analyze.primary()` 결과에는 `methodology_disposition`이 없고 합성 36-row summary probe도 false였다.
+최종 release manifest는 hidden run의 timestamp manifest를 복사하지 않고 새로 조립하면서
+started/finished UTC, explicit I0/I1/B/A verified identities, deviation state/booleans 및 여러 required
+actual-preflight fields를 별도 기록하지 않는다. 일부 값이 nested approval에 있다는 사실은 실행 당시
+actual input binding과 methodology disposition을 기록하지 못한 문제를 해결하지 않는다. 이 상태에서
+published primary status가 mandatory machine-parse waiver와 분리돼 기계가독 가능하지 않으므로 P0다.
+
+#### P0-R8-5 — INVALID receipt가 pre-existing symlink를 따라 임의 파일을 덮어씀
+
+`_write_invalid_receipt()`는 predictable `.<output>.invalid.tmp`을 `_write_bytes(path.open("wb"))`로
+열고 `O_EXCL|O_NOFOLLOW`를 사용하지 않는다. 합성 temp directory에서 그 이름을 victim에 대한
+symlink로 미리 만들면 gate failure receipt가 victim bytes를 덮어썼고
+`invalid_receipt_symlink_victim_preserved=false`였다. 기존 destination/symlink 보존, output atomicity와
+fail-safe 원칙을 위반한다. 후보를 열기 전 gate failure에서도 workspace의 임의 writable file을
+손상시킬 수 있으므로 safety P0다.
+
+### 9.7 72-test suite adequacy와 이전 FAIL closure
+
+72/72 green은 위 다섯 P0를 탐지하지 못했다. 특히 suite는 producer→runner shape bridge는 검사하지만
+**repository-approved commitment identity와 실제 CLI commitment path의 equality**, same-count alias
+mutation, runner duplicate-key byte parse, required final summary/manifest schema, invalid-receipt symlink를
+검사하지 않는다.
+
+| 이전 finding | Revision 8 판정 | 근거 |
+|---|---|---|
+| P0-1 ontology exact semantics | **FAIL** | same-shape literal/path/provenance acceptance set mutation 허용 |
+| P0-2 finite negation grammar | PASS | reviewed unresolved `not` counterexample fail-close |
+| P0-3 candidate schema | PASS | 72-test isolated suite의 byte/token/language/schema counterexamples |
+| P0-4 approval/freeze/hash runner | **FAIL** | repository bundle은 검증하나 actual CLI commitment/ontology와 결합 안 됨 |
+| P0-5 hidden replay atomic release | PASS for ordinary second-failure/mismatch path, **FAIL safety** | release equality는 구현됐으나 INVALID tmp symlink overwrite |
+| P0-6 commitment safety/provenance | PASS producer side, **FAIL consumer binding** | receipt/new commitment/legacy map exact; runner duplicate parse와 actual path binding 결손 |
+| P0-7 synthetic/static adequacy | **FAIL** | 72 green이 다섯 반증을 놓침 |
+| P0-R7-4 machine-parse evidence | PASS under Revision 8 disclosed-waiver method | exact snapshot/attestation schema 검증; non-egress proof로 과장하지 않음 |
+
+### 9.8 최종 gate와 승인 권고
+
+| gate | 판정 |
+|---|---|
+| exact I0/I1 parent, I0 path absence, exact A/A diff | PASS |
+| detached clean, I1 12-target blob/filesystem hash | PASS |
+| plan/semantic review SHA | PASS |
+| external safety receipt full schema/I0/8 targets | PASS |
+| commitment schema/internal digest/provenance/legacy identity | PASS for exact I1 artifact |
+| deviation historical evidence/attestation | PASS with disclosed limitation |
+| finite negation/candidate schema/statistics | PASS |
+| runtime ontology exact acceptance set | **FAIL** |
+| approval→actual scoring input binding/authorization lifetime | **FAIL** |
+| duplicate-safe runner metadata | **FAIL** |
+| mandatory summary/final manifest contract | **FAIL** |
+| output/INVALID receipt atomic safety | **FAIL** |
+| synthetic/static adequacy | **FAIL** |
+
+**Revision 8 full implementation 최종 판정은 FAIL이며 approval recommendation은 0이다.** Exact I1은
+commitment/deviation provenance까지는 잘 봉인됐지만, 위 P0가 남아 있으므로 implementation-review-only
+commit `B`, 사용자 승인 `A`, actual candidate scoring을 만들면 안 된다. 다음 candidate는 candidate
+본문을 계속 열지 않은 상태에서 (1) full-mode 실제 path/hash를 approval target에 exact bind하고
+authorization을 publication까지 재검증하며, (2) ontology acceptance set 전체를 exact validator로
+고정하고, (3) 모든 runner JSON을 duplicate-safe parse하며, (4) required methodology/output schema와
+exclusive no-follow INVALID receipt를 구현한 뒤 fresh safety/full review를 다시 받아야 한다.

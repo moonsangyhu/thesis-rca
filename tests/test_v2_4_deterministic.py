@@ -85,18 +85,15 @@ class DeterministicSyntheticTests(unittest.TestCase):
     def test_02_ontology_mutation_controls_score(self):
         root = Path(__file__).resolve().parents[1]
         data = scorer.load_ontology(root / "experiments/v2_4_deterministic/ontology_v1.json")
-        original = tempfile.NamedTemporaryFile(suffix=".json", delete=False); original.close()
         mutated = tempfile.NamedTemporaryFile(suffix=".json", delete=False); mutated.close()
         try:
-            Path(original.name).write_text(json.dumps(data), encoding="utf-8")
             item = next(x for x in data["incidents"] if x["incident_id"] == "F1-t2")
             item["axes"]["component_mention"]["positive_paths"][0]["all_of"][0]["any_of"][0]["value"] = "synthetic only component"
             Path(mutated.name).write_text(json.dumps(data), encoding="utf-8")
-            raw = candidate(root="synthetic only component memory limit too low oom killed")
-            self.assertFalse(scorer.score("F1-t2", raw, original.name)["cm"])
-            self.assertTrue(scorer.score("F1-t2", raw, mutated.name)["cm"])
+            self.assertEqual(scorer.APPROVED_ONTOLOGY_SHA256, hashlib.sha256((root / "experiments/v2_4_deterministic/ontology_v1.json").read_bytes()).hexdigest())
+            with self.assertRaises(scorer.InvalidInput): scorer.load_ontology(mutated.name)
         finally:
-            Path(original.name).unlink(missing_ok=True); Path(mutated.name).unlink(missing_ok=True)
+            Path(mutated.name).unlink(missing_ok=True)
 
     def test_03_field_isolation(self):
         result = scorer.score("F1-t2", candidate(fault="none", root="recommendationservice memory limit too low oom killed", remediation=["OOMKilled increase memory limit to 96Mi"]))
@@ -784,6 +781,55 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 with synthetic_legacy_identity(legacy), mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence):
                     self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
                 self.assertEqual((preserved if kind=="symlink" else out).read_bytes(),b"preserve")
+
+    def test_73_ontology_acceptance_freezes_literal_path_polarity_and_provenance(self):
+        base=scorer.load_ontology()
+        mutations=(
+            lambda data:data["incidents"][0]["axes"]["component_mention"]["positive_paths"][0]["all_of"][0]["any_of"][0].__setitem__("value","same-shape replacement"),
+            lambda data:data["incidents"][0]["axes"]["component_mention"]["positive_paths"][0].__setitem__("path_id","OTHER_PATH"),
+            lambda data:data["incidents"][0]["axes"]["component_mention"]["positive_paths"][0]["all_of"][0]["any_of"][0].__setitem__("polarity","absence_assertion"),
+            lambda data:data["incidents"][0]["axes"]["component_mention"]["positive_paths"][0]["all_of"][0]["any_of"][0]["provenance"].__setitem__("source_ref","other"),
+        )
+        for mutate in mutations:
+            data=json.loads(json.dumps(base)); mutate(data)
+            with tempfile.NamedTemporaryFile("w",suffix=".json") as handle:
+                json.dump(data,handle); handle.flush()
+                with self.assertRaises(scorer.InvalidInput): scorer.load_ontology(handle.name)
+
+    def test_74_runner_metadata_duplicate_keys_fail_at_every_nesting_level(self):
+        for payload in (b'{"approval":"A","approval":"B"}',b'{"outer":{"key":1,"key":2}}'):
+            with self.assertRaises(run.RunInvalid): run._load_json_metadata_bytes(payload)
+
+    def test_75_real_approved_override_requires_lifetime_binding_before_any_input_open(self):
+        with mock.patch("experiments.v2_4_deterministic.run._revalidate_full_inputs",side_effect=run.RunInvalid("APPROVAL_LIFETIME_INVALID")) as gate, \
+             mock.patch("experiments.v2_4_deterministic.run._open_verified",side_effect=AssertionError("input opened")):
+            with self.assertRaisesRegex(run.RunInvalid,"APPROVAL_LIFETIME_INVALID"):
+                run.run_campaign(approval=Path("approval"),commitment=Path("unapproved"),raw_dir=Path("raw"),csv_path=Path("csv"),ground_truth=Path("gt"),ontology=Path("ontology"),output=Path("out"),approved_override={},full_authorization={})
+        gate.assert_called_once()
+
+    def test_75b_full_binding_rejects_noncanonical_cli_path_before_metadata_open(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); approval={"commitment":{"sha256":"a"*64},"i1_targets":{run.ONTOLOGY_DOCUMENT:{"sha256":"b"*64}}}; preflight={"repository_root":str(root),"verified_identities":{}}
+            with mock.patch("experiments.v2_4_deterministic.run._open_verified",side_effect=AssertionError("metadata opened")):
+                with self.assertRaises(run.RunInvalid): run._bind_full_inputs(approval,preflight,root/"other.json",root/run.ONTOLOGY_DOCUMENT)
+
+    def test_76_release_manifest_has_independent_methodology_audit_fields(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw,csv_path,commitment,ground_truth,approval=self._fixture(root); release=root/"release"
+            run.run_full(approval=approval,commitment=commitment,raw_dir=raw,csv_path=csv_path,ground_truth=ground_truth,ontology=Path(scorer.__file__).with_name("ontology_v1.json"),output=release,code_candidate="0"*40,implementation_candidate="1"*40,approved_bundle="2"*40,execution_commit="3"*40,synthetic=True)
+            summary=json.loads((release/"final"/"summary.json").read_text()); manifest=json.loads((release/"manifest.json").read_text())
+            self.assertEqual(summary["methodology_disposition"],analyze.METHODOLOGY_DISPOSITION)
+            for key in ("primary_status","remediation_regression_flag","methodology_disposition","run1_started_utc","run2_finished_utc","verified_i0_i1_bundle_approval","actual_input_preflight","deviation_flags"):
+                self.assertIn(key,manifest)
+
+    def test_77_invalid_receipt_exclusive_tmp_preserves_existing_symlink_and_regular(self):
+        for kind in ("regular","symlink"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+                root=Path(td); output=root/"release"; temporary=root/".release.invalid.tmp"; victim=root/"victim"; victim.write_bytes(b"preserve")
+                if kind=="regular": temporary.write_bytes(b"preserve")
+                else: temporary.symlink_to(victim)
+                with self.assertRaises(run.RunInvalid): run._write_invalid_receipt(output,"INVALID")
+                self.assertEqual(victim.read_bytes(),b"preserve")
 
 
 if __name__ == "__main__":
