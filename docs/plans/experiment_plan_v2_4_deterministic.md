@@ -1,10 +1,11 @@
-# V2.4-D 결정론적 lexical concordance 실험 계획 — revision 4
+# V2.4-D 결정론적 lexical concordance 실험 계획 — revision 6
 
 > 작성일: 2026-08-31
 >
-> 단계: Experiment Track Step 1 — Revision 3 자기참조 hash P0 반영본, 구현·실행 전
+> 단계: Experiment Track Step 1 — semantic review Revision 5 P0 반영본, 재구현·실행 전
 >
-> revision 4 근거: semantic review final SHA의 self-reference 제거
+> revision 6 근거: cumulative `docs/plans/review_v2_4_deterministic.md` Revision 5의
+> commitment identity/review-before-real-access P0 두 개
 >
 > 선행 분석: `docs/surveys/deep_analysis_v2_4_deterministic.md`
 >
@@ -126,7 +127,7 @@ semantic correctness로 바꿔 부르지 않는다.
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["ontology_version", "normalization", "negation", "incidents"],
+  "required": ["ontology_version", "normalization", "token_predicates", "negation", "incidents"],
   "properties": {
     "ontology_version": {"const": "v2.4-d-ontology-1"},
     "normalization": {
@@ -142,11 +143,26 @@ semantic correctness로 바꿔 부르지 않는다.
         "tokenization": {"const": "maximal_unicode_alphanumeric_runs"}
       }
     },
+    "token_predicates": {
+      "const": {
+        "MEMORY_LIMIT_EXCEEDED_V1": [
+          ["exceeded", "memory", "limit"],
+          ["exceeded", "16mi", "memory", "limit"],
+          ["exceeded", "24mi", "memory", "limit"],
+          ["exceeded", "16", "mib", "memory", "limit"],
+          ["exceeded", "24", "mib", "memory", "limit"],
+          ["memory", "exceeded", "limit"],
+          ["memory", "exceeded", "the", "limit"],
+          ["memory", "usage", "exceeded", "limit"],
+          ["memory", "usage", "exceeded", "the", "limit"]
+        ]
+      }
+    },
     "negation": {
       "type": "object",
       "additionalProperties": false,
       "required": ["tokens", "phrases", "fillers", "coordinators", "contrasts",
-                   "exceptions", "grammar_ids"],
+                   "exceptions", "grammar_ids", "syntax"],
       "properties": {
         "tokens": {"const": ["no", "not", "never", "without", "neither", "nor",
                               "isnt", "wasnt", "arent", "werent", "cannot", "cant",
@@ -159,7 +175,21 @@ semantic correctness로 바꿔 부르지 않는다.
         "contrasts": {"const": ["but", "however", "instead", "rather"]},
         "exceptions": {"const": ["not only"]},
         "grammar_ids": {"const": ["PRE_DIRECT", "PRE_COORD", "PRE_RULE", "POST_RULE",
-                                   "POST_CAUSE", "NOT_ONLY"]}
+                                   "POST_CAUSE", "NOT_ONLY"]},
+        "syntax": {
+          "const": {
+            "precedence": ["NOT_ONLY", "ABSENCE_ASSERTION", "PRE_COORD", "PRE_DIRECT",
+                           "PRE_RULE", "POST_RULE", "POST_CAUSE", "UNRESOLVED_FAIL"],
+            "PRE_DIRECT": ["NEG", "FILLER_0_3", "C"],
+            "PRE_COORD": ["NEG", "FILLER_0_3", "C", "COORD", "FILLER_0_3", "C", "REPEAT_COORD_C"],
+            "PRE_RULE": ["RULE_OUT", "FILLER_0_3", "C"],
+            "POST_RULE": ["C", "OPTIONAL_COPULA_OR_HAS_BEEN", "RULED_OUT"],
+            "POST_CAUSE": ["C", "COPULA", "NOT", "OPTIONAL_ARTICLE", "CAUSE_TERM"],
+            "NOT_ONLY": ["NOT", "ONLY", "C1", "BUT", "C2"],
+            "scope_terminators": ["COMMA", "CLAUSE_BOUNDARY", "but", "however", "instead", "rather"],
+            "unresolved_action": "INVALID_UNSUPPORTED_NEGATION"
+          }
+        }
       }
     },
     "incidents": {
@@ -290,6 +320,31 @@ memory usage exceeded the limit
 다른 predicate ID, wildcard, substring, raw regex, fuzzy match는 schema validation에서 거부한다.
 모든 matcher는 `provenance.source_ref`에 exact ground-truth row/column 또는 공개 taxonomy URL과
 label을 기록한다. candidate 표현은 provenance가 될 수 없다.
+
+`build_ontology.py`와 scorer loader는 같은 duplicate-rejecting JSON loader를 사용한다.
+`json.loads(..., object_pairs_hook=reject_duplicate_pairs)`로 모든 nesting level의 duplicate key를
+거부하며, standard `json.load()` fallback은 금지한다. schema 검증 뒤 static validator가 다음을
+추가로 exact 강제한다.
+
+- `ontology_version`, `normalization` 네 값과 배열 순서, `token_predicates` ID/9 sequences/order,
+  `negation`의 tokens·phrases·fillers·coordinators·contrasts·exceptions·grammar_ids·`syntax` 전체를
+  위 JSON literal과 canonical byte comparison한다.
+- duplicate-rejecting loader가 보존한 object-pair order도 top-level
+  `ontology_version,normalization,token_predicates,negation,incidents`, normalization
+  `unicode,case,clause_boundaries,tokenization`, negation
+  `tokens,phrases,fillers,coordinators,contrasts,exceptions,grammar_ids,syntax` exact 순서와
+  일치해야 한다. key 순서를 임의 정렬해 이 gate를 우회하지 않는다.
+- incident identity/order는
+  `F1-t2,F1-t3,F2-t1,F3-t3,F3-t4,F4-t1,F5-t2,F5-t3,F6-t5,F7-t1,F7-t3,F8-t3`
+  exact 12개이고 `incident_id == fault_id + "-t" + trial`이어야 한다.
+- incident/fault/trial pattern, path/group ID `^[A-Z0-9_]+$`, axis별 path ID와 path별 group ID
+  uniqueness, axis별 exact `source_fields`, positive path non-empty, contradiction array type를
+  mutation test와 함께 강제한다.
+- F1-t2/F1-t3의 `M_MEMORY_LIMIT.any_of`는
+  `memory limit`, `memory cgroup limit`, `container memory limit` exact 3개다.
+  두 F1 incident 모두 MCA 3 atoms/11 aliases이고 §6.2 전체 inventory가 exact 일치해야 한다.
+- schema/static check 하나라도 실패하면 `ONTOLOGY_CHECK_PASS`를 출력하지 않고 non-zero로
+  종료한다.
 
 ## 4. 공통 concept lexicon
 
@@ -570,11 +625,13 @@ fault별 atom 수 차이는 ground-truth 복잡성으로 공개하며 결과를 
 
 1. regular file 한 개의 candidate JSON byte length는 최대 24,576이다. 초과 시 전체 run을
    `INPUT_LIMIT_EXCEEDED`로 invalid 처리하며 partial parse하지 않는다.
-2. JSON을 UTF-8 strict로 decode한다. replacement character가 있으면 invalid다. duplicate key를
-   허용하지 않고 schema의 세 key 외에는 거부한다.
+2. JSON을 UTF-8 strict로 decode한다. literal U+FFFD replacement character가 어느 string의 어느
+   위치에든 있으면 invalid다. duplicate key를 허용하지 않고 schema의 세 key 외에는 거부한다.
 3. `identified_fault_type`는 최대 256 UTF-8 bytes·64 tokens, `root_cause`는 최대
    8,192 bytes·1,024 tokens다. `remediation`은 1~16개 string, item당 최대
-   2,048 bytes·256 tokens, 전체 최대 8,192 bytes·1,024 tokens다. 빈 item은 거부한다.
+   2,048 bytes·256 tokens, 전체 최대 8,192 bytes이며 **모든 item의 normalization 후 token 수
+   합계가 최대 1,024**여야 한다. `identified_fault_type`, `root_cause`, 각 remediation item은
+   raw empty, whitespace-only 또는 normalization 후 0 tokens이면 invalid다.
 4. upstream generator prompt인 `experiments/v2_3/live_caller.py:27-32`에는 출력 언어 계약이
    없다. 본 matcher는 **영어 ASCII lexical subset만** 지원한다. normalization 후 ASCII 밖의
    alphanumeric token이 하나라도 있으면 언어를 추정하거나 번역하지 않고 전체 run을
@@ -629,13 +686,15 @@ fault별 atom 수 차이는 ground-truth 복잡성으로 공개하며 결과를 
 16. remediation은 item별로 독립 처리한다. alias와 accepted path 모두 item 경계를 넘지 못하며,
     한 item 안에서 한 positive path의 모든 group을 충족해야 RA=1이다.
 
-빈 문자열, `null`, 예상 밖 key, duplicate key, non-list remediation, empty remediation item은
-오답으로 대체하지 않고 schema gate 실패로 전체 run을 `INVALID` 처리한다.
+빈/whitespace/0-token 문자열, U+FFFD, `null`, 예상 밖 key, duplicate key, non-list remediation,
+remediation cumulative 1,024-token 초과는 오답으로 대체하지 않고 schema gate 실패로 전체 run을
+`INVALID` 처리한다.
 
 ## 8. Synthetic-only 구현 검증
 
-실제 36개 candidate를 처음 여는 시점 전에 다음 test가 모두 통과하고 코드가 commit돼야 한다.
-fixture는 이 계획의 alias를 조합한 새 문장만 사용하며 candidate 문자열을 복사하지 않는다.
+V2.4-D scorer가 실제 36개 candidate를 decode하기 전에 다음 test가 모두 통과하고 코드가
+commit돼야 한다. fixture는 이 계획의 alias를 조합한 새 문장만 사용하며 candidate 문자열을
+복사하지 않는다. 기존 generic machine-only parse는 §9.3에 별도 공개한다.
 
 1. NFKC/casefold, hyphen·underscore·slash separator, token boundary.
 2. `redis-cart`↔`redis cart`, `local-path`↔`local path` 동치.
@@ -672,6 +731,58 @@ fixture는 이 계획의 alias를 조합한 새 문장만 사용하며 candidate
     `b=0,c=5 → p=1`, `b=c=0 → p=1`.
 21. fixed seed 20260831·50,000 paired bootstrap과 canonical float serialization byte equality.
 22. 입력 순서 shuffle 뒤 canonical sort 결과 byte equality.
+23. ontology mutation matrix: duplicate key at every object class; ontology version change;
+    normalization value/order change; token-predicate add/remove/reorder; negation token/phrase/syntax
+    add/remove/reorder; arbitrary incident/fault/trial; invalid/duplicate path/group ID를 모두 거부함.
+24. ontology exact inventory: F1 `M_MEMORY_LIMIT` 3 aliases, F1 MCA 3 atoms/11 aliases, §6.2의
+    12-row atom/alias count를 builder와 loader가 독립 재계산해 exact 일치함.
+25. finite grammar matrix: `rule out the network policy`, `ruled out the network policy`,
+    `network policy is/was/are/were/has been/have been ruled out`,
+    `neither cpu throttling nor memory limit`, POST_CAUSE article variants를 승인된 suppression으로,
+    `memory limit is not generally relevant`를 unresolved INVALID로 assertion함.
+26. NOT_ONLY/coordination trace matrix: C1/C2 span ID, consumed marker span, scope terminator,
+    unresolved marker count를 exact assertion하고 positive matcher와 same-item RA contradiction에
+    같은 classifier가 쓰이는지 확인함.
+27. absence test는 helper literal이 아니라 ontology의 actual
+    `polarity=absence_assertion` matcher를 load해 `no/zero/without endpoints`, outer negation,
+    ordinary affirmative phrase를 검증함.
+28. candidate schema mutation: empty·whitespace·0-token fault/root/remediation, literal U+FFFD의
+    field/item별 위치, remediation item/total byte·token 경계 1,023/1,024/1,025를 검증함.
+29. identity/hash mutation matrix: duplicate/missing/unexpected incident/condition, fixed CSV/raw
+    source digest, 새 commitment file/envelope digest/provenance, GT full/projection, ontology, builder,
+    init, runner, commitment tool, scorer, analyzer, test, plan, semantic review, I0 safety-review
+    receipt, deviation provenance, full implementation review, approval, interpreter hash를 각각
+    단독 변조해 candidate decode 전에 거부함. old envelope digest를 새 commitment 승인값으로
+    주입해도 반드시 거부함.
+30. git freeze matrix: HEAD≠A, A^≠B, B^≠I1, I1^≠I0, I0→I1 allowlist 외 변경,
+    I1→B extra/missing/modified file, B→A extra/missing/modified file,
+    approved_bundle/execution_commit/implementation_candidate/blob OID/file hash mismatch를 모두
+    candidate-source open spy count 0에서 거부함. detached I0 safety review 전 real source open
+    spy count도 0이며, reviewed I0 tool blob과 commitment provenance tool blob 불일치도 거부함.
+31. two-run publication matrix: run1 success/run2 failure, canonical mismatch, manifest mismatch,
+    atomic rename failure에서 public final/replay/result/summary가 모두 absent이고 INVALID receipt만
+    존재함; two-run complete+equal에서만 release root 하나가 atomic publish됨.
+32. commitment path attacks: source/ancestor/final-entry symlink, path traversal, hard link,
+    non-regular file, lstat→open swap, hash→parse mutation, pre/post stat drift, raw root의 nested dir·
+    non-JSON·extra JSON·socket/device를 모두 거부함.
+33. executable redaction self-test: synthetic sentinel을 success/error argv·stdout·stderr path에
+    통과시켜 egress 0을 실제 assert하고, self-test command/time/commit/interpreter/tool/fixture/
+    stdout/stderr digest/exit status가 provenance와 exact 일치함. 상수 PASS 주입은 실패함.
+34. statistics known bytes: `b=c=0 → q/CI=NA,p=1`; `b=5,c=0`의 Clopper-Pearson
+    `[0.4781762498950185,1]`; `b=0,c=5`의 `[0,0.5218237501049815]`. Synthetic paired vector
+    `[1,1,1,1,1,0,0,0,-1,-1,0,0]`, seed 20260831의 50,000 replicate를 `.17g` newline으로
+    serialize한 744,080 bytes SHA-256
+    `aa089664652480d5565da1853d51635dd53310475585e3cccbc8516bb7aae4ca`, percentile
+    `[-0.16666666666666666,0.66666666666666663]`와 비교함. shuffled-input 전체 canonical output도
+    별도 frozen expected SHA-256와 비교함.
+35. reviewed isolated bootstrap으로 exact `<python> -I tests/test_v2_4_deterministic.py`와
+    `<python> -I experiments/v2_4_deterministic/run.py --self-test`가 detached clean checkout에서
+    repo import와 모든 synthetic/static test를 성공함.
+36. machine-parse deviation schema는 §9.3의 status와 네 evidence를 모두 요구하고,
+    `process_access_zero=true` 또는 evidence 누락/모순을 approval-before-open에서 거부함.
+37. no-text-egress spy는 machine-only regression parse 중 candidate value가 stdout/stderr/log/
+    exception/agent fixture로 전달되지 않았고 V2.4-D scorer/ontology call count 및 그 이후
+    observed-output-derived diff count가 각각 0임을 검증함.
 
 실제 input을 이용한 test fixture 생성, snapshot/golden-output test, observed output에서 alias를
 추출하는 coverage test는 금지한다.
@@ -680,45 +791,91 @@ fixture는 이 계획의 alias를 조합한 새 문장만 사용하며 candidate
 
 ### 9.1 구현 전 gate
 
-review는 서로 다른 두 gate로 분리한다.
+review는 semantic, commitment-safety, full implementation의 서로 다른 세 gate로 분리한다.
 
-1. semantic review의 단일 정본은 `docs/plans/review_v2_4_deterministic.md`다. 최초 FAIL 기록을
-   보존하고 Revision 2·Revision 3 PASS 재검토를 같은 파일에 append한다. 정본 identity는 그
-   append content와 implementation candidate commit `I` tree의 exact git blob OID/path다.
+1. semantic review의 단일 정본은 `docs/plans/review_v2_4_deterministic.md`다. 최초 FAIL부터
+   Revision 5 수정 요구까지의 기존 append 기록을 보존하고 Revision 6 재검토도 같은 파일에
+   append할 예정이다. 정본 identity는 그 cumulative content와 code-only candidate commit `I0`
+   tree의 exact git blob OID/path다.
    review 파일 안에는 자신의 최종 filesystem SHA-256를 기록하지 않는다. 최종 review file
-   SHA-256는 `I`가 고정된 뒤 외부에서 계산해 implementation review 문서, approval provenance,
+   SHA-256는 `I0`가 고정된 뒤 외부에서 계산해 safety/full implementation review 문서, approval,
    사용자 보고에 기록한다. 별도 r2/r3 review 파일은 생성하거나 참조하지 않는다.
-2. semantic Revision 3 PASS 뒤 candidate 비접근 상태에서 구현과 opaque commitment를 완성하고,
-   아래 implementation target files를 먼저 candidate commit `I`로 봉인한다.
-3. 또 다른 fresh reviewer가 detached clean checkout의 exact `I`에서 실제
-   ontology/code/tests/commitment를 검토하고
-   `docs/plans/review_v2_4_deterministic_implementation.md`에 PASS를 기록한다.
+2. semantic Revision 6 PASS 뒤 candidate source를 열지 않고 implementation code와 synthetic
+   fixtures만 완성해 code-only candidate commit `I0`를 만든다. 기존 FAIL candidate
+   `e86e26b4eb00aca899f42eab008132c0664a5cfc`와 그때의 commitment는 역사로 보존한다. `I0` safety
+   review scope는 아래 여덟 파일이며 real commitment는 scope/target에서 제외한다.
 
-commit `I`는 다음 파일을 포함하고 implementation review와 approval 문서는 아직 포함하지 않는다.
+```text
+experiments/v2_4_deterministic/ontology_v1.json
+experiments/v2_4_deterministic/__init__.py
+experiments/v2_4_deterministic/build_ontology.py
+experiments/v2_4_deterministic/commit_inputs.py
+experiments/v2_4_deterministic/scorer.py
+experiments/v2_4_deterministic/analyze.py
+experiments/v2_4_deterministic/run.py
+tests/test_v2_4_deterministic.py
+```
+
+3. fresh commitment-safety reviewer는 candidate source path를 mount/전달하지 않은 detached clean
+   `I0`에서 `commit_inputs.py`, reviewed bootstrap, no-follow/TOCTOU/path-attack, executable
+   redaction test를 synthetic fixture로만 검토한다. real CSV/raw open count는 0이어야 한다. reviewer는
+   reviewer/session identity, review UTC, exact `I0`, 위 여덟 파일의 blob OID·blob/filesystem
+   SHA-256, interpreter identity, 실행 명령·exit status·stdout/stderr digest, fixture/sentinel digest와
+   PASS 판정을 content-addressed external safety receipt로 먼저 봉인한다. FAIL 또는 receipt 부재 시
+   real commitment 생성은 금지한다.
+4. safety PASS receipt가 가리키는 exact `I0:experiments/v2_4_deterministic/commit_inputs.py`만 사용해
+   human/agent text egress 없이 real hash-only commitment를 재생성한다. 새 commitment provenance는
+   exact I0 tool blob과 external safety receipt digest를 포함한다. 동시에 §9.3 historical deviation
+   evidence를 `docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json`에 봉인한다.
+   그 두 경로만 변경한 full candidate commit `I1`을 만든다.
+
+```text
+I1^ == I0
+git diff --name-status I0..I1
+M  docs/plans/input_commitment_v2_4_deterministic.json
+A  docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json
+```
+
+위 출력은 exact 두 줄이어야 한다. ontology/scorer/analyzer/runner/builder/commit tool/tests를 포함한
+실행 code와 plan/semantic review의 `I0`·`I1` blob OID가 모두 같아야 한다. commitment 또는 deviation
+provenance 외 변경, reviewed I0 tool과 provenance tool identity 불일치, safety review보다 이른 real
+source open은 INVALID다.
+
+full implementation candidate `I1`은 다음 target 전부를 포함한다. cumulative implementation review
+파일에는 기존 FAIL 내용만 있고 Revision 6 full re-review PASS는 아직 없어야 하며 approval 문서는
+없어야 한다.
 
 ```text
 docs/plans/experiment_plan_v2_4_deterministic.md
 docs/plans/review_v2_4_deterministic.md
 docs/plans/input_commitment_v2_4_deterministic.json
+docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json
 experiments/v2_4_deterministic/ontology_v1.json
+experiments/v2_4_deterministic/__init__.py
+experiments/v2_4_deterministic/build_ontology.py
 experiments/v2_4_deterministic/commit_inputs.py
 experiments/v2_4_deterministic/scorer.py
 experiments/v2_4_deterministic/analyze.py
+experiments/v2_4_deterministic/run.py
 tests/test_v2_4_deterministic.py
 ```
 
-fresh implementation reviewer는 review 문서에 exact `I`, detached/clean 증거, 위 target file
-각각의 `I:<path>` blob SHA-256와 filesystem SHA-256, synthetic/static test 명령·exit status를
-기록한다. 그 review 문서 하나만 `I`에 추가해 commit `B`를 만든다.
+5. 또 다른 fresh full implementation reviewer는 detached clean checkout의 exact `I1`에서 실제
+   ontology/code/tests/new commitment/deviation provenance와 prior I0 safety receipt를 검토한다.
+   review 문서에는 exact I0/I1, detached/clean 증거, 위 I1 target **전부**의
+   `I1:<path>` git blob OID·blob SHA-256·filesystem SHA-256, synthetic/static test 명령·exit status,
+   I0 safety receipt hash와 `I0..I1` exact diff를 기록한다. approval provenance도 이 전체 target
+   hash map을 그대로 포함해야 한다. 기존 FAIL을 보존한 같은 implementation review 문서에
+   Revision 6 full re-review를 append하고, 그 문서 하나만 수정한 commit `B`를 만든다.
 
 ```text
-B^ == I
-git diff --name-status I..B
-A  docs/plans/review_v2_4_deterministic_implementation.md
+B^ == I1
+git diff --name-status I1..B
+M  docs/plans/review_v2_4_deterministic_implementation.md
 ```
 
 위 출력이 exact 한 줄이 아니거나, implementation review에 외부 계산·기록된 semantic review
-filesystem SHA-256 및 target hash가 `I`와 `B` tree에서 모두 같지 않으면 INVALID다. 사용자에게
+filesystem SHA-256 및 target hash가 `I1`과 `B` tree에서 모두 같지 않으면 INVALID다. 사용자에게
 exact `B`와 외부 계산된 review hash를 제시해 명시 승인을 받은 뒤 승인 문구·시각·`B`·semantic
 review blob OID·filesystem SHA-256를 `docs/plans/approval_v2_4_deterministic.md`에 기록하고 그
 문서 하나만 추가한 commit `A`를 만든다.
@@ -729,19 +886,53 @@ git diff --name-status B..A
 A  docs/plans/approval_v2_4_deterministic.md
 ```
 
-이 출력도 exact 한 줄이어야 한다. `I→B` 또는 `B→A`의 parent/diff/hash 조건 하나라도 다르면
+이 출력도 exact 한 줄이어야 한다. `I0→I1`, `I1→B`, `B→A`의 parent/diff/hash 조건 하나라도 다르면
 INVALID다. 실행 checkout은 반드시 exact `A`이고 approval 문서가 가리키는 approved bundle은
 `B`여야 한다. self-referential `A` hash를 approval 문서 안에 쓰지 않으며 실행 manifest가
 실제 `A`를 기록한다. candidate 본문을 읽는 명령은 이 모든 검증을 통과한 `A` 이후에만 가능하다.
 
+현재 repository의 old `docs/plans/input_commitment_v2_4_deterministic.json`과 그 내부
+`commitment_sha256=590e8e006d5adc449bb8e0bdd12b0beaaf7bc8197015dd65a7131525cf90ca64`는
+status `DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT`로만 보존한다. 이는 fresh safety review 전에
+unreviewed tool로 생성됐으므로 confirmatory commitment, approval target, runtime envelope gate로
+사용하지 않는다. 위 값과 old envelope bytes 자체를 새 commitment의 expected digest로 요구하는
+모든 계약을 폐기한다.
+
+단, old artifact에 이미 opaque하게 기록된 fixed Primary03 CSV SHA-256
+`5fd2c1c52c8c37462f7f47eecb248a5a147166165c1cf2495d6e9b43956f8c5b`와 정렬된 117개
+`relative_path,size,sha256` source-identity map은 **source drift 부재만** 검증하는 legacy reference로
+사용한다. I0의 reviewed tool이 생성한 새 commitment의 CSV digest와 117개 entry digest가 이 map과
+각각 exact 일치해야 하며 하나라도 다르면 INVALID다. 이 비교는 old provenance/envelope 안전성을
+승인하지 않는다. provenance가 바뀌므로 새 canonical self-excluding commitment envelope digest는
+old 값과 달라도 되며, 생성 후 `I1` blob/filesystem hash와 내부 recomputation 값을 fresh full
+implementation review `B` 및 approval `A`에서 새 값으로 freeze한다. plan에는 그 새 값을 사전
+하드코딩하지 않는다.
+
 `input_commitment_v2_4_deterministic.json`은 이 예외적으로 허용된 **opaque hash-only** 단계에서
 만든다. 파일 본문을 decode, parse, search, preview하거나 stdout에 쓰지 않고 SHA-256
 stream으로만 읽어 117 raw relative paths·sizes·digests와 CSV digest를 canonical JSON에
-봉인한다. 도구 자신의 SHA-256, exact interpreter path/version/binary SHA-256, 실행 argv,
-start/end UTC, exit status, stdout/stderr SHA-256와 redaction-test PASS, 실행자 자기선언을 함께
-기록한다. stdout/stderr에는 count와 commitment hash만 허용한다. 이는 비열람 절차의 감사
-provenance이지 cryptographic proof라고 주장하지 않는다. commitment 자체도 candidate scoring
-전에 commit·implementation-review·승인한다.
+봉인한다.
+
+`commit_inputs.py` 자체도 source root와 각 ancestor를 component별 `lstat`해 symlink를 거부하고,
+raw root 바로 아래에 정확히 117개의 `.json` regular file만 허용한다. nested directory,
+non-JSON regular file, 추가 JSON, symlink, socket, FIFO, device, hard-link(`st_nlink != 1`)를 모두
+unexpected entry로 거부한다. 각 entry는 `os.open(O_RDONLY|O_NOFOLLOW)`→`fstat` regular/
+device/inode/size 확인→동일 fd pre-hash→seek→opaque stream→seek→post-hash→post-fstat→path
+`lstat` 순으로 검증한다. 두 hash, 전후 stat, path device/inode가 하나라도 다르면 TOCTOU로
+실패한다. CSV도 같은 no-follow/fd/pre-post-rehash 계약을 적용한다.
+
+도구는 real commitment 전에 executable `--self-test-redaction`을 별도 synthetic fixture에서
+실행한다. sentinel을 success/error argv·stdout·stderr·exception 후보에 주입하고 실제 captured
+stdout/stderr/receipt 어디에도 sentinel bytes가 없음을 assertion해야 한다. 코드 상수
+`redaction_test=PASS`는 증거로 인정하지 않는다. provenance는 exact tool git blob OID/SHA-256,
+interpreter path/version/binary SHA-256, cwd, canonical argv array, allowlisted environment, source-root
+device/inode, start/end UTC, exit status, synthetic fixture/sentinel digest, captured stdout/stderr
+SHA-256, sentinel match count 0, raw count 117, CSV SHA-256, entry manifest SHA-256,
+external I0 safety receipt SHA-256, reviewed `I0` commit, source-drift comparison result,
+`commitment_sha256`, operator attestation을 required로 기록한다. stdout/stderr에는 count와
+commitment hash만 허용한다. 이는 hash-only process의 감사 provenance이지 cryptographic proof나
+process access 0의 증거라고 주장하지 않는다. commitment 자체도 candidate scoring 전에
+`I1` commit·fresh full implementation review·승인한다.
 
 Ground truth commitment는 다음으로 고정한다.
 
@@ -756,15 +947,47 @@ be456f903354d581ae66c8f7051ea271a9add2cb7b6a58e28d1d768aaee57b1b
 projection은 선택 12행을 numeric `fault_id`, numeric `trial`로 정렬하고
 `fault_id,trial,fault_name,target_service,expected_root_cause,expected_recovery_action`만 남긴
 object list를 Python `json.dumps(ensure_ascii=False, sort_keys=True, separators=(",", ":"))`로
-UTF-8 encode한 3,318 bytes다. 두 digest와 projection algorithm은 commit `I`부터 포함하고
-`I→B→A`에서 변하지 않아야 한다.
+UTF-8 encode한 3,318 bytes다. 두 digest와 projection algorithm은 commit `I0`부터 포함하고
+`I0→I1→B→A`에서 변하지 않아야 한다.
 
 ### 9.2 실행 preflight gate
 
+- `run.py`는 candidate source path를 `open/stat/glob`하기 전에 repository gate를 먼저 실행한다.
+  CLI의 `--execution-commit A`, `--approved-bundle B`, `--implementation-candidate I1`,
+  `--code-candidate I0`를 required로 받고 current git `HEAD == A`, `A^ == B`, `B^ == I1`,
+  `I1^ == I0`를 exact 비교한다.
+- `git diff --name-status I0..I1`은 §9.1 commitment modification과 deviation provenance addition
+  두 줄, `git diff --name-status I1..B`는 cumulative implementation review modification 한 줄,
+  `git diff --name-status B..A`는 approval addition 한 줄이어야 한다. approval의
+  `approved_bundle == B`, external execution authorization의 `execution_commit == A`,
+  implementation review의 `code_candidate == I0`, `implementation_candidate == I1`이어야 한다.
+- implementation review와 approval provenance에 기록된 semantic review blob OID/filesystem
+  SHA-256, I0 external safety receipt SHA-256, implementation review blob OID/SHA-256, §9.1의
+  I0 safety-scope와 I1 전체 target blob OID·blob/filesystem SHA-256를 `git cat-file`과 checkout
+  bytes에서 재계산한다. `run.py`, `build_ontology.py`, `commit_inputs.py`, `__init__.py`, 새
+  commitment와 deviation provenance도 반드시 포함한다. I0→I1에서 code blob은 exact 동일해야 한다.
+- approval 문서 자체의 hash는 self-reference를 피하기 위해 문서 내부 값과 비교하지 않는다.
+  `A:path` blob OID·filesystem SHA-256를 external execution authorization과 preflight manifest에
+  기록·비교한다. implementation review/approval/execution authorization 중 target map이나
+  I0/I1/B/A identity 하나라도 다르면 INVALID다.
+- fixed Primary03 CSV SHA-256는
+  `5fd2c1c52c8c37462f7f47eecb248a5a147166165c1cf2495d6e9b43956f8c5b`와 exact 비교한다.
+  새 commitment의 file SHA-256와 내부 canonical self-excluding `commitment_sha256`는 I1/B/A에
+  freeze된 **새 값**으로 recompute하고, §9.1 exact provenance, 117-entry manifest digest와 각
+  entry hash를 approval target map 및 preflight 값과 비교한다. CSV와 117개
+  `relative_path,size,sha256`는 deprecated artifact의 legacy source-identity map에도 exact 일치해야
+  한다. old `590e8e...` envelope digest를 새 expected 값으로 비교하면 구현 오류이며 INVALID다.
+- candidate decode 전에 plan, cumulative semantic review, implementation review, approval,
+  I0 safety receipt, ontology, init, builder, runner, commitment tool, scorer, analyzer, tests, new input
+  commitment, deviation provenance, ground-truth full/projection, interpreter의 blob/filesystem/manifest
+  hash map을 완성하고 검증한다.
+  이 단계까지 candidate-source open spy count는 0이어야 한다. gate mismatch는 candidate를 열지
+  않고 machine-readable INVALID receipt만 원자적으로 남긴다.
 - source root와 모든 ancestor/entry는 `lstat`으로 검사해 symlink를 거부한다. relative path의
   absolute component, `..`, NUL을 거부한다.
 - 결과 CSV SHA-256이 §1.3 값과 일치해야 한다.
-- raw directory는 117 regular JSON files만 허용한다. 상대경로·size·SHA-256을 정렬한 manifest가
+- raw directory는 root 바로 아래 117 regular `.json` files 외의 **모든 entry**를 거부한다.
+  상대경로·size·SHA-256을 정렬한 manifest가
   사전 승인된 `input_commitment_v2_4_deterministic.json`과 byte-for-byte 일치해야 하며 그
   manifest SHA-256을 실행 manifest에 기록한다.
 - 각 source는 `os.open(..., O_RDONLY|O_NOFOLLOW)`로 열고 `fstat`에서 regular file,
@@ -778,6 +1001,32 @@ UTF-8 encode한 3,318 bytes다. 두 digest와 projection algorithm은 commit `I`
 - candidate schema는 36/36 동일해야 한다. 본문은 로그에 출력하지 않는다.
 - 실행 output directory는 사전에 존재하지 않아야 하며 부분 파일을 원자 rename으로 publish한다.
 - 어느 gate든 실패하면 scoring 결과·부분 summary를 publish하지 않고 `INVALID` receipt만 남긴다.
+
+### 9.3 사전 machine-only parse 편차 provenance
+
+기존 `tests.test_v2_4_audit` real-input regression이 generic V2.4 parser에서 candidate JSON을
+machine-only로 decode/parse했을 가능성을 숨기지 않는다.
+`docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json`과 approval provenance에
+상태 `NON_INFORMATIVE_MACHINE_PARSE_DEVIATION` 및 동일 evidence digest를 required로 기록하며
+`candidate/process access 0` 또는
+`process_access_zero=true`라고 표현하지 않는다. 이 편차가 confirmatory anti-overfitting gate를
+통과하려면 다음 네 evidence가 모두 있어야 한다.
+
+1. 실행 명령·시각·git commit, exact interpreter와 stdout/stderr/log digest 및 exit status.
+2. candidate body/value가 stdout, stderr, log, exception, agent/human context로 전달되지 않았다는
+   operator attestation과 executable no-text-egress evidence.
+3. V2.4-D scorer·ontology·alias extraction·condition score가 실행되지 않았다는 static call-graph,
+   command/log, import/call counter evidence.
+4. machine parse 이후 ontology/metric/alias/threshold/status에 observed-output-derived change가
+   없다는 parse 시점 commit→code-only candidate `I0`→full candidate `I1`의 file/diff provenance와 operator
+   attestation.
+
+네 evidence 중 하나라도 없거나 candidate text가 human/agent context로 egress됐으면 승인 gate는
+실패한다. 네 evidence가 모두 맞으면 이 사건은 결과 정보를 구현자에게 전달하지 않은
+non-informative process deviation으로 보존하며 semantic outcome 정의를 바꾸거나 candidate 표현에
+맞춘 alias를 허용하지 않는다. 이후 보고는 각각 `human_agent_text_egress=0`,
+`v2_4_d_scorer_execution=0`, `observed_output_derived_changes=0`이라고 구체적으로 쓰며 포괄적인
+“candidate 접근 0”을 쓰지 않는다.
 
 ## 10. 통계 분석
 
@@ -843,11 +1092,11 @@ n=12에서는 `c=0`일 때도 `b>=5`가 되어야 p<0.05다. 따라서 `DIRECTIO
 
 ### Step 2 — fresh 방법론 비평
 
-기존 FAIL과 Revision 2 review를 보존하고 같은 정본
-`docs/plans/review_v2_4_deterministic.md`에 Revision 3 semantic PASS를 append한다. review 파일은
-자신의 최종 SHA를 포함하지 않으며 append content와 commit `I`의 git blob/tree identity로
-정본화한다. 최종 filesystem SHA-256는 파일 밖 provenance에서만 기록하고 별도 r2/r3 파일을
-만들지 않는다.
+최초 FAIL부터 Revision 5 수정 요구까지의 기존 section을 보존하고 같은 cumulative 정본
+`docs/plans/review_v2_4_deterministic.md`에 Revision 6 semantic 재검토를 append할 예정이다.
+별도 semantic review 파일을 만들지 않는다. review 파일은 자신의 최종 SHA를 포함하지 않으며
+cumulative append content와 새 commit `I0`의 git blob/tree identity로 정본화한다. 최종 filesystem
+SHA-256는 파일 밖 provenance에서만 기록한다.
 
 1. candidate를 보지 않고 ontology가 ground truth/public taxonomy만으로 도출됐는가.
 2. CM/FLM/MCA/RA field isolation과 DNF semantics가 모호하지 않은가.
@@ -861,21 +1110,33 @@ n=12에서는 `c=0`일 때도 `b>=5`가 되어야 p<0.05다. 따라서 `DIRECTIO
 ### Step 3 — 구현
 
 - ontology JSON과 parser/scorer/analyzer를 독립 모듈로 만든다.
+- `tests/test_v2_4_deterministic.py`, `run.py`, `build_ontology.py`는 reviewed bootstrap만 사용한다.
+  각 script는 자신의 `Path(__file__).resolve()`에서 expected repo root를 계산하고 ancestor
+  no-symlink·git identity를 확인한 뒤 그 root 하나만 `sys.path.insert(0, ...)`한다. arbitrary cwd,
+  `PYTHONPATH`, user site, namespace fallback은 금지하고 bootstrap code/hash도 `I0` safety scope와
+  `I1` target review에
+  포함한다.
 - source를 쓰기 모드로 열지 않는다.
 - candidate text, matched substring, full response를 stdout/stderr에 출력하지 않는다.
   trace에는 identity, group ID, boolean, span의 token index만 저장한다.
-- synthetic tests와 static validation을 통과한 뒤 implementation candidate commit `I`를 먼저
-  만든다. `I`에는 implementation review/approval 문서가 없어야 한다.
-- `commit_inputs.py`로 candidate를 decode하지 않는 opaque commitment만 만든다.
-- `docs/plans/review_v2_4_deterministic_implementation.md`의 second fresh review는 ontology JSON이
-  revision 3와 일치하는지, 모든 provenance/count와 synthetic test가 실제 PASS하는지를 exact
-  detached `I`에서 실데이터 score 없이 검증한다.
-- review 문서 하나만 추가한 `B`와 approval 문서 하나만 추가한 `A`를 §9.1의 parent/diff/hash
-  gate로 만든다.
+- synthetic tests와 static validation을 통과한 code-only candidate `I0`를 먼저 만든다. old
+  commitment는 deprecated artifact일 뿐 `I0` safety target이나 confirmatory input이 아니다.
+- fresh safety reviewer가 real source 없이 detached `I0`의 exact commitment tool과 synthetic
+  no-follow/TOCTOU/redaction tests를 PASS하고 external safety receipt를 봉인하기 전에는
+  `commit_inputs.py`를 real input에 실행하지 않는다.
+- exact reviewed I0 tool로 candidate를 decode하지 않는 opaque commitment를 재생성하고 historical
+  deviation provenance와 함께 **그 두 파일만** 추가/수정한 full candidate `I1`을 만든다. `I0..I1`
+  code diff는 0이어야 한다.
+- `docs/plans/review_v2_4_deterministic_implementation.md`의 fresh full review는 ontology JSON이
+  revision 6과 일치하는지, 새 commitment/envelope digest·legacy source digest·deviation evidence,
+  모든 provenance/count와 synthetic test가 실제 PASS하는지를 exact detached `I1`에서 실데이터
+  score 없이 검증한다.
+- implementation review 문서 하나만 수정한 `B`와 approval 문서 하나만 추가한 `A`를 §9.1의
+  parent/diff/hash gate로 만든다.
 
 ### Step 4 — clean-checkout 실행
 
-1. `I→B→A` parent/diff/hash gate를 다시 확인하고 승인 문서를 포함한 exact commit `A`를
+1. `I0→I1→B→A` parent/diff/hash gate를 다시 확인하고 승인 문서를 포함한 exact commit `A`를
    detached clean worktree에 checkout한다.
 2. `git status --porcelain`이 빈 값인지 확인한다.
 3. commitment에 기록된 absolute Python interpreter의 binary SHA-256·`sys.version`이 같은지
@@ -885,14 +1146,28 @@ n=12에서는 `c=0`일 때도 `b>=5`가 되어야 p<0.05다. 따라서 `DIRECTIO
    전달한다. `-I`가 Python env를 무시하므로 code는 set/dict iteration에 의존하지 않고 모든
    collection을 explicit sort하며 이를 synthetic test한다.
 5. API key, cloud credential, kubeconfig, SSH agent, proxy env를 전달하지 않는다.
-6. synthetic test를 다시 실행한다.
-7. metadata/hash preflight 후 36행을 한 번에 score한다. arm별 중간 결과를 보지 않는다.
-8. canonical sort는 `incident_id`, condition order
+6. exact `<python> -I tests/test_v2_4_deterministic.py`,
+   `<python> -I experiments/v2_4_deterministic/build_ontology.py --ontology
+   experiments/v2_4_deterministic/ontology_v1.json`,
+   `<python> -I experiments/v2_4_deterministic/run.py --self-test`를 실행한다. 세 command가 reviewed
+   bootstrap으로 import되고 전부 PASS해야 한다.
+7. metadata/hash preflight 후 mode 0700의 absent hidden staging parent 하나를 만든다. staging
+   path와 run1 중간 결과·score·summary를 stdout/stderr, tracked result, public artifact path에
+   노출하지 않는다.
+8. hidden staging 안의 `run1/`과 `run2/`에서 **각각 독립된 full 36-row scoring+analysis run을
+   끝까지 완료**한다. run1 성공 뒤에도 어떤 final/result/summary를 rename·copy·출력하지 않는다.
+9. canonical sort는 `incident_id`, condition order
    `runtime,length_placebo,blind_procedural_rag`로 고정한다.
-9. output을 absent staging directory에 쓰고 fsync 후 atomic rename한다.
-10. 같은 commit/input으로 두 번째 absent directory에 replay하고 canonical outputs의 SHA-256가
-   byte-identical인지 확인한다. timestamp/run path는 canonical comparison에서 제외한다.
-11. 두 run이 같을 때만 result report를 release한다.
+10. 두 full run의 result CSV, trace, paired table, summary와 timestamp/run path를 제외한 canonical
+    manifest를 독립 재생성해 file별 SHA-256 및 aggregate canonical digest가 byte-identical인지
+    확인한다.
+11. run2 failure, canonical mismatch, hash/manifest/replay gate 실패면 public final/replay/result/
+    summary는 모두 absent로 유지하고 결과 본문 없는 INVALID receipt만 publish한다. run1 artifact는
+    공개하지 않고 mode-0700 quarantine에 둔다.
+12. 두 run이 complete+equal일 때만 hidden parent 안에 `final/`, `replay/`, final manifest와 tracked
+    result candidate를 포함한 **단일 release root**를 조립해 모든 file과 parent를 fsync한다. 그
+    release root 하나를 absent public destination으로 한 번 atomic rename한다. 따라서 final과
+    replay 중 하나만 보이는 partial release는 허용하지 않는다.
 
 본 실험은 offline scoring이므로 `/lab-tunnel`과 `/lab-restore`를 실행하지 않는다. 연결을 열거나
 cluster를 mutation하는 것이 오히려 protocol 위반이다.
@@ -933,15 +1208,21 @@ component_mention_path,fault_label_mention_path,mechanism_path,remediation_path,
 ontology_sha256,scorer_sha256,input_csv_sha256,raw_manifest_sha256
 ```
 
-본문과 matched text는 CSV에 넣지 않는다. `manifest.json`에는 git commit, plan/review/approval,
-ontology/scorer/analyzer/test/input/ground-truth/projection/interpreter hash, Python version, seed,
-row counts, started/finished UTC, replay result, external/model/K8s call count 0을 기록한다.
+본문과 matched text는 CSV에 넣지 않는다. `manifest.json`에는 I0/I1/B/A와 verified parent/diff,
+approved_bundle/execution_commit/code_candidate/implementation_candidate, semantic/safety/full-
+implementation/approval identity, §9.1 I0 safety scope와 I1 target 전체 blob/filesystem SHA-256,
+plan/review/approval/ontology/init/builder/runner/commitment-tool/scorer/analyzer/test/new-input/
+deviation/ground-truth/projection/interpreter hash, new commitment digest/provenance와 deprecated
+source-identity comparison 결과,
+Python version, seed, row counts, started/finished UTC, run1/run2 file별·aggregate canonical digest,
+replay result, machine-parse deviation evidence digest, external/model/K8s call count 0을 기록한다.
 `summary.json`은 `primary_status`와 `remediation_regression_flag`를 서로 독립된 required field로
 저장하며 합성 status field를 금지한다.
 
 ## 14. Result-independent change control
 
-1. candidate 본문 접근 전 plan·review·ontology·code·synthetic test를 commit하고 승인한다.
+1. V2.4-D scoring 및 candidate text의 human/agent egress 전에 plan·review·ontology·code·synthetic
+   test를 commit하고 승인한다. 기존 machine-only parse는 §9.3 deviation으로 별도 기록한다.
 2. 첫 실데이터 scoring 후 alias, contradiction, negation, field, metric, status threshold를
    in-place 수정하지 않는다.
 3. candidate 표현을 보고 추가한 alias는 어떤 이유로도 V2.4-D confirmatory result에 소급 적용하지
@@ -977,26 +1258,40 @@ row counts, started/finished UTC, replay result, external/model/K8s call count 0
 
 다음을 모두 만족해야 V2.4-D round가 완료된다.
 
-- [ ] 단일 semantic review 정본에 Revision 3 PASS content가 append되고 `I` blob/tree로 고정됨.
+- [ ] cumulative semantic review 정본에 Revision 6 PASS content가 append되고 새 `I0` blob/tree로 고정됨.
 - [ ] semantic review 최종 filesystem SHA-256가 review 파일 밖 implementation review·approval·
       사용자 보고에 기록됨.
-- [ ] detached candidate commit `I`의 별도 implementation review가 fresh PASS함.
-- [ ] `B^=I`, I→B implementation-review-only diff와 target hash 일치가 확인됨.
+- [ ] candidate source 없이 detached `I0` commitment-safety review와 synthetic
+      no-follow/TOCTOU/redaction tests가 fresh PASS하고 external receipt가 봉인됨.
+- [ ] reviewed exact I0 tool로만 새 commitment가 생성되고 old artifact는
+      `DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT`/confirmatory-use 금지로 기록됨.
+- [ ] fixed CSV SHA와 117개 source digest는 old opaque map에 exact 일치하고, 새 envelope digest는
+      `I1`에서 freeze됨.
+- [ ] `I1^=I0`, I0→I1 diff가 commitment modification+deviation provenance addition exact 두 줄이며
+      실행 code hash가 불변임.
+- [ ] detached full candidate commit `I1`의 별도 implementation review가 fresh PASS함.
+- [ ] `B^=I1`, I1→B implementation-review-only diff와 target hash 일치가 확인됨.
 - [ ] `A^=B`, B→A approval-only diff와 exact execution commit `A`가 확인됨.
+- [ ] I0/I1/approval target에 init·builder·runner·commitment tool·new commitment·deviation provenance를
+      포함한 전체 file hash map이 존재함.
 - [ ] ontology JSON이 schema-valid이고 §4~§6과 exact 일치함.
-- [ ] synthetic-only tests 22개 범주가 전부 PASS함.
-- [ ] 승인 전 candidate output 본문 접근 0이 provenance에 기록됨.
+- [ ] synthetic/static tests 37개 범주가 전부 PASS함.
+- [ ] `NON_INFORMATIVE_MACHINE_PARSE_DEVIATION`과 §9.3 네 evidence가 approval에 기록됨.
+- [ ] human/agent candidate text egress 0, V2.4-D scorer 실행 0,
+      observed-output-derived change 0이 입증되며 process-access 0 표현을 쓰지 않음.
 - [ ] clean detached checkout과 빈 git status가 확인됨.
 - [ ] ground-truth full/projection, input CSV, opaque raw commitment hash가 exact match함.
 - [ ] raw 117, identity 117:117, 선택 36 완전성, lstat/no-follow/rehash gate가 PASS함.
 - [ ] `python -I`, exact interpreter hash/version, canonical environment/replay가 확인됨.
+- [ ] commit_inputs no-follow/TOCTOU/unexpected-entry/redaction executable gates가 PASS함.
 - [ ] 원본 CSV/raw/ground truth 수정 0.
 - [ ] 모델/API/K8s/SSH 호출 0.
 - [ ] 결과 CSV 36행과 condition별 12행이 확인됨.
 - [ ] paired table의 b/c, p, exact CI, RD/bootstrap CI를 독립 재계산함.
 - [ ] secondary inferential p-value/CI/Cochran Q 생성 0이 확인됨.
 - [ ] `primary_status`와 `remediation_regression_flag`가 별도 field로 존재함.
-- [ ] same-commit replay의 canonical output hash가 일치함.
+- [ ] hidden two-full-run이 완료되고 canonical hash 일치 뒤 single-root atomic release됨.
+- [ ] run1 사전 공개 및 partial final/replay publication 0이 확인됨.
 - [ ] fresh `results_critic`이 원자료 계수·통계·타당성·대안가설을 독립 검증함.
 - [ ] `results/analysis_v2_4_deterministic.md`가 상태를 §11 중 하나로 판정함.
 - [ ] `results/experiment_changes_v2_4.md`가 append-only 갱신됨.
