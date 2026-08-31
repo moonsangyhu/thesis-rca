@@ -649,8 +649,8 @@ class DeterministicSyntheticTests(unittest.TestCase):
                     swapped=True; receipt.write_text(json.dumps(full_safety_receipt(reviewed)|{"session_id":"replacement"}),encoding="utf-8")
                 return value
             with synthetic_legacy_identity(legacy), mock.patch("experiments.v2_4_deterministic.commit_inputs._parse_json_bytes",side_effect=parse_then_swap):
-                validated,receipt_sha,_=commit_inputs._preopen_real_mode(reviewed,receipt,legacy)
-            self.assertTrue(swapped); self.assertEqual(validated,original); self.assertEqual(receipt_sha,hashlib.sha256(receipt_bytes).hexdigest()); self.assertNotEqual(receipt_sha,hashlib.sha256(receipt.read_bytes()).hexdigest())
+                validated,receipt_sha,_,snapshot=commit_inputs._preopen_real_mode(reviewed,receipt,legacy)
+            self.assertTrue(swapped); self.assertEqual(validated,original); self.assertEqual(set(snapshot["targets"]),set(commit_inputs._SAFETY_TARGETS)); self.assertEqual(receipt_sha,hashlib.sha256(receipt_bytes).hexdigest()); self.assertNotEqual(receipt_sha,hashlib.sha256(receipt.read_bytes()).hexdigest())
 
     def test_68_receipt_and_legacy_metadata_symlink_or_ancestor_exchange_blocks_source_open(self):
         evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
@@ -704,12 +704,12 @@ class DeterministicSyntheticTests(unittest.TestCase):
                     if kind=="ancestor" and not switched and path==target.name and dir_fd is not None:
                         switched=True; target.parent.rename(root/"deterministic-moved"); target.parent.symlink_to(root/"replacement",target_is_directory=True)
                     return fd
-                def read_then_swap(path):
+                def read_then_swap(path,**kwargs):
                     nonlocal switched
-                    payload=original_reader(path)
+                    result=original_reader(path,**kwargs); payload=result[0] if kwargs.get("with_identity") else result
                     if kind=="mixed-second-read" and Path(path)==target and not switched:
                         switched=True; target.write_bytes(alternate)
-                    return payload
+                    return result
                 with mock.patch.object(commit_inputs,"__file__",str(fake_tool)), \
                      mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence), \
                      mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core",side_effect=AssertionError("input opened")) as opened, \
@@ -718,6 +718,36 @@ class DeterministicSyntheticTests(unittest.TestCase):
                     self.assertEqual(commit_inputs.main(["--csv",str(root/"NO_OPEN.csv"),"--raw-dir",str(root/"NO_OPEN.raw"),"--out",str(root/"out"),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
                     self.assertEqual(opened.call_count,0)
                 if kind!="symlink": self.assertTrue(switched)
+
+    def test_70_authorization_snapshot_revalidates_before_core_and_before_publication(self):
+        evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
+        for stage,target_relative,expected_core_calls in (("before-core","experiments/v2_4_deterministic/analyze.py",0),("after-core","experiments/v2_4_deterministic/commit_inputs.py",1)):
+            with self.subTest(stage=stage), tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+                root=Path(td); reviewed="a"*40
+                for relative in commit_inputs._SAFETY_TARGETS:
+                    target=root/relative; target.parent.mkdir(parents=True,exist_ok=True); target.write_bytes(("reviewed target "+relative).encode())
+                fake_tool=root/"experiments/v2_4_deterministic/commit_inputs.py"; target=root/target_relative
+                raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
+                for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+                legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
+                receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt_for_root(reviewed,root)),encoding="utf-8"); out=root/"out.json"
+                original_preopen=commit_inputs._preopen_real_mode; original_core=commit_inputs._commit_core
+                def preopen_then_swap(*args):
+                    result=original_preopen(*args)
+                    if stage=="before-core": target.write_bytes(b"changed after authorization")
+                    return result
+                def core_then_swap(*args):
+                    result=original_core(*args)
+                    if stage=="after-core": target.write_bytes(b"changed after source hashing")
+                    return result
+                with mock.patch.object(commit_inputs,"__file__",str(fake_tool)), \
+                     synthetic_legacy_identity(legacy), \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence), \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs._preopen_real_mode",side_effect=preopen_then_swap), \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core",side_effect=core_then_swap) as opened:
+                    self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
+                    self.assertEqual(opened.call_count,expected_core_calls)
+                self.assertFalse(out.exists())
 
 
 if __name__ == "__main__":

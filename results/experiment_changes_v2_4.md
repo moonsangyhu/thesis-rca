@@ -278,3 +278,12 @@
 - **수정 내용**: componentwise no-follow parent anchor와 direct regular-file fd를 사용하는 stable metadata reader를 추가했다. receipt는 동일 immutable bytes에서 duplicate-safe parse·검증·SHA를 수행하고, legacy와 8개 target도 동일 reader를 사용한다. target별 blob OID와 SHA는 한 buffer에서 계산하며 commit tool identity도 cached target bytes에 결합한다. receipt/legacy/target 교체·symlink·ancestor exchange와 mixed-read receipt가 source-open 0으로 거부되는 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 69 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
+
+### 32. V2.4-D authorization lifetime 재검증 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: 8개 target의 초기 snapshot은 단일-read였지만 legacy 검증 이후 target을 교체하면 candidate commitment 진입 전 재검증이 없었다. provenance 생성도 source 처리 뒤 tool path를 다시 읽었다.
+- **원인**: authorization snapshot의 유효기간을 pre-open 초기 검사에만 한정하고, candidate-open 직전과 publication 직전의 checkout identity를 결합하지 않았다.
+- **수정 내용**: target별 stable identity·blob OID·SHA를 authorization snapshot으로 유지하고 `_commit_core` 직전 및 source hash/legacy 비교 뒤에 전부 재검증한다. provenance tool identity는 reviewed snapshot cache만 사용하며, runner가 공유하는 validator 기본 경로도 tool을 한 번만 stable-read해 두 digest를 계산한다. pre-core target swap은 source-open 0, hashing 중 tool swap은 output 0으로 fail-close하는 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 70 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.

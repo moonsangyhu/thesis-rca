@@ -66,7 +66,7 @@ def _digest_at(parent_fd: int, name: str) -> tuple[int, str, tuple[int, int]]:
     return before.st_size, first.hexdigest(), (before.st_dev, before.st_ino)
 
 
-def _read_stable_metadata_bytes(path: Path) -> bytes:
+def _read_stable_metadata_bytes(path: Path, *, with_identity: bool = False) -> bytes | tuple[bytes, dict]:
     """Read a small authorization artifact through an anchored no-follow fd."""
     path=Path(path)
     name=path.name
@@ -90,7 +90,8 @@ def _read_stable_metadata_bytes(path: Path) -> bytes:
         if len(payload)!=before.st_size or identity!=(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns) or (before.st_dev,before.st_ino)!=(final_path.st_dev,final_path.st_ino): raise ValueError("TOCTOU")
         current=os.stat(parent_lexical,follow_symlinks=False)
         if (current.st_dev,current.st_ino)!=(parent_info.st_dev,parent_info.st_ino): raise ValueError("TOCTOU")
-        return payload
+        stable={"lexical_parent":parent_lexical,"parent_identity":(parent_info.st_dev,parent_info.st_ino),"entry_identity":identity}
+        return (payload,stable) if with_identity else payload
     finally:
         os.close(parent_fd)
 
@@ -130,7 +131,7 @@ def commit(csv_path: Path, raw_dir: Path) -> dict:
     return _commit_core(Path(csv_path), Path(raw_dir))
 
 
-def validate_commitment_schema(value: object, *, require_provenance: bool) -> dict:
+def validate_commitment_schema(value: object, *, require_provenance: bool, _reviewed_tool_identity: dict | None = None) -> dict:
     """Canonical producer/consumer schema; no legacy path aliases are accepted."""
     base={"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256"}
     required=base | ({"provenance"} if require_provenance else set())
@@ -147,10 +148,15 @@ def validate_commitment_schema(value: object, *, require_provenance: bool) -> di
         exact={"tool_blob_oid","tool_sha256","interpreter_path","interpreter_sha256","python_version","cwd","argv","allowlisted_environment","source_root_device_inode","started_utc","finished_utc","exit_status","stdout_sha256","stderr_sha256","redaction_self_test","raw_count","csv_sha256","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256","reviewed_i0","legacy_source_drift","operator_attestation"}
         option_names=("--csv","--raw-dir","--out","--reviewed-i0","--safety-receipt","--legacy-reference")
         argv=provenance.get("argv") if isinstance(provenance,dict) else None
-        tool=Path(__file__).resolve(); interpreter=Path(sys.executable).resolve()
+        interpreter=Path(sys.executable).resolve()
+        if _reviewed_tool_identity is None:
+            tool_bytes=_read_stable_metadata_bytes(Path(__file__).resolve()); expected_tool_blob=_blob_oid_bytes(tool_bytes); expected_tool_sha=hashlib.sha256(tool_bytes).hexdigest()
+        elif isinstance(_reviewed_tool_identity,dict) and _is_blob_oid(_reviewed_tool_identity.get("tool_blob_oid")) and _is_sha256(_reviewed_tool_identity.get("tool_sha256")):
+            expected_tool_blob=_reviewed_tool_identity["tool_blob_oid"]; expected_tool_sha=_reviewed_tool_identity["tool_sha256"]
+        else: raise ValueError("COMMITMENT_SCHEMA")
         expected_stdout=json.dumps({"raw_count":117,"commitment_sha256":value["commitment_sha256"]},separators=(",",":"))+"\n"
         expected_reviewed="sha256:"+hashlib.sha256(provenance.get("reviewed_i0","").encode()).hexdigest() if isinstance(provenance,dict) else ""
-        if not isinstance(provenance,dict) or set(provenance)!=exact or provenance["tool_blob_oid"]!=_blob_oid(tool) or provenance["tool_sha256"]!=hashlib.sha256(tool.read_bytes()).hexdigest() or provenance["interpreter_path"]!=str(interpreter) or provenance["interpreter_sha256"]!=hashlib.sha256(interpreter.read_bytes()).hexdigest() or not all(_is_sha256(provenance[name]) for name in ("tool_sha256","interpreter_sha256","stdout_sha256","stderr_sha256","csv_sha256","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256")) or not all(isinstance(provenance[name],str) and provenance[name] for name in ("interpreter_path","python_version","cwd","started_utc","finished_utc","operator_attestation")) or provenance["python_version"]!=sys.version or not provenance["started_utc"].endswith("Z") or not provenance["finished_utc"].endswith("Z") or not isinstance(argv,list) or tuple(argv[::2])!=option_names or len(argv)!=12 or any(not isinstance(item,str) or not re.fullmatch(r"sha256:[0-9a-f]{64}",item) for item in argv[1::2]) or argv[7]!=expected_reviewed or provenance["allowlisted_environment"]!={} or not isinstance(provenance["source_root_device_inode"],list) or len(provenance["source_root_device_inode"])!=2 or any(not _nonnegative_int(item) for item in provenance["source_root_device_inode"]) or type(provenance["exit_status"]) is not int or provenance["exit_status"]!=0 or provenance["stdout_sha256"]!=hashlib.sha256(expected_stdout.encode()).hexdigest() or provenance["stderr_sha256"]!=hashlib.sha256(b"").hexdigest() or not _valid_evidence(provenance["redaction_self_test"]) or provenance["raw_count"]!=117 or provenance["csv_sha256"]!=csv["sha256"] or provenance["entry_manifest_sha256"]!=value["entry_manifest_sha256"] or provenance["commitment_sha256"]!=value["commitment_sha256"] or not _is_blob_oid(provenance["reviewed_i0"]) or provenance["legacy_source_drift"]!="EXACT_MATCH" or provenance["operator_attestation"]!="hash-only streaming": raise ValueError("COMMITMENT_SCHEMA")
+        if not isinstance(provenance,dict) or set(provenance)!=exact or provenance["tool_blob_oid"]!=expected_tool_blob or provenance["tool_sha256"]!=expected_tool_sha or provenance["interpreter_path"]!=str(interpreter) or provenance["interpreter_sha256"]!=hashlib.sha256(interpreter.read_bytes()).hexdigest() or not all(_is_sha256(provenance[name]) for name in ("tool_sha256","interpreter_sha256","stdout_sha256","stderr_sha256","csv_sha256","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256")) or not all(isinstance(provenance[name],str) and provenance[name] for name in ("interpreter_path","python_version","cwd","started_utc","finished_utc","operator_attestation")) or provenance["python_version"]!=sys.version or not provenance["started_utc"].endswith("Z") or not provenance["finished_utc"].endswith("Z") or not isinstance(argv,list) or tuple(argv[::2])!=option_names or len(argv)!=12 or any(not isinstance(item,str) or not re.fullmatch(r"sha256:[0-9a-f]{64}",item) for item in argv[1::2]) or argv[7]!=expected_reviewed or provenance["allowlisted_environment"]!={} or not isinstance(provenance["source_root_device_inode"],list) or len(provenance["source_root_device_inode"])!=2 or any(not _nonnegative_int(item) for item in provenance["source_root_device_inode"]) or type(provenance["exit_status"]) is not int or provenance["exit_status"]!=0 or provenance["stdout_sha256"]!=hashlib.sha256(expected_stdout.encode()).hexdigest() or provenance["stderr_sha256"]!=hashlib.sha256(b"").hexdigest() or not _valid_evidence(provenance["redaction_self_test"]) or provenance["raw_count"]!=117 or provenance["csv_sha256"]!=csv["sha256"] or provenance["entry_manifest_sha256"]!=value["entry_manifest_sha256"] or provenance["commitment_sha256"]!=value["commitment_sha256"] or not _is_blob_oid(provenance["reviewed_i0"]) or provenance["legacy_source_drift"]!="EXACT_MATCH" or provenance["operator_attestation"]!="hash-only streaming": raise ValueError("COMMITMENT_SCHEMA")
     return value
 
 
@@ -230,7 +236,15 @@ def _parse_legacy_reference(legacy_path: Path) -> dict:
     return legacy
 
 
-def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) -> tuple[dict, str, dict]:
+def _revalidate_authorization_snapshot(snapshot: dict) -> None:
+    """Ensure reviewed target paths still resolve to the exact reviewed objects."""
+    if not isinstance(snapshot,dict) or not isinstance(snapshot.get("root"),Path) or set(snapshot.get("targets",{}))!=set(_SAFETY_TARGETS): raise ValueError("SAFETY_TARGET_CHANGED")
+    for target,reviewed in snapshot["targets"].items():
+        payload,current=_read_stable_metadata_bytes(snapshot["root"]/target,with_identity=True)
+        if current!=reviewed["stable"] or _blob_oid_bytes(payload)!=reviewed["blob_oid"] or hashlib.sha256(payload).hexdigest()!=reviewed["sha256"]: raise ValueError("SAFETY_TARGET_CHANGED")
+
+
+def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) -> tuple[dict, str, dict, dict]:
     """Validate all non-input authorization artifacts before opening candidate inputs."""
     if len(reviewed_i0)!=40 or any(ch not in "0123456789abcdef" for ch in reviewed_i0): raise ValueError("INVALID_REVIEWED_I0")
     receipt_bytes=_read_stable_metadata_bytes(receipt_path); receipt=_parse_json_bytes(receipt_bytes)
@@ -241,13 +255,14 @@ def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) 
     found={item.get("path"):item for item in targets if isinstance(item,dict) and set(item)=={"path","blob_oid","sha256"}}
     root=Path(__file__).resolve().parents[2]
     if set(found)!=set(_SAFETY_TARGETS) or any(not _is_blob_oid(item.get("blob_oid")) or not _is_sha256(item.get("sha256")) for item in found.values()): raise ValueError("SAFETY_RECEIPT_MISMATCH")
-    target_bytes={}
+    reviewed_targets={}
     for target, record in found.items():
         target_path=root/target
-        payload=_read_stable_metadata_bytes(target_path)
-        if _blob_oid_bytes(payload)!=record["blob_oid"] or hashlib.sha256(payload).hexdigest()!=record["sha256"]: raise ValueError("SAFETY_RECEIPT_MISMATCH")
-        target_bytes[target]=payload
-    tool_oid=_blob_oid_bytes(target_bytes["experiments/v2_4_deterministic/commit_inputs.py"])
+        payload,stable=_read_stable_metadata_bytes(target_path,with_identity=True)
+        blob_oid=_blob_oid_bytes(payload); digest=hashlib.sha256(payload).hexdigest()
+        if blob_oid!=record["blob_oid"] or digest!=record["sha256"]: raise ValueError("SAFETY_RECEIPT_MISMATCH")
+        reviewed_targets[target]={"blob_oid":blob_oid,"sha256":digest,"stable":stable}
+    tool_oid=reviewed_targets["experiments/v2_4_deterministic/commit_inputs.py"]["blob_oid"]
     if found["experiments/v2_4_deterministic/commit_inputs.py"]["blob_oid"]!=tool_oid: raise ValueError("SAFETY_RECEIPT_MISMATCH")
     interpreter=receipt["interpreter"]
     if not isinstance(interpreter,dict) or set(interpreter)!={"path","version","sha256"} or not isinstance(interpreter["path"],str) or not interpreter["path"] or not isinstance(interpreter["version"],str) or not interpreter["version"] or not _is_sha256(interpreter["sha256"]): raise ValueError("SAFETY_RECEIPT_MISMATCH")
@@ -256,7 +271,8 @@ def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) 
     commands=receipt["commands"]
     if not isinstance(commands,list) or not commands or any(not isinstance(item,dict) or set(item)!={"command","exit_status","stdout_sha256","stderr_sha256"} or not isinstance(item["command"],str) or not item["command"] or type(item["exit_status"]) is not int or item["exit_status"]!=0 or not _is_sha256(item["stdout_sha256"]) or not _is_sha256(item["stderr_sha256"]) for item in commands): raise ValueError("SAFETY_RECEIPT_MISMATCH")
     legacy=_parse_legacy_reference(legacy_path)
-    return receipt, hashlib.sha256(receipt_bytes).hexdigest(), legacy
+    snapshot={"root":root,"targets":reviewed_targets,"tool_blob_oid":tool_oid,"tool_sha256":reviewed_targets["experiments/v2_4_deterministic/commit_inputs.py"]["sha256"]}
+    return receipt, hashlib.sha256(receipt_bytes).hexdigest(), legacy, snapshot
 
 
 def _compare_legacy_reference(legacy: dict, data: dict) -> None:
@@ -287,12 +303,13 @@ def _main(argv=None, *, _internal_self_test=False):
         evidence=_redaction_self_test()
         if not _valid_evidence(evidence): raise ValueError("REDACTION_SELF_TEST_FAIL")
         if not all((args.reviewed_i0,args.safety_receipt,args.legacy_reference)): raise ValueError("REAL_MODE_ARGUMENTS_REQUIRED")
-    receipt=receipt_sha=legacy=None
+    receipt=receipt_sha=legacy=authorization=None
     if not _internal_self_test:
-        receipt, receipt_sha, legacy = _preopen_real_mode(args.reviewed_i0,args.safety_receipt,args.legacy_reference)
+        receipt, receipt_sha, legacy, authorization = _preopen_real_mode(args.reviewed_i0,args.safety_receipt,args.legacy_reference)
     started = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    if not _internal_self_test: _revalidate_authorization_snapshot(authorization)
     data = _commit_core(args.csv, args.raw_dir)
-    tool = Path(__file__).resolve(); interpreter = Path(sys.executable).resolve()
+    interpreter = Path(sys.executable).resolve()
     stdout = json.dumps({"raw_count": 117, "commitment_sha256": data["commitment_sha256"]}, separators=(",", ":"))
     if _internal_self_test:
         args.out.write_text(json.dumps(data, sort_keys=True, separators=(",", ":")), encoding="utf-8")
@@ -300,12 +317,13 @@ def _main(argv=None, *, _internal_self_test=False):
         return 0
     _compare_legacy_reference(legacy,data)
     root_info=os.stat(args.raw_dir,follow_symlinks=False)
+    _revalidate_authorization_snapshot(authorization)
     # This is the immutable input-manifest digest, computed before the mutable
     # provenance envelope is attached; the duplicate provenance field makes the
     # self-excluding commitment contract explicit without a circular hash.
     redacted=lambda value: "sha256:"+hashlib.sha256(os.fspath(value).encode()).hexdigest()
-    data["provenance"] = {"tool_blob_oid":_blob_oid(tool),"tool_sha256": hashlib.sha256(tool.read_bytes()).hexdigest(), "interpreter_path":str(interpreter),"interpreter_sha256": hashlib.sha256(interpreter.read_bytes()).hexdigest(), "python_version": sys.version, "cwd":str(Path.cwd()),"argv": ["--csv", redacted(args.csv), "--raw-dir", redacted(args.raw_dir), "--out", redacted(args.out), "--reviewed-i0", "sha256:"+hashlib.sha256(args.reviewed_i0.encode()).hexdigest(), "--safety-receipt", redacted(args.safety_receipt), "--legacy-reference", redacted(args.legacy_reference)], "allowlisted_environment":{},"source_root_device_inode":[root_info.st_dev,root_info.st_ino],"started_utc": started, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "exit_status": 0, "stdout_sha256": hashlib.sha256((stdout + "\n").encode()).hexdigest(), "stderr_sha256": hashlib.sha256(b"").hexdigest(), "redaction_self_test":evidence,"raw_count":117,"csv_sha256":data["csv"]["sha256"],"entry_manifest_sha256":data["entry_manifest_sha256"],"commitment_sha256":data["commitment_sha256"],"safety_receipt_sha256":receipt_sha,"reviewed_i0":args.reviewed_i0,"legacy_source_drift":"EXACT_MATCH","operator_attestation": "hash-only streaming"}
-    validate_commitment_schema(data, require_provenance=True)
+    data["provenance"] = {"tool_blob_oid":authorization["tool_blob_oid"],"tool_sha256": authorization["tool_sha256"], "interpreter_path":str(interpreter),"interpreter_sha256": hashlib.sha256(interpreter.read_bytes()).hexdigest(), "python_version": sys.version, "cwd":str(Path.cwd()),"argv": ["--csv", redacted(args.csv), "--raw-dir", redacted(args.raw_dir), "--out", redacted(args.out), "--reviewed-i0", "sha256:"+hashlib.sha256(args.reviewed_i0.encode()).hexdigest(), "--safety-receipt", redacted(args.safety_receipt), "--legacy-reference", redacted(args.legacy_reference)], "allowlisted_environment":{},"source_root_device_inode":[root_info.st_dev,root_info.st_ino],"started_utc": started, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "exit_status": 0, "stdout_sha256": hashlib.sha256((stdout + "\n").encode()).hexdigest(), "stderr_sha256": hashlib.sha256(b"").hexdigest(), "redaction_self_test":evidence,"raw_count":117,"csv_sha256":data["csv"]["sha256"],"entry_manifest_sha256":data["entry_manifest_sha256"],"commitment_sha256":data["commitment_sha256"],"safety_receipt_sha256":receipt_sha,"reviewed_i0":args.reviewed_i0,"legacy_source_drift":"EXACT_MATCH","operator_attestation": "hash-only streaming"}
+    validate_commitment_schema(data, require_provenance=True, _reviewed_tool_identity=authorization)
     args.out.write_text(json.dumps(data, sort_keys=True, separators=(",", ":")), encoding="utf-8")
     print(stdout)
     return 0
