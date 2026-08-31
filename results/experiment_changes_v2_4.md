@@ -98,3 +98,12 @@
 - **수정 내용**: fresh reviewer가 exact I detached clean checkout에서 candidate를 열지 않고 파일 hash, synthetic 25 tests, pycompile, ontology check와 정적 공격 검토를 수행했다. P0 7개·P1 4개를 기록하고 bundle B·실채점을 거부했다. machine-only 기존 regression parse는 본문 egress와 scorer 실행이 없고 observed-output-derived 변경도 없음을 투명하게 기록하는 조건에서 causal confirmatory 유지 가능하다고 별도 판정했다.
 - **수정 파일**: `docs/plans/review_v2_4_deterministic_implementation.md:1`, `results/experiment_changes_v2_4.md`
 - **상태**: FAIL — candidate scoring 0, bundle B 금지. plan revision과 I2 구현 보완·fresh 재검토 필요.
+
+### 12. V2.4-D revision 6의 I0→I1 안전 체인 승인 — 2026-08-31
+
+- **수정 에이전트**: @experiment-planner, fresh @methodology-reviewer, @Codex
+- **증상/문제**: implementation review P0를 계획에 반영하는 과정에서 새 provenance를 요구하면서 구 unsafe commitment digest를 고정하는 모순과, 검토 전 commitment tool이 실제 입력 bytes를 먼저 읽는 순서 역전이 발견됐다.
+- **원인**: code safety review와 real hash-only commitment 생성을 하나의 implementation commit에 묶어, commitment tool 자체의 안전성을 candidate-unmounted 상태에서 선검증할 수 없었다.
+- **수정 내용**: 구 commitment envelope를 `DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT`로 강등하고 CSV/raw path·size·digest를 source-drift reference로만 보존했다. code-only `I0`을 candidate-unmounted fresh safety review한 뒤 exact reviewed tool로 새 commitment를 생성하고, commitment+deviation provenance 두 파일만 더한 `I1`, review-only `B`, approval-only `A` 순서를 hard gate로 고정했다. runner·ontology·negation·hidden two-run release·commit safety·37-category tests의 revision 5 보완도 유지했다. cumulative reviewer가 P0 20 PASS/0 FAIL로 revision 6을 승인 권고했다.
+- **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md:1`, `docs/plans/review_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
+- **상태**: semantic plan 재승인 완료 — plan SHA-256 `169f59e40b4619c15613cce6360ca4b03063dfa1cd451e79160c86be949d936d`, review SHA-256(외부) `7f125f15b5469f1e8e51ba84386628dcedf4392c82958e37bb1496c5a8f903b7`; 다음 gate는 commitment가 없는 code-only I0.

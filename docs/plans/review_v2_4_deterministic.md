@@ -736,3 +736,347 @@ Self-reference 수정 외 다음 핵심 계약은 Revision 3와 동일하다.
 candidate commit `I`를 만드는 것이다. 이후 fresh implementation reviewer가 exact detached
 `I`와 synthetic/static test를 검증하기 전에는 scoring package를 승인하거나 candidate 본문을
 읽어서는 안 된다.
+
+---
+
+## 15. Revision 5 재검토
+
+> 재검토일: 2026-08-31
+>
+> 검토 plan: `experiment_plan_v2_4_deterministic.md` revision 5
+>
+> 검토 plan SHA-256:
+> `c31361c52c0e5bd2b5b79fbe9e304b13b27123dd88fd42cd5988ec75f4a76ef4`
+>
+> 독립성 재선언: Revision 5 재검토에서도 candidate output JSON/CSV의
+> `identified_fault_type`, `root_cause`, `remediation` 본문을 열거나 검색하거나 출력하지
+> 않았고 V2.4-D scorer를 실행하지 않았다. 허용된 plan, cumulative reviews, commitment의
+> metadata key/digest와 synthetic 통계 계약만 확인했다. 이 review 파일 자신의 SHA-256는 내부에
+> 기록하지 않는다.
+
+### 15.1 결론
+
+**수정 요구 — P0 PASS 19 / FAIL 2.**
+
+Revision 5는 implementation FAIL P0-1~P0-5, P0-7과 대부분의 P0-6 내용을 exact contract로
+잘 흡수했다. Outcome semantics, alias, threshold, comparator, primary test와 상태 판정은 Revision
+4에서 바뀌지 않았다. 그러나 opaque commitment의 **identity**와 **review-before-real-access
+순서**에 두 P0가 남아 implementation candidate를 아직 만들 수 없다.
+
+### 15.2 Outcome semantics 불변 — PASS
+
+- primary는 계속 `JLC-D = CM ∧ FLM ∧ MCA`이고 treatment/control은 동일 12-pair
+  RAG/length-placebo다.
+- CM/FLM lexical mention 경계, FLM orthographic-only, MCA incident conjunction, RA same-item DNF,
+  contradictions 정책이 그대로다.
+- exact one-sided McNemar, Clopper–Pearson, paired bootstrap seed/algorithm, secondary inference 0,
+  `primary_status`/remediation flag 분리가 유지된다.
+- synthetic vector의 50,000 bootstrap 계약을 독립 재계산한 결과도 plan과 일치했다:
+
+```text
+serialized bytes  744080
+SHA-256           aa089664652480d5565da1853d51635dd53310475585e3cccbc8516bb7aae4ca
+percentiles       [-0.16666666666666666, 0.66666666666666663]
+```
+
+따라서 Revision 5는 결과에 맞춰 outcome을 이동시키지 않고 implementation assurance만 강화한다.
+
+### 15.3 요청 항목별 판정
+
+#### Ontology schema representation — PASS
+
+`token_predicates`와 `negation.syntax`를 top-level schema의 required/`const` representation으로
+명시해 Revision 4 prose와 구현 representation의 차이를 제거했다. duplicate-rejecting loader,
+object order, version/normalization/predicate/negation exact constants, incident/path/group identity,
+F1 inventory와 §6.2 전체 count를 builder와 loader 양쪽에서 검증한다. 이 representation 추가는
+기존 9개 finite token sequence와 여섯 negation grammar의 의미를 바꾸지 않는다.
+
+#### Implementation target 확대 — PASS
+
+새 `I` target은 기존 목록에 `__init__.py`, `build_ontology.py`, `run.py`를 포함한다. 실제 import,
+builder, runner, commitment tool, scorer, analyzer, tests, plan/review/commitment 전체가 blob OID·
+blob SHA-256·filesystem SHA-256 map에 들어간다. 기존 implementation review는 B에서 수정되고
+approval은 A에서 추가되므로 I target과 분리한 것도 chain 의미와 맞다.
+
+#### I/B/A + all-hash gate — PASS
+
+- `B^=I`, I→B는 cumulative implementation review 파일 한 개의 modification만 허용한다.
+- `A^=B`, B→A는 approval 파일 한 개의 addition만 허용한다.
+- runner는 candidate source open 전에 HEAD/A/B/I parent·diff, semantic/implementation/approval
+  identity, 전체 target map, interpreter와 commitment/GT/input hash를 재계산한다.
+- approval 자체의 hash는 external execution authorization과 manifest에 기록해 self-reference를
+  피한다.
+
+기존 runner 비봉인과 approval string-only 검증 문제를 semantic contract 수준에서 닫았다.
+
+#### Hidden two-full-run release — PASS with P1 clarification
+
+run1과 run2를 각각 완전한 36-row scoring+analysis로 hidden mode-0700 staging 안에서 끝내고,
+file별/aggregate canonical digest가 같은 경우에만 single release root를 한 번 atomic rename한다.
+run2 실패·mismatch·rename 실패 때 public result/summary가 absent이고 body 없는 INVALID receipt만
+나오는 test matrix도 있다. 따라서 replay 전에 arm score가 공개돼 change control을 오염시키는
+P0는 닫혔다.
+
+P1로, single release root 안의 “tracked result candidate”가 최종
+`results/experiment_results_v2_4_deterministic.csv` 및 analysis 경로로 언제·어떻게 승격되는지
+§13에 명시해야 한다. 서로 다른 기존 parent에 두 파일을 놓는 작업은 하나의 directory rename으로
+동시에 atomic할 수 없다. 최초 score 공개가 replay 뒤라는 핵심은 충족하므로 이 layout 설명은
+semantic P0가 아니라 implementation review에서 확인할 publication P1이다.
+
+#### Commitment safety — **P0 FAIL 2개**
+
+Revision 5의 no-follow/fd/pre-post hash/fstat/lstat, unexpected-entry, hard-link, TOCTOU, executable
+redaction test와 rich provenance 계약 자체는 적절하다. 그러나 다음 두 모순이 남는다.
+
+**P0-5A — 새 commitment 계약과 frozen old digest가 양립하지 않는다.**
+
+§9.2는 commitment 내부 digest를 다음 기존 값으로 exact 요구한다.
+
+```text
+590e8e006d5adc449bb8e0bdd12b0beaaf7bc8197015dd65a7131525cf90ca64
+```
+
+허용된 현재 commitment metadata를 본문 없이 key/digest만 확인하면 provenance는
+`argv, exit_status, finished_utc, interpreter_path, interpreter_sha256, operator_attestation,
+python_version, redaction_test, started_utc, stderr_sha256, stdout_sha256, tool_sha256`이고
+`redaction_test=PASS` 상수다. Revision 5가 새로 required로 만든 tool blob OID, cwd, allowlisted
+environment, source-root device/inode, fixture/sentinel digest, sentinel count, manifest digest 등의
+필드가 없다. implementation review도 이 commitment가 unsafe old tool에서 만들어졌음을 기록했다.
+
+`commit_inputs.py`를 P0-6에 맞게 수정하고 새 executable evidence/provenance를 넣으면 canonical
+commitment bytes와 내부 `commitment_sha256`는 반드시 바뀐다. 그런데 old digest를 exact gate로
+유지하면 새 safe commitment는 거부되고 old unsafe commitment만 통과한다.
+
+**필수 수정:** old internal digest를 삭제한다. 새 tool safety review 뒤 생성된 commitment를
+새 candidate commit에 넣고, 그 파일의 canonical self-excluding digest를 implementation review와
+approval에서 새 값으로 freeze한다. CSV/raw entry digest는 기존 opaque source identity와 exact
+일치해야 하지만 provenance를 포함한 commitment envelope digest는 새 값이어야 한다.
+
+**P0-5B — real commitment tool이 review 전에 candidate bytes를 연다.**
+
+§9.1 순서는 구현과 real opaque commitment를 먼저 완성해 commit `I`를 만든 뒤 fresh reviewer가
+`commit_inputs.py`를 검토한다. 즉 새 tool이 source bytes를 실제로 읽는 시점에는 아직 독립
+safety/redaction review를 받지 않았다. Self-test가 먼저 실행돼도 real path와 error path가 그
+reviewed contract를 구현했다는 보장은 사후에만 생긴다. 과거 tool이 상수 PASS와 unsafe `open()`을
+사용했다는 이번 implementation finding이 바로 이 순서의 위험을 실증한다.
+
+**필수 수정:** candidate source를 전혀 열지 않는 code-only commit `I0`를 먼저 만들고 fresh
+commitment-safety reviewer가 detached `I0`에서 `commit_inputs.py`, bootstrap, executable
+redaction/path-attack tests를 PASS해야 한다. 그 exact reviewed tool로만 real hash-only commitment를
+생성한 뒤 commitment를 추가한 implementation candidate `I`를 만들고, 기존 전체 implementation
+review→B→A chain을 수행한다. 대안은 이미 독립 승인된 별도 minimal hash-only tool/commit을
+사용하는 것이다. I0→I diff도 commitment file과 사전 허용 provenance receipt 외 변경을 금지하고
+tool hash가 같아야 한다.
+
+#### `python -I` bootstrap — PASS
+
+각 script가 자기 `__file__`에서 expected root를 계산하고 ancestor no-symlink/git identity를
+확인한 뒤 그 root만 `sys.path`에 삽입하도록 사전 고정했다. `PYTHONPATH`, user site, arbitrary cwd,
+namespace fallback을 금지하고 bootstrap code 자체를 I target/hash와 test 35에 포함한다. 이는
+isolated mode에서 이전 import failure를 고치는 제한된 bootstrap이며 external code injection을
+허용하지 않는다.
+
+#### Synthetic/static 37 categories — PASS at semantic adequacy level
+
+추가 15개 범주는 implementation FAIL의 ontology mutation, grammar traces, absence polarity,
+schema boundaries, hash/identity, git chain, replay publication, path attacks, executable redaction,
+known statistics bytes, isolated bootstrap, deviation schema와 no-text-egress를 직접 공격한다.
+37은 test method 개수가 아니라 required behavior category 수로 이해해야 한다. 실제 fixture/assertion
+coverage와 37개 PASS는 새 exact I의 implementation review에서 검증해야 한다.
+
+#### `NON_INFORMATIVE_MACHINE_PARSE_DEVIATION` — PASS 조건부
+
+과거 generic parser의 process-level candidate parse 가능성을 “access 0”으로 숨기지 않고 별도
+status로 공개한다. 실행 identity/log digest, human/agent text egress 0, V2.4-D scorer/ontology/
+alias/score 실행 0, observed-output-derived change 0의 네 evidence를 모두 요구하며 하나라도 없거나
+text egress가 있으면 gate를 실패시킨다. 이는 process deviation을 결과 비정보성의 causal evidence와
+구분하며 outcome definition을 사후 바꾸지 않는다.
+
+이 판정은 operator attestation을 cryptographic proof로 취급하지 않는다는 §9.1 경계 아래에서만
+유효하다. Implementation review는 historical command/log/diff evidence가 실제 존재하는지 확인해야
+하며, 없으면 `INVALID` 또는 `EXPLORATORY_ONLY`로 강등해야 한다.
+
+### 15.4 P0 gate 표
+
+| P0 gate | Revision 5 판정 | 근거 |
+|---|---|---|
+| candidate body 비열람 semantic review | PASS | 본문 접근·검색·출력 및 scorer 실행 0 |
+| outcome semantics/primary status 불변 | PASS | JLC-D/CM/FLM/MCA/RA와 통계 계약 동일 |
+| ontology schema representation | PASS | predicate/syntax representation과 exact validator 계약 일치 |
+| ontology inventory/provenance | PASS | F1 aliases와 12-row count mutation gate |
+| finite negation/schema fail-close | PASS | implementation counterexamples가 tests 23~28에 반영 |
+| implementation target completeness | PASS | init/builder/runner/commitment tool 포함 |
+| I/B/A parent/diff gate | PASS | review-only B, approval-only A |
+| all target/hash binding | PASS | blob/filesystem/interpreter/input maps candidate-open 전 검증 |
+| hidden two-full-run replay | PASS | run1 미공개, complete+equal 뒤 single release |
+| result-independent publication | PASS | mismatch 시 body 없는 INVALID만 공개 |
+| commitment path/TOCTOU specification | PASS | no-follow fd와 mutation/unexpected-entry matrix |
+| commitment executable redaction specification | PASS | sentinel/captured evidence, 상수 PASS 금지 |
+| commitment digest identity | **FAIL** | 새 provenance와 old hard-coded internal digest가 양립 불가 |
+| commitment review-before-real-access | **FAIL** | tool이 exact fresh safety review 전에 source bytes를 읽음 |
+| isolated `python -I` bootstrap | PASS | reviewed root-only bootstrap과 exact commands |
+| synthetic/static 37-category adequacy | PASS | prior P0/P1 counterexamples와 known bytes 포함 |
+| exact primary statistics | PASS | independent synthetic hash/percentile 재계산 일치 |
+| machine-parse deviation transparency | PASS 조건부 | 네 evidence required, process-access-zero 주장 금지 |
+| no-text-egress/result-derived-change gate | PASS 조건부 | historical evidence는 implementation review에서 확인 |
+| GT/input fixed identity | PASS | full/projection/CSV/raw contract 유지 |
+| missingness/language/schema fail-close | PASS | invalid 전체 run, imputation 없음 |
+
+**합계: PASS 19 / FAIL 2.** 조건부 PASS는 implementation evidence가 없으면 FAIL로 전환된다.
+
+### 15.5 최종 판정과 다음 checkpoint
+
+**최종 판정: 수정 요구 — Revision 5 semantic implementation contract 승인 보류.**
+
+다음 plan-only revision은 (1) old commitment internal digest를 제거하고 새 reviewed provenance로
+재생성·freeze하는 규칙, (2) code-only `I0` commitment-safety review → real hash-only commitment →
+full candidate `I`의 access 순서를 추가해야 한다. 이 두 P0는 candidate 표현이나 arm score를 보지
+않고 해결할 수 있다. 수정 전에는 새 commitment 생성, implementation candidate `I`, bundle B/A,
+scoring을 진행하면 안 된다.
+
+---
+
+## 16. Revision 6 재검토
+
+> 재검토일: 2026-08-31
+>
+> 검토 plan: `experiment_plan_v2_4_deterministic.md` revision 6
+>
+> 검토 plan SHA-256:
+> `169f59e40b4619c15613cce6360ca4b03063dfa1cd451e79160c86be949d936d`
+>
+> 독립성 재선언: Revision 6 재검토에서도 candidate output JSON/CSV의
+> `identified_fault_type`, `root_cause`, `remediation` 본문을 열거나 검색하거나 출력하지
+> 않았고 V2.4-D scorer를 실행하지 않았다. 이 review 파일 자신의 SHA-256는 내부에 기록하지
+> 않는다.
+
+### 16.1 최종 결론
+
+**Semantic implementation plan 최종 승인 권고 — P0 PASS 20 / FAIL 0.**
+
+Revision 5의 두 잔여 P0는 code-only `I0` safety review → reviewed tool real commitment → full
+candidate `I1` review chain으로 exact하게 닫혔다. Revision 6는 commitment access/freeze 절차만
+강화했고 `JLC-D` outcome, ontology acceptance set, 통계, comparator, 상태 판정은 바꾸지 않았다.
+
+이 승인은 plan의 semantic·procedural contract에 대한 것이다. 아직 만들어지지 않은 `I0` tool과
+`I1` implementation이 이 계약을 실제 구현했다는 승인이 아니다. 두 fresh implementation gate가
+각각 실제 PASS하기 전에는 B/A 또는 scoring으로 진행할 수 없다.
+
+### 16.2 Revision 5 P0 closure
+
+#### P0-5A. Old envelope conflict — PASS
+
+Revision 6는 old commitment와 내부
+`590e8e006d5adc449bb8e0bdd12b0beaaf7bc8197015dd65a7131525cf90ca64`를
+`DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT` history로만 보존한다.
+
+- Old envelope bytes/provenance/digest를 confirmatory commitment, approval target, runtime
+  expected digest로 사용하는 계약을 명시적으로 폐기했다.
+- Old artifact의 fixed CSV SHA와 정렬된 117개 `relative_path,size,sha256`만 outcome-independent
+  **legacy source-identity map**으로 사용한다.
+- Exact reviewed `I0` tool이 새 commitment와 richer provenance를 생성한다.
+- 새 canonical self-excluding envelope digest는 old 값과 달라도 되며 plan에 사전 하드코딩하지
+  않는다.
+- 새 file/envelope digest는 `I1`에서 처음 고정되고 full review B·approval A·runtime preflight가
+  같은 값을 독립 재계산한다.
+- Runtime에서 old `590e8e...`를 새 expected value로 비교하면 오히려 INVALID다.
+
+따라서 새 provenance를 요구하면서 old envelope digest만 허용하던 Revision 5의 논리 모순은 없다.
+Source identity는 old/new map exact equality로 유지되고 provenance envelope만 안전하게 교체된다.
+
+#### P0-5B. Unreviewed tool real access — PASS
+
+Revision 6의 순서는 다음과 같이 비순환적이다.
+
+```text
+semantic PASS
+  → candidate-unmounted code-only commit I0
+  → fresh detached I0 commitment-safety review + external content-addressed PASS receipt
+  → exact reviewed I0 tool만 real hash-only access
+  → commitment + deviation provenance만 바꾼 I1
+  → fresh detached I1 full implementation review
+  → review-only B
+  → approval-only A
+  → scoring
+```
+
+- `I0` safety review에는 candidate source path를 mount/전달하지 않으며 real CSV/raw open count 0을
+  요구한다.
+- Reviewer는 exact I0/tool/interpreter/blob/filesystem hashes, commands, fixture/sentinel,
+  stdout/stderr digest와 PASS를 external receipt로 먼저 봉인한다.
+- FAIL 또는 receipt 부재면 real commitment를 금지한다.
+- 새 commitment provenance가 exact I0 tool blob과 safety receipt digest를 포함한다.
+- `I1^=I0`이고 I0→I1은 commitment modification과 deviation provenance addition 두 줄만
+  허용한다. 모든 code/plan/review blob은 불변이어야 한다.
+- Safety review보다 이른 real source open, reviewed tool/provenance identity mismatch, allowlist 밖
+  diff는 INVALID다.
+- 별도 fresh reviewer가 exact I1에서 receipt, commitment, provenance, full code/test를 다시
+  검증한다.
+
+따라서 candidate bytes를 읽는 tool이 독립 검토 전 실행되던 순서가 제거됐다.
+
+### 16.3 Outcome semantics 불변 — PASS
+
+Revision 5 대비 다음이 그대로다.
+
+- `JLC-D = CM ∧ FLM ∧ MCA`, 동일 12 incidents의 RAG 대 length-placebo single primary.
+- CM/FLM lexical mention 경계, FLM orthographic-only, empty CM/FLM/MCA contradictions.
+- Incident-specific MCA와 same-item RA DNF/contradiction.
+- Finite negation grammar, raw regex 금지, finite token predicate, fail-close schema.
+- Exact one-sided McNemar, Clopper–Pearson, seed-fixed paired bootstrap, secondary inference 0.
+- Primary status와 remediation warning의 독립 required fields.
+- Hidden two-full-run complete+equal 뒤 release, mismatch 시 body 없는 INVALID.
+- `NON_INFORMATIVE_MACHINE_PARSE_DEVIATION`의 네 evidence와 process-access-zero 표현 금지.
+
+새 alias, matcher, threshold, missingness 처리, success rule 또는 주장 확장은 없다.
+
+### 16.4 Chain·internal consistency 검증
+
+- Semantic cumulative review는 I0 blob/tree로 고정하고 self-hash는 외부 provenance에만 기록한다.
+- I0 safety scope 여덟 code/test files와 I1 full target 열두 files가 명시돼 있다.
+- I0→I1 exact two-file diff, I1→B implementation-review-only diff, B→A approval-only diff가
+  서로 다른 역할을 가진다.
+- Runner는 source open 전에 I0/I1/B/A parent, diffs, external receipt, all blob/filesystem hashes,
+  new commitment digest, legacy map, GT/input/interpreter를 검증한다.
+- Code hash는 I0→I1에서 불변이며 full reviewer와 approval target map이 이를 재확인한다.
+- DoD와 §9.1, §9.2, §12가 같은 I0→I1→B→A 명칭과 순서를 사용한다.
+
+External safety receipt는 repository target이 아니지만 그 content hash가 새 commitment, full review,
+approval, runtime preflight에 연쇄 고정된다. Receipt bytes가 없거나 digest/content가 불일치하면
+full review/runtime gate가 실패하므로 승인 우회 경로가 아니다.
+
+### 16.5 최종 P0 표
+
+| P0 gate | Revision 6 판정 | 근거 |
+|---|---|---|
+| candidate body 비열람 semantic review | PASS | 본문 접근·검색·출력/scorer 실행 0 |
+| outcome semantics 불변 | PASS | JLC-D ontology/statistics/status 동일 |
+| ontology schema/inventory/provenance | PASS | Revision 5 exact representation 유지 |
+| finite negation/schema fail-close | PASS | grammar·mutation matrices 유지 |
+| RA same-item DNF | PASS | cross-item join 금지 유지 |
+| old commitment deprecation | PASS | confirmatory/approval/runtime 사용 금지 |
+| legacy source identity continuity | PASS | CSV+117 path/size/hash old/new exact comparison |
+| new envelope digest identity | PASS | I1에서 새 값 freeze, old digest 비교 금지 |
+| code-only I0 before real access | PASS | candidate source unmounted/open count 0 |
+| I0 commitment-safety review | PASS | fresh detached synthetic-only review+receipt required |
+| reviewed-tool-only commitment | PASS | exact I0 tool/receipt identity provenance |
+| I0→I1 code immutability | PASS | commitment+deviation exact two-file diff만 허용 |
+| fresh I1 full implementation review | PASS | receipt/commitment/full target/test 재검증 |
+| I1→B→A freeze chain | PASS | review-only B, approval-only A |
+| all hash/preflight binding | PASS | I0/I1/B/A·receipt·targets·input candidate-open 전 검증 |
+| commitment path/TOCTOU/redaction | PASS | reviewed no-follow/fd/rehash/sentinel gates |
+| isolated `python -I`/37 tests | PASS | reviewed bootstrap와 counterexample matrix 유지 |
+| hidden replay publication | PASS | two full runs equal 뒤 single-root release |
+| machine-parse deviation transparency | PASS 조건부 | 네 historical evidence 없으면 downstream gate FAIL |
+| external/generalization claim boundary | PASS | frozen lexical 12-incident scope 유지 |
+
+**합계: PASS 20 / FAIL 0.** 조건부 evidence는 implementation 단계에서 없으면 그 단계가 FAIL이며,
+현재 semantic contract에는 우회 규칙이 없다.
+
+### 16.6 승인 경계와 다음 checkpoint
+
+**Revision 6 semantic implementation plan을 최종 승인하도록 권고한다.**
+
+다음 checkpoint는 candidate source를 mount하거나 전달하지 않은 상태에서 implementation code와
+synthetic fixtures만 완성해 code-only `I0`를 만드는 것이다. 그 뒤 fresh safety reviewer의 exact
+I0 PASS receipt가 봉인되기 전에는 `commit_inputs.py`를 real source에 실행하면 안 된다.
