@@ -242,3 +242,12 @@
 - **수정 내용**: deviation evidence path를 두 정본 경로로 allowlist하고, local `HEAD` ancestry의 해당 path history에서 선언 SHA-256과 일치하는 단일 Git blob identity가 있을 때만 수용한다. working-tree 최신 파일은 evidence로 읽지 않는다. 현재 파일이 변경된 synthetic repo에서도 ancestral snapshot은 통과하고 wrong hash/path는 실패하는 회귀 테스트를 추가했으며, 실제 repo의 plan 고정 두 hash도 검증했다. 이전 I0 도구로 만든 uncommitted hash-only commitment는 코드 변경 즉시 삭제해 I1·승인 provenance에서 제외했다.
 - **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 65 tests, pycompile, ontology, redaction, runner self-test, exact historical hash gate PASS; candidate decode/scoring 0, discarded commitment commit/approval 0.
+
+### 28. V2.4-D deviation evidence 승인 hash 동결 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: historical evidence를 local HEAD ancestry로 제한했지만, 같은 정본 경로에 과거 존재한 비승인 blob의 SHA를 deviation에 넣어도 unique match로 수용됐다.
+- **원인**: verifier가 path allowlist와 선언 hash의 ancestry 존재만 확인하고, revision 8 계획이 승인한 정확한 두 snapshot SHA-256을 runtime 상수로 동결하지 않았다.
+- **수정 내용**: changelog와 implementation review의 exact path·SHA-256 record를 immutable production map으로 고정하고, deviation source record가 이 map과 완전히 같을 때만 ancestry blob 검증을 수행한다. 같은 경로의 다른 reachable historical blob hash가 거부되는 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 65 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
