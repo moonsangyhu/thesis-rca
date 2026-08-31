@@ -89,3 +89,12 @@
 - **수정 내용**: 12-incident static ontology에 모든 axis/path/matcher provenance를 전개하고 scorer의 semantic hardcode를 제거했다. finite negation, same-item remediation, schema/language/size gate, exact paired test·Clopper–Pearson·paired bootstrap을 구현했다. approval-before-open, 117:117 commitment, no-follow/lstat/hardlink/TOCTOU, 36행 score, text-free trace, atomic publish와 second replay를 구현하고 synthetic 117-row E2E를 포함한 25 tests를 통과했다. 실제 Primary03에는 hash-only commitment만 수행해 raw 117·CSV digest를 봉인했고 V2.4-D scorer/full run은 실행하지 않았다.
 - **수정 파일**: `docs/plans/input_commitment_v2_4_deterministic.json:1`, `experiments/v2_4_deterministic/`, `tests/test_v2_4_deterministic.py:1`, `results/experiment_changes_v2_4.md`
 - **상태**: implementation candidate `I` 준비·fresh review 대기 — ontology SHA-256 `456bc7c562b5c1896fa37041f4f6ceda6184994be77af9c2a55b3daee086035d`, commitment raw 117/CSV `5fd2c1c5…f8c5b`. 절차 편차: 신규·기존 회귀 검증 중 `tests.test_v2_4_audit`의 real-input integration code가 Primary03을 machine-only로 파싱했다. 본문 stdout/stderr·agent context 노출과 V2.4-D scoring은 0이나 process-level access 0 주장은 철회하며 fresh reviewer가 confirmatory 유지 여부를 판정해야 한다.
+
+### 11. V2.4-D implementation candidate I 독립 검토 실패 — 2026-08-31
+
+- **수정 에이전트**: fresh @implementation-reviewer, @Codex
+- **증상/문제**: synthetic 25 tests가 통과한 구현 후보라도 plan과 exact ontology semantics, finite negation, approval chain과 replay-before-release가 실제 코드에서 강제되는지 독립 확인이 필요했다.
+- **원인**: candidate `I=e86e26b`는 plan에 없는 ontology representation을 추가하면서 const validation이 약했고, negation heuristic·빈 문자열/replacement gate·commit chain·CSV 고정 hash·replay publication·commitment TOCTOU와 redaction test가 계약보다 느슨했다. test suite도 이 결함을 포착하지 못했다.
+- **수정 내용**: fresh reviewer가 exact I detached clean checkout에서 candidate를 열지 않고 파일 hash, synthetic 25 tests, pycompile, ontology check와 정적 공격 검토를 수행했다. P0 7개·P1 4개를 기록하고 bundle B·실채점을 거부했다. machine-only 기존 regression parse는 본문 egress와 scorer 실행이 없고 observed-output-derived 변경도 없음을 투명하게 기록하는 조건에서 causal confirmatory 유지 가능하다고 별도 판정했다.
+- **수정 파일**: `docs/plans/review_v2_4_deterministic_implementation.md:1`, `results/experiment_changes_v2_4.md`
+- **상태**: FAIL — candidate scoring 0, bundle B 금지. plan revision과 I2 구현 보완·fresh 재검토 필요.
