@@ -161,3 +161,12 @@
 - **수정 내용**: fifth reviewer가 I0 `7388a41`의 8 targets·49 tests·prior failure closure를 검증해 PASS receipt SHA `b90aa91b…4676`을 생성했다. 그 reviewed tool로 hash-only commitment를 한 번 생성해 source map exact 일치를 확인했으나 M/A 모순 발견 즉시 uncommitted artifact를 폐기하고 confirmatory provenance에서 제외했다. revision 7은 I0 commitment path absent와 I0→I1 `A commitment + A deviation`을 exact gate로 고쳤고 cumulative reviewer가 P0 8 PASS/0 FAIL로 승인했다.
 - **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md:1`, `docs/plans/review_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
 - **상태**: revision 7 승인·새 I0 필요 — plan SHA `33435f87ce56c9bcef38b6ea3bb985e305ac02b5a1ebebdb4af69e9a241b4381`, review SHA `14826d4d0a35da53e4a8603759916b667bfcc844d3c027ca2a1abd0d8636602d`. Discarded artifact는 scoring/approval/commit 0, candidate decode/parse/output 0.
+
+### 19. V2.4-D runner의 A/A chain 강제 — 2026-09-01
+
+- **수정 에이전트**: @runner-worker, @Codex
+- **증상/문제**: revision 7이 commitment를 I1 신규 파일로 교정했지만 runner는 여전히 I0→I1 `M/A`를 요구해 정당한 실행을 거부할 상태였다.
+- **원인**: 실행 코드의 exact diff 상수가 plan revision을 따라 갱신되지 않았다.
+- **수정 내용**: runner가 I0의 commitment path absent를 pre-open 검증하고 I0→I1 `A commitment + A deviation`만 허용하도록 변경했다. synthetic git chain에서 A/A 성공, old M/A 거부, I0 commitment 존재 거부를 각각 독립 고정했다.
+- **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 새 code-only I0 commit 대기 — isolated 52 tests, pycompile, ontology, runner self-test, diff-check PASS; actual source 접근 0.
