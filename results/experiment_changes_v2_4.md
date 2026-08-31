@@ -152,3 +152,12 @@
 - **수정 내용**: redaction evidence 다음에 I0/full receipt/8 targets/tool/interpreter/command evidence와 legacy schema를 pre-open 검증하고, 그 후에만 `_commit_core`를 호출하도록 분리했다. source-derived CSV/raw map 비교는 commit 후단에만 수행한다. malformed/missing/wrong identity 6종에서 source-open spy 0, valid receipt에서만 1임을 synthetic test로 고정했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·다섯 번째 fresh safety review 대기 — fixed Python 3.11 isolated 49 tests PASS, 실제 candidate source 접근 0, receipt 0.
+
+### 18. V2.4-D I0→I1 A/A chain 정합성 교정 — 2026-09-01
+
+- **수정 에이전트**: fifth fresh @i0-safety-reviewer, @experiment-planner, fresh @methodology-reviewer, @Codex
+- **증상/문제**: I0 safety는 마침내 PASS했지만 code-only I0에서 real commitment를 제외한다는 계약과 `I0→I1`에서 commitment를 `M`으로 요구하는 diff 표기가 모순이었다.
+- **원인**: deprecated commitment 삭제를 I0 설계에 반영하면서 downstream diff status 한 곳이 과거 placeholder 전제에 남아 있었다.
+- **수정 내용**: fifth reviewer가 I0 `7388a41`의 8 targets·49 tests·prior failure closure를 검증해 PASS receipt SHA `b90aa91b…4676`을 생성했다. 그 reviewed tool로 hash-only commitment를 한 번 생성해 source map exact 일치를 확인했으나 M/A 모순 발견 즉시 uncommitted artifact를 폐기하고 confirmatory provenance에서 제외했다. revision 7은 I0 commitment path absent와 I0→I1 `A commitment + A deviation`을 exact gate로 고쳤고 cumulative reviewer가 P0 8 PASS/0 FAIL로 승인했다.
+- **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md:1`, `docs/plans/review_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
+- **상태**: revision 7 승인·새 I0 필요 — plan SHA `33435f87ce56c9bcef38b6ea3bb985e305ac02b5a1ebebdb4af69e9a241b4381`, review SHA `14826d4d0a35da53e4a8603759916b667bfcc844d3c027ca2a1abd0d8636602d`. Discarded artifact는 scoring/approval/commit 0, candidate decode/parse/output 0.
