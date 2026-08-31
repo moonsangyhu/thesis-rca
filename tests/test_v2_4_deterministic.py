@@ -96,7 +96,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
             for index in range(117): (raw / f"{index:03d}.json").write_bytes(b"CANDIDATE_SECRET")
             csv_path = root / "input.csv"; csv_path.write_bytes(b"CSV_SECRET")
             out = io.StringIO(); err = io.StringIO()
-            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err): commit_inputs.main(["--csv", str(csv_path), "--raw-dir", str(raw), "--out", str(root / "commit.json")])
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err): commit_inputs.main(["--csv", str(csv_path), "--raw-dir", str(raw), "--out", str(root / "commit.json"), "--_skip-self-test"])
             self.assertNotIn("SECRET", out.getvalue() + err.getvalue())
 
     def test_21_statistics_known_answers_and_canonical_float(self):
@@ -123,7 +123,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 incident = f"{fault}-t{trial}"
                 payload = synthetic_candidate(ontology, incident) if incident in run.SELECTED else {"identified_fault_type": "x", "root_cause": "x", "remediation": ["x"]}
                 (raw_dir / f"raw-{number:03d}.json").write_text(json.dumps({"fault_id": fault, "trial": trial, "context_condition": condition, "representative_output": payload}), encoding="utf-8")
-        commitment = root / "commitment.json"; commit_inputs.main(["--csv", str(csv_path), "--raw-dir", str(raw_dir), "--out", str(commitment)])
+        commitment = root / "commitment.json"; commit_inputs.main(["--csv", str(csv_path), "--raw-dir", str(raw_dir), "--out", str(commitment), "--_skip-self-test"])
         # Legacy runner fixture adapter only; the reviewed commitment producer
         # intentionally never emits a source basename/path.
         envelope = json.loads(commitment.read_text(encoding="utf-8")); envelope.pop("entry_manifest_sha256", None); envelope["csv"].pop("id_sha256", None); envelope["csv"]["path"] = csv_path.name
@@ -277,7 +277,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
             csv_path.write_bytes(content)
             for index in range(117): (raw/f"{index:03d}.json").write_bytes(content)
             stdout=io.StringIO()
-            with contextlib.redirect_stdout(stdout): commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out_path)])
+            with contextlib.redirect_stdout(stdout): commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out_path),"--_skip-self-test"])
             rendered=out_path.read_text(encoding="utf-8")+stdout.getvalue()
             self.assertNotIn("PATH_SENTINEL", rendered); self.assertNotIn("CONTENT_SENTINEL", rendered)
             self.assertTrue(all(value.startswith("sha256:") for value in json.loads(out_path.read_text())["provenance"]["argv"][1::2]))
@@ -293,6 +293,24 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 return values
             with mock.patch("experiments.v2_4_deterministic.commit_inputs.os.listdir", side_effect=exchange):
                 with self.assertRaises((ValueError, OSError)): commit_inputs.commit(csv_path, raw)
+
+    def test_44_real_mode_receipt_legacy_and_evidence_provenance(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd(), prefix="SOURCE_PATH_SENTINEL") as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"source.csv"; csv_path.write_bytes(b"CONTENT_SENTINEL")
+            for index in range(117): (raw/f"{index:03d}.json").write_bytes(b"CONTENT_SENTINEL")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(commit_inputs.commit(csv_path,raw)),encoding="utf-8")
+            reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps({"status":"PASS","reviewed_i0":reviewed,"tool_blob_oid":commit_inputs._blob_oid(Path(commit_inputs.__file__))}),encoding="utf-8")
+            out=root/"out"; self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
+            data=json.loads(out.read_text()); p=data["provenance"]
+            for key in ("tool_blob_oid","tool_sha256","interpreter_path","interpreter_sha256","cwd","argv","allowlisted_environment","source_root_device_inode","redaction_self_test","entry_manifest_sha256","safety_receipt_sha256","reviewed_i0","legacy_source_drift"):
+                self.assertIn(key,p)
+            self.assertEqual(p["redaction_self_test"]["status"],"PASS"); self.assertEqual(p["legacy_source_drift"],"EXACT_MATCH")
+            self.assertNotIn("SOURCE_PATH_SENTINEL",out.read_text()); self.assertNotIn("CONTENT_SENTINEL",out.read_text())
+
+    def test_45_cli_error_is_fixed_and_path_free(self):
+        err=io.StringIO()
+        with contextlib.redirect_stderr(err): code=commit_inputs.main(["--csv","PATH_SENTINEL"])
+        self.assertEqual(code,1); self.assertEqual(err.getvalue(),"COMMITMENT_FAILED\n")
 
 
 if __name__ == "__main__":
