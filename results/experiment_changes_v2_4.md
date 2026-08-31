@@ -260,3 +260,12 @@
 - **수정 내용**: 계획의 exact canonical text·SHA record를 production 상수로 동결하고 deviation 값의 exact equality 및 상수/수신 text hash 재계산을 모두 강제했다. 자기일치하지만 다른 attestation을 거부하는 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 65 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
+
+### 30. V2.4-D legacy source-map artifact identity 동결 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: legacy reference가 historical shape만 만족하면 임의 117-entry map도 수용돼, 변경된 source와 그에 맞춘 fabricated map을 함께 제공할 경우 `legacy_source_drift=EXACT_MATCH`가 될 수 있었다.
+- **원인**: legacy parser와 비교기는 caller가 준 map 내부만 검증했고, plan이 허용한 exact pre-I0 artifact bytes/Git blob identity에 결합하지 않았다.
+- **수정 내용**: approved historical commitment의 exact Git blob OID `6e5a4cdb...22f`와 file SHA-256 `c4d9bd1b...2085`를 production 상수로 동결했다. external legacy bytes가 두 identity와 모두 일치해야 duplicate-safe parse와 schema 검증으로 진행한다. shape-valid fabricated reference가 valid receipt 이후에도 source-open 0으로 거부되는 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 66 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.

@@ -18,6 +18,10 @@ from pathlib import Path
 _DIR_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
 _FILE_FLAGS = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
 _SAFETY_TARGETS=("experiments/v2_4_deterministic/__init__.py","experiments/v2_4_deterministic/build_ontology.py","experiments/v2_4_deterministic/commit_inputs.py","experiments/v2_4_deterministic/scorer.py","experiments/v2_4_deterministic/analyze.py","experiments/v2_4_deterministic/run.py","experiments/v2_4_deterministic/ontology_v1.json","tests/test_v2_4_deterministic.py")
+HISTORICAL_LEGACY_REFERENCE_IDENTITY={
+    "blob_oid":"6e5a4cdb0a0950c27b12fc42ea0767da975ab22f",
+    "sha256":"c4d9bd1b0ee54a23e1f29a4f6483efe4f051126d5a8020277cad9bf764462085",
+}
 
 
 def _nonnegative_int(value: object) -> bool:
@@ -148,8 +152,12 @@ def _redaction_self_test() -> dict | None:
     return evidence if _valid_evidence(evidence) else None
 
 
+def _blob_oid_bytes(data: bytes) -> str:
+    return hashlib.sha1(f"blob {len(data)}\0".encode()+data).hexdigest()
+
+
 def _blob_oid(path: Path) -> str:
-    data=path.read_bytes(); return hashlib.sha1(f"blob {len(data)}\0".encode()+data).hexdigest()
+    return _blob_oid_bytes(path.read_bytes())
 
 
 def _is_sha256(value: object) -> bool:
@@ -160,21 +168,26 @@ def _is_blob_oid(value: object) -> bool:
     return isinstance(value, str) and len(value) == 40 and all(ch in "0123456789abcdef" for ch in value)
 
 
+def _reject_duplicate_pairs(items):
+    value={}
+    for key,item in items:
+        if key in value: raise ValueError("DUPLICATE_KEY")
+        value[key]=item
+    return value
+
+
 def _load_json(path: Path) -> dict:
-    def pairs(items):
-        value={}
-        for key,item in items:
-            if key in value: raise ValueError("DUPLICATE_KEY")
-            value[key]=item
-        return value
-    value=json.loads(path.read_text(encoding="utf-8"),object_pairs_hook=pairs)
+    value=json.loads(path.read_text(encoding="utf-8"),object_pairs_hook=_reject_duplicate_pairs)
     if not isinstance(value,dict): raise ValueError("INVALID_PROVENANCE")
     return value
 
 
 def _parse_legacy_reference(legacy_path: Path) -> dict:
-    """Read only the reference envelope shape; never open the input sources here."""
-    legacy=_load_json(legacy_path)
+    """Require the fixed historical artifact identity before duplicate-safe parsing."""
+    payload=legacy_path.read_bytes()
+    if hashlib.sha256(payload).hexdigest()!=HISTORICAL_LEGACY_REFERENCE_IDENTITY["sha256"] or _blob_oid_bytes(payload)!=HISTORICAL_LEGACY_REFERENCE_IDENTITY["blob_oid"]: raise ValueError("LEGACY_IDENTITY")
+    legacy=json.loads(payload.decode("utf-8"),object_pairs_hook=lambda items: _reject_duplicate_pairs(items))
+    if not isinstance(legacy,dict): raise ValueError("INVALID_PROVENANCE")
     allowed={"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256","provenance"}
     if set(legacy)-allowed or not {"raw_files","raw_count","csv"} <= set(legacy) or legacy.get("raw_count") != 117 or not isinstance(legacy["raw_files"],list) or len(legacy["raw_files"]) != 117 or not isinstance(legacy["csv"],dict): raise ValueError("LEGACY_SCHEMA")
     raw_files=legacy["raw_files"]
