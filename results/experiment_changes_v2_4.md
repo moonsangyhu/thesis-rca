@@ -62,3 +62,12 @@
 - **수정 내용**: candidate output 본문을 열지 않은 상태에서 12 incidents의 component·fault·mechanism·remediation positive path와 contradiction group, JSON schema, NFKC/token/negation 규칙, synthetic-only tests 20범주, opaque input commitment, exact one-sided paired test와 descriptive sensitivity, fail-closed missingness, clean-checkout replay, result-independent change control과 DoD를 상세 계획으로 고정했다. 기존 human plan은 수정하지 않았다.
 - **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
 - **상태**: Step 1 완료·Step 2 독립 비평 대기 — candidate output 본문 접근 0, scorer 실행 0, 결과 생성 0, 외부 모델/API/K8s 호출 0.
+
+### 8. V2.4-D 최초 방법론 비평의 P0 승인 거부 — 2026-08-31
+
+- **수정 에이전트**: fresh @methodology-reviewer, @Codex
+- **증상/문제**: 최초 계획의 lexical matcher가 정답 ontology를 전사했더라도 component mention을 localization으로 해석하고, 일부 fault·negation·remediation 표현을 비대칭적으로 판정할 위험이 있었다.
+- **원인**: 자유서술 `root_cause`에는 culprit 전용 field가 없고, FA에 mechanism alias와 다른 7 family 일괄 contradiction이 섞였으며, 3-token negation·ASCII regex boundary·remediation multi-item 결합·선택적 secondary test·implementation 이전 freeze review가 충분히 엄격하지 않았다.
+- **수정 내용**: candidate output을 열지 않은 fresh reviewer가 ground truth와 plan만으로 17개 P0 gate를 검토했다. exact paired test, MCA core, missingness와 주장 경계는 통과했지만 component 구성, FA 대칭성, DNF, negation, regex, multiplicity, 2단계 freeze gate를 FAIL로 기록하고 Step 3 승인을 거부했다. 실패 리뷰를 보존하고 plan 수정·재검토를 다음 checkpoint로 고정했다.
+- **수정 파일**: `docs/plans/review_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 요구 — candidate output 본문 접근 0, scorer 실행 0, 결과 생성 0. 모든 P0가 PASS하기 전 구현·실데이터 채점 금지.
