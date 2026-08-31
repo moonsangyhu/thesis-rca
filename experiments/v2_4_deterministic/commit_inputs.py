@@ -180,7 +180,9 @@ def _parse_legacy_reference(legacy_path: Path) -> dict:
     raw_files=legacy["raw_files"]
     if any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*\.json",item["path"]) or "/" in item["path"] or "\\" in item["path"] or item["path"].startswith(".") or not _nonnegative_int(item["size"]) or not _is_sha256(item["sha256"]) for item in raw_files) or raw_files != sorted(raw_files,key=lambda item:item["path"]) or len({item["path"] for item in raw_files}) != 117: raise ValueError("LEGACY_SCHEMA")
     csv_map=legacy["csv"]
-    if set(csv_map)!={"id_sha256","size","sha256"} or not _nonnegative_int(csv_map["size"]) or not _is_sha256(csv_map["sha256"]) or not _is_sha256(csv_map["id_sha256"]): raise ValueError("LEGACY_SCHEMA")
+    # The historical artifact predates the active id_sha256 schema.  Its
+    # basename is opaque-but-nonsecret metadata, never an input source path.
+    if set(csv_map)!={"path","size","sha256"} or not isinstance(csv_map["path"],str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*\.csv",csv_map["path"]) or "/" in csv_map["path"] or "\\" in csv_map["path"] or csv_map["path"].startswith(".") or not _nonnegative_int(csv_map["size"]) or not _is_sha256(csv_map["sha256"]): raise ValueError("LEGACY_SCHEMA")
     for name in ("entry_manifest_sha256","commitment_sha256"):
         if name in legacy and not _is_sha256(legacy[name]): raise ValueError("LEGACY_SCHEMA")
     if "provenance" in legacy and not isinstance(legacy["provenance"],dict): raise ValueError("LEGACY_SCHEMA")
