@@ -188,3 +188,12 @@
 - **수정 내용**: reviewed producer의 `csv{id_sha256,size,sha256}`, `entry_manifest_sha256`, `reviewed_i0`를 유일 canonical schema로 고정하고 direct producer→runner bridge를 요구했다. runtime ontology exact const/inventory, consumed-span unresolved negation INVALID, raw all-entry rejection을 고정했다. machine parse는 date·best-known dirty HEAD·command·28 PASS·`NOT_RETAINED` streams와 evidence hash를 공개하고, process access 0 주장을 금지했다. 텍스트 egress/V2.4-D execution/output-derived tuning이 모두 false일 때만 `CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION`을 허용하며 반증 시 INVALID다. reviewer가 P0 12 PASS/0 FAIL로 승인했다.
 - **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md`, `docs/plans/review_v2_4_deterministic.md`, `results/experiment_changes_v2_4.md`
 - **상태**: revision 8 승인·새 I0 필요 — plan SHA `3a9c7586f51bc7444ea432a933bd149f31e4f06f47d3a5383fb561407e2870f1`, review SHA `842a484710461ed109a9263b387fb21fb4e78defe4a80d7daa5a818251e3b2d8`. Stricter reader는 exploratory로 해석할 수 있다는 한계를 유지한다.
+
+### 22. V2.4-D revision 8 runtime/schema I0 구현 — 2026-09-01
+
+- **수정 에이전트**: @implementation-worker, @Codex
+- **증상/문제**: full I1 review에서 runtime ontology·negation과 producer→runner schema가 plan과 달라 승인 후에도 INVALID가 될 결함이 있었다.
+- **원인**: builder와 scorer가 exact schema validator를 공유하지 않았고, runner가 producer가 만들지 않는 alias field를 기대했다. raw enumeration과 deviation waiver도 각자 축약 구현이었다.
+- **수정 내용**: scorer/builder shared exact ontology validator에 duplicate/order/const/12 identity/path inventory를 고정했다. unconsumed concept-associated negation을 INVALID 처리했다. commitment producer의 canonical schema를 shared validator로 runner가 직접 소비하고 synthetic producer→runner bridge를 추가했다. raw direct entries 전체를 descriptor 기반으로 열거해 extra/nested/non-json/symlink를 거부한다. revision 8 deviation disclosure와 approval waiver를 pre-open 강제하고 full-review counterexample을 58 tests에 추가했다. 이전 I1 commitment/deviation은 새 I0에서 제거했다.
+- **수정 파일**: `experiments/v2_4_deterministic/build_ontology.py`, `experiments/v2_4_deterministic/commit_inputs.py`, `experiments/v2_4_deterministic/run.py`, `experiments/v2_4_deterministic/scorer.py`, `tests/test_v2_4_deterministic.py`, 기존 I1 commitment/deviation 삭제, `results/experiment_changes_v2_4.md`
+- **상태**: 새 code-only I0 commit 대기 — fixed Python 3.11 isolated 58 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual source 접근 0.
