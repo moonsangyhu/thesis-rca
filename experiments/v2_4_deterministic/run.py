@@ -274,7 +274,11 @@ def _strict_target_map(value, expected_paths: tuple[str, ...]) -> dict:
 
 def _strict_approval_gate(path: Path) -> dict:
     """Parse the release approval, whose schema intentionally freezes every gate."""
-    approval = _load_json_metadata(path)
+    return _strict_approval_value(_load_json_metadata(path))
+
+
+def _strict_approval_value(approval: dict) -> dict:
+    """Validate a duplicate-safe approval object already read from stable bytes."""
     required = {
         "approval_version", "approval", "execution_commit", "approved_bundle",
         "implementation_candidate", "code_candidate", "semantic_review",
@@ -324,6 +328,27 @@ def _strict_approval_gate(path: Path) -> dict:
     if approval["semantic_review"]["path"] != SEMANTIC_REVIEW or approval["implementation_review"]["path"] != IMPLEMENTATION_REVIEW or approval["commitment"]["path"] != COMMITMENT_DOCUMENT or approval["deviation"]["path"] != DEVIATION_DOCUMENT:
         raise RunInvalid("APPROVAL_SCHEMA")
     return approval
+
+
+def _stable_metadata_bytes(path: Path, *, with_identity: bool = False):
+    """Read metadata once through commit_inputs' descriptor-anchored reader."""
+    try:
+        return commit_inputs._read_stable_metadata_bytes(Path(path), with_identity=with_identity)
+    except (OSError, ValueError) as exc:
+        raise RunInvalid("UNSAFE_METADATA") from exc
+
+
+def _blob_oid_bytes(payload: bytes) -> str:
+    return hashlib.sha1(f"blob {len(payload)}\0".encode() + payload).hexdigest()
+
+
+def _canonical_approval_path(root: Path, supplied: Path) -> Path:
+    """Only the lexical, tracked approval pathname is authority in real mode."""
+    path = Path(os.path.abspath(os.fspath(supplied)))
+    canonical = root / APPROVAL_DOCUMENT
+    if path != canonical:
+        raise RunInvalid("APPROVAL_PATH_MISMATCH")
+    return canonical
 
 
 def _git_blob_record(repo: Path, commit: str, path: str) -> dict:
@@ -428,7 +453,9 @@ def _validate_deviation(value: object, root: Path, historical_evidence: dict | N
 def _repository_gate(*, approval_path: Path, code_candidate: str, implementation_candidate: str, approved_bundle: str, execution_commit: str) -> tuple[dict, dict]:
     """Validate all git/provenance identities before *any* candidate path operation."""
     root = _repo_root()
-    approval = _strict_approval_gate(approval_path)
+    canonical_approval = _canonical_approval_path(root, approval_path)
+    approval_bytes, approval_stable = _stable_metadata_bytes(canonical_approval, with_identity=True)
+    approval = _strict_approval_value(_load_json_metadata_bytes(approval_bytes))
     if (approval["code_candidate"], approval["implementation_candidate"], approval["approved_bundle"], approval["execution_commit"]) != (code_candidate, implementation_candidate, approved_bundle, execution_commit):
         raise RunInvalid("APPROVAL_ARGUMENT_MISMATCH")
     if _git(root, "rev-parse", "HEAD") != execution_commit:
@@ -489,7 +516,9 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
     if authorization["execution_commit"] != execution_commit:
         raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
     _verified_external_file(root, authorization)
-    approval_record = _git_blob_record(root, execution_commit, APPROVAL_DOCUMENT)
+    approval_record = {"blob_oid": _blob_oid_bytes(approval_bytes), "sha256": _sha256_bytes(approval_bytes)}
+    if approval_record != _git_blob_record(root, execution_commit, APPROVAL_DOCUMENT):
+        raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
     if approval_record != {"blob_oid": authorization["approval_blob_oid"], "sha256": authorization["approval_sha256"]}:
         raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
     if approval["ground_truth"]["sha256"] != GT_SHA256 or approval["ground_truth"]["projection_sha256"] != GT_PROJECTION_SHA256:
@@ -497,7 +526,16 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
     interpreter = approval["interpreter"]
     if Path(interpreter["path"]).resolve() != Path(sys.executable).resolve() or _sha256_bytes(Path(sys.executable).read_bytes()) != interpreter["sha256"] or interpreter["version"] != sys.version:
         raise RunInvalid("INTERPRETER_IDENTITY_MISMATCH")
-    return approval, {"repository_root": str(root), "approval_sha256": _sha256_bytes(Path(approval_path).read_bytes()), "verified_identities": {"i0": code_candidate, "i1": implementation_candidate, "bundle": approved_bundle, "approval": execution_commit}, "i0_safety_scope": approval["i0_safety_scope"], "i1_targets": approval["i1_targets"]}
+    return approval, {
+        "repository_root": str(root),
+        "approval_sha256": approval_record["sha256"],
+        "approval_path": str(canonical_approval),
+        "approval_record": approval_record,
+        "approval_stable_identity": approval_stable,
+        "verified_identities": {"i0": code_candidate, "i1": implementation_candidate, "bundle": approved_bundle, "approval": execution_commit},
+        "i0_safety_scope": approval["i0_safety_scope"],
+        "i1_targets": approval["i1_targets"],
+    }
 
 
 def _exact_approved_path(root: Path, supplied: Path, expected: str) -> Path:
@@ -523,13 +561,27 @@ def _bind_full_inputs(approval: dict, preflight: dict, commitment: Path, ontolog
     except (RunInvalid,ValueError) as exc:
         raise RunInvalid("APPROVED_COMMITMENT_INVALID") from exc
     scorer.load_ontology(ontology_path)
-    return {"_marker":_FULL_AUTHORIZATION_MARKER,"root":root,"commitment_path":commitment_path,"ontology_path":ontology_path,"commitment_sha256":_sha256_bytes(commitment_bytes),"ontology_sha256":_sha256_bytes(ontology_bytes),"identities":preflight["verified_identities"],"i1_targets":approval["i1_targets"]}
+    approval_path = _canonical_approval_path(root, Path(preflight.get("approval_path", "")))
+    approval_record = preflight.get("approval_record")
+    approval_stable = preflight.get("approval_stable_identity")
+    if not isinstance(approval_record, dict) or set(approval_record) != {"blob_oid", "sha256"} or not isinstance(approval_stable, dict):
+        raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    return {"_marker":_FULL_AUTHORIZATION_MARKER,"root":root,"commitment_path":commitment_path,"ontology_path":ontology_path,"commitment_sha256":_sha256_bytes(commitment_bytes),"ontology_sha256":_sha256_bytes(ontology_bytes),"identities":preflight["verified_identities"],"i1_targets":approval["i1_targets"],"approval_path":approval_path,"approval_record":dict(approval_record),"approval_stable_identity":dict(approval_stable)}
 
 
 def _revalidate_full_inputs(snapshot: dict, commitment: Path, ontology: Path) -> None:
     root=snapshot.get("root") if isinstance(snapshot,dict) else None
     if not isinstance(root,Path) or snapshot.get("_marker") is not _FULL_AUTHORIZATION_MARKER: raise RunInvalid("APPROVAL_LIFETIME_INVALID")
     if _exact_approved_path(root,commitment,COMMITMENT_DOCUMENT)!=snapshot.get("commitment_path") or _exact_approved_path(root,ontology,ONTOLOGY_DOCUMENT)!=snapshot.get("ontology_path"):
+        raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    approval_path = snapshot.get("approval_path")
+    approval_record = snapshot.get("approval_record")
+    approval_stable = snapshot.get("approval_stable_identity")
+    if not isinstance(approval_path, Path) or not isinstance(approval_record, dict) or not isinstance(approval_stable, dict):
+        raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    approval_bytes, current_approval_stable = _stable_metadata_bytes(approval_path, with_identity=True)
+    current_approval_record = {"blob_oid": _blob_oid_bytes(approval_bytes), "sha256": _sha256_bytes(approval_bytes)}
+    if current_approval_stable != approval_stable or current_approval_record != approval_record or _git_blob_record(root, snapshot["identities"]["approval"], APPROVAL_DOCUMENT) != approval_record:
         raise RunInvalid("APPROVAL_LIFETIME_INVALID")
     for path,record in snapshot.get("i1_targets",{}).items():
         payload,_=_open_verified(root/path)
@@ -684,28 +736,6 @@ def _write_bytes(path: Path, data: bytes) -> None:
         handle.write(data); handle.flush(); os.fsync(handle.fileno())
 
 
-def _exclusive_write(path: Path, data: bytes) -> None:
-    """Create a new regular file without following or replacing any existing name."""
-    path=Path(path)
-    _check_ancestors(path.parent)
-    flags=os.O_WRONLY|os.O_CREAT|os.O_EXCL|getattr(os,"O_NOFOLLOW",0)
-    try:
-        fd=os.open(path,flags,0o600)
-    except OSError as exc:
-        raise RunInvalid("SAFE_PUBLICATION_FAILED") from exc
-    try:
-        info=os.fstat(fd)
-        if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1: raise RunInvalid("SAFE_PUBLICATION_FAILED")
-        offset=0
-        while offset<len(data):
-            written=os.write(fd,data[offset:])
-            if written<=0: raise RunInvalid("SAFE_PUBLICATION_FAILED")
-            offset+=written
-        os.fsync(fd)
-    finally:
-        os.close(fd)
-
-
 def _fsync_tree(root: Path) -> None:
     for item in sorted(root.iterdir()):
         if item.is_file():
@@ -783,18 +813,60 @@ def _file_digest_map(directory: Path) -> dict:
 
 def _write_invalid_receipt(output: Path, reason: str) -> Path:
     """Publish only a body-free invalid receipt; never create the release root."""
-    destination = output.parent / ("." + output.name + ".invalid.json")
-    temporary = output.parent / ("." + output.name + ".invalid.tmp")
+    output = Path(output)
+    parent = output.parent
+    destination_name = "." + output.name + ".invalid.json"
+    temporary_name = "." + output.name + ".invalid.tmp"
+    if output.name in {"", ".", ".."} or any("/" in name or "\\" in name for name in (destination_name, temporary_name)):
+        raise RunInvalid("SAFE_PUBLICATION_FAILED")
     safe_reason = reason if re.fullmatch(r"[A-Z0-9_]+", reason) else "RUN_FAILURE"
-    _exclusive_write(temporary, _canonical({"status": "INVALID", "reason": safe_reason, "candidate_text_emitted": False}) + b"\n")
+    data = _canonical({"status": "INVALID", "reason": safe_reason, "candidate_text_emitted": False}) + b"\n"
+    temporary_created = False
+    parent_fd = None
     try:
-        os.link(temporary,destination,follow_symlinks=False)
-        os.unlink(temporary)
-    except OSError as exc:
-        try: os.unlink(temporary)
-        except OSError: pass
+        parent_fd, parent_info, lexical_parent = commit_inputs._open_dir_chain(parent)
+
+        def revalidate_parent() -> None:
+            current = os.stat(lexical_parent, follow_symlinks=False)
+            if (current.st_dev, current.st_ino) != (parent_info.st_dev, parent_info.st_ino):
+                raise RunInvalid("SAFE_PUBLICATION_FAILED")
+
+        revalidate_parent()
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+        temporary_fd = os.open(temporary_name, flags, 0o600, dir_fd=parent_fd)
+        temporary_created = True
+        try:
+            info = os.fstat(temporary_fd)
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                raise RunInvalid("SAFE_PUBLICATION_FAILED")
+            offset = 0
+            while offset < len(data):
+                written = os.write(temporary_fd, data[offset:])
+                if written <= 0:
+                    raise RunInvalid("SAFE_PUBLICATION_FAILED")
+                offset += written
+            os.fsync(temporary_fd)
+        finally:
+            os.close(temporary_fd)
+        revalidate_parent()
+        # linkat through the retained parent fd provides no-replace publication.
+        os.link(temporary_name, destination_name, src_dir_fd=parent_fd, dst_dir_fd=parent_fd, follow_symlinks=False)
+        revalidate_parent()
+        os.unlink(temporary_name, dir_fd=parent_fd)
+        temporary_created = False
+        os.fsync(parent_fd)
+        revalidate_parent()
+        return parent / destination_name
+    except (OSError, ValueError, RunInvalid) as exc:
+        if temporary_created and parent_fd is not None:
+            try:
+                os.unlink(temporary_name, dir_fd=parent_fd)
+            except OSError:
+                pass
         raise RunInvalid("SAFE_PUBLICATION_FAILED") from exc
-    return destination
+    finally:
+        if parent_fd is not None:
+            os.close(parent_fd)
 
 
 def _copy_artifact(source: Path, destination: Path) -> None:

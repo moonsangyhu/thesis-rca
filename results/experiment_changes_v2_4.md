@@ -305,3 +305,12 @@
 - **수정 내용**: real full run의 canonical commitment/ontology를 approved I1 path·blob·SHA와 결합하고 pre-open·hidden replay 사이·release 직전에 authorization을 재검증한다. ontology bytes를 approved SHA와 exact bind하고 nested duplicate JSON을 거부한다. summary/final manifest에 independent methodology disposition, primary/remediation 상태, timestamps, I0/I1/B/A, deviation flags와 actual preflight hashes를 기록한다. INVALID receipt는 exclusive no-follow temp와 no-overwrite publication으로 변경했다. 다섯 반증을 regression으로 추가했다. FAIL review는 누적 review에 보존하고 이전 I1 commitment/deviation은 새 I0에서 제거했다.
 - **수정 파일**: `experiments/v2_4_deterministic/scorer.py`, `experiments/v2_4_deterministic/analyze.py`, `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `docs/plans/review_v2_4_deterministic_implementation.md`, 기존 I1 commitment/deviation 삭제, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety/full review 대기 — fixed Python 3.11 isolated 78 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; real scoring/candidate body/GT 접근 0.
+
+### 35. V2.4-D approval bytes·INVALID parent binding 보완 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: runtime `--approval`에서 읽은 bytes가 commit A의 canonical approval blob과 결합되지 않아 schema-valid 대체 승인 파일을 사용할 수 있었다. INVALID receipt leaf는 no-follow였지만 parent directory 교체 경쟁이 남았다.
+- **원인**: execution authorization은 A:path 선언만 검증하고 실제 loaded approval bytes/path identity를 비교하지 않았다. INVALID publisher는 absolute path check/open/link를 사용해 ancestor를 descriptor에 고정하지 않았다.
+- **수정 내용**: real approval을 canonical repo path로 제한하고 componentwise no-follow stable bytes를 A Git blob OID/SHA 및 execution authorization과 exact 비교한다. approval identity를 authorization snapshot에 포함해 candidate 전·hidden replay 사이·release 전에 재검증한다. INVALID receipt는 anchored parent dirfd의 `openat(O_EXCL|O_NOFOLLOW)`과 dirfd link/unlink로 publish하고 parent identity를 전후 검증한다. alternate/symlink/swapped approval과 tmp/destination/ancestor 공격 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety/full review 대기 — fixed Python 3.11 isolated 83 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth/candidate 접근 0.
