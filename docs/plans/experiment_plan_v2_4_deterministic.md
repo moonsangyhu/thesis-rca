@@ -1,8 +1,10 @@
-# V2.4-D 결정론적 RCA 채점 실험 계획
+# V2.4-D 결정론적 lexical concordance 실험 계획 — revision 4
 
 > 작성일: 2026-08-31
 >
-> 단계: Experiment Track Step 1 — 상세 설계, 구현·실행 전
+> 단계: Experiment Track Step 1 — Revision 3 자기참조 hash P0 반영본, 구현·실행 전
+>
+> revision 4 근거: semantic review final SHA의 self-reference 제거
 >
 > 선행 분석: `docs/surveys/deep_analysis_v2_4_deterministic.md`
 >
@@ -17,19 +19,21 @@ V2.4-D는 새 생성 실험이 아니라, V2.3 Primary03에서 이미 동결된 
 단일 검증 질문은 다음과 같다.
 
 > **H-V2.4-D:** 동일 incident에서 blind procedural RAG는 length placebo보다
-> deterministic Joint RCA Accuracy(`JRA-D`)를 높이는가?
+> deterministic Joint Lexical Concordance(`JLC-D`)를 높이는가?
 
 - **독립변수:** `context_condition` 한 가지
   (`blind_procedural_rag` 대 `length_placebo`). 두 조건은 V2.3에서 이미 생성·동결됐다.
-- **종속변수:** incident별 binary `JRA-D = CA ∧ FA ∧ MCA`.
+- **종속변수:** incident별 binary `JLC-D = CM ∧ FLM ∧ MCA`.
 - **고정:** incident, representative-selection rule, 생성 결과, ground truth, 모델 provenance,
   scorer version, ontology, 정규화, 통계 절차.
 - **새 호출:** LLM/API/Codex/Copilot 0, K8s/Prometheus/Loki/SSH 0, fault injection 0.
 - **모델 정책:** 향후 호출이 있다면 `gpt-4o-mini` 고정 원칙을 적용하지만, 본 round에는
   모델 호출이나 모델 비교가 없다. Primary03의 봉인된 upstream model provenance를 그대로
   기록하며 모델을 독립변수로 해석하지 않는다.
-- **구성개념 경계:** 이 결과는 frozen synthetic ground-truth와 구조화 free-text의 lexical
-  concordance다. 사람과 동등한 의미 평가, production RCA, MTTR 개선을 뜻하지 않는다.
+- **구성개념 경계:** `CM`은 culprit localization이 아니라 component token mention이고,
+  `FLM`은 fault 이해가 아니라 canonical label mention이다. 이 결과는 frozen synthetic
+  ground-truth와 구조화 free-text의 lexical concordance다. Cloud-OpsBench CA/FA/JRA와
+  호환되거나 동등하지 않으며 사람 의미 평가, production RCA, MTTR 개선을 뜻하지 않는다.
 
 이 문서와 Step 2 독립 방법론 review가 확정되고, ontology·scorer·synthetic tests의 hash가
 candidate 결과를 보기 전에 봉인된 뒤, 사용자가 그 bundle을 명시 승인하기 전에는 구현 결과를
@@ -51,7 +55,8 @@ candidate 결과를 보기 전에 봉인된 뒤, 사용자가 그 bundle을 명�
 ### 1.2 공개 평가 계약
 
 - [Cloud-OpsBench](https://github.com/LLM4Ops/Cloud-OpsBench)의 Component Accuracy,
-  Fault-Type Accuracy, Joint RCA Accuracy를 기본 구조로 쓴다.
+  Fault-Type Accuracy, Joint RCA Accuracy는 구조화 축 분리의 선행 사례로만 참고한다. 자유서술
+  token mention을 쓰는 본 실험은 그 metric을 재현하거나 compatible extension을 구성하지 않는다.
 - [RCAEval](https://github.com/phamquiluan/RCAEval)은 root-cause service와 fault type의
   ground-truth 기반 exact scoring 근거다.
 - [OpenRCA](https://github.com/microsoft/OpenRCA)는 free-text RCA의 최종 제출을 component와
@@ -94,20 +99,22 @@ Primary03 CSV의 사전 확인 SHA-256은 다음 값으로 고정한다.
 
 | 축 | 허용 입력 field | 합격 조건 |
 |---|---|---|
-| `CA` | `root_cause`만 | canonical target component positive path 만족, contradiction 없음 |
-| `FA` | `identified_fault_type`만 | canonical fault family positive path 만족, contradiction 없음 |
+| `CM` | `root_cause`만 | canonical target component token이 언급됨 |
+| `FLM` | `identified_fault_type`만 | canonical fault label의 orthographic variant가 언급됨 |
 | `MCA` | `root_cause`만 | incident-specific mechanism positive path 만족, contradiction 없음 |
 | `RA` | `remediation[]`만 | accepted recovery path 하나를 완성, contradiction 없음 |
 
-- **Primary:** `JRA-D = CA ∧ FA ∧ MCA`.
-- **Secondary:** `FULL = JRA-D ∧ RA`, `CA`, `FA`, `MCA`, `RA`.
-- **Relaxed sensitivity:** `JRA-relaxed = CA ∧ FA`.
+- **Primary:** `JLC-D = CM ∧ FLM ∧ MCA`.
+- **Secondary:** `FULL = JLC-D ∧ RA`, `CM`, `FLM`, `MCA`, `RA`.
+- **Relaxed sensitivity:** `JLC-relaxed = CM ∧ FLM`.
 - candidate의 한 field에 있는 정답 단어는 다른 축으로 이동하지 않는다.
 - `RA`는 primary 판정에 포함하지 않는다. 복구 품질 저하는 별도
   `REMEDIATION_REGRESSION_FLAG`로 보고한다.
 
-`JRA-D`는 Cloud-OpsBench JRA에 mechanism gate를 추가한 local compatible extension이다.
-공식 Cloud-OpsBench score라고 부르지 않는다.
+`CM`은 canonical component가 `root_cause` 안에서 어떤 문법적 역할을 하는지 판별하지 않는다.
+피해 대상·dependency·배제된 대안으로 언급돼도 token 자체는 match할 수 있다. 따라서 primary의
+정확한 명칭은 `JLC-D`이며, component localization, fault classification accuracy, JRA 또는
+semantic correctness로 바꿔 부르지 않는다.
 
 ## 3. Ontology JSON 계약
 
@@ -138,12 +145,21 @@ Primary03 CSV의 사전 확인 SHA-256은 다음 값으로 고정한다.
     "negation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["window_tokens", "tokens", "phrases", "exceptions"],
+      "required": ["tokens", "phrases", "fillers", "coordinators", "contrasts",
+                   "exceptions", "grammar_ids"],
       "properties": {
-        "window_tokens": {"const": 3},
-        "tokens": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-        "phrases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-        "exceptions": {"const": ["not only"]}
+        "tokens": {"const": ["no", "not", "never", "without", "neither", "nor",
+                              "isnt", "wasnt", "arent", "werent", "cannot", "cant",
+                              "didnt", "doesnt", "wont"]},
+        "phrases": {"const": ["rule out", "ruled out", "not the cause", "not a cause",
+                               "not the root cause", "not the issue", "not the fault"]},
+        "fillers": {"const": ["a", "an", "the", "any", "evidence", "sign", "signs",
+                               "indication", "indications", "of", "for"]},
+        "coordinators": {"const": ["and", "or", "nor"]},
+        "contrasts": {"const": ["but", "however", "instead", "rather"]},
+        "exceptions": {"const": ["not only"]},
+        "grammar_ids": {"const": ["PRE_DIRECT", "PRE_COORD", "PRE_RULE", "POST_RULE",
+                                   "POST_CAUSE", "NOT_ONLY"]}
       }
     },
     "incidents": {
@@ -154,15 +170,31 @@ Primary03 CSV의 사전 확인 SHA-256은 다음 값으로 고정한다.
     }
   },
   "$defs": {
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_kind", "source_ref"],
+      "properties": {
+        "source_kind": {"enum": ["ground_truth", "public_taxonomy"]},
+        "source_ref": {"type": "string", "minLength": 1}
+      }
+    },
     "matcher": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "value", "polarity"],
+      "required": ["kind", "value", "polarity", "provenance"],
       "properties": {
-        "kind": {"enum": ["literal", "regex"]},
+        "kind": {"enum": ["literal", "token_predicate"]},
         "value": {"type": "string", "minLength": 1},
-        "polarity": {"enum": ["affirmative", "absence_assertion"]}
-      }
+        "polarity": {"enum": ["affirmative", "absence_assertion"]},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "token_predicate"}}},
+          "then": {"properties": {"value": {"const": "MEMORY_LIMIT_EXCEEDED_V1"}}}
+        }
+      ]
     },
     "group": {
       "type": "object",
@@ -225,10 +257,10 @@ Primary03 CSV의 사전 확인 SHA-256은 다음 값으로 고정한다.
         },
         "axes": {
           "type": "object", "additionalProperties": false,
-          "required": ["component", "fault", "mechanism", "remediation"],
+          "required": ["component_mention", "fault_label_mention", "mechanism", "remediation"],
           "properties": {
-            "component": {"$ref": "#/$defs/axis"},
-            "fault": {"$ref": "#/$defs/axis"},
+            "component_mention": {"$ref": "#/$defs/axis"},
+            "fault_label_mention": {"$ref": "#/$defs/axis"},
             "mechanism": {"$ref": "#/$defs/axis"},
             "remediation": {"$ref": "#/$defs/axis"}
           }
@@ -239,10 +271,25 @@ Primary03 CSV의 사전 확인 SHA-256은 다음 값으로 고정한다.
 }
 ```
 
-`literal`은 normalization 후 완전한 token sequence로만 match한다. `regex`는 normalized
-token stream 전체에 Python `re.fullmatch`가 아니라 `re.search`로 적용하되, 모든 패턴은
-계획에 명시된 `(?<![0-9a-z])`와 `(?![0-9a-z])` 경계를 포함해야 한다. 구현자가 새 alias나
-regex를 추가할 수 없다.
+`literal`은 normalization 후 완전한 token sequence로만 match한다. raw-text regex는 전면
+금지한다. 유일한 `token_predicate` 값은 `MEMORY_LIMIT_EXCEEDED_V1`이며 다음 유한 token sequence
+중 하나와 exact 일치한다.
+
+```text
+exceeded memory limit
+exceeded 16mi memory limit
+exceeded 24mi memory limit
+exceeded 16 mib memory limit
+exceeded 24 mib memory limit
+memory exceeded limit
+memory exceeded the limit
+memory usage exceeded limit
+memory usage exceeded the limit
+```
+
+다른 predicate ID, wildcard, substring, raw regex, fuzzy match는 schema validation에서 거부한다.
+모든 matcher는 `provenance.source_ref`에 exact ground-truth row/column 또는 공개 taxonomy URL과
+label을 기록한다. candidate 표현은 provenance가 될 수 없다.
 
 ## 4. 공통 concept lexicon
 
@@ -250,8 +297,8 @@ regex를 추가할 수 없다.
 
 - `/`로 구분한 문자열은 각각 `kind=literal`, `polarity=affirmative`다.
 - `absence:`는 그 부정어를 포함한 전체 phrase 자체가 장애 상태의 긍정 증거다.
-- `re:`는 그대로 저장하는 regex다.
-- literal과 regex는 normalization 후 값이다.
+- `pred:`는 위에서 고정한 token predicate ID다.
+- literal과 token predicate는 normalization 후 token sequence에만 적용한다.
 
 ### 4.1 Component groups
 
@@ -267,33 +314,35 @@ regex를 추가할 수 없다.
 | `C_REDIS_CART` | `redis cart` / `rediscart` |
 | `C_FRONTEND` | `frontend` / `front end` |
 
-Component 축의 contradiction 배열은 전 incident에서 빈 배열이다. 다른 service를 영향 범위로
-함께 적었다는 이유만으로 target localization을 0으로 만들지 않는다. 따라서 CA는
-`root_cause` 안의 canonical component 언급 정확도이며 문법적 culprit-role 판정은 아니다.
+CM 축의 contradiction 배열은 전 incident에서 빈 배열이다. 다른 service를 영향 범위로
+함께 적었다는 이유만으로 mention을 0으로 만들지 않는다. 따라서 CM은 `root_cause` 안의
+canonical component token mention이며 target localization이나 문법적 culprit-role 판정이 아니다.
 
 ### 4.2 Fault-family groups
 
 | ID | exact `any_of` |
 |---|---|
-| `FT_OOM` | `oomkilled` / `oom killed` / `out of memory` / `memory limit exceeded` / `container memory limit too low` |
-| `FT_CRASHLOOP` | `crashloopbackoff` / `crash loop back off` / `crash loop` / `startup crash` |
-| `FT_IMAGEPULL` | `imagepullbackoff` / `image pull back off` / `errimagepull` / `err image pull` / `failed to pull image` / `image pull failure` |
-| `FT_NODENOTREADY` | `nodenotready` / `node not ready` / `kubelet unavailable` |
-| `FT_PVCPENDING` | `pvcpending` / `pvc pending` / `persistent volume claim pending` / `volume provisioning failed` |
-| `FT_NETWORKPOLICY` | `networkpolicy` / `network policy` / `network policy denied` / `dropped by policy` |
-| `FT_CPUTHROTTLE` | `cputhrottle` / `cpu throttle` / `cpu throttled` / `cpu throttling` / `cfs throttled` / `container cpu limit too low` |
-| `FT_SERVICEENDPOINT` | `serviceendpoint` / `service endpoint` / `service selector mismatch` / `selector mismatch` / `absence:no endpoints` / `absence:zero endpoints` |
+| `FT_OOM` | `oomkilled` / `oom killed` |
+| `FT_CRASHLOOP` | `crashloopbackoff` / `crash loop back off` / `crash loop backoff` |
+| `FT_IMAGEPULL` | `imagepullbackoff` / `image pull back off` / `image pull backoff` |
+| `FT_NODENOTREADY` | `nodenotready` / `node not ready` |
+| `FT_PVCPENDING` | `pvcpending` / `pvc pending` |
+| `FT_NETWORKPOLICY` | `networkpolicy` / `network policy` |
+| `FT_CPUTHROTTLE` | `cputhrottle` / `cpu throttle` |
+| `FT_SERVICEENDPOINT` | `serviceendpoint` / `service endpoint` |
 
-각 incident의 FA contradiction은 위 표에서 자신의 group을 제외한 나머지 7개 group 전부다.
-다중 fault family를 긍정적으로 나열한 모호한 진단은 FA=0이다. negated alternative는
-contradiction으로 세지 않는다.
+FLM alias는 `results/ground_truth.csv:fault_name`의 case·separator 결합/분리만 허용한다.
+mechanism·symptom·약어 확장으로 label acceptance set을 넓히지 않는다. 전 incident의 FLM
+`contradictions`는 빈 배열이다. 다른 family label이 함께 있다는 사실만으로 mutually exclusive
+root-cause assertion인지 판별할 finite grammar가 없기 때문이다. 그러므로 FLM은 classification
+accuracy가 아니라 canonical fault-label mention일 뿐이다.
 
 ### 4.3 Mechanism groups
 
 | ID | exact `any_of` |
 |---|---|
 | `M_MEMORY_LIMIT` | `memory limit` / `memory cgroup limit` / `container memory limit` |
-| `M_LIMIT_TOO_LOW` | `memory limit too low` / `insufficient memory limit` / `re:(?<![0-9a-z])exceeded(?: [0-9]+(?:mi|mib)?)? memory limit(?![0-9a-z])` / `re:(?<![0-9a-z])memory(?: usage)? exceeded(?: the)? limit(?![0-9a-z])` |
+| `M_LIMIT_TOO_LOW` | `memory limit too low` / `insufficient memory limit` / `pred:MEMORY_LIMIT_EXCEEDED_V1` |
 | `M_OOM_TERMINATION` | `oom killer terminated` / `oom killed` / `oomkilled` / `killed by oom` / `exit code 137` |
 | `M_BAD_ENTRYPOINT` | `corrupted entrypoint` / `corrupt entrypoint` / `invalid entrypoint` / `broken entrypoint` / `wrong entrypoint` / `misconfigured entrypoint` / `corrupted entry point` / `invalid entry point` / `broken startup command` / `invalid startup command` / `wrong container command` |
 | `M_STARTUP_EXIT` | `crashes on startup` / `crashed on startup` / `startup failure` / `startup exit` / `exits on startup` / `exit code 1` |
@@ -321,62 +370,38 @@ contradiction으로 세지 않는다.
 
 ### 4.4 Contradiction groups
 
-| ID | exact `any_of` |
-|---|---|
-| `X_CPU_LIMIT` | `cpu limit too low` / `cpu throttling` / `cpu throttled` |
-| `X_MEMORY_LIMIT` | `memory limit too low` / `oom killed` / `out of memory` |
-| `X_IMAGE_REFERENCE` | `image pull` / `image tag` / `image digest` / `registry url` |
-| `X_NETWORK_POLICY` | `network policy` / `networkpolicy` / `dropped by policy` |
-| `X_SERVICE_SELECTOR` | `service selector` / `selector mismatch` / `no endpoints` |
-| `X_SMTP` | `smtp configuration` / `smtp connection` |
-| `X_NULL_POINTER` | `nullpointerexception` / `null pointer exception` |
-| `X_PORT_CONFLICT` | `port conflict` / `address already in use` / `bind failure` |
-| `X_MISSING_FLAG` | `missing required flag` / `missing command line flag` |
-| `X_REGISTRY_DNS` | `registry url typo` / `dns resolution failure` / `no such host` |
-| `X_DIGEST` | `digest mismatch` / `invalid digest` / `invalid sha256` |
-| `X_REGISTRY_AUTH` | `missing imagepullsecret` / `authentication required` / `registry authentication` / `unauthorized registry` |
-| `X_RATE_LIMIT` | `rate limit` / `too many requests` / `429` |
-| `X_IMAGE_TAG_MISSING` | `nonexistent image tag` / `manifest unknown` / `tag does not exist` |
-| `X_NETWORK_PARTITION` | `network partition` / `iptables blocking api` / `lease expired` |
-| `X_MEMORY_PRESSURE` | `memory pressure` / `stress ng` / `kernel oom` |
-| `X_DISK_PRESSURE` | `disk pressure` / `filesystem full` / `disk full` |
-| `X_RUNTIME_DOWN` | `containerd stopped` / `container runtime down` / `pleg not healthy` |
-| `X_STORAGECLASS` | `storageclass not found` / `storage class not found` / `premium ssd` |
-| `X_PROVISIONER` | `provisioner unavailable` / `provisioner not running` / `provisioner deleted` |
-| `X_STORAGE_CAPACITY` | `insufficient storage` / `500gi` / `request too large` |
-| `X_ACCESS_MODE` | `readwritemany` / `access mode mismatch` / `unsupported access mode` |
-| `X_NODE_AFFINITY` | `node affinity conflict` / `node affinity mismatch` |
-| `X_REDIS_FAILURE` | `redis crashed` / `redis unavailable` / `redis server down` |
-| `X_CPU_REQUEST` | `cpu request too low` / `low cpu request` / `insufficient cpu request` |
-| `X_CPU_OVERLOAD_ONLY` | `cpu demand spike` / `cpu usage spike` / `traffic overload is the root cause` |
-| `X_POD_CRASH` | `pod crash is the root cause` / `crashloopbackoff` |
-| `X_WRONG_PORT` | `service targetport mismatch` / `wrong target port` / `wrong service port` |
-| `X_DNS` | `dns failure` / `dns resolution failure` |
+CM·FLM·MCA contradiction은 전 incident에서 빈 배열이다. 자유서술 안의 다른 component/fault/
+mechanism phrase가 competing root-cause assertion인지 영향·배제·병기인지 판별할 승인된 finite
+role grammar가 없기 때문이다. 단순 phrase presence로 정답 positive를 취소하지 않는다.
+
+RA만 동일 item 안에서 완성된 **명시적 반대 action path**를 contradiction으로 허용한다. 예는
+`decrease + memory limit`, `stop + kubelet`, `delete + local-path provisioner`다. action과 target이
+같은 item에서 함께 match하지 않으면 contradiction이 아니다.
 
 ## 5. Incident별 positive path와 contradiction
 
-모든 component path는 `root_cause`, fault path는 `identified_fault_type`, mechanism path는
+모든 CM path는 `root_cause`, FLM path는 `identified_fault_type`, mechanism path는
 `root_cause`, remediation path는 `remediation`만 읽는다. 아래 `A+B+C`는 한 path의
 `all_of`, `P1 | P2`는 둘 중 하나의 완전한 path를 뜻한다.
 
 ### 5.1 F1 — memory limit OOM
 
-| Incident | Canonical | Component | Fault | Mechanism positive | Mechanism contradictions |
+| Incident | Canonical | CM group | FLM group | Mechanism positive | Mechanism contradictions |
 |---|---|---|---|---|---|
-| `F1-t2` | recommendationservice, OOMKilled, 24Mi limit exceed/OOM | `C_RECOMMENDATION` | `FT_OOM` | `M_MEMORY_LIMIT + M_LIMIT_TOO_LOW + M_OOM_TERMINATION` | `X_CPU_LIMIT`, `X_IMAGE_REFERENCE`, `X_NETWORK_POLICY`, `X_SERVICE_SELECTOR` |
-| `F1-t3` | checkoutservice, OOMKilled, 16Mi limit exceed/OOM | `C_CHECKOUT` | `FT_OOM` | `M_MEMORY_LIMIT + M_LIMIT_TOO_LOW + M_OOM_TERMINATION` | 동일 |
+| `F1-t2` | recommendationservice, OOMKilled, 24Mi limit exceed/OOM | `C_RECOMMENDATION` | `FT_OOM` | `M_MEMORY_LIMIT + M_LIMIT_TOO_LOW + M_OOM_TERMINATION` | `[]` |
+| `F1-t3` | checkoutservice, OOMKilled, 16Mi limit exceed/OOM | `C_CHECKOUT` | `FT_OOM` | `M_MEMORY_LIMIT + M_LIMIT_TOO_LOW + M_OOM_TERMINATION` | `[]` |
 
 Remediation:
 
-- `F1-t2`: `R_INCREASE + R_MEMORY_LIMIT + (R_96MI | R_HIGHER_SUFFICIENT)`.
-- `F1-t3`: `R_INCREASE + R_MEMORY_LIMIT + (R_64MI | R_HIGHER_SUFFICIENT)`.
+- `F1-t2`: `R_INCREASE + R_MEMORY_LIMIT + R_96MI`.
+- `F1-t3`: `R_INCREASE + R_MEMORY_LIMIT + R_64MI`.
 - contradiction: `R_DECREASE + R_MEMORY_LIMIT` path가 완성되면 RA=0.
 
 ### 5.2 F2 — corrupted entrypoint
 
-| Incident | Canonical | Component | Fault | Mechanism positive | Mechanism contradictions |
+| Incident | Canonical | CM group | FLM group | Mechanism positive | Mechanism contradictions |
 |---|---|---|---|---|---|
-| `F2-t1` | paymentservice, CrashLoopBackOff, corrupted entrypoint startup exit | `C_PAYMENT` | `FT_CRASHLOOP` | `M_BAD_ENTRYPOINT + M_STARTUP_EXIT` | `X_MEMORY_LIMIT`, `X_IMAGE_REFERENCE`, `X_NETWORK_POLICY`, `X_SMTP`, `X_NULL_POINTER`, `X_PORT_CONFLICT`, `X_MISSING_FLAG` |
+| `F2-t1` | paymentservice, CrashLoopBackOff, corrupted entrypoint startup exit | `C_PAYMENT` | `FT_CRASHLOOP` | `M_BAD_ENTRYPOINT + M_STARTUP_EXIT` | `[]` |
 
 Remediation accepted paths:
 
@@ -387,10 +412,10 @@ Contradiction은 `R_BREAK + R_ENTRYPOINT`다.
 
 ### 5.3 F3 — image reference failures
 
-| Incident | Canonical | Component | Fault | Mechanism positive | Mechanism contradictions |
+| Incident | Canonical | CM group | FLM group | Mechanism positive | Mechanism contradictions |
 |---|---|---|---|---|---|
-| `F3-t3` | productcatalogservice, ImagePullBackOff, registry hostname typo/DNS failure | `C_PRODUCTCATALOG` | `FT_IMAGEPULL` | `M_REGISTRY_REFERENCE + M_REGISTRY_NAME_ERROR` | `X_DIGEST`, `X_REGISTRY_AUTH`, `X_RATE_LIMIT`, `X_IMAGE_TAG_MISSING` |
-| `F3-t4` | checkoutservice, ImagePullBackOff, invalid SHA256/digest mismatch | `C_CHECKOUT` | `FT_IMAGEPULL` | `M_IMAGE_DIGEST + M_DIGEST_INVALID` | `X_REGISTRY_DNS`, `X_REGISTRY_AUTH`, `X_RATE_LIMIT`, `X_IMAGE_TAG_MISSING` |
+| `F3-t3` | productcatalogservice, ImagePullBackOff, registry hostname typo/DNS failure | `C_PRODUCTCATALOG` | `FT_IMAGEPULL` | `M_REGISTRY_REFERENCE + M_REGISTRY_NAME_ERROR` | `[]` |
+| `F3-t4` | checkoutservice, ImagePullBackOff, invalid SHA256/digest mismatch | `C_CHECKOUT` | `FT_IMAGEPULL` | `M_IMAGE_DIGEST + M_DIGEST_INVALID` | `[]` |
 
 Remediation:
 
@@ -400,53 +425,53 @@ Remediation:
 
 ### 5.4 F4 — stopped kubelet
 
-| Incident | Canonical | Component | Fault | Mechanism positive | Mechanism contradictions |
+| Incident | Canonical | CM group | FLM group | Mechanism positive | Mechanism contradictions |
 |---|---|---|---|---|---|
-| `F4-t1` | worker01, NodeNotReady, kubelet stopped | `C_WORKER01` | `FT_NODENOTREADY` | `M_KUBELET + M_KUBELET_STOPPED` | `X_NETWORK_PARTITION`, `X_MEMORY_PRESSURE`, `X_DISK_PRESSURE`, `X_RUNTIME_DOWN` |
+| `F4-t1` | worker01, NodeNotReady, kubelet stopped | `C_WORKER01` | `FT_NODENOTREADY` | `M_KUBELET + M_KUBELET_STOPPED` | `[]` |
 
 Remediation은 `R_RESTART + R_KUBELET + R_UNCORDON` 하나만 허용한다. `R_STOP + R_KUBELET`이
 완성되면 contradiction이다.
 
 ### 5.5 F5 — PVC provisioning
 
-| Incident | Canonical | Component | Fault | Mechanism positive | Mechanism contradictions |
+| Incident | Canonical | CM group | FLM group | Mechanism positive | Mechanism contradictions |
 |---|---|---|---|---|---|
-| `F5-t2` | prometheus, PVCPending, 500Gi request exceeds capacity | `C_PROMETHEUS` | `FT_PVCPENDING` | `M_PVC_REQUEST + M_CAPACITY_INSUFFICIENT` | `X_STORAGECLASS`, `X_PROVISIONER`, `X_ACCESS_MODE`, `X_NODE_AFFINITY` |
-| `F5-t3` | loki, PVCPending, local-path provisioner unavailable/deleted | `C_LOKI` | `FT_PVCPENDING` | `M_LOCALPATH_PROVISIONER + M_PROVISIONER_UNAVAILABLE` | `X_STORAGE_CAPACITY`, `X_STORAGECLASS`, `X_ACCESS_MODE`, `X_NODE_AFFINITY` |
+| `F5-t2` | prometheus, PVCPending, 500Gi request exceeds capacity | `C_PROMETHEUS` | `FT_PVCPENDING` | `M_PVC_REQUEST + M_CAPACITY_INSUFFICIENT` | `[]` |
+| `F5-t3` | loki, PVCPending, local-path provisioner unavailable/deleted | `C_LOKI` | `FT_PVCPENDING` | `M_LOCALPATH_PROVISIONER + M_PROVISIONER_UNAVAILABLE` | `[]` |
 
 Remediation:
 
 - `F5-t2`: `(R_REDUCE + R_PVC_SIZE) | (R_ADD + R_DISK_CAPACITY)`.
-- `F5-t3`: `(R_RESTORE | R_REDEPLOY | R_RECONCILE) + R_LOCALPATH_PROVISIONER`.
+- `F5-t3`: `(R_RESTORE + R_LOCALPATH_PROVISIONER) | (R_RECONCILE + R_LOCALPATH_PROVISIONER)`.
 - contradiction: t2의 `R_INCREASE + R_PVC_SIZE`, t3의 `R_DELETE + R_LOCALPATH_PROVISIONER`.
 
 ### 5.6 F6 — NetworkPolicy route denial
 
-| Incident | Canonical | Component | Fault | Mechanism positive | Mechanism contradictions |
+| Incident | Canonical | CM group | FLM group | Mechanism positive | Mechanism contradictions |
 |---|---|---|---|---|---|
-| `F6-t5` | redis-cart, NetworkPolicy, cartservice→redis-cart:6379 ingress block | `C_REDIS_CART` | `FT_NETWORKPOLICY` | `M_NETWORK_POLICY + M_BLOCK_OR_DENY + M_CARTSERVICE + M_REDIS_CART + M_PORT_6379` | `X_REDIS_FAILURE`, `X_SERVICE_SELECTOR`, `X_DNS`, `X_CPU_LIMIT` |
+| `F6-t5` | redis-cart, NetworkPolicy, cartservice→redis-cart:6379 ingress block | `C_REDIS_CART` | `FT_NETWORKPOLICY` | `M_NETWORK_POLICY + M_BLOCK_OR_DENY + M_CARTSERVICE + M_REDIS_CART + M_PORT_6379` | `[]` |
 
 Remediation은 `R_ADD_ALLOW + R_NETWORK_POLICY + R_CARTSERVICE + R_REDIS_CART + R_PORT_6379`다.
 `R_DENY + R_NETWORK_POLICY`가 완성되면 contradiction이다.
 
 ### 5.7 F7 — CPU limit throttling
 
-| Incident | Canonical | Component | Fault | Mechanism positive | Mechanism contradictions |
+| Incident | Canonical | CM group | FLM group | Mechanism positive | Mechanism contradictions |
 |---|---|---|---|---|---|
-| `F7-t1` | frontend, CPUThrottle, 10m CPU limit | `C_FRONTEND` | `FT_CPUTHROTTLE` | `M_CPU_LIMIT + M_CPU_LIMIT_LOW + M_CPU_THROTTLED` | `X_MEMORY_LIMIT`, `X_CPU_REQUEST`, `X_CPU_OVERLOAD_ONLY`, `X_NETWORK_POLICY` |
-| `F7-t3` | productcatalogservice, CPUThrottle, 5m CPU limit | `C_PRODUCTCATALOG` | `FT_CPUTHROTTLE` | `M_CPU_LIMIT + M_CPU_LIMIT_LOW + M_CPU_THROTTLED` | 동일 |
+| `F7-t1` | frontend, CPUThrottle, 10m CPU limit | `C_FRONTEND` | `FT_CPUTHROTTLE` | `M_CPU_LIMIT + M_CPU_LIMIT_LOW + M_CPU_THROTTLED` | `[]` |
+| `F7-t3` | productcatalogservice, CPUThrottle, 5m CPU limit | `C_PRODUCTCATALOG` | `FT_CPUTHROTTLE` | `M_CPU_LIMIT + M_CPU_LIMIT_LOW + M_CPU_THROTTLED` | `[]` |
 
 Remediation:
 
-- `F7-t1`: `(R_INCREASE + R_CPU_LIMIT + (R_200M | R_HIGHER_SUFFICIENT)) | (R_REMOVE + R_CPU_LIMIT)`.
-- `F7-t3`: `R_INCREASE + R_CPU_LIMIT + (R_100M | R_HIGHER_SUFFICIENT)`.
+- `F7-t1`: `(R_INCREASE + R_CPU_LIMIT + R_200M) | (R_REMOVE + R_CPU_LIMIT)`.
+- `F7-t3`: `R_INCREASE + R_CPU_LIMIT + R_100M`.
 - contradiction: `R_DECREASE + R_CPU_LIMIT`.
 
 ### 5.8 F8 — missing pod label/service endpoints
 
-| Incident | Canonical | Component | Fault | Mechanism positive | Mechanism contradictions |
+| Incident | Canonical | CM group | FLM group | Mechanism positive | Mechanism contradictions |
 |---|---|---|---|---|---|
-| `F8-t3` | paymentservice, ServiceEndpoint, removed app label→unselected pods→empty endpoints | `C_PAYMENT` | `FT_SERVICEENDPOINT` | `M_SERVICE_SELECTOR + M_LABEL_MISSING_MISMATCH + M_NO_ENDPOINTS` | `X_POD_CRASH`, `X_NETWORK_POLICY`, `X_WRONG_PORT`, `X_DNS` |
+| `F8-t3` | paymentservice, ServiceEndpoint, removed app label→unselected pods→empty endpoints | `C_PAYMENT` | `FT_SERVICEENDPOINT` | `M_SERVICE_SELECTOR + M_LABEL_MISSING_MISMATCH + M_NO_ENDPOINTS` | `[]` |
 
 Remediation은 `R_RESTORE + R_APP_LABEL + R_PAYMENT_PODS`다. `R_REMOVE + R_APP_LABEL`이
 완성되면 contradiction이다. 더 넓은 “selector를 바꾼다”는 해결책은 ground-truth의 exact
@@ -464,7 +489,6 @@ recovery action이 아니므로 primary RA alias에 추가하지 않는다.
 | `R_64MI` | `64mi` / `64 mib` |
 | `R_200M` | `200m` / `200 millicores` |
 | `R_100M` | `100m` / `100 millicores` |
-| `R_HIGHER_SUFFICIENT` | `sufficient limit` / `adequate limit` / `appropriate limit` / `higher limit` |
 | `R_FIX` | `fix` / `correct` / `repair` / `update` |
 | `R_ENTRYPOINT` | `entrypoint` / `entry point` / `startup command` / `container command` |
 | `R_RESTORE` | `restore` / `revert` |
@@ -481,7 +505,6 @@ recovery action이 아니므로 primary RA alias에 추가하지 않는다.
 | `R_PVC_SIZE` | `pvc size` / `pvc request` / `storage request` / `volume size` |
 | `R_ADD` | `add` / `expand` / `increase` / `provision more` |
 | `R_DISK_CAPACITY` | `disk capacity` / `storage capacity` / `node disk` / `available storage` |
-| `R_REDEPLOY` | `redeploy` / `deploy again` |
 | `R_RECONCILE` | `reconcile` / `flux reconcile` / `fluxcd reconcile` |
 | `R_LOCALPATH_PROVISIONER` | `local path provisioner` / `localpath provisioner` / `volume provisioner` |
 | `R_DELETE` | `delete` / `remove` |
@@ -500,34 +523,111 @@ recovery action이 아니므로 primary RA alias에 추가하지 않는다.
 | `R_INVALID_DIGEST` | `invalid digest` / `wrong digest` |
 | `R_STOP` | `stop` / `disable` |
 
-`F5-t3`의 `(R_RESTORE | R_REDEPLOY | R_RECONCILE)`는 JSON에서 세 path로 전개한다.
-표 안의 다른 괄호·OR도 모두 별도 positive path로 전개해 실행 중 동적 논리를 만들지 않는다.
+`F5-t3`의 두 복구 경로는 ground truth의 “Restore ... via FluxCD reconcile”에서 직접 분리한
+표현이다. generic `redeploy`와 값 없는 `higher/sufficient limit`은 acceptance set을 넓히므로
+제거했다. 표 안의 괄호·OR는 모두 별도 positive path로 전개해 실행 중 동적 논리를 만들지
+않는다. **각 remediation positive path의 모든 group은 동일한 `remediation[]` item 하나 안에서
+완성돼야 한다.** 서로 다른 item 사이의 group cross-join은 금지한다.
+
+### 6.1 Alias provenance 계약
+
+- CM matcher의 `source_ref`는 `results/ground_truth.csv:<incident>:target_service`다.
+- FLM matcher의 `source_ref`는 `results/ground_truth.csv:<incident>:fault_name`다. 결합/분리 외
+  의미 확장은 없다.
+- MCA matcher는 `expected_root_cause`, RA matcher는 `expected_recovery_action`의 incident와
+  column을 기록한다. 다른 trial에서 가져온 contradiction은 그 exact row/column을 기록한다.
+- 공개 taxonomy를 직접 근거로 쓴 matcher만 official URL과 exact taxonomy label을 기록한다.
+- 하나의 matcher에 provenance가 없거나 candidate 관찰을 source로 적으면 ontology validation이
+  실패한다.
+
+### 6.2 사전 고정 positive matcher 난이도 표
+
+alias 수는 literal과 token predicate를 각각 1개로 센다. RA의 atom 범위는 accepted path별
+필수 group 수의 min~max이고 alias는 해당 incident가 참조하는 positive group의 unique matcher
+합계다. contradiction alias는 포함하지 않는다.
+
+| Incident | CM atoms/aliases | FLM atoms/aliases | MCA atoms/aliases | RA paths, atoms/aliases |
+|---|---:|---:|---:|---:|
+| F1-t2 | 1/2 | 1/2 | 3/11 | 1, 3/7 |
+| F1-t3 | 1/2 | 1/2 | 3/11 | 1, 3/7 |
+| F2-t1 | 1/2 | 1/3 | 2/17 | 2, 2/14 |
+| F3-t3 | 1/3 | 1/3 | 2/11 | 1, 3/11 |
+| F3-t4 | 1/2 | 1/3 | 2/7 | 2, 2~3/16 |
+| F4-t1 | 1/2 | 1/2 | 2/7 | 1, 3/6 |
+| F5-t2 | 1/1 | 1/2 | 2/12 | 2, 2/15 |
+| F5-t3 | 1/1 | 1/2 | 2/11 | 2, 2/8 |
+| F6-t5 | 1/2 | 1/2 | 5/15 | 1, 5/14 |
+| F7-t1 | 1/2 | 1/2 | 3/15 | 2, 2~3/10 |
+| F7-t3 | 1/3 | 1/2 | 3/15 | 1, 3/7 |
+| F8-t3 | 1/2 | 1/2 | 3/15 | 1, 3/8 |
+
+구현 validator가 ontology JSON에서 이 표를 재계산해 exact 일치를 synthetic test로 확인한다.
+fault별 atom 수 차이는 ground-truth 복잡성으로 공개하며 결과를 본 뒤 균등화하지 않는다.
 
 ## 7. 정규화·부정·field isolation 알고리즘
 
 처리 순서는 고정한다.
 
-1. JSON을 UTF-8 strict로 decode한다. replacement character가 있으면 전체 run을 invalid 처리한다.
-2. field type을 확인한다. `identified_fault_type`와 `root_cause`는 string,
-   `remediation`은 non-empty string의 list여야 한다.
-3. 각 문자열에 Unicode NFKC 후 `casefold()`를 적용한다.
-4. 원문의 `. ; : ! ? CR LF`를 clause boundary로 먼저 분리한다.
-5. 각 clause에서 maximal Unicode alphanumeric run만 token으로 남긴다. 나머지는 separator다.
-   따라서 `redis-cart`와 `redis cart`, `local-path`와 `local path`는 같은 token sequence가 된다.
-6. literal은 token-sequence boundary에서만 match한다. substring match는 금지한다.
-7. regex는 normalized clause에만 적용하며 clause를 넘지 않는다.
-8. negation token은 `no, not, never, without, neither, nor, isnt, wasnt, arent, werent,
-   cannot, cant, didnt, doesnt, wont`로 고정한다. phrase는 `rule out, ruled out`이다.
-9. affirmative matcher 시작 전 같은 clause의 직전 최대 3 tokens 안에 negator의 끝이 있으면 그
-   occurrence를 suppress한다. `not only`는 negation exception이다.
-10. `polarity=absence_assertion` matcher는 자신이 포함한 `no/zero/without`을 장애 상태의 긍정
-    표현으로 계산한다. 다만 그 matcher 자체 앞에 별도 negator가 있으면 suppress한다.
-11. positive와 contradiction에 같은 negation 규칙을 적용한다.
-12. positive path는 모든 group이 하나 이상의 unsuppressed occurrence를 가질 때만 pass한다.
-13. contradiction group 하나라도 unsuppressed match면 해당 axis를 0으로 강제하고 matched span과
-    group ID를 trace에 남긴다.
-14. remediation list는 item별로 1~13을 수행한다. 하나의 alias가 item 경계를 넘을 수 없지만,
-    path의 서로 다른 group은 여러 item에서 충족될 수 있다.
+1. regular file 한 개의 candidate JSON byte length는 최대 24,576이다. 초과 시 전체 run을
+   `INPUT_LIMIT_EXCEEDED`로 invalid 처리하며 partial parse하지 않는다.
+2. JSON을 UTF-8 strict로 decode한다. replacement character가 있으면 invalid다. duplicate key를
+   허용하지 않고 schema의 세 key 외에는 거부한다.
+3. `identified_fault_type`는 최대 256 UTF-8 bytes·64 tokens, `root_cause`는 최대
+   8,192 bytes·1,024 tokens다. `remediation`은 1~16개 string, item당 최대
+   2,048 bytes·256 tokens, 전체 최대 8,192 bytes·1,024 tokens다. 빈 item은 거부한다.
+4. upstream generator prompt인 `experiments/v2_3/live_caller.py:27-32`에는 출력 언어 계약이
+   없다. 본 matcher는 **영어 ASCII lexical subset만** 지원한다. normalization 후 ASCII 밖의
+   alphanumeric token이 하나라도 있으면 언어를 추정하거나 번역하지 않고 전체 run을
+   `LANGUAGE_UNSUPPORTED`로 invalid 처리한다. 이 gate는 English임을 증명하지 않으며 지원 범위를
+   기계적으로 제한할 뿐이다.
+5. 각 문자열에 Unicode NFKC 후 `casefold()`를 적용한다. 원문의 `. ; : ! ? CR LF`를 clause
+   boundary로 먼저 분리한다.
+6. 각 clause에서 maximal Unicode alphanumeric run만 token으로 남긴다. 나머지는 separator다.
+   `redis-cart`와 `redis cart`, `local-path`와 `local path`는 같은 token sequence가 된다.
+7. literal은 완전한 token sequence로만 match한다. substring과 raw regex는 금지한다.
+   `MEMORY_LIMIT_EXCEEDED_V1`만 §3의 유한 token sequence로 평가한다.
+8. negator token은 `no, not, never, without, neither, nor, isnt, wasnt, arent, werent,
+   cannot, cant, didnt, doesnt, wont`다. postposed marker는 `ruled out`, `not the cause`,
+   `not a cause`, `not the root cause`, `not the issue`, `not the fault`다.
+9. negation은 아래 유한 grammar만 지원한다. `C`는 한 ontology concept span, `F`는
+   `a|an|the|any|evidence|sign|signs|indication|indications|of|for`, `K`는 `and|or|nor`다.
+
+   ```text
+   PRE_DIRECT := NEG F{0,3} C
+   PRE_COORD  := NEG F{0,3} C (K F{0,3} C)+
+   PRE_RULE   := (rule out | ruled out) F{0,3} C
+   POST_RULE  := C (is|was|are|were|has been|have been){0,1} ruled out
+   POST_CAUSE := C (is|was|are|were) not (the|a|an){0,1}
+                 (cause|root cause|issue|fault)
+   NOT_ONLY   := not only C1 but C2
+   ```
+
+10. `NOT_ONLY`를 다른 negation grammar보다 먼저 exact parse한다. `not only` 두 token과 연결자
+    `but`을 exception span으로 소비하고 C1·C2는 둘 다 affirmative unsuppressed match로 남긴다.
+    예외 span을 소비한 뒤 같은 clause를 다시 scan하며, **남아 있는 unresolved negation marker
+    또는 그 marker가 시작한 ontology-concept scope candidate가 있을 때만**
+    `UNSUPPORTED_NEGATION`으로 fail-close한다. 이미 소비된 `not only` 때문에 clause의 다른
+    ordinary concept를 미분류로 만들지 않는다.
+11. `PRE_COORD`는 첫 NEG부터 같은 clause의 마지막 연속 conjunct까지만 전파한다. comma,
+    contrast token `but|however|instead|rather`, clause boundary 또는 grammar 밖 token에서 끝난다.
+    단, `NOT_ONLY`가 먼저 소비한 `but`은 contrast 종료점으로 재사용하지 않는다.
+12. `polarity=absence_assertion`의 exact phrases `no endpoints`, `zero endpoints`,
+    `without endpoints`는 자신 내부의 absence token을 상태의 긍정 증거로 먼저 소비한다.
+    `no evidence of no endpoints`처럼 바깥 negator가 있으면 `PRE_DIRECT`가 전체 occurrence를
+    suppress한다.
+13. exception/absence span을 먼저 소비한 뒤, 남은 negation marker와 그 scope candidate를
+    9~12의 grammar로 분류한다. 남은 marker/scope candidate가 suppressed 또는 명시적으로 종료된
+    grammar로 분류되지 않으면 해석을 추정하지 않고 전체 run을 `UNSUPPORTED_NEGATION`으로
+    invalid 처리한다. marker가 전혀 남지 않은 clause의 ordinary concept는 fail-close 대상이
+    아니다.
+14. ontology JSON Schema는 §3의 negation token·phrase·filler·coordinator·contrast·exception·
+    grammar ID 배열을 `const`로 강제한다. static validator도 이 일곱 상수의 값과 순서가 plan과
+    byte-for-byte 같은지 확인하고 하나라도 추가·누락·재정렬되면 실패한다.
+15. positive와 contradiction에 동일한 span 분류를 적용한다. positive path는 모든 group이
+    unsuppressed match를 가져야 한다. contradiction group 하나라도 unsuppressed match면 해당
+    axis를 0으로 강제하고 group ID와 token index만 trace에 남긴다.
+16. remediation은 item별로 독립 처리한다. alias와 accepted path 모두 item 경계를 넘지 못하며,
+    한 item 안에서 한 positive path의 모든 group을 충족해야 RA=1이다.
 
 빈 문자열, `null`, 예상 밖 key, duplicate key, non-list remediation, empty remediation item은
 오답으로 대체하지 않고 schema gate 실패로 전체 run을 `INVALID` 처리한다.
@@ -540,27 +640,38 @@ fixture는 이 계획의 alias를 조합한 새 문장만 사용하며 candidate
 1. NFKC/casefold, hyphen·underscore·slash separator, token boundary.
 2. `redis-cart`↔`redis cart`, `local-path`↔`local path` 동치.
 3. substring 거부: `frontendish`, `notworker01x`, `redis carpeting`은 component 불일치.
-4. field isolation: fault alias가 remediation에만 있어도 FA=0; mechanism alias가 fault field에만
+4. field isolation: fault alias가 remediation에만 있어도 FLM=0; mechanism alias가 fault field에만
    있어도 MCA=0; recovery alias가 root cause에만 있어도 RA=0.
 5. positive conjunction: 한 group이 빠지면 path=0.
 6. alternative remediation path: 완전한 대안 하나는 pass, 서로 다른 불완전 대안의 잘못된
    cross-join은 fail.
-7. contradiction precedence: positive와 affirmative contradiction이 함께 있으면 0.
-8. negation: `not a network policy issue`는 positive/contradiction 모두 match하지 않음.
-9. coordinated negation: `no cpu or memory pressure`에서 두 concept 모두 suppress.
+7. RA contradiction precedence: 동일 item에 positive recovery와 affirmative 반대 action path가
+   함께 완성되면 RA=0.
+8. `PRE_DIRECT`, `PRE_COORD`, `PRE_RULE`, `POST_RULE`, `POST_CAUSE` 각각의 positive matcher와
+   RA contradiction matcher 대칭 test.
+9. 실제 ontology concept 두 개를 쓰는 `no cpu throttling or memory limit`에서
+   `M_CPU_THROTTLED`와 `M_MEMORY_LIMIT` 두 positive span이 모두 suppressed임을 assertion하고,
+   contrast/clause에서 scope가 끝나는 test.
 10. absence assertion: `no endpoints`와 `endpoints list empty`는 `M_NO_ENDPOINTS` match.
-11. negation exception: `not only cpu throttling`에서 `cpu throttling`은 suppress하지 않음.
+11. negation exception positive test: `not only cpu throttling but memory limit`에서
+    `M_CPU_THROTTLED`와 `M_MEMORY_LIMIT`가 둘 다 unsuppressed이고 `not only` marker가 consumed이며
+    unresolved marker/scope candidate가 0임을 assertion. 같은 clause 뒤에 별도 미지원 negation을
+    붙인 negative fixture는 그 **남은 marker/scope만** `UNSUPPORTED_NEGATION`으로 만든다.
 12. clause scope: `not image pull; digest mismatch`에서 앞 negation이 뒤 clause에 전파되지 않음.
-13. remediation list item boundary와 multi-item group 결합.
-14. FA 다중 긍정 family contradiction.
-15. malformed UTF-8, duplicate JSON key, missing/extra key, 잘못된 type, 빈 list fail-close.
-16. incident/condition duplicate, 누락, unexpected incident, 36행 초과·미달 fail-close.
-17. CSV SHA mismatch, raw-tree manifest mismatch, ontology/scorer/plan hash mismatch fail-close.
-18. 통계 known-answer:
+13. remediation path는 단일 item 안에서 완성되면 pass, 두 item cross-join이면 fail.
+14. FLM orthographic variant만 pass하고 mechanism/symptom alias 및 다른 family 단순 병기는
+    FLM contradiction을 만들지 않음.
+15. schema와 static validator가 negation의 15 tokens·7 phrases·11 fillers·3 coordinators·4
+    contrasts·1 exception·6 grammar IDs를 exact 순서로 강제하고, 추가/누락/재정렬을 거부함.
+16. grammar 밖 negation, non-ASCII alphanumeric token, byte/token/list 상한 초과 fail-close.
+17. malformed UTF-8, duplicate JSON key, missing/extra key, 잘못된 type, 빈 list fail-close.
+18. incident/condition duplicate, 누락, unexpected incident, 36행 초과·미달 fail-close.
+19. CSV/ground-truth/projection/raw-tree/ontology/scorer/plan hash mismatch fail-close.
+20. 통계 known-answer:
     `b=5,c=0 → one-sided p=0.03125`, `b=4,c=0 → p=0.0625`,
     `b=0,c=5 → p=1`, `b=c=0 → p=1`.
-19. fixed seed 20260831·50,000 paired bootstrap replay byte equality.
-20. 입력 순서 shuffle 뒤 canonical sort 결과 byte equality.
+21. fixed seed 20260831·50,000 paired bootstrap과 canonical float serialization byte equality.
+22. 입력 순서 shuffle 뒤 canonical sort 결과 byte equality.
 
 실제 input을 이용한 test fixture 생성, snapshot/golden-output test, observed output에서 alias를
 추출하는 coverage test는 금지한다.
@@ -569,39 +680,101 @@ fixture는 이 계획의 alias를 조합한 새 문장만 사용하며 candidate
 
 ### 9.1 구현 전 gate
 
-다음 파일을 feature branch에서 commit·push하고 fresh methodology reviewer의 P0 승인을 받는다.
+review는 서로 다른 두 gate로 분리한다.
+
+1. semantic review의 단일 정본은 `docs/plans/review_v2_4_deterministic.md`다. 최초 FAIL 기록을
+   보존하고 Revision 2·Revision 3 PASS 재검토를 같은 파일에 append한다. 정본 identity는 그
+   append content와 implementation candidate commit `I` tree의 exact git blob OID/path다.
+   review 파일 안에는 자신의 최종 filesystem SHA-256를 기록하지 않는다. 최종 review file
+   SHA-256는 `I`가 고정된 뒤 외부에서 계산해 implementation review 문서, approval provenance,
+   사용자 보고에 기록한다. 별도 r2/r3 review 파일은 생성하거나 참조하지 않는다.
+2. semantic Revision 3 PASS 뒤 candidate 비접근 상태에서 구현과 opaque commitment를 완성하고,
+   아래 implementation target files를 먼저 candidate commit `I`로 봉인한다.
+3. 또 다른 fresh reviewer가 detached clean checkout의 exact `I`에서 실제
+   ontology/code/tests/commitment를 검토하고
+   `docs/plans/review_v2_4_deterministic_implementation.md`에 PASS를 기록한다.
+
+commit `I`는 다음 파일을 포함하고 implementation review와 approval 문서는 아직 포함하지 않는다.
 
 ```text
 docs/plans/experiment_plan_v2_4_deterministic.md
 docs/plans/review_v2_4_deterministic.md
 docs/plans/input_commitment_v2_4_deterministic.json
 experiments/v2_4_deterministic/ontology_v1.json
+experiments/v2_4_deterministic/commit_inputs.py
 experiments/v2_4_deterministic/scorer.py
 experiments/v2_4_deterministic/analyze.py
 tests/test_v2_4_deterministic.py
 ```
 
-review 이후 plan, review, ontology, scorer, analyzer, test의 SHA-256와 git commit을
-`docs/plans/approval_v2_4_deterministic.md`에 기록하고 사용자 명시 승인을 받는다. 실제 candidate
-본문을 읽는 명령은 이 승인 기록 이후에만 가능하다.
+fresh implementation reviewer는 review 문서에 exact `I`, detached/clean 증거, 위 target file
+각각의 `I:<path>` blob SHA-256와 filesystem SHA-256, synthetic/static test 명령·exit status를
+기록한다. 그 review 문서 하나만 `I`에 추가해 commit `B`를 만든다.
+
+```text
+B^ == I
+git diff --name-status I..B
+A  docs/plans/review_v2_4_deterministic_implementation.md
+```
+
+위 출력이 exact 한 줄이 아니거나, implementation review에 외부 계산·기록된 semantic review
+filesystem SHA-256 및 target hash가 `I`와 `B` tree에서 모두 같지 않으면 INVALID다. 사용자에게
+exact `B`와 외부 계산된 review hash를 제시해 명시 승인을 받은 뒤 승인 문구·시각·`B`·semantic
+review blob OID·filesystem SHA-256를 `docs/plans/approval_v2_4_deterministic.md`에 기록하고 그
+문서 하나만 추가한 commit `A`를 만든다.
+
+```text
+A^ == B
+git diff --name-status B..A
+A  docs/plans/approval_v2_4_deterministic.md
+```
+
+이 출력도 exact 한 줄이어야 한다. `I→B` 또는 `B→A`의 parent/diff/hash 조건 하나라도 다르면
+INVALID다. 실행 checkout은 반드시 exact `A`이고 approval 문서가 가리키는 approved bundle은
+`B`여야 한다. self-referential `A` hash를 approval 문서 안에 쓰지 않으며 실행 manifest가
+실제 `A`를 기록한다. candidate 본문을 읽는 명령은 이 모든 검증을 통과한 `A` 이후에만 가능하다.
 
 `input_commitment_v2_4_deterministic.json`은 이 예외적으로 허용된 **opaque hash-only** 단계에서
 만든다. 파일 본문을 decode, parse, search, preview하거나 stdout에 쓰지 않고 SHA-256
 stream으로만 읽어 117 raw relative paths·sizes·digests와 CSV digest를 canonical JSON에
-봉인한다. 이 commitment 자체도 candidate scoring 전에 commit·review·승인한다.
+봉인한다. 도구 자신의 SHA-256, exact interpreter path/version/binary SHA-256, 실행 argv,
+start/end UTC, exit status, stdout/stderr SHA-256와 redaction-test PASS, 실행자 자기선언을 함께
+기록한다. stdout/stderr에는 count와 commitment hash만 허용한다. 이는 비열람 절차의 감사
+provenance이지 cryptographic proof라고 주장하지 않는다. commitment 자체도 candidate scoring
+전에 commit·implementation-review·승인한다.
+
+Ground truth commitment는 다음으로 고정한다.
+
+```text
+results/ground_truth.csv full SHA-256
+d00115766dbfaa844b5325ff60aac8170b83689ccf2f2d2cd427faad9f8115c6
+
+selected 12-row canonical projection SHA-256
+be456f903354d581ae66c8f7051ea271a9add2cb7b6a58e28d1d768aaee57b1b
+```
+
+projection은 선택 12행을 numeric `fault_id`, numeric `trial`로 정렬하고
+`fault_id,trial,fault_name,target_service,expected_root_cause,expected_recovery_action`만 남긴
+object list를 Python `json.dumps(ensure_ascii=False, sort_keys=True, separators=(",", ":"))`로
+UTF-8 encode한 3,318 bytes다. 두 digest와 projection algorithm은 commit `I`부터 포함하고
+`I→B→A`에서 변하지 않아야 한다.
 
 ### 9.2 실행 preflight gate
 
-- source path는 Primary03 artifact 한 개로 exact resolve하고 symlink를 거부한다.
+- source root와 모든 ancestor/entry는 `lstat`으로 검사해 symlink를 거부한다. relative path의
+  absolute component, `..`, NUL을 거부한다.
 - 결과 CSV SHA-256이 §1.3 값과 일치해야 한다.
 - raw directory는 117 regular JSON files만 허용한다. 상대경로·size·SHA-256을 정렬한 manifest가
   사전 승인된 `input_commitment_v2_4_deterministic.json`과 byte-for-byte 일치해야 하며 그
   manifest SHA-256을 실행 manifest에 기록한다.
+- 각 source는 `os.open(..., O_RDONLY|O_NOFOLLOW)`로 열고 `fstat`에서 regular file,
+  `st_nlink=1`, committed device/inode/size를 확인한다. 같은 file descriptor에서 hash→seek→parse
+  →seek→rehash하고 두 hash와 전후 fstat identity/time/size가 모두 같아야 한다. path를 다시
+  `lstat`했을 때 같은 device/inode가 아니면 TOCTOU로 INVALID다.
 - CSV identity와 raw identity가 117:117로 1:1이어야 한다.
 - 선택 identity는 12 incidents×3 conditions=36이고 각 cell은 정확히 하나여야 한다.
-- 선택 ground truth는 repository의 immutable `results/ground_truth.csv` SHA-256와 12행
-  identity를 기록한다. ontology와 canonical truth의 incident별 component/fault/mechanism/action
-  provenance가 일치해야 한다.
+- ground truth 전체와 12행 projection은 위 두 SHA-256에 exact 일치해야 한다. ontology의
+  incident별 component/fault/mechanism/action provenance도 projection과 일치해야 한다.
 - candidate schema는 36/36 동일해야 한다. 본문은 로그에 출력하지 않는다.
 - 실행 output directory는 사전에 존재하지 않아야 하며 부분 파일을 원자 rename으로 publish한다.
 - 어느 gate든 실패하면 scoring 결과·부분 summary를 publish하지 않고 `INVALID` receipt만 남긴다.
@@ -610,8 +783,8 @@ stream으로만 읽어 117 raw relative paths·sizes·digests와 CSV digest를 c
 
 ### 10.1 Primary comparison
 
-incident `i`마다 `R_i=JRA-D(blind_procedural_rag)`,
-`P_i=JRA-D(length_placebo)`를 둔다.
+incident `i`마다 `R_i=JLC-D(blind_procedural_rag)`,
+`P_i=JLC-D(length_placebo)`를 둔다.
 
 - paired risk difference: `RD = mean(R_i - P_i)`.
 - `b = count(R_i=1,P_i=0)` (RAG-only success).
@@ -623,16 +796,19 @@ incident `i`마다 `R_i=JRA-D(blind_procedural_rag)`,
 - discordant dominance `q=b/(b+c)`의 two-sided 95% Clopper-Pearson exact CI를 보고한다.
   discordance 0이면 q와 CI는 `NA`, p만 1.0으로 보고한다.
 - RD의 95% percentile paired bootstrap CI는 12 incident pair를 replacement로 50,000회
-  resample하고 seed `20260831`, NumPy `PCG64`로 계산한다. 2.5/97.5 percentile의
-  `method=linear`을 쓴다. 이 CI는 small-n exact CI라고 부르지 않는다.
+  resample하고 Python stdlib `random.Random(20260831)`로 계산한다. 정렬 표본에서
+  `h=(n-1)p`, `j=floor(h)`, `g=h-j`, `x[j]+g*(x[j+1]-x[j])`인 linear percentile을
+  p=.025/.975에 적용한다. float는 finite 검사 후 `format(x, ".17g")`, negative zero는 `0`으로
+  canonical serialize한다. NumPy/SciPy에는 의존하지 않는다. 이 CI는 small-n exact CI라고
+  부르지 않는다.
 
 ### 10.2 Secondary/exploratory
 
-- RAG 대 runtime `JRA-D`: RD와 discordance table만 descriptive.
-- CA, FA, MCA, RA, FULL, JRA-relaxed: 조건별 count/rate와 paired difference descriptive.
-- 세 조건 Cochran's Q와 fault-group matrix는 exploratory.
-- secondary p-value를 생성한다면 Cochran Q와 모든 추가 paired tests를 한 family로 묶어 Holm
-  보정하고 `exploratory`로 표시한다. primary p-value에는 보정하지 않는다.
+- RAG 대 runtime `JLC-D`: RD와 discordance count만 descriptive.
+- CM, FLM, MCA, RA, FULL, JLC-relaxed: 조건별 count/rate와 paired difference descriptive.
+- secondary/exploratory inferential test 수는 **0**으로 고정한다. Cochran's Q, secondary
+  McNemar, fault별 test, secondary CI와 p-value를 생성하거나 보고하지 않는다.
+- fault-group matrix와 atom-hit matrix는 count/rate만 descriptive다.
 - fault별 n=1~2이므로 fault-specific p-value와 성공 판정은 금지한다.
 - FULL에서 `rate_RAG < rate_placebo`이면 `REMEDIATION_REGRESSION_FLAG=true`; 이는 primary
   유의성 판정을 바꾸지 않고 함께 보고한다.
@@ -653,11 +829,12 @@ confirmatory 분석 전체를 `INVALID`로 두며 complete-case 분석을 primar
 | `REVERSED` | 유효 run에서 `RD < 0` | RAG가 낮은 방향 |
 | `NO_EVIDENCE` | `RD = 0` | 차이 증거 없음; discordance 0도 포함 |
 | `DIRECTIONAL_ONLY` | `RD > 0`이고 one-sided `p >= 0.05` | RAG 우세 방향이나 입증 아님 |
-| `SUPPORTED` | `RD > 0`이고 one-sided `p < 0.05` | 이 12 incidents의 JRA-D에서 RAG 우세 지지 |
+| `SUPPORTED` | `RD > 0`이고 one-sided `p < 0.05` | 이 12 incidents의 JLC-D에서 RAG 우세 지지 |
 
-`REMEDIATION_REGRESSION_FLAG`가 있으면 `SUPPORTED_WITH_REMEDIATION_WARNING`이라는 별도
-표시를 덧붙이되 primary 상태 자체를 재정의하지 않는다. 단순히 FULL이 “낮지 않음”을
-non-inferiority로 주장하지 않는다.
+machine-readable summary는 `primary_status`와 `remediation_regression_flag`를 별도 required
+field로 저장한다. 합성 status는 만들지 않는다. presentation 문구에 경고를 병기할 수 있지만
+단순히 FULL이 “낮지 않음”을 non-inferiority로 주장하지 않는다. remediation flag가 true이면
+“RCA 전반 개선”이라는 표현은 금지한다.
 
 n=12에서는 `c=0`일 때도 `b>=5`가 되어야 p<0.05다. 따라서 `DIRECTIONAL_ONLY`는 논문에서
 효과 입증으로 서술하지 않는다.
@@ -666,10 +843,14 @@ n=12에서는 `c=0`일 때도 `b>=5`가 되어야 p<0.05다. 따라서 `DIRECTIO
 
 ### Step 2 — fresh 방법론 비평
 
-`docs/plans/review_v2_4_deterministic.md`에서 다음 P0를 독립 검토한다.
+기존 FAIL과 Revision 2 review를 보존하고 같은 정본
+`docs/plans/review_v2_4_deterministic.md`에 Revision 3 semantic PASS를 append한다. review 파일은
+자신의 최종 SHA를 포함하지 않으며 append content와 commit `I`의 git blob/tree identity로
+정본화한다. 최종 filesystem SHA-256는 파일 밖 provenance에서만 기록하고 별도 r2/r3 파일을
+만들지 않는다.
 
 1. candidate를 보지 않고 ontology가 ground truth/public taxonomy만으로 도출됐는가.
-2. CA/FA/MCA/RA field isolation과 DNF semantics가 모호하지 않은가.
+2. CM/FLM/MCA/RA field isolation과 DNF semantics가 모호하지 않은가.
 3. alias가 지나치게 넓거나 incident별로 비대칭이지 않은가.
 4. negation, absence assertion, contradiction 우선순위가 synthetic test로 반증 가능한가.
 5. primary 하나, one-sided 방향, multiplicity, missingness, small-n 해석이 타당한가.
@@ -683,24 +864,35 @@ n=12에서는 `c=0`일 때도 `b>=5`가 되어야 p<0.05다. 따라서 `DIRECTIO
 - source를 쓰기 모드로 열지 않는다.
 - candidate text, matched substring, full response를 stdout/stderr에 출력하지 않는다.
   trace에는 identity, group ID, boolean, span의 token index만 저장한다.
-- synthetic tests와 static validation을 통과한 뒤 commit한다.
-- code review는 실데이터 score를 보지 않고 수행한다.
-- 계획·review·ontology·code·test hash bundle을 사용자 승인받는다.
+- synthetic tests와 static validation을 통과한 뒤 implementation candidate commit `I`를 먼저
+  만든다. `I`에는 implementation review/approval 문서가 없어야 한다.
+- `commit_inputs.py`로 candidate를 decode하지 않는 opaque commitment만 만든다.
+- `docs/plans/review_v2_4_deterministic_implementation.md`의 second fresh review는 ontology JSON이
+  revision 3와 일치하는지, 모든 provenance/count와 synthetic test가 실제 PASS하는지를 exact
+  detached `I`에서 실데이터 score 없이 검증한다.
+- review 문서 하나만 추가한 `B`와 approval 문서 하나만 추가한 `A`를 §9.1의 parent/diff/hash
+  gate로 만든다.
 
 ### Step 4 — clean-checkout 실행
 
-1. 승인된 commit을 detached clean worktree에 checkout한다.
+1. `I→B→A` parent/diff/hash gate를 다시 확인하고 승인 문서를 포함한 exact commit `A`를
+   detached clean worktree에 checkout한다.
 2. `git status --porcelain`이 빈 값인지 확인한다.
-3. `env -i` 아래 최소 PATH, locale `C.UTF-8`, source/output/run ID만 전달한다.
-4. API key, cloud credential, kubeconfig, SSH agent, proxy env를 전달하지 않는다.
-5. synthetic test를 다시 실행한다.
-6. metadata/hash preflight 후 36행을 한 번에 score한다. arm별 중간 결과를 보지 않는다.
-7. canonical sort는 `incident_id`, condition order
+3. commitment에 기록된 absolute Python interpreter의 binary SHA-256·`sys.version`이 같은지
+   확인한다. stdlib-only scorer/analyzer를 `python -I`로 실행해 user-site·sitecustomize·현재
+   directory import를 차단한다.
+4. `env -i` 아래 exact PATH, `LC_ALL=C`, `TZ=UTC`, `PYTHONHASHSEED=0`, source/output/run ID만
+   전달한다. `-I`가 Python env를 무시하므로 code는 set/dict iteration에 의존하지 않고 모든
+   collection을 explicit sort하며 이를 synthetic test한다.
+5. API key, cloud credential, kubeconfig, SSH agent, proxy env를 전달하지 않는다.
+6. synthetic test를 다시 실행한다.
+7. metadata/hash preflight 후 36행을 한 번에 score한다. arm별 중간 결과를 보지 않는다.
+8. canonical sort는 `incident_id`, condition order
    `runtime,length_placebo,blind_procedural_rag`로 고정한다.
-8. output을 absent staging directory에 쓰고 fsync 후 atomic rename한다.
-9. 같은 commit/input으로 두 번째 absent directory에 replay하고 canonical outputs의 SHA-256가
+9. output을 absent staging directory에 쓰고 fsync 후 atomic rename한다.
+10. 같은 commit/input으로 두 번째 absent directory에 replay하고 canonical outputs의 SHA-256가
    byte-identical인지 확인한다. timestamp/run path는 canonical comparison에서 제외한다.
-10. 두 run이 같을 때만 result report를 release한다.
+11. 두 run이 같을 때만 result report를 release한다.
 
 본 실험은 offline scoring이므로 `/lab-tunnel`과 `/lab-restore`를 실행하지 않는다. 연결을 열거나
 cluster를 mutation하는 것이 오히려 protocol 위반이다.
@@ -736,14 +928,16 @@ artifacts/v2_4_deterministic/<run_id>/
 결과 CSV는 36행이며 최소 다음 열을 갖는다.
 
 ```text
-incident_id,fault_id,trial,condition,ca,fa,mca,ra,jra_d,jra_relaxed,full,
-component_path,fault_path,mechanism_path,remediation_path,contradiction_ids,
+incident_id,fault_id,trial,condition,cm,flm,mca,ra,jlc_d,jlc_relaxed,full,
+component_mention_path,fault_label_mention_path,mechanism_path,remediation_path,contradiction_ids,
 ontology_sha256,scorer_sha256,input_csv_sha256,raw_manifest_sha256
 ```
 
 본문과 matched text는 CSV에 넣지 않는다. `manifest.json`에는 git commit, plan/review/approval,
-ontology/scorer/analyzer/test/input/ground-truth hash, Python/NumPy version, seed, row counts,
-started/finished UTC, replay result, external/model/K8s call count 0을 기록한다.
+ontology/scorer/analyzer/test/input/ground-truth/projection/interpreter hash, Python version, seed,
+row counts, started/finished UTC, replay result, external/model/K8s call count 0을 기록한다.
+`summary.json`은 `primary_status`와 `remediation_regression_flag`를 서로 독립된 required field로
+저장하며 합성 status field를 금지한다.
 
 ## 14. Result-independent change control
 
@@ -774,24 +968,34 @@ started/finished UTC, replay result, external/model/K8s call count 0을 기록�
 - 12 pairs라 검정력이 낮고 incomplete non-random prefix다.
 - representative output은 upstream 자동 선택 편향이 있을 수 있다.
 - lexical matcher는 옳은 paraphrase를 놓치거나 component의 문법적 역할을 구분하지 못한다.
-- ontology alias가 영어 중심이라 다른 언어 출력을 과소평가할 수 있다.
+- upstream language contract가 없어 ASCII 밖 alphanumeric token이 있으면 run 전체가
+  `LANGUAGE_UNSUPPORTED`로 invalid된다. 따라서 비영어·비ASCII 출력에는 결론이 없다.
 - 공개 benchmark metric 구조 차용이 데이터셋 외적 타당성을 주지는 않는다.
-- JRA-D 개선은 canonical label/phrase 사용 증가일 수 있으며 실제 조사 reasoning 개선과 동일하지 않다.
+- JLC-D 개선은 canonical label/phrase 사용 증가일 수 있으며 실제 조사 reasoning 개선과 동일하지 않다.
 
 ## 16. Definition of Done
 
 다음을 모두 만족해야 V2.4-D round가 완료된다.
 
-- [ ] 이 plan과 fresh method review의 hash가 고정되고 사용자 승인이 기록됨.
+- [ ] 단일 semantic review 정본에 Revision 3 PASS content가 append되고 `I` blob/tree로 고정됨.
+- [ ] semantic review 최종 filesystem SHA-256가 review 파일 밖 implementation review·approval·
+      사용자 보고에 기록됨.
+- [ ] detached candidate commit `I`의 별도 implementation review가 fresh PASS함.
+- [ ] `B^=I`, I→B implementation-review-only diff와 target hash 일치가 확인됨.
+- [ ] `A^=B`, B→A approval-only diff와 exact execution commit `A`가 확인됨.
 - [ ] ontology JSON이 schema-valid이고 §4~§6과 exact 일치함.
-- [ ] synthetic-only tests 20개 범주가 전부 PASS함.
+- [ ] synthetic-only tests 22개 범주가 전부 PASS함.
 - [ ] 승인 전 candidate output 본문 접근 0이 provenance에 기록됨.
 - [ ] clean detached checkout과 빈 git status가 확인됨.
-- [ ] input CSV hash exact match, raw 117, identity 117:117, 선택 36 완전성 PASS.
+- [ ] ground-truth full/projection, input CSV, opaque raw commitment hash가 exact match함.
+- [ ] raw 117, identity 117:117, 선택 36 완전성, lstat/no-follow/rehash gate가 PASS함.
+- [ ] `python -I`, exact interpreter hash/version, canonical environment/replay가 확인됨.
 - [ ] 원본 CSV/raw/ground truth 수정 0.
 - [ ] 모델/API/K8s/SSH 호출 0.
 - [ ] 결과 CSV 36행과 condition별 12행이 확인됨.
 - [ ] paired table의 b/c, p, exact CI, RD/bootstrap CI를 독립 재계산함.
+- [ ] secondary inferential p-value/CI/Cochran Q 생성 0이 확인됨.
+- [ ] `primary_status`와 `remediation_regression_flag`가 별도 field로 존재함.
 - [ ] same-commit replay의 canonical output hash가 일치함.
 - [ ] fresh `results_critic`이 원자료 계수·통계·타당성·대안가설을 독립 검증함.
 - [ ] `results/analysis_v2_4_deterministic.md`가 상태를 §11 중 하나로 판정함.
