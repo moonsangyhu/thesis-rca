@@ -24,9 +24,8 @@ def _digest(label):
     return hashlib.sha256(label.encode()).hexdigest()
 
 
-def full_safety_receipt(reviewed_i0):
+def full_safety_receipt_for_root(reviewed_i0, repo):
     """A code-only receipt with every reviewed target content-addressed."""
-    repo = Path(__file__).resolve().parents[1]
     targets = []
     for relative in commit_inputs._SAFETY_TARGETS:
         target = repo / relative
@@ -40,6 +39,10 @@ def full_safety_receipt(reviewed_i0):
         "fixture_sha256": _digest("fixture"), "sentinel_sha256": _digest("sentinel"),
         "real_source_open_count": 0, "candidate_text_egress": False, "prior_failures_closed": ["P0-closed"],
     }
+
+
+def full_safety_receipt(reviewed_i0):
+    return full_safety_receipt_for_root(reviewed_i0,Path(__file__).resolve().parents[1])
 
 
 def historical_legacy_reference(csv_path, raw_dir):
@@ -631,6 +634,90 @@ class DeterministicSyntheticTests(unittest.TestCase):
                  mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core",side_effect=AssertionError("input opened")) as opened:
                 self.assertEqual(commit_inputs.main(["--csv",str(root/"NO_OPEN.csv"),"--raw-dir",str(root/"NO_OPEN.raw"),"--out",str(root/"out"),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
                 self.assertEqual(opened.call_count,0)
+
+    def test_67_receipt_validation_and_digest_bind_the_same_stable_bytes(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); reviewed="a"*40; receipt=root/"receipt.json"; original=full_safety_receipt(reviewed); receipt.write_text(json.dumps(original),encoding="utf-8"); receipt_bytes=receipt.read_bytes()
+            raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
+            for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
+            parser=commit_inputs._parse_json_bytes; swapped=False
+            def parse_then_swap(payload):
+                nonlocal swapped
+                value=parser(payload)
+                if payload==receipt_bytes and not swapped:
+                    swapped=True; receipt.write_text(json.dumps(full_safety_receipt(reviewed)|{"session_id":"replacement"}),encoding="utf-8")
+                return value
+            with synthetic_legacy_identity(legacy), mock.patch("experiments.v2_4_deterministic.commit_inputs._parse_json_bytes",side_effect=parse_then_swap):
+                validated,receipt_sha,_=commit_inputs._preopen_real_mode(reviewed,receipt,legacy)
+            self.assertTrue(swapped); self.assertEqual(validated,original); self.assertEqual(receipt_sha,hashlib.sha256(receipt_bytes).hexdigest()); self.assertNotEqual(receipt_sha,hashlib.sha256(receipt.read_bytes()).hexdigest())
+
+    def test_68_receipt_and_legacy_metadata_symlink_or_ancestor_exchange_blocks_source_open(self):
+        evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
+        for kind in ("receipt-symlink","legacy-symlink","receipt-ancestor","legacy-ancestor"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+                root=Path(td); reviewed="a"*40; receipt_parent=root/"receipt-parent"; legacy_parent=root/"legacy-parent"; receipt_parent.mkdir(); legacy_parent.mkdir(); receipt=receipt_parent/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
+                raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
+                for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+                legacy=legacy_parent/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
+                target_parent=None; target_name=None
+                if kind=="receipt-symlink":
+                    link=root/"receipt-link.json"; link.symlink_to(receipt); receipt=link
+                elif kind=="legacy-symlink":
+                    link=root/"legacy-link.json"; link.symlink_to(legacy); legacy=link
+                elif kind=="receipt-ancestor": target_parent=receipt_parent; target_name=receipt.name
+                else: target_parent=legacy_parent; target_name=legacy.name
+                original_open=os.open; switched=False
+                def exchange_open(path,flags,mode=0o777,*,dir_fd=None):
+                    nonlocal switched
+                    fd=original_open(path,flags,mode) if dir_fd is None else original_open(path,flags,mode,dir_fd=dir_fd)
+                    if target_parent is not None and not switched and path==target_name and dir_fd is not None:
+                        switched=True; target_parent.rename(root/(target_parent.name+"-moved")); target_parent.symlink_to(root/"replacement",target_is_directory=True)
+                    return fd
+                with mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence), \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core",side_effect=AssertionError("input opened")) as opened, \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs.os.open",side_effect=exchange_open):
+                    self.assertEqual(commit_inputs.main(["--csv",str(root/"NO_OPEN.csv"),"--raw-dir",str(root/"NO_OPEN.raw"),"--out",str(root/"out"),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
+                    self.assertEqual(opened.call_count,0)
+
+    def test_69_safety_target_single_buffer_rejects_symlink_ancestor_and_mixed_swap(self):
+        evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
+        target_relative="experiments/v2_4_deterministic/analyze.py"
+        for kind in ("symlink","ancestor","mixed-second-read"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+                root=Path(td); reviewed="a"*40
+                for relative in commit_inputs._SAFETY_TARGETS:
+                    target=root/relative; target.parent.mkdir(parents=True,exist_ok=True); target.write_bytes(("synthetic target "+relative).encode())
+                fake_tool=root/"experiments/v2_4_deterministic/commit_inputs.py"; target=root/target_relative; original=target.read_bytes(); alternate=b"swapped target bytes"
+                receipt_data=full_safety_receipt_for_root(reviewed,root)
+                if kind=="mixed-second-read":
+                    record=next(item for item in receipt_data["safety_targets"] if item["path"]==target_relative)
+                    record["sha256"]=hashlib.sha256(alternate).hexdigest()
+                receipt=root/"receipt.json"; receipt.write_text(json.dumps(receipt_data),encoding="utf-8")
+                legacy=root/"legacy.json"; legacy.write_text("{}",encoding="utf-8")
+                switched=False; original_open=os.open; original_reader=commit_inputs._read_stable_metadata_bytes
+                if kind=="symlink":
+                    target.rename(target.with_name("analyze.real")); target.symlink_to(target.with_name("analyze.real"))
+                def exchange_open(path,flags,mode=0o777,*,dir_fd=None):
+                    nonlocal switched
+                    fd=original_open(path,flags,mode) if dir_fd is None else original_open(path,flags,mode,dir_fd=dir_fd)
+                    if kind=="ancestor" and not switched and path==target.name and dir_fd is not None:
+                        switched=True; target.parent.rename(root/"deterministic-moved"); target.parent.symlink_to(root/"replacement",target_is_directory=True)
+                    return fd
+                def read_then_swap(path):
+                    nonlocal switched
+                    payload=original_reader(path)
+                    if kind=="mixed-second-read" and Path(path)==target and not switched:
+                        switched=True; target.write_bytes(alternate)
+                    return payload
+                with mock.patch.object(commit_inputs,"__file__",str(fake_tool)), \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence), \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core",side_effect=AssertionError("input opened")) as opened, \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs.os.open",side_effect=exchange_open), \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs._read_stable_metadata_bytes",side_effect=read_then_swap):
+                    self.assertEqual(commit_inputs.main(["--csv",str(root/"NO_OPEN.csv"),"--raw-dir",str(root/"NO_OPEN.raw"),"--out",str(root/"out"),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
+                    self.assertEqual(opened.call_count,0)
+                if kind!="symlink": self.assertTrue(switched)
 
 
 if __name__ == "__main__":

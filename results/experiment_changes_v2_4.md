@@ -269,3 +269,12 @@
 - **수정 내용**: approved historical commitment의 exact Git blob OID `6e5a4cdb...22f`와 file SHA-256 `c4d9bd1b...2085`를 production 상수로 동결했다. external legacy bytes가 두 identity와 모두 일치해야 duplicate-safe parse와 schema 검증으로 진행한다. shape-valid fabricated reference가 valid receipt 이후에도 source-open 0으로 거부되는 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 66 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
+
+### 31. V2.4-D receipt·safety-target 단일 snapshot 결합 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: safety receipt를 검증한 뒤 경로를 다시 읽어 provenance SHA를 계산해, 중간 교체 시 검증한 bytes와 봉인한 bytes가 달라질 수 있었다. 8개 safety target도 blob OID와 SHA-256을 별도 read로 계산했다.
+- **원인**: authorization metadata와 code target identity에 source 파일 수준의 descriptor anchoring·single-snapshot 계약을 적용하지 않았다.
+- **수정 내용**: componentwise no-follow parent anchor와 direct regular-file fd를 사용하는 stable metadata reader를 추가했다. receipt는 동일 immutable bytes에서 duplicate-safe parse·검증·SHA를 수행하고, legacy와 8개 target도 동일 reader를 사용한다. target별 blob OID와 SHA는 한 buffer에서 계산하며 commit tool identity도 cached target bytes에 결합한다. receipt/legacy/target 교체·symlink·ancestor exchange와 mixed-read receipt가 source-open 0으로 거부되는 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 69 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
