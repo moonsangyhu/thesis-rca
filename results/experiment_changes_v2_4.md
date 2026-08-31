@@ -197,3 +197,12 @@
 - **수정 내용**: scorer/builder shared exact ontology validator에 duplicate/order/const/12 identity/path inventory를 고정했다. unconsumed concept-associated negation을 INVALID 처리했다. commitment producer의 canonical schema를 shared validator로 runner가 직접 소비하고 synthetic producer→runner bridge를 추가했다. raw direct entries 전체를 descriptor 기반으로 열거해 extra/nested/non-json/symlink를 거부한다. revision 8 deviation disclosure와 approval waiver를 pre-open 강제하고 full-review counterexample을 58 tests에 추가했다. 이전 I1 commitment/deviation은 새 I0에서 제거했다.
 - **수정 파일**: `experiments/v2_4_deterministic/build_ontology.py`, `experiments/v2_4_deterministic/commit_inputs.py`, `experiments/v2_4_deterministic/run.py`, `experiments/v2_4_deterministic/scorer.py`, `tests/test_v2_4_deterministic.py`, 기존 I1 commitment/deviation 삭제, `results/experiment_changes_v2_4.md`
 - **상태**: 새 code-only I0 commit 대기 — fixed Python 3.11 isolated 58 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual source 접근 0.
+
+### 23. V2.4-D revision 8 I0 commitment schema 안전 보완 — 2026-09-01
+
+- **수정 에이전트**: fresh @r8-i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: 58 tests가 통과했지만 full provenance exactness, raw path basename 규칙, producer의 `reviewed_i0`와 runner alias를 실제 non-synthetic schema로 연결하지 못했다.
+- **원인**: canonical validator가 provenance 최소 subset과 extra key를 허용했고 `.json` suffix/direct basename을 강제하지 않았다. runner에는 revision 8에서 금지한 `reviewed_code_candidate`가 남아 있었다.
+- **수정 내용**: producer 23-key provenance를 exact type/const/cross-binding으로 검증하고 missing/extra를 거부했다. raw path는 direct ASCII `.json` basename 117개 sorted/unique만 허용한다. runner commitment identity를 `reviewed_i0`로 통일하고 actual full producer envelope를 non-synthetic runner commitment gate에 직접 전달하는 bridge test를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 I0 safety review 대기 — fixed Python 3.11 60 tests, pycompile, redaction, runner self-test, diff-check PASS; actual source 접근 0, receipt 0.
