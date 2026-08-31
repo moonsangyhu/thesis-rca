@@ -49,6 +49,15 @@ def historical_legacy_reference(csv_path, raw_dir):
     return legacy
 
 
+@contextlib.contextmanager
+def synthetic_legacy_identity(path):
+    """Test-only patch; production identity is fixed and has no CLI/data override."""
+    payload=Path(path).read_bytes()
+    identity={"blob_oid":commit_inputs._blob_oid_bytes(payload),"sha256":hashlib.sha256(payload).hexdigest()}
+    with mock.patch.object(commit_inputs,"HISTORICAL_LEGACY_REFERENCE_IDENTITY",identity):
+        yield
+
+
 def candidate(fault="OOMKilled", root="recommendationservice memory limit too low oom killed", remediation=None):
     return json.dumps({"identified_fault_type": fault, "root_cause": root, "remediation": remediation or ["increase memory limit to 96Mi"]}).encode()
 
@@ -345,7 +354,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
             legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
             reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
             stdout=io.StringIO()
-            with contextlib.redirect_stdout(stdout): self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out_path),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
+            with synthetic_legacy_identity(legacy), contextlib.redirect_stdout(stdout): self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out_path),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
             rendered=out_path.read_text(encoding="utf-8")+stdout.getvalue()
             self.assertNotIn("PATH_SENTINEL", rendered); self.assertNotIn("CONTENT_SENTINEL", rendered)
             provenance=json.loads(out_path.read_text())["provenance"]
@@ -370,7 +379,8 @@ class DeterministicSyntheticTests(unittest.TestCase):
             for index in range(117): (raw/f"{index:03d}.json").write_bytes(b"CONTENT_SENTINEL")
             legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
             reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
-            out=root/"out"; self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
+            out=root/"out"
+            with synthetic_legacy_identity(legacy): self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
             data=json.loads(out.read_text()); p=data["provenance"]
             for key in ("tool_blob_oid","tool_sha256","interpreter_path","interpreter_sha256","cwd","argv","allowlisted_environment","source_root_device_inode","redaction_self_test","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256","reviewed_i0","legacy_source_drift"):
                 self.assertIn(key,p)
@@ -430,7 +440,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
                     self.assertEqual(commit_inputs.main(["--csv",str(root/"DO_NOT_OPEN.csv"),"--raw-dir",str(root/"DO_NOT_OPEN.raw"),"--out",str(root/f"out-{number}.json"),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy_ref)]),1)
                     self.assertEqual(opened.call_count,0)
             out=root/"valid-out.json"
-            with mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test", return_value=evidence), \
+            with synthetic_legacy_identity(legacy), mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test", return_value=evidence), \
                  mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core", wraps=commit_inputs._commit_core) as opened:
                 self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(valid_receipt),"--legacy-reference",str(legacy)]),0)
                 self.assertEqual(opened.call_count,1)
@@ -523,7 +533,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
             legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
             reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
             produced=root/"produced.json"
-            self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(produced),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
+            with synthetic_legacy_identity(legacy): self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(produced),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
             envelope=json.loads(produced.read_text())
             self.assertEqual(set(envelope),{"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256","provenance"})
             commit_inputs.validate_commitment_schema(envelope,require_provenance=True)
@@ -597,15 +607,30 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 self.assertEqual(opened.call_count,0)
 
     def test_65_historical_legacy_csv_shape_is_the_only_accepted_legacy_shape(self):
+        self.assertEqual(commit_inputs.HISTORICAL_LEGACY_REFERENCE_IDENTITY,{"blob_oid":"6e5a4cdb0a0950c27b12fc42ea0767da975ab22f","sha256":"c4d9bd1b0ee54a23e1f29a4f6483efe4f051126d5a8020277cad9bf764462085"})
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
             root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
             for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
             historical=historical_legacy_reference(csv_path,raw); path=root/"legacy.json"; path.write_text(json.dumps(historical),encoding="utf-8")
-            self.assertEqual(commit_inputs._parse_legacy_reference(path)["csv"]["path"],"historical-input.csv")
+            with synthetic_legacy_identity(path): self.assertEqual(commit_inputs._parse_legacy_reference(path)["csv"]["path"],"historical-input.csv")
             active=commit_inputs.commit(csv_path,raw); path.write_text(json.dumps(active),encoding="utf-8")
-            with self.assertRaises(ValueError): commit_inputs._parse_legacy_reference(path)
+            with synthetic_legacy_identity(path):
+                with self.assertRaises(ValueError): commit_inputs._parse_legacy_reference(path)
             malformed=historical_legacy_reference(csv_path,raw); malformed["csv"]["extra"]=True; path.write_text(json.dumps(malformed),encoding="utf-8")
-            with self.assertRaises(ValueError): commit_inputs._parse_legacy_reference(path)
+            with synthetic_legacy_identity(path):
+                with self.assertRaises(ValueError): commit_inputs._parse_legacy_reference(path)
+
+    def test_66_shape_valid_fabricated_legacy_identity_blocks_before_input_open(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
+            for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+            legacy=root/"fabricated.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
+            reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
+            evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
+            with mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence), \
+                 mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core",side_effect=AssertionError("input opened")) as opened:
+                self.assertEqual(commit_inputs.main(["--csv",str(root/"NO_OPEN.csv"),"--raw-dir",str(root/"NO_OPEN.raw"),"--out",str(root/"out"),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
+                self.assertEqual(opened.call_count,0)
 
 
 if __name__ == "__main__":
