@@ -712,3 +712,177 @@ commit `B`, 사용자 승인 `A`, actual candidate scoring을 만들면 안 된�
 authorization을 publication까지 재검증하며, (2) ontology acceptance set 전체를 exact validator로
 고정하고, (3) 모든 runner JSON을 duplicate-safe parse하며, (4) required methodology/output schema와
 exclusive no-follow INVALID receipt를 구현한 뒤 fresh safety/full review를 다시 받아야 한다.
+
+## 10. Revision 8 final full implementation 독립 재검토
+
+> 재검토 시각: 2026-08-31T20:57:41Z
+>
+> reviewer/session: `codex-agent:/root/v24d_i1_full_review` /
+> `v24d-9ce7972-full-review-20260901`
+>
+> code-only candidate `I0`:
+> `594cd5d444d8b6534a724e5ed6699cbcef809150`
+>
+> full implementation candidate `I1`:
+> `9ce797287f0f3d893318624a3e53edc7568969c7`
+>
+> 최종 판정: **PASS — P0 0개, P1 0개, P2 0개. implementation-review-only bundle `B` 진행 가능.**
+
+### 10.1 독립성·실데이터 비접근 선언
+
+공유 브랜치를 switch/detach하지 않고 exact I1의 별도 detached clean worktree
+`/private/tmp/v24d-i1-review-9ce7972`에서 검토했다. Primary03 CSV/raw candidate와 ground-truth의
+의미 본문을 locate/list/open/decode/parse/search/preview하지 않았고, V2.4-D real scorer/full run 및
+금지된 `tests.test_v2_4_audit`도 실행하지 않았다. 실제 입력에 관해서는 Git에 이미 봉인된 opaque
+path/size/SHA-256 commitment metadata, fixed digest, historical Git blob identity와 외부 I0 safety
+receipt만 검증했다. 네트워크·LLM/API·K8s 호출은 0이다.
+
+```text
+$ git rev-parse HEAD
+9ce797287f0f3d893318624a3e53edc7568969c7
+$ git rev-parse HEAD^
+594cd5d444d8b6534a724e5ed6699cbcef809150
+$ git status --porcelain=v1
+<empty>
+$ test ! -e docs/plans/approval_v2_4_deterministic.md
+exit 0
+```
+
+### 10.2 I0→I1 chain과 exact diff
+
+`I1^ == I0`이고 I0의 active commitment와 deviation path는 모두 absent였다(`git cat-file -e`
+각각 exit 128). `I0..I1`은 다음 exact 두 addition뿐이다.
+
+```text
+A  docs/plans/input_commitment_v2_4_deterministic.json
+A  docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json
+```
+
+따라서 plan, cumulative semantic review와 여덟 code/test safety target은 I0→I1에서 불변이다.
+Plan Rev8 SHA-256는
+`3a9c7586f51bc7444ea432a933bd149f31e4f06f47d3a5383fb561407e2870f1`, semantic review의
+외부 SHA-256는
+`842a484710461ed109a9263b387fb21fb4e78defe4a80d7daa5a818251e3b2d8`이다.
+
+### 10.3 I1 전체 target hash map
+
+Git blob SHA-256는 `git cat-file blob I1:path` bytes, filesystem SHA-256는 detached I1 checkout
+bytes에서 각각 계산했다. 12 target 모두 blob/filesystem SHA-256가 일치했다.
+
+| I1 target | Git blob OID | blob SHA-256 | filesystem SHA-256 |
+|---|---|---|---|
+| `docs/plans/experiment_plan_v2_4_deterministic.md` | `acdb8159d8c0fce2437bbd04b71e26fe09ee8a68` | `3a9c7586f51bc7444ea432a933bd149f31e4f06f47d3a5383fb561407e2870f1` | `3a9c7586f51bc7444ea432a933bd149f31e4f06f47d3a5383fb561407e2870f1` |
+| `docs/plans/review_v2_4_deterministic.md` | `0edcf3b80a7cafbb9085cfe237ba66d948819d10` | `842a484710461ed109a9263b387fb21fb4e78defe4a80d7daa5a818251e3b2d8` | `842a484710461ed109a9263b387fb21fb4e78defe4a80d7daa5a818251e3b2d8` |
+| `docs/plans/input_commitment_v2_4_deterministic.json` | `55f3b9e42e2be39672d8b4064f11ee715e920940` | `3b8936ad37c03bded3089f3594d43d188d737957156cb6fb194b915fc5ee9f84` | `3b8936ad37c03bded3089f3594d43d188d737957156cb6fb194b915fc5ee9f84` |
+| `docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json` | `a15b0f1a012bd640b386e483ac4271389e9f1f00` | `439a255ed1ab5bb561e6ed17458a62151c6d8bc315bdcafb43202ac9413b368f` | `439a255ed1ab5bb561e6ed17458a62151c6d8bc315bdcafb43202ac9413b368f` |
+| `experiments/v2_4_deterministic/ontology_v1.json` | `e4624a40f3f98acd85020c956fab167962d28904` | `ae9956f9a6a89523b2a6f57f1eaa707a132b9763a7c7a1b909ab7ee4376b2bd7` | `ae9956f9a6a89523b2a6f57f1eaa707a132b9763a7c7a1b909ab7ee4376b2bd7` |
+| `experiments/v2_4_deterministic/__init__.py` | `4f41104d187ceaeedbd576a3c6de418d3b4ce9b0` | `f0fb79df74c533d1634777b223e8330b45ae775050677a3c3530355e14b95816` | `f0fb79df74c533d1634777b223e8330b45ae775050677a3c3530355e14b95816` |
+| `experiments/v2_4_deterministic/build_ontology.py` | `37b979af4a35569cfea9d72cfe329d8957b4f7ae` | `50bc331bd51585b93f22257f09dad651afb87e0e408b1eae941f203efcd5ace8` | `50bc331bd51585b93f22257f09dad651afb87e0e408b1eae941f203efcd5ace8` |
+| `experiments/v2_4_deterministic/commit_inputs.py` | `2c3192b7c7fab3ca682d04ac4a280cdf1063e7d9` | `4b6d497e1f06b79fbed0b7d9ad4c642db69b6c56f9ec0fd37ce8b46a35775705` | `4b6d497e1f06b79fbed0b7d9ad4c642db69b6c56f9ec0fd37ce8b46a35775705` |
+| `experiments/v2_4_deterministic/scorer.py` | `9ada0bc3547e9ccd8bb477ee806b42f28cc89a98` | `09e41c11cac74ecee1b2b88270a09d5d31675b263d4152118359af420fb38130` | `09e41c11cac74ecee1b2b88270a09d5d31675b263d4152118359af420fb38130` |
+| `experiments/v2_4_deterministic/analyze.py` | `e5e38ab70c55b45d6b37ba74bc2554473201a7d1` | `47ec6c32c19b6e678b7de94ac0d0d17bd15cb399886b698396e2f0496fc307c9` | `47ec6c32c19b6e678b7de94ac0d0d17bd15cb399886b698396e2f0496fc307c9` |
+| `experiments/v2_4_deterministic/run.py` | `42063768de88af2b7659e6b5b76cd775eaf73ed4` | `f0bcc06251da7a1d26c0b25387cd95032408e071245d978116c7704d8ea31d32` | `f0bcc06251da7a1d26c0b25387cd95032408e071245d978116c7704d8ea31d32` |
+| `tests/test_v2_4_deterministic.py` | `88747aefd6a2d4d3268c326a7c950062dc299455` | `775c58ac26aff3e27bcfdc6abf9931424f6c6d9dcc8a2f34fa8cf33f20701f2f` | `775c58ac26aff3e27bcfdc6abf9931424f6c6d9dcc8a2f34fa8cf33f20701f2f` |
+
+### 10.4 I0 safety receipt와 opaque commitment/deviation 검증
+
+외부 safety receipt
+`artifacts/v2_4_deterministic/i0_safety_receipt_594cd5d.json`의 SHA-256는
+`3d042fb76a836b595ce248abc445de24065d0ab237447f33a617bc08ac8bdcc5`다. Exact I0,
+PASS/PASS, reviewer/session/UTC, 8개 target, fixed Python identity, 6개 exit-0 command,
+semantic review hash, `real_source_open_count=0`, `candidate_text_egress=false`를 exact schema로
+재확인했다. 8개 target의 receipt blob OID/SHA-256는 모두 `I0:path`와 일치했다.
+
+새 commitment는 duplicate-safe parser와 producer의 canonical shared validator를 source-only로
+실행해 다음을 확인했다.
+
+```text
+file SHA-256                  3b8936ad37c03bded3089f3594d43d188d737957156cb6fb194b915fc5ee9f84
+raw count/sorted/unique       117 / PASS / PASS
+entry manifest stored/check   05d5e002519307549714b8e309dfd042a82cd43483d571834c2675a3acf79835
+commitment stored/check       48d4d9e6e652b05cf7321a80889dea9b963cc1cd0ea7a73d06690ab070ea0995
+CSV SHA-256                   5fd2c1c52c8c37462f7f47eecb248a5a147166165c1cf2495d6e9b43956f8c5b
+reviewed_i0                   594cd5d444d8b6534a724e5ed6699cbcef809150
+tool blob/SHA-256             2c3192b7... / 4b6d497e...75705
+safety receipt SHA-256        3d042fb76a836b595ce248abc445de24065d0ab237447f33a617bc08ac8bdcc5
+legacy source drift           EXACT_MATCH
+```
+
+Historical artifact commit/blob/file identity는 각각
+`e86e26b4eb00aca899f42eab008132c0664a5cfc`,
+`6e5a4cdb0a0950c27b12fc42ea0767da975ab22f`,
+`c4d9bd1b0ee54a23e1f29a4f6483efe4f051126d5a8020277cad9bf764462085`였다. Old artifact의
+117-entry raw map과 CSV size/SHA만 opaque source-drift reference로 비교해 모두 같았고, old/new
+envelope commitment digest는 다름을 확인했다.
+
+Deviation JSON은 exact key/const, 두 historical evidence blob의 unique ancestry match와 attestation
+hash를 `run._validate_deviation()`로 검증해 PASS했다. 기록은
+`process_access_zero=false`, `text_egress=false`, `v2_4_d_execution=false`,
+`output_derived_tuning=false`와
+`CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION`을 그대로 유지하므로,
+machine-only parse를 비접근 증거로 과장하지 않는다.
+
+### 10.5 실행한 허용 검증
+
+고정 interpreter는
+`/Users/yumunsang/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/bin/python3.11`,
+version `3.11.15 (main, Apr  7 2026, 20:41:15) [Clang 22.1.1 ]`, binary SHA-256
+`216061c513cab74dec6698580a9d51c5ab8ae8dc3d90f3ae88a57bbc4a9b1a92`다.
+
+| 검증 | exit/result | stdout SHA-256 | stderr SHA-256 |
+|---|---|---|---|
+| `-I -B tests/test_v2_4_deterministic.py` | 0, 90 tests, OK | `8ec1cd14a4bae3022785b9e137429dc009745c094656055799aa645855691202` | `8706ce1d6d0a9c350324ea6b6b76c73922a694449faf6d7fea91d3266b32c4b6` |
+| `-I -X pycache_prefix=/private/tmp/v24d-i1-9ce7972-pycache -m py_compile` seven Python targets | 0 | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| `-I -B .../build_ontology.py --ontology .../ontology_v1.json` | 0, 12 incidents, `ONTOLOGY_CHECK_PASS` | `f392fad038ee59b278018249f3acf2744e49c981090cc420d9dab34f708ec6e4` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| `-I -B .../commit_inputs.py --self-test-redaction` | 0, sentinel match 0 | `3c7cfae4b1142cd85e559d752889b7bd34743c4f4bc7db11180ca6f4044d3d63` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| `-I -B .../run.py --self-test` | 0, candidate opened false | `97e3fb7faccd84ee997f4713ad0df53edccde9e44706eaeb62fdcfd68af3da23` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+
+별도 valid-pyc adversarial probe는 같은 mtime/size의 진짜 timestamp-based malicious bytecode를
+만들어 일반 import loader가 `valid-pyc!!`를 실행하는 것을 먼저 증명했다. 동일 fixture에서 reviewed
+source-only loader는 승인 source의 `safe-source`만 실행했고 pyc magic은 유효한 채 남았다. 90-test
+suite의 clean-gate fixture는 ignored pyc를 `GIT_WORKTREE_EXTRAS_INVALID`로 candidate open 전에
+거부했다.
+
+### 10.6 이전 P0/P1 closure와 approval constructibility
+
+| 이전 finding | final I1 판정 | 검증 근거 |
+|---|---|---|
+| ontology exact acceptance set/const/order/inventory | PASS | approved ontology 전체 byte SHA gate + shared validator; same-shape literal/path/polarity/provenance mutation 거부 |
+| finite negation·candidate schema | PASS | unresolved marker fail-close, actual absence matcher, field/list/byte/token/schema bounds 포함 synthetic matrix |
+| approval된 실제 commitment/ontology binding | PASS | canonical CLI path+hash를 `_bind_full_inputs()`에서 묶고 candidate open 전 `_revalidate_full_inputs()` 강제 |
+| authorization lifetime | PASS | approval와 post-A sidecar를 descriptor-anchored single-read하고 run1 전·run 사이·run2 후·publication 직전 identity 재검증 |
+| runner duplicate metadata | PASS | 모든 nesting level duplicate key 거부 |
+| methodology/output audit | PASS | summary와 final manifest에 독립 `primary_status`, remediation flag, methodology disposition, timing, I0/I1/B/A, actual preflight, deviation flags 포함 |
+| INVALID receipt safety | PASS | parent-dirfd anchor, `O_EXCL|O_NOFOLLOW`, no-replace link, parent-swap/destination/symlink 보존 tests |
+| producer/runner commitment bridge | PASS | exact active `entry_manifest_sha256`, `csv.id_sha256`, `provenance.reviewed_i0` canonical schema를 직접 공유 |
+| unexpected raw/repo entries | PASS | raw direct 117 regular JSON exact enumeration, hardlink/symlink/nested/extra 거부; ignored/untracked allowlist는 exact receipt+post-A sidecar뿐 |
+| eager import/malicious pyc | PASS | real repo gate 이전 local module 실행 0; post-gate source-only compile/exec; valid pyc ignored 및 cleanliness gate 거부 |
+| approval v3 + post-A sidecar constructibility | PASS | synthetic real `I0→I1→B→A` chain에서 A self-reference 없이 A approval blob/SHA와 user approval text hash를 sidecar가 결합 |
+| hidden replay/publication | PASS | 두 hidden run의 canonical/file hash equality 전 public result absent; mismatch/failure는 body-free INVALID receipt만 허용 |
+
+Approval v3는 A/self-hash를 문서 내부에 요구하지 않는다. Exact B와 사용자 승인 문구·UTC를 담은
+tracked approval 한 파일로 A를 만든 뒤, post-A sidecar가 actual A, A의 approval blob/SHA,
+`approved_bundle=B`, 사용자 승인 text SHA를 결합한다. 따라서 `B^=I1`, `A^=B`와 one-file diff를
+동시에 만족하는 실행 승인 체계가 구성 가능하다.
+
+### 10.7 최종 gate와 판정
+
+| gate | 판정 |
+|---|---|
+| detached clean exact I0/I1, I0 active path absence, exact A/A diff | PASS |
+| I1 12-target blob/filesystem map, plan/semantic review identity | PASS |
+| I0 safety receipt schema/hash/8-target identity | PASS |
+| commitment canonical schema/internal digest/I0/tool/receipt/legacy identity | PASS |
+| deviation exact disclosed-waiver provenance | PASS |
+| ontology/scorer/negation/schema/statistics synthetic matrix | PASS |
+| approval v3/post-A sidecar constructibility and lifetime | PASS |
+| actual CLI commitment/ontology binding and duplicate-safe metadata | PASS |
+| source-only loader, ignored pyc denial, no pre-gate local code | PASS |
+| hidden replay, methodology audit and INVALID receipt safety | PASS |
+| fixed Python 90-test suite and static compile | PASS |
+
+**Final full implementation 판정은 PASS이며 P0/P1/P2 신규 finding은 0개다.** Candidate 본문은 계속
+비접근 상태다. 다음 허용 checkpoint는 이 누적 implementation review 파일 하나만 수정한 exact
+bundle `B`를 만들고, B/review hash와 전체 승인 target map을 사용자에게 제시해 명시 승인을 받는
+것이다. 승인 문서 `A`, post-A execution authorization sidecar와 actual deterministic scoring은 그
+명시 승인 전에는 만들거나 실행하지 않는다.
