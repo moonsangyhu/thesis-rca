@@ -311,7 +311,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
         i0, i1, bundle, execution = ("0" * 40, "1" * 40, "2" * 40, "3" * 40)
         approval = {
             "code_candidate": i0, "implementation_candidate": i1,
-            "approved_bundle": bundle,
+            "approved_bundle": bundle, "safety_receipt": {"path": "synthetic-receipt"},
         }
         with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=Path.cwd()), \
              mock.patch("experiments.v2_4_deterministic.run._canonical_approval_path", return_value=Path("synthetic-approval.json")), \
@@ -319,7 +319,8 @@ class DeterministicSyntheticTests(unittest.TestCase):
              mock.patch("experiments.v2_4_deterministic.run._stable_metadata_bytes", return_value=(b"{}", {"stable": True})), \
              mock.patch("experiments.v2_4_deterministic.run._strict_approval_value", return_value=approval), \
              mock.patch("experiments.v2_4_deterministic.run._strict_execution_authorization_value", return_value={}), \
-             mock.patch("experiments.v2_4_deterministic.run._git", side_effect=(execution, "", bundle, i1, i0)), \
+             mock.patch("experiments.v2_4_deterministic.run._assert_clean_checkout_except_external_artifacts"), \
+             mock.patch("experiments.v2_4_deterministic.run._git", side_effect=(execution, bundle, i1, i0)), \
              mock.patch("experiments.v2_4_deterministic.run._git_path_must_be_absent") as absent, \
              mock.patch("experiments.v2_4_deterministic.run._exact_diff", side_effect=run.RunInvalid("STOP_AFTER_I0_I1")) as exact_diff:
             with self.assertRaisesRegex(run.RunInvalid, "STOP_AFTER_I0_I1"):
@@ -1031,6 +1032,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
             approval_path.write_bytes(json.dumps(approval, sort_keys=True).encode())
             execution = commit("approval")
             approval_record = record(execution, run.APPROVAL_DOCUMENT)
+            (root / "receipt.json").write_bytes(b"{}")
             sidecar = root / run.EXECUTION_AUTHORIZATION_DOCUMENT
             sidecar.write_text(json.dumps({
                 "authorization_version": run.EXECUTION_AUTHORIZATION_VERSION, "status": run.EXECUTION_AUTHORIZATION_STATUS,
@@ -1039,11 +1041,12 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 "user_approval_utc": approval["user_approval_utc"], "user_approval_text_sha256": hashlib.sha256(approval["user_approval_text"].encode()).hexdigest(),
             }, sort_keys=True), encoding="utf-8")
             envelope = {"raw_files": [], "raw_count": 117, "csv": {"sha256": "d" * 64}, "commitment_sha256": "c" * 64, "provenance": {"reviewed_i0": i0, "tool_blob_oid": approval["safety_receipt"]["tool_blob_oid"], "safety_receipt_sha256": receipt_sha}}
+            self.assertEqual(run._repo_extra_paths(root), {"receipt.json", run.EXECUTION_AUTHORIZATION_DOCUMENT})
             with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=root), \
                  mock.patch("experiments.v2_4_deterministic.run._verified_external_file", return_value=b"{}"), \
                  mock.patch("experiments.v2_4_deterministic.run._load_json_metadata", return_value=envelope), \
                  mock.patch("experiments.v2_4_deterministic.run._validate_deviation"), \
-                 mock.patch("experiments.v2_4_deterministic.commit_inputs.validate_commitment_schema"), \
+                 mock.patch("experiments.v2_4_deterministic.run._runtime_modules", return_value=(SimpleNamespace(), SimpleNamespace(), SimpleNamespace(validate_commitment_schema=lambda *args, **kwargs: None))), \
                  mock.patch("experiments.v2_4_deterministic.run.safe_metadata", side_effect=AssertionError("candidate opened")):
                 accepted, preflight = run._repository_gate(
                     approval_path=approval_path, execution_authorization_path=sidecar, code_candidate=i0,
@@ -1078,6 +1081,49 @@ class DeterministicSyntheticTests(unittest.TestCase):
                         output=root / "release", code_candidate="0" * 40, implementation_candidate="1" * 40,
                         approved_bundle="2" * 40, execution_commit="3" * 40,
                     )
+
+    def test_88_runner_import_does_not_eagerly_import_local_runtime_modules(self):
+        script = (
+            "import sys; from pathlib import Path; "
+            f"sys.path.insert(0, {str(_REPO)!r}); "
+            "import experiments.v2_4_deterministic.run; "
+            "assert 'experiments.v2_4_deterministic.analyze' not in sys.modules; "
+            "assert 'experiments.v2_4_deterministic.scorer' not in sys.modules; "
+            "assert 'experiments.v2_4_deterministic.commit_inputs' not in sys.modules"
+        )
+        result = subprocess.run([sys.executable, "-I", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+
+    def test_89_source_only_loader_ignores_timestamp_valid_pyc_and_clean_gate_rejects_it(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td); source = root / "experiments/v2_4_deterministic/analyze.py"
+            source.parent.mkdir(parents=True); source.write_text("MARKER = 'source-only'\n", encoding="utf-8")
+            pyc = source.parent / "__pycache__/analyze.cpython-311.pyc"; pyc.parent.mkdir(); pyc.write_bytes(b"malicious-pyc")
+            module = run._source_only_module(root, "experiments/v2_4_deterministic/analyze.py", {"sha256": hashlib.sha256(source.read_bytes()).hexdigest()})
+            self.assertEqual(module.MARKER, "source-only")
+            self.assertEqual(pyc.read_bytes(), b"malicious-pyc")
+
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            def git(*args, capture=False):
+                result = subprocess.run(["git", "-C", str(root), *args], check=True, stdout=subprocess.PIPE if capture else subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return result.stdout.decode().strip() if capture else ""
+            git("init"); (root / "AGENTS.md").write_text("x", encoding="utf-8"); (root / ".gitignore").write_text("*.pyc\n", encoding="utf-8")
+            git("add", "."); git("-c", "user.name=synthetic", "-c", "user.email=synthetic@example.invalid", "commit", "-m", "clean")
+            execution = git("rev-parse", "HEAD", capture=True)
+            receipt = root / "receipt.json"; receipt.write_bytes(b"{}")
+            sidecar = root / run.EXECUTION_AUTHORIZATION_DOCUMENT; sidecar.parent.mkdir(parents=True); sidecar.write_bytes(b"{}")
+            ignored = root / "malicious.pyc"; ignored.write_bytes(b"timestamp-valid-pyc")
+            approval = {"code_candidate": "0" * 40, "implementation_candidate": "1" * 40, "approved_bundle": "2" * 40, "safety_receipt": {"path": "receipt.json"}}
+            with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=root), \
+                 mock.patch("experiments.v2_4_deterministic.run._canonical_approval_path", return_value=root / run.APPROVAL_DOCUMENT), \
+                 mock.patch("experiments.v2_4_deterministic.run._canonical_execution_authorization_path", return_value=sidecar), \
+                 mock.patch("experiments.v2_4_deterministic.run._stable_metadata_bytes", return_value=(b"{}", {"stable": True})), \
+                 mock.patch("experiments.v2_4_deterministic.run._strict_approval_value", return_value=approval), \
+                 mock.patch("experiments.v2_4_deterministic.run._strict_execution_authorization_value", return_value={}), \
+                 mock.patch("experiments.v2_4_deterministic.run.safe_metadata", side_effect=AssertionError("candidate opened")):
+                with self.assertRaisesRegex(run.RunInvalid, "GIT_WORKTREE_EXTRAS_INVALID"):
+                    run._repository_gate(approval_path=root / run.APPROVAL_DOCUMENT, execution_authorization_path=sidecar, code_candidate="0" * 40, implementation_candidate="1" * 40, approved_bundle="2" * 40, execution_commit=execution)
 
 
 if __name__ == "__main__":

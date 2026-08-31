@@ -17,6 +17,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import types
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -25,12 +26,11 @@ if __package__ in {None, ""}:
     if not (_REPO / "AGENTS.md").is_file() or not (_REPO / ".git").exists() or any(parent.is_symlink() for parent in (_REPO, *_REPO.parents)):
         raise RuntimeError("UNTRUSTED_REPO_BOOTSTRAP")
     sys.path.insert(0, str(_REPO))
-    from experiments.v2_4_deterministic import analyze, commit_inputs, scorer
-else:
-    from . import analyze, commit_inputs, scorer
 
 
-CONDITIONS = analyze.CONDITIONS
+# This runner intentionally does not import local modules here.  In real mode
+# each is compiled from the I1-hash-verified source bytes only after approval.
+CONDITIONS = ("runtime", "length_placebo", "blind_procedural_rag")
 SELECTED = ("F1-t2", "F1-t3", "F2-t1", "F3-t3", "F3-t4", "F4-t1", "F5-t2", "F5-t3", "F6-t5", "F7-t1", "F7-t3", "F8-t3")
 RESULT_COLUMNS = ("incident_id", "fault_id", "trial", "condition", "cm", "flm", "mca", "ra", "jlc_d", "jlc_relaxed", "full", "component_mention_path", "fault_label_mention_path", "mechanism_path", "remediation_path", "contradiction_ids", "ontology_sha256", "scorer_sha256", "input_csv_sha256", "raw_manifest_sha256")
 GT_SHA256 = "d00115766dbfaa844b5325ff60aac8170b83689ccf2f2d2cd427faad9f8115c6"
@@ -78,6 +78,9 @@ I1_TARGETS = (
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FULL_AUTHORIZATION_MARKER = object()
+_SOURCE_MODULE_CACHE: dict[tuple[str, str], types.ModuleType] = {}
+_DIR_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+_FILE_FLAGS = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
 
 
 class RunInvalid(ValueError):
@@ -129,6 +132,123 @@ def _check_ancestors(path: Path) -> None:
     del current
 
 
+def _open_dir_chain(path: Path) -> tuple[int, os.stat_result, Path]:
+    """Anchor an absolute lexical directory without resolving symlinks."""
+    lexical = Path(os.path.abspath(os.fspath(path)))
+    fd = os.open(lexical.anchor, _DIR_FLAGS)
+    try:
+        for part in lexical.parts[1:]:
+            next_fd = os.open(part, _DIR_FLAGS, dir_fd=fd)
+            os.close(fd)
+            fd = next_fd
+        info = os.fstat(fd)
+        if not stat.S_ISDIR(info.st_mode):
+            raise ValueError("UNSAFE_DIRECTORY")
+        return fd, info, lexical
+    except Exception:
+        os.close(fd)
+        raise
+
+
+def _digest_at(parent_fd: int, name: str) -> tuple[int, str, tuple[int, int]]:
+    if not name or "/" in name or "\\" in name or name in {".", ".."}:
+        raise ValueError("UNSAFE_ENTRY")
+    before_path = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    if not stat.S_ISREG(before_path.st_mode) or before_path.st_nlink != 1:
+        raise ValueError("UNSAFE_ENTRY")
+    fd = os.open(name, _FILE_FLAGS, dir_fd=parent_fd)
+    try:
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or (before.st_dev, before.st_ino, before.st_size) != (before_path.st_dev, before_path.st_ino, before_path.st_size):
+            raise ValueError("TOCTOU")
+        first = hashlib.sha256()
+        while block := os.read(fd, 1 << 20):
+            first.update(block)
+        os.lseek(fd, 0, os.SEEK_SET)
+        second = hashlib.sha256()
+        while block := os.read(fd, 1 << 20):
+            second.update(block)
+        after = os.fstat(fd)
+        final_path = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    finally:
+        os.close(fd)
+    identity = (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+    if first.digest() != second.digest() or identity != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns) or (before.st_dev, before.st_ino) != (final_path.st_dev, final_path.st_ino):
+        raise ValueError("TOCTOU")
+    return before.st_size, first.hexdigest(), (before.st_dev, before.st_ino)
+
+
+def _read_stable_metadata_bytes(path: Path, *, with_identity: bool = False):
+    path = Path(path)
+    name = path.name
+    if not name or name in {".", ".."} or "/" in name or "\\" in name:
+        raise ValueError("UNSAFE_METADATA")
+    parent_fd, parent_info, parent_lexical = _open_dir_chain(path.parent)
+    try:
+        before_path = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        if not stat.S_ISREG(before_path.st_mode) or before_path.st_nlink != 1:
+            raise ValueError("UNSAFE_METADATA")
+        fd = os.open(name, _FILE_FLAGS, dir_fd=parent_fd)
+        try:
+            before = os.fstat(fd)
+            if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or (before.st_dev, before.st_ino, before.st_size) != (before_path.st_dev, before_path.st_ino, before_path.st_size):
+                raise ValueError("TOCTOU")
+            chunks = []
+            while block := os.read(fd, 1 << 20):
+                chunks.append(block)
+            payload = b"".join(chunks)
+            after = os.fstat(fd)
+            final_path = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        finally:
+            os.close(fd)
+        identity = (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+        if len(payload) != before.st_size or identity != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns) or (before.st_dev, before.st_ino) != (final_path.st_dev, final_path.st_ino):
+            raise ValueError("TOCTOU")
+        current = os.stat(parent_lexical, follow_symlinks=False)
+        if (current.st_dev, current.st_ino) != (parent_info.st_dev, parent_info.st_ino):
+            raise ValueError("TOCTOU")
+        stable = {"lexical_parent": parent_lexical, "parent_identity": (parent_info.st_dev, parent_info.st_ino), "entry_identity": identity}
+        return (payload, stable) if with_identity else payload
+    finally:
+        os.close(parent_fd)
+
+
+def _source_only_module(root: Path, relative: str, expected: dict | None = None) -> types.ModuleType:
+    path = root / relative
+    payload, metadata = _open_verified(path)
+    digest = metadata["sha256"]
+    if expected is not None and digest != expected.get("sha256"):
+        raise RunInvalid("APPROVED_SOURCE_HASH_MISMATCH")
+    cache_key = (str(path), digest)
+    cached = _SOURCE_MODULE_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    name = "_v2_4_deterministic_approved_" + relative.replace("/", "_").replace(".", "_") + "_" + digest[:16]
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    module.__package__ = "experiments.v2_4_deterministic"
+    module.__dict__["__builtins__"] = __builtins__
+    sys.modules[name] = module
+    try:
+        exec(compile(payload, str(path), "exec"), module.__dict__)
+    except Exception:
+        sys.modules.pop(name, None)
+        raise
+    _SOURCE_MODULE_CACHE[cache_key] = module
+    return module
+
+
+def _runtime_modules(root: Path | None = None, expected_targets: dict | None = None) -> tuple[types.ModuleType, types.ModuleType, types.ModuleType]:
+    root = Path(__file__).resolve().parents[2] if root is None else Path(root)
+    paths = (
+        "experiments/v2_4_deterministic/analyze.py",
+        "experiments/v2_4_deterministic/scorer.py",
+        "experiments/v2_4_deterministic/commit_inputs.py",
+    )
+    expected_targets = {} if expected_targets is None else expected_targets
+    return tuple(_source_only_module(root, path, expected_targets.get(path)) for path in paths)  # type: ignore[return-value]
+
+
 def _open_verified(path: Path, expected: dict | None = None) -> tuple[bytes, dict]:
     _check_ancestors(path)
     before = _lstat_regular(path)
@@ -170,14 +290,14 @@ def _open_verified(path: Path, expected: dict | None = None) -> tuple[bytes, dic
 def safe_metadata(root: Path):
     """Enumerate *every* direct entry through an anchored directory fd."""
     try:
-        fd, info, lexical = commit_inputs._open_dir_chain(Path(root))
+        fd, info, lexical = _open_dir_chain(Path(root))
         try:
             names=sorted(os.listdir(fd))
             if len(names)!=117: raise RunInvalid("UNSAFE_RAW")
             items=[]
             for name in names:
                 if name.startswith(".") or not name.endswith(".json"): raise RunInvalid("UNSAFE_RAW")
-                size, digest, _ = commit_inputs._digest_at(fd,name)
+                size, digest, _ = _digest_at(fd,name)
                 items.append((name,size,digest))
             current=os.stat(lexical,follow_symlinks=False)
             if (current.st_dev,current.st_ino)!=(info.st_dev,info.st_ino): raise RunInvalid("TOCTOU")
@@ -221,7 +341,8 @@ def _approval_gate(path: Path) -> dict:
 
 
 def _approval_identity_gate(approval: dict, *, commitment: Path, ontology: Path, ground_truth_sha256: str, projection_sha256: str) -> None:
-    expected = {"input_commitment_sha256": sha(commitment), "ontology_sha256": sha(ontology), "scorer_sha256": sha(Path(scorer.__file__)), "ground_truth_sha256": ground_truth_sha256, "ground_truth_projection_sha256": projection_sha256}
+    _, scorer_module, _ = _runtime_modules()
+    expected = {"input_commitment_sha256": sha(commitment), "ontology_sha256": sha(ontology), "scorer_sha256": sha(Path(scorer_module.__file__)), "ground_truth_sha256": ground_truth_sha256, "ground_truth_projection_sha256": projection_sha256}
     if any(approval[key] != value for key, value in expected.items()):
         raise RunInvalid("APPROVAL_IDENTITY_MISMATCH")
 
@@ -241,6 +362,41 @@ def _git(repo: Path, *args: str) -> str:
     except (OSError, subprocess.CalledProcessError) as exc:
         raise RunInvalid("GIT_FREEZE_INVALID") from exc
     return result.stdout.rstrip("\n")
+
+
+def _repo_extra_paths(repo: Path) -> set[str]:
+    """Enumerate ignored and untracked names; pyc is never harmless here."""
+    try:
+        outputs = []
+        for ignored in (False, True):
+            args = ["git", "-C", str(repo), "ls-files", "--others", "--exclude-standard"]
+            if ignored:
+                args.insert(-1, "--ignored")
+            result = subprocess.run(args, check=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding="utf-8")
+            outputs.append(result.stdout)
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RunInvalid("GIT_WORKTREE_INVALID") from exc
+    return {line for output in outputs for line in output.splitlines() if line}
+
+
+def _repo_relative_if_within(root: Path, value: str) -> str | None:
+    supplied = Path(value)
+    path = Path(os.path.abspath(os.fspath(supplied if supplied.is_absolute() else root / supplied)))
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return None
+
+
+def _assert_clean_checkout_except_external_artifacts(root: Path, receipt_path: str) -> None:
+    if _git(root, "status", "--porcelain=v1", "--untracked-files=no", "--ignored=no"):
+        raise RunInvalid("GIT_WORKTREE_DIRTY")
+    allowed = {EXECUTION_AUTHORIZATION_DOCUMENT}
+    receipt_relative = _repo_relative_if_within(root, receipt_path)
+    if receipt_relative is not None:
+        allowed.add(receipt_relative)
+    if _repo_extra_paths(root) != allowed:
+        raise RunInvalid("GIT_WORKTREE_EXTRAS_INVALID")
 
 
 def _repo_root() -> Path:
@@ -333,9 +489,9 @@ def _strict_approval_value(approval: dict) -> dict:
 
 
 def _stable_metadata_bytes(path: Path, *, with_identity: bool = False):
-    """Read metadata once through commit_inputs' descriptor-anchored reader."""
+    """Read metadata once through the runner's descriptor-anchored reader."""
     try:
-        return commit_inputs._read_stable_metadata_bytes(Path(path), with_identity=with_identity)
+        return _read_stable_metadata_bytes(Path(path), with_identity=with_identity)
     except (OSError, ValueError) as exc:
         raise RunInvalid("UNSAFE_METADATA") from exc
 
@@ -430,8 +586,8 @@ def _verified_external_file(root: Path, value: dict, *, expected_path: str | Non
         raise RunInvalid("APPROVAL_SCHEMA")
     path = raw_path if raw_path.is_absolute() else root / raw_path
     try:
-        data = path.read_bytes()
-    except OSError as exc:
+        data = _read_stable_metadata_bytes(path)
+    except (OSError, ValueError) as exc:
         raise RunInvalid("PROVENANCE_MISSING") from exc
     if _sha256_bytes(data) != value["sha256"]:
         raise RunInvalid("PROVENANCE_HASH_MISMATCH")
@@ -492,9 +648,7 @@ def _repository_gate(*, approval_path: Path, execution_authorization_path: Path,
         raise RunInvalid("APPROVAL_ARGUMENT_MISMATCH")
     if _git(root, "rev-parse", "HEAD") != execution_commit:
         raise RunInvalid("GIT_HEAD_INVALID")
-    status = _git(root, "status", "--porcelain=v1")
-    if status not in ("", f"?? {EXECUTION_AUTHORIZATION_DOCUMENT}"):
-        raise RunInvalid("GIT_WORKTREE_DIRTY")
+    _assert_clean_checkout_except_external_artifacts(root, approval["safety_receipt"]["path"])
     if _git(root, "rev-parse", f"{execution_commit}^") != approved_bundle or _git(root, "rev-parse", f"{approved_bundle}^") != implementation_candidate or _git(root, "rev-parse", f"{implementation_candidate}^") != code_candidate:
         raise RunInvalid("GIT_PARENT_CHAIN_INVALID")
     _git_path_must_be_absent(root, code_candidate, COMMITMENT_DOCUMENT)
@@ -512,6 +666,8 @@ def _repository_gate(*, approval_path: Path, execution_authorization_path: Path,
         current = root / path
         if current.is_symlink() or not current.is_file() or _sha256_bytes(current.read_bytes()) != expected["sha256"]:
             raise RunInvalid("CHECKOUT_TARGET_HASH_MISMATCH")
+    # These are the first local project modules executed in real mode.
+    _, _, commit_inputs_module = _runtime_modules(root, approval["i1_targets"])
     semantic = approval["semantic_review"]
     if _git_blob_record(root, implementation_candidate, SEMANTIC_REVIEW) != {"blob_oid": semantic["blob_oid"], "sha256": semantic["sha256"]}:
         raise RunInvalid("SEMANTIC_REVIEW_IDENTITY_MISMATCH")
@@ -534,7 +690,7 @@ def _repository_gate(*, approval_path: Path, execution_authorization_path: Path,
         raise RunInvalid("COMMITMENT_ENVELOPE_MISMATCH")
     provenance = commitment.get("provenance")
     try:
-        commit_inputs.validate_commitment_schema(commitment, require_provenance=True)
+        commit_inputs_module.validate_commitment_schema(commitment, require_provenance=True)
     except ValueError as exc:
         raise RunInvalid("COMMITMENT_PROVENANCE_MISMATCH") from exc
     if (provenance.get("reviewed_i0"), provenance.get("tool_blob_oid"), provenance.get("safety_receipt_sha256")) != (code_candidate, receipt["tool_blob_oid"], receipt["sha256"]):
@@ -591,10 +747,11 @@ def _bind_full_inputs(approval: dict, preflight: dict, commitment: Path, ontolog
         raise RunInvalid("APPROVED_INPUT_HASH_MISMATCH")
     try:
         envelope=_load_json_metadata_bytes(commitment_bytes)
-        commit_inputs.validate_commitment_schema(envelope,require_provenance=True)
+        _, scorer_module, commit_inputs_module = _runtime_modules(root, approval["i1_targets"])
+        commit_inputs_module.validate_commitment_schema(envelope,require_provenance=True)
     except (RunInvalid,ValueError) as exc:
         raise RunInvalid("APPROVED_COMMITMENT_INVALID") from exc
-    scorer.load_ontology(ontology_path)
+    scorer_module.load_ontology(ontology_path)
     approval_path = _canonical_approval_path(root, Path(preflight.get("approval_path", "")))
     approval_record = preflight.get("approval_record")
     approval_stable = preflight.get("approval_stable_identity")
@@ -643,8 +800,9 @@ def _revalidate_full_inputs(snapshot: dict, commitment: Path, ontology: Path) ->
 
 def _commitment_gate(commitment_path: Path, raw_dir: Path, csv_path: Path, *, synthetic: bool = False) -> tuple[dict, list[tuple[str, int, str]], str]:
     commitment = _load_json_metadata(commitment_path)
+    _, _, commit_inputs_module = _runtime_modules()
     try:
-        commit_inputs.validate_commitment_schema(commitment, require_provenance=not synthetic)
+        commit_inputs_module.validate_commitment_schema(commitment, require_provenance=not synthetic)
     except ValueError as exc:
         raise RunInvalid("INPUT_COMMITMENT_MISMATCH") from exc
     expected = []
@@ -729,6 +887,7 @@ def _projection_hash(ground_truth: Path) -> str:
 
 
 def _score_rows(raw_dir: Path, entries, csv_rows: dict, ontology: Path, hashes: dict):
+    analyze_module, scorer_module, _ = _runtime_modules()
     records = {}
     for relative, size, digest in entries:
         payload, _ = _open_verified(raw_dir / _safe_relative(relative), {"size": size, "sha256": digest})
@@ -746,13 +905,13 @@ def _score_rows(raw_dir: Path, entries, csv_rows: dict, ontology: Path, hashes: 
     for incident, condition in sorted(selected, key=lambda item: (_incident_key(item[0]), CONDITIONS.index(item[1]))):
         fault, trial = incident.split("-t", 1)
         try:
-            result = scorer.score(incident, selected[(incident, condition)], ontology)
-        except scorer.InvalidInput as exc:
+            result = scorer_module.score(incident, selected[(incident, condition)], ontology)
+        except scorer_module.InvalidInput as exc:
             raise RunInvalid(str(exc)) from exc
         row = {"incident_id": incident, "fault_id": fault, "trial": int(trial), "condition": condition, **{key: result[key] for key in ("cm", "flm", "mca", "ra", "jlc_d", "jlc_relaxed", "full")}, "component_mention_path": json.dumps(result["component_mention_path"], separators=(",", ":")), "fault_label_mention_path": json.dumps(result["fault_label_mention_path"], separators=(",", ":")), "mechanism_path": json.dumps(result["mechanism_path"], separators=(",", ":")), "remediation_path": json.dumps(result["remediation_path"], separators=(",", ":")), "contradiction_ids": json.dumps(result["contradiction_ids"], separators=(",", ":")), **hashes}
         rows.append(row)
         trace.append({"incident_id": incident, "condition": condition, "component_mention_path": result["component_mention_path"], "fault_label_mention_path": result["fault_label_mention_path"], "mechanism_path": result["mechanism_path"], "remediation_path": result["remediation_path"], "contradiction_ids": result["contradiction_ids"]})
-    analyze.validate_rows(rows)
+    analyze_module.validate_rows(rows)
     return rows, trace
 
 
@@ -821,13 +980,14 @@ def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: P
     _, entries, raw_manifest_sha = _commitment_gate(commitment, raw_dir, csv_path, synthetic=synthetic)
     csv_bytes, _ = _open_verified(csv_path)
     csv_rows = _csv_identity(csv_bytes)
-    scorer.load_ontology(ontology)
-    hashes = {"ontology_sha256": sha(ontology), "scorer_sha256": sha(Path(scorer.__file__)), "input_csv_sha256": hashlib.sha256(csv_bytes).hexdigest(), "raw_manifest_sha256": raw_manifest_sha}
+    analyze_module, scorer_module, _ = _runtime_modules()
+    scorer_module.load_ontology(ontology)
+    hashes = {"ontology_sha256": sha(ontology), "scorer_sha256": sha(Path(scorer_module.__file__)), "input_csv_sha256": hashlib.sha256(csv_bytes).hexdigest(), "raw_manifest_sha256": raw_manifest_sha}
     rows, trace = _score_rows(raw_dir, entries, csv_rows, ontology, hashes)
-    summary = analyze.primary(rows)
+    summary = analyze_module.primary(rows)
     paired = [{"incident_id": incident, "length_placebo_jlc_d": int(next(row["jlc_d"] for row in rows if row["incident_id"] == incident and row["condition"] == "length_placebo")), "blind_procedural_rag_jlc_d": int(next(row["jlc_d"] for row in rows if row["incident_id"] == incident and row["condition"] == "blind_procedural_rag"))} for incident in SELECTED]
     canonical_hash = hashlib.sha256(_canonical({"rows": rows, "paired": paired, "summary": summary, "trace": trace})).hexdigest()
-    manifest = {"approval": approved, "ontology_sha256": hashes["ontology_sha256"], "scorer_sha256": hashes["scorer_sha256"], "analyzer_sha256": sha(Path(analyze.__file__)), "input_commitment_sha256": sha(commitment), "input_csv_sha256": hashes["input_csv_sha256"], "raw_manifest_sha256": raw_manifest_sha, "ground_truth_sha256": gt_hash, "ground_truth_projection_sha256": projection, "python_version": sys.version, "seed": 20260831, "row_counts": {"raw": 117, "selected": 36, "conditions": {condition: 12 for condition in CONDITIONS}}, "started_utc": started_utc, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "replay_result": "PENDING_SECOND_REPLAY", "external_call_count": 0, "model_call_count": 0, "k8s_call_count": 0, "canonical_output_sha256": canonical_hash, "actual_input_bindings": {"commitment_sha256": sha(commitment), "ontology_sha256": hashes["ontology_sha256"], "csv_sha256": hashes["input_csv_sha256"], "raw_manifest_sha256": raw_manifest_sha,"ground_truth_sha256":gt_hash,"ground_truth_projection_sha256":projection}}
+    manifest = {"approval": approved, "ontology_sha256": hashes["ontology_sha256"], "scorer_sha256": hashes["scorer_sha256"], "analyzer_sha256": sha(Path(analyze_module.__file__)), "input_commitment_sha256": sha(commitment), "input_csv_sha256": hashes["input_csv_sha256"], "raw_manifest_sha256": raw_manifest_sha, "ground_truth_sha256": gt_hash, "ground_truth_projection_sha256": projection, "python_version": sys.version, "seed": 20260831, "row_counts": {"raw": 117, "selected": 36, "conditions": {condition: 12 for condition in CONDITIONS}}, "started_utc": started_utc, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "replay_result": "PENDING_SECOND_REPLAY", "external_call_count": 0, "model_call_count": 0, "k8s_call_count": 0, "canonical_output_sha256": canonical_hash, "actual_input_bindings": {"commitment_sha256": sha(commitment), "ontology_sha256": hashes["ontology_sha256"], "csv_sha256": hashes["input_csv_sha256"], "raw_manifest_sha256": raw_manifest_sha,"ground_truth_sha256":gt_hash,"ground_truth_projection_sha256":projection}}
     output = Path(output)
     if output.exists():
         raise RunInvalid("OUTPUT_EXISTS")
@@ -873,7 +1033,7 @@ def _write_invalid_receipt(output: Path, reason: str) -> Path:
     temporary_created = False
     parent_fd = None
     try:
-        parent_fd, parent_info, lexical_parent = commit_inputs._open_dir_chain(parent)
+        parent_fd, parent_info, lexical_parent = _open_dir_chain(parent)
 
         def revalidate_parent() -> None:
             current = os.stat(lexical_parent, follow_symlinks=False)
@@ -941,7 +1101,8 @@ def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, 
     _copy_artifact(final / "scores.csv", result_export)
     summary = _load_json_metadata(final / "summary.json")
     required_summary={"b","c","rd","p","discordance_ci","rd_bootstrap_ci","primary_status","remediation_regression_flag","methodology_disposition"}
-    if set(summary)!=required_summary or not isinstance(summary["primary_status"],str) or type(summary["remediation_regression_flag"]) is not bool or summary["methodology_disposition"]!=analyze.METHODOLOGY_DISPOSITION:
+    analyze_module, _, _ = _runtime_modules()
+    if set(summary)!=required_summary or not isinstance(summary["primary_status"],str) or type(summary["remediation_regression_flag"]) is not bool or summary["methodology_disposition"]!=analyze_module.METHODOLOGY_DISPOSITION:
         raise RunInvalid("SUMMARY_AUDIT_INVALID")
     replay_manifest = {
         "replay_result": "MATCH",
@@ -1057,7 +1218,8 @@ def main(argv=None):
     parser.add_argument("--synthetic", action="store_true")
     args = parser.parse_args(argv)
     if args.self_test:
-        scorer.load_ontology(args.ontology)
+        _, scorer_module, _ = _runtime_modules()
+        scorer_module.load_ontology(args.ontology)
         print(json.dumps({"status": "SELF_TEST_PASS", "candidate_text_opened": False}, sort_keys=True))
         return 0
     if args.dry_run:
