@@ -312,3 +312,427 @@ review에서 ontology JSON이 이 계약과 byte-level로 일치하는지, synth
 tests가 실제로 통과하는지를 확인해야 한다.
 
 이 문서는 결과를 보지 않은 방법론 비평이며, 어떤 condition이 우세할지 예측하거나 암시하지 않는다.
+
+---
+
+## 12. Revision 2 재검토
+
+> 재검토일: 2026-08-31
+>
+> 검토 plan: `experiment_plan_v2_4_deterministic.md` revision 2
+>
+> 검토 plan SHA-256:
+> `e9a5cba9c0ab539f75fbe8e3544c5613807dbf3d66b03564dc2232fb8ac22afc`
+>
+> 독립성 재선언: Revision 2 재검토에서도 candidate output JSON/CSV의
+> `identified_fault_type`, `root_cause`, `remediation` 본문을 열거나 검색하거나 출력하지
+> 않았고 scorer를 실행하지 않았다. 허용된 ground truth와 plan만 사용했다.
+
+### 12.1 재검토 결론
+
+**수정 요구 유지(Revision 2 승인 거부)**다.
+
+Revision 2는 최초 review의 구성 타당성·alias·regex·RA·통계 P0를 실질적으로 해결했다.
+`JRA-D/CA/FA`를 `JLC-D/CM/FLM`으로 낮추고 Cloud-OpsBench 호환 주장을 철회한 것은 충분하다.
+FLM을 orthographic-only로 제한하고 contradiction을 비운 것, raw regex를 제거한 것, RA를
+same-item DNF로 바꾼 것, secondary inference를 0으로 고정한 것도 적절하다.
+
+그러나 candidate 접근 전 hard gate에 새 P0 세 개가 남는다.
+
+1. coordinated-negation 핵심 synthetic test의 두 번째 phrase인 `memory pressure`가 Revision 2
+   ontology concept에서 제거됐다. 따라서 그 test는 두 번째 conjunct suppression을 검증하지
+   못한다.
+2. implementation review PASS **후** bundle commit `B`를 만든다는 순서는 reviewer가 확인한
+   working tree와 실제 `B` 사이의 변경 가능성을 봉인하지 못한다.
+3. plan은 semantic 재검토를 별도 `review_v2_4_deterministic_r2.md`에 기록하도록 요구하지만,
+   이번 작업의 승인된 정본은 기존 `review_v2_4_deterministic.md`에 최초 기록을 보존하고
+   Revision 2 섹션을 append하는 방식이다. 현재 그대로면 commit `B` required bundle에 존재하지
+   않는 r2 파일을 요구하거나, 실제 review artifact를 잘못 식별한다.
+
+이 세 항목은 scoring 전 수정할 수 있고 결과 방향과 독립적이지만, 현재 plan의 exact hard gate를
+그대로 승인할 수는 없다.
+
+### 12.2 최초 P0/P1 재판정
+
+| 최초 gate | Revision 2 판정 | 재검토 근거 |
+|---|---|---|
+| candidate 본문 비열람 독립 review | PASS | 두 차례 review 모두 candidate 본문 접근·검색·출력과 scorer 실행 0 |
+| 12 incident canonical truth 전사 | PASS | canonical mapping 유지 |
+| ontology matcher가 ground truth와 exact 대응 | PASS | CM/FLM 주장 하향, FLM orthographic-only, broad numeric/RA alias 제거, provenance 계약 추가 |
+| CA/component culprit-role 구성 타당성 | PASS | CA/localization을 폐기하고 CM token mention으로 명시적으로 낮춤 |
+| FA alias 대칭성과 contradiction 정책 | PASS | FLM case/separator variant만 허용하고 전 incident `contradictions=[]` |
+| MCA incident-specific mechanism | PASS | incident별 mechanism conjunction 유지, competing-role phrase contradiction 제거 |
+| remediation DNF 의미 | PASS | accepted path의 모든 group과 RA contradiction을 동일 item 안에서만 완성 |
+| negation/absence/coordinated scope | **FAIL** | finite grammar/fail-close 방향은 적절하나 coordinated test가 제거된 concept를 사용해 핵심 branch를 검증하지 못함 |
+| contradiction precedence | PASS | CM/FLM/MCA contradiction 제거, RA의 same-item affirmative opposite action만 precedence 적용 |
+| regex/tokenizer safety와 동치 | PASS | raw regex 제거, 유일한 finite token predicate와 input/token/language 상한 고정 |
+| exact one-sided McNemar | PASS | 정의·tail·known-answer 유지 |
+| bootstrap/Clopper–Pearson | PASS | CP estimand 유지, stdlib RNG·linear percentile·float serialization 고정 |
+| primary status/remediation warning 분리 | PASS | machine-readable 두 required field, 합성 status 금지 |
+| missingness fail-close | PASS | parse/schema/hash/identity/language/negation 실패 전체 INVALID |
+| multiplicity 사전 고정 | PASS | secondary/exploratory inferential test와 CI를 0으로 고정 |
+| hash freeze/opaque commitment/clean checkout | **FAIL** | GT commitment는 PASS지만 implementation review→B 사이 exact tree 봉인이 없음 |
+| 주장·외적 타당성 경계 | PASS | JLC-D lexical outcome, non-semantic/non-production 경계가 명확 |
+
+### 12.3 요청 항목별 상세 판정
+
+#### JLC-D/CM/FLM 주장 하향 — PASS
+
+- `CM`은 canonical component의 token mention이며 culprit role/localization이 아니라고 명시했다.
+- `FLM`은 canonical fault label mention이며 classification accuracy가 아니라고 명시했다.
+- `JLC-D`를 Cloud-OpsBench CA/FA/JRA compatible extension이나 semantic correctness로 부르는 것을
+  금지했다.
+- 허용 결론도 frozen 12 incidents의 lexical concordance에 한정됐다.
+
+따라서 최초 component culprit-role P0는 metric 이름을 낮추는 방식으로 적절히 해결됐다.
+
+#### FLM orthographic-only와 contradictions=[] — PASS
+
+여덟 FLM group은 ground-truth `fault_name`의 case와 separator 결합/분리만 허용한다.
+`startup crash`, `kubelet unavailable`, `no endpoints`, `container cpu limit too low` 같은
+mechanism/symptom alias가 제거됐다. 다른 family label의 단순 병기는 competing assertion인지
+판별할 finite grammar가 없다는 이유로 전 incident contradiction을 비운 것도 CM/FLM의 낮아진
+구성과 일치한다.
+
+#### Finite negation/fail-close — FAIL
+
+`PRE_DIRECT`, `PRE_COORD`, `PRE_RULE`, `POST_RULE`, `POST_CAUSE`, clause/contrast 종료,
+absence assertion, `not only`, grammar 밖 negation의 `UNSUPPORTED_NEGATION` fail-close는 최초
+3-token window보다 훨씬 명확하다. 다만 다음을 고쳐야 PASS다.
+
+1. synthetic test 9의 `no cpu throttling or memory pressure`에서 `memory pressure`는 Revision 2의
+   matcher group이 아니다. 두 번째 `C`가 존재하지 않아 `PRE_COORD`의 연장 suppression을 검증하지
+   못한다. 두 conjunct가 모두 실제 ontology concept인 예문, 예를 들어
+   `no cpu throttling or memory limit`, 그리고 두 positive span이 모두 suppress됐다는 assertion으로
+   교체해야 한다.
+2. step 12는 `not only`처럼 exception으로 소비된 marker가 있을 때 같은 clause의 다른 concept를
+   모두 미분류로 간주하는지 모호하다. “소비 후 남은 unresolved negation marker와 그 scope 후보가
+   있을 때만 fail-close”인지, “marker가 있던 clause의 모든 concept를 분류”하는지 하나로 고정하고
+   `not only C1 but C2` test를 추가해야 한다.
+3. JSON Schema의 `negation.window_tokens/tokens/phrases`는 revision 1 형태를 유지하며 arbitrary
+   array를 허용한다. implementation validator가 §7의 exact token/phrase/grammar 상수를 강제한다는
+   조건을 schema 또는 synthetic static validation에 명시해야 한다.
+
+첫 번째는 coordinated negation P0의 실제 반증 test가 비어 있다는 뜻이므로 구현 review로
+미룰 수 없다.
+
+#### Regex 제거/token predicate — PASS
+
+raw regex, wildcard, substring, fuzzy match를 금지하고
+`MEMORY_LIMIT_EXCEEDED_V1`의 아홉 token sequence만 허용했다. ASCII 밖 alphanumeric과 input
+크기를 fail-close하며 literal과 predicate가 동일 token boundary를 쓰므로 최초 Unicode/ASCII
+boundary 충돌은 제거됐다.
+
+#### Same-item RA — PASS
+
+positive path 전체와 반대 action contradiction 모두 하나의 `remediation[]` item 안에서 완성돼야
+한다. F1/F7 generic sufficient-limit과 F5-t3 generic redeploy도 제거됐다. DNF cross-item join과
+acceptance-set 과포괄 P0/P1은 해결됐다.
+
+#### Secondary inference 0 — PASS
+
+confirmatory test는 RAG 대 placebo JLC-D exact one-sided McNemar 하나다. runtime, CM, FLM, MCA,
+RA, FULL, relaxed, fault matrix는 count/rate/difference만 허용하며 secondary p-value, CI,
+Cochran Q를 모두 금지했다. multiplicity 재량이 남지 않는다.
+
+#### Ground-truth projection hash — PASS
+
+candidate와 scorer 없이 repository ground truth만 읽어 projection을 독립 재계산했다.
+
+```text
+selected rows       12
+projection bytes    3318
+projection SHA-256  be456f903354d581ae66c8f7051ea271a9add2cb7b6a58e28d1d768aaee57b1b
+full GT SHA-256     d00115766dbfaa844b5325ff60aac8170b83689ccf2f2d2cd427faad9f8115c6
+```
+
+네 값 모두 Revision 2와 exact 일치한다. projection field, numeric F/trial sort, canonical JSON
+serialization도 재현됐다.
+
+#### Two-stage review/approval commit — FAIL
+
+semantic review와 implementation review를 분리하고, approved bundle `B`와 approval-document
+commit `A`를 분리한 발상은 타당하다. `A`가 approval 문서의 `B`를 ancestor로 가져야 한다는
+검사도 self-reference를 피한다. 그러나 exact freeze에는 다음 보완이 필요하다.
+
+1. implementation files와 commitment를 먼저 implementation candidate commit `I`로 봉인한다.
+2. fresh reviewer는 exact `I`를 detached clean checkout에서 검토하고 review 문서에 `I`와
+   검토 대상 파일 SHA-256를 기록한다.
+3. commit `B`는 `I`에 implementation review 문서만 추가해야 한다. `git diff I..B`가 그 review
+   파일 하나뿐이고 review에 기록된 file hash가 `B` tree와 일치하지 않으면 INVALID다.
+4. 사용자에게 `B`를 승인받고 approval 문서만 추가한 `A`를 만든다. `git diff B..A`도 approval
+   문서 하나뿐이어야 한다.
+
+현재처럼 uncommitted 구현을 review한 뒤 `B`를 만들면 review와 commit 사이의 변경을 검출할
+기준점이 없다.
+
+또한 semantic review artifact의 exact 경로를 현재 정본으로 맞춰야 한다. 이번 재검토는 사용자
+지시에 따라 최초 FAIL 기록을 보존한 같은 파일의 이 섹션에 기록됐다. 따라서 plan §9.1, §12와
+bundle 목록의 `review_v2_4_deterministic_r2.md`를 이 파일의 Revision 2 section/hash로 바꾸거나,
+승인된 별도 r2 파일을 실제 생성해야 한다. 현 작업 범위에서는 다른 파일을 만들 수 없으므로
+전자를 권고한다.
+
+### 12.4 Revision 2 P0 gate 표
+
+| Revision 2 P0 | 판정 | 승인 조건 |
+|---|---|---|
+| JLC-D/CM/FLM construct boundary | PASS | 현재 명칭·주장 경계 유지 |
+| FLM orthographic-only / empty contradictions | PASS | mechanism alias와 all-other-family contradiction 재도입 금지 |
+| MCA/RA ground-truth correspondence | PASS | provenance와 incident별 path 유지 |
+| finite negation grammar | PASS | finite grammar 자체는 명시됨 |
+| coordinated-negation/exception synthetic verification | **FAIL** | 실제 ontology concept 두 개로 test하고 `not only C1 but C2` scope 고정 |
+| raw regex 제거 / finite token predicate | PASS | predicate ID·sequence 확장 시 새 review |
+| same-item remediation DNF/contradiction | PASS | cross-item join 금지 유지 |
+| primary exact inference | PASS | one-sided direction과 single primary 유지 |
+| secondary inference count 0 | PASS | p-value/CI/Q 생성 금지 유지 |
+| GT full/projection commitment | PASS | 독립 재계산 exact 일치 |
+| opaque input commitment provenance | PASS 조건부 | implementation review에서 hash-only behavior/redaction 실제 검증 필요 |
+| implementation review→commit B exact freeze | **FAIL** | candidate commit `I`를 먼저 만들고 I→B review-only diff 검증 |
+| approval commit A / clean checkout | PASS 조건부 | B→A approval-only diff와 exact A checkout 검증 필요 |
+| semantic review artifact identity | **FAIL** | plan의 별도 r2 path를 이 파일/section으로 정합화 |
+| candidate 비접근 | PASS | 본 재검토까지 본문 접근·검색·출력/scorer 실행 0 |
+
+### 12.5 Revision 2 최종 판정과 다음 checkpoint
+
+**최종 판정: 수정 요구 — candidate 접근 및 scoring package 승인 안 함.**
+
+다음 checkpoint는 plan-only revision 3에서 다음 세 가지를 고치는 것이다.
+
+1. coordinated-negation test를 실제 두 ontology concept으로 만들고 `not only` 소비 후 scope를
+   명확히 한다.
+2. implementation candidate commit `I` → review-only commit `B` → approval-only commit `A`의
+   허용 diff와 hash 검증을 hard gate로 추가한다.
+3. semantic Revision 2 review artifact를 이 파일의 본 섹션으로 일치시킨다.
+
+이 수정은 candidate 표현이나 arm score를 보지 않고 수행해야 한다. 그 뒤 plan hash가 바뀌므로
+semantic 재검토와 최종 plan hash 보고를 다시 받아야 한다.
+
+---
+
+## 13. Revision 3 재검토
+
+> 재검토일: 2026-08-31
+>
+> 검토 plan: `experiment_plan_v2_4_deterministic.md` revision 3
+>
+> 검토 plan SHA-256:
+> `83e88cd31ff31173eacc3b1f09eeade5f0c4021c2a03c120fdc250a90f6ea473`
+>
+> 독립성 재선언: Revision 3 재검토에서도 candidate output JSON/CSV의
+> `identified_fault_type`, `root_cause`, `remediation` 본문을 열거나 검색하거나 출력하지
+> 않았고 scorer를 실행하지 않았다. candidate path나 observed alias/score도 검토 입력으로
+> 사용하지 않았다.
+
+### 13.1 재검토 결론
+
+**직전 Revision 2의 P0 세 개는 모두 exact하게 닫혔다. 그러나 plan 내부 hard gate에 새
+self-referential hash P0가 있어 Revision 3도 수정 요구다.**
+
+방법론의 substantive semantic/statistical 계약은 최종 승인 가능한 수준이다. 새 P0는 outcome
+정의나 통계가 아니라 충족 불가능한 review hash 기록 절차 하나다. candidate 접근 전에 한 줄의
+plan-only revision으로 고칠 수 있다.
+
+### 13.2 Revision 2 P0 세 개 closure 검증
+
+#### P0-A. Coordinated negation/`not only` — PASS
+
+- test 9가 제거된 `memory pressure` 대신 실제 ontology concept인 `M_CPU_THROTTLED`와
+  `M_MEMORY_LIMIT`를 사용한다.
+- `no cpu throttling or memory limit`에서 두 span 모두 suppress됐음을 직접 assertion한다.
+- `NOT_ONLY := not only C1 but C2`를 다른 grammar보다 먼저 소비하고 C1/C2를 둘 다 affirmative로
+  남긴다.
+- exception 소비 뒤에는 **남아 있는** unresolved marker/scope만 fail-close하고 ordinary concept는
+  fail-close 대상이 아니라고 §7.10·§7.13에서 같은 의미로 고정했다.
+- positive fixture와 남은 unsupported negation의 negative fixture가 모두 test 11에 있다.
+- schema는 tokens, phrases, fillers, coordinators, contrasts, exceptions, grammar IDs를 `const`로
+  강제하고 static validator가 값과 순서까지 확인한다.
+
+따라서 finite grammar, coordinated scope, exception 소비, unsupported grammar fail-close의
+Revision 2 공백은 닫혔다.
+
+#### P0-B. Implementation review→commit freeze — PASS
+
+Revision 3는 다음 비순환 chain을 exact하게 정의한다.
+
+```text
+I = implementation target files를 먼저 봉인한 candidate commit
+B = I에 implementation review 문서 하나만 추가
+A = B에 approval 문서 하나만 추가
+```
+
+- implementation reviewer는 detached clean exact `I`를 검토한다.
+- review에는 exact I, detached/clean 증거, 각 `I:path` blob/filesystem SHA-256, test command와
+  exit status를 기록한다.
+- `B^ == I`와 I→B exact one-file diff, target hash 불변을 hard gate로 둔다.
+- `A^ == B`와 B→A exact approval-only diff를 hard gate로 둔다.
+- candidate 본문 접근은 exact `A` parent/diff/hash 검증 이후에만 허용된다.
+
+reviewed working tree와 commit B 사이의 mutation gap 및 review/approval 자기참조 문제가 모두
+해소됐다.
+
+#### P0-C. Semantic review artifact identity — PASS
+
+- 단일 정본을 이 파일 `docs/plans/review_v2_4_deterministic.md`로 고정했다.
+- 최초 FAIL, Revision 2, Revision 3 section을 같은 파일에 append한다.
+- 별도 r2/r3 파일의 생성·참조를 금지했고 commit `I` target list도 이 파일 하나만 포함한다.
+- §9.1, §12, §16의 artifact path가 일치한다.
+
+따라서 이번 작업 지시와 plan의 required bundle 사이 경로 충돌은 닫혔다.
+
+### 13.3 Plan 전체 P0 재판정
+
+| P0 gate | Revision 3 판정 | 근거 |
+|---|---|---|
+| JLC-D/CM/FLM 주장 경계 | PASS | mention/concordance로 한정, CA/FA/JRA 호환·semantic accuracy 주장 금지 |
+| canonical GT/ontology correspondence | PASS | 12행 mapping·provenance·strict FLM/RA 유지 |
+| FLM orthographic-only / contradictions=[] | PASS | mechanism/symptom alias와 competing-role 추정 없음 |
+| MCA/RA field isolation과 DNF | PASS | incident-specific MCA, RA same-item positive/contradiction |
+| finite negation grammar | PASS | 여섯 grammar와 exact constants, unresolved marker fail-close |
+| coordinated negation/exception tests | PASS | 실제 concept 두 개와 positive/negative assertions |
+| regex/token safety | PASS | raw regex 없음, finite predicate·token boundary·size/language fail-close |
+| primary exact McNemar | PASS | one-sided 사전 방향, single confirmatory outcome/comparison |
+| bootstrap/Clopper–Pearson | PASS | estimand 구분, stdlib deterministic procedure |
+| secondary inference | PASS | p-value/CI/Q 0으로 고정 |
+| primary status/remediation warning | PASS | 별도 required fields, 합성 status 금지 |
+| GT full/projection commitment | PASS | Revision 2 독립 재계산 hash/3318 bytes 유지 |
+| opaque commitment | PASS 조건부 | semantic 계약 타당; exact tool behavior는 implementation review 대상 |
+| I→B→A freeze/approval chain | PASS | exact parent, one-file diffs, target hashes, detached review |
+| semantic review artifact path | PASS | 이 단일 append-only 정본으로 통일 |
+| review 최종 SHA 기록 가능성 | **FAIL** | 최종 SHA를 같은 review 파일 안에 append하라는 DoD는 자기참조라 충족 불가능 |
+| candidate 비접근 | PASS | 세 차례 semantic review 모두 본문 접근·검색·출력/scorer 실행 0 |
+| 외적 타당성·주장 경계 | PASS | frozen 12 incidents lexical outcome으로 제한 |
+
+### 13.4 새 P0 — self-referential review SHA
+
+§9.1은 Revision 3 append 뒤 바뀐 review file hash를 commit `I`에 기록한다고 해 외부 기록으로
+해석할 수 있다. 그러나 §16 Definition of Done은 다음을 요구한다.
+
+> 단일 semantic review 정본에 Revision 3 PASS와 최종 file hash가 append됨.
+
+review 파일에 그 파일 자신의 “최종 SHA-256” 문자열을 append하면 파일 bytes와 SHA가 다시
+바뀐다. 일반 SHA-256 fixed point를 전제로 하지 않는 한 이 gate는 충족할 수 없다. 이번 답변에서
+계산해 보고하는 review SHA도 파일 밖의 report이므로 가능하지만, 그 값을 다시 이 파일 안에
+넣으면 더 이상 최종 SHA가 아니다.
+
+**필수 수정:**
+
+- §16을 “단일 semantic review 정본에 Revision 3 PASS가 append되고, 그 최종 filesystem
+  SHA-256가 commit `I` 이후 implementation review 문서와 사용자 보고에 기록됨”으로 바꾼다.
+- §9.1의 “commit I에 기록”도 Git tree에 파일이 포함된다는 뜻과 digest 기록 위치를 구분해,
+  최종 review filesystem SHA-256는 exact `I`를 검토하는 implementation review 문서가 기록한다고
+  명시한다.
+- review 정본 자체에는 자기 SHA를 쓰지 않는다. `I:path` Git blob identity와 filesystem
+  SHA-256는 implementation review에서 함께 기록한다.
+
+이는 결과를 보지 않고 수정할 수 있는 plan execution gate이며, 고치기 전에는 Definition of Done이
+논리적으로 완결되지 않는다.
+
+### 13.5 Revision 3 최종 판정
+
+**최종 판정: 수정 요구 — semantic plan 최종 승인 보류.**
+
+직전 P0 세 개와 최초 방법론 P0는 모두 해결됐다. 남은 것은 self-referential hash 문구 하나다.
+이를 외부 implementation review/user report 기록으로 수정한 plan revision을 candidate 비접근
+상태에서 확인하면, 다른 변경이나 새 P0가 없는 한 semantic plan 최종 승인을 권고할 수 있다.
+
+---
+
+## 14. Revision 4 재검토
+
+> 재검토일: 2026-08-31
+>
+> 검토 plan: `experiment_plan_v2_4_deterministic.md` revision 4
+>
+> 검토 plan SHA-256:
+> `24385717f3de42f3288ca44e80ab040d498fb1a5cabf59ec7ac43424e10145db`
+>
+> 독립성 재선언: Revision 4 재검토에서도 candidate output JSON/CSV의
+> `identified_fault_type`, `root_cause`, `remediation` 본문을 열거나 검색하거나 출력하지
+> 않았고 scorer를 실행하지 않았다. 이 review 파일 자신의 SHA-256는 내부에 기록하지 않는다.
+
+### 14.1 최종 결론
+
+**Semantic plan 최종 승인 권고 — P0 PASS 18, FAIL 0.**
+
+Revision 4는 Revision 3의 유일한 잔여 P0였던 self-referential review SHA 계약을 정확히
+수정했다. 측정 ontology, negation grammar, DNF, 통계, input commitment, `I→B→A` chain의 의미는
+바뀌지 않았다. 이 승인은 semantic plan에 대한 것이며, 아직 만들어지지 않은 ontology/code/test/
+commitment 구현의 승인은 아니다. 그 구현은 plan대로 exact commit `I`의 별도 fresh
+implementation review를 통과해야 한다.
+
+### 14.2 Self-reference P0 closure — PASS
+
+Revision 4의 세 관련 위치가 같은 계약을 말한다.
+
+1. **§9.1:** semantic review 정본은 append content와 commit `I` tree의 exact path/blob OID로
+   고정한다. review 파일은 자기 filesystem SHA-256를 포함하지 않는다.
+2. **§9.1 I→B gate:** exact `I`가 고정된 뒤 외부에서 review filesystem SHA-256를 계산한다.
+   implementation review는 그 값과 `I:path` blob/filesystem hash를 기록하며, B tree에서 같은지
+   검증한다.
+3. **§9.1 B→A gate:** approval provenance가 semantic review blob OID와 외부 계산 SHA-256를
+   기록한다. approval 문서만 추가한 `A`를 실행한다.
+4. **§12:** Step 2도 review 내부 self-hash를 금지하고 blob/tree identity와 외부 provenance를
+   정본화 수단으로 명시한다.
+5. **§16:** DoD를 “PASS content는 review에 append, final filesystem SHA-256는 review 파일 밖
+   implementation review·approval·사용자 보고에 기록”으로 분리했다.
+
+따라서 hash 값을 파일 안에 넣어 다시 hash가 바뀌는 순환은 없다. review final SHA의 계산 시점,
+기록 위치, I/B tree 비교가 모두 실행 가능하고 비순환적이다.
+
+Revision 4의 본 section은 Revision 3에서 승인 가능하다고 판정한 substantive semantic 계약과
+Revision 4의 self-reference closure를 함께 최종 PASS로 비준한다. 기존 FAIL 기록은 당시 gate의
+이력을 보존하며, 최종 유효 판정은 이 section이다.
+
+### 14.3 의미 불변 확인
+
+Self-reference 수정 외 다음 핵심 계약은 Revision 3와 동일하다.
+
+- primary는 `JLC-D = CM ∧ FLM ∧ MCA`, RAG 대 length placebo의 12-pair 비교 하나다.
+- CM/FLM은 mention/concordance이며 localization, classification accuracy, JRA가 아니다.
+- FLM은 orthographic-only이고 CM/FLM/MCA contradictions는 비운다.
+- MCA는 incident-specific conjunction, RA는 same-item DNF와 same-item opposite-action
+  contradiction이다.
+- raw regex 없이 finite token predicate만 허용한다.
+- finite negation grammar, actual-concept coordinated test, `NOT_ONLY`, unresolved marker
+  fail-close가 유지된다.
+- exact one-sided McNemar, Clopper–Pearson, deterministic paired bootstrap이 유지된다.
+- secondary inferential p-value/CI/Q는 0이다.
+- GT full/projection hash, opaque commitment, no-follow/rehash, clean execution gate가 유지된다.
+- implementation candidate `I` → review-only `B` → approval-only `A` chain이 유지된다.
+- candidate 접근은 exact `A` 검증 뒤에만 가능하다.
+
+새 outcome, alias, threshold, test 방향, comparator, missingness rule 또는 주장 확장은 없다.
+
+### 14.4 최종 P0 표
+
+| P0 gate | 최종 판정 | 근거 |
+|---|---|---|
+| candidate 비접근 semantic review | PASS | 네 차례 모두 본문 접근·검색·출력/scorer 실행 0 |
+| canonical 12-row ground-truth mapping | PASS | 선택 identity와 canonical projection 고정 |
+| JLC-D/CM/FLM construct boundary | PASS | lexical mention으로 명시적 하향 |
+| FLM orthographic-only | PASS | mechanism/symptom alias 제거 |
+| CM/FLM/MCA contradiction policy | PASS | role 추정 없이 빈 배열 |
+| MCA field isolation/conjunction | PASS | incident-specific ground-truth atoms |
+| RA same-item DNF/contradiction | PASS | cross-item join 금지 |
+| finite negation grammar | PASS | exact constants와 여섯 grammar |
+| coordinated negation/NOT_ONLY tests | PASS | 실제 ontology concept와 positive/negative assertion |
+| unsupported negation fail-close | PASS | unresolved marker/scope만 INVALID |
+| regex/token safety | PASS | raw regex 금지, finite predicate·input/language limits |
+| exact one-sided primary inference | PASS | single primary, direction·tail·known-answer 고정 |
+| interval/replay determinism | PASS | CP estimand, stdlib bootstrap, canonical serialization |
+| secondary inference/multiplicity | PASS | inferential test·CI·Q 수 0 |
+| status/remediation warning separation | PASS | 독립 required fields, 합성 status 금지 |
+| GT/input commitment | PASS | full/projection digest와 opaque hash-only provenance |
+| I→B→A result-independent freeze | PASS | exact parents, one-file diffs, target hash equality |
+| review SHA non-self-reference | PASS | I 고정 후 외부 기록, review 내부 기록 금지 |
+
+**합계: PASS 18 / FAIL 0.**
+
+### 14.5 승인 경계와 다음 checkpoint
+
+**Semantic plan을 최종 승인하도록 권고한다.**
+
+다음 checkpoint는 candidate 비접근 상태에서 ontology/scorer/analyzer/tests/commitment를 구현해
+candidate commit `I`를 만드는 것이다. 이후 fresh implementation reviewer가 exact detached
+`I`와 synthetic/static test를 검증하기 전에는 scoring package를 승인하거나 candidate 본문을
+읽어서는 안 된다.

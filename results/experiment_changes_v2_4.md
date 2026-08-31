@@ -71,3 +71,12 @@
 - **수정 내용**: candidate output을 열지 않은 fresh reviewer가 ground truth와 plan만으로 17개 P0 gate를 검토했다. exact paired test, MCA core, missingness와 주장 경계는 통과했지만 component 구성, FA 대칭성, DNF, negation, regex, multiplicity, 2단계 freeze gate를 FAIL로 기록하고 Step 3 승인을 거부했다. 실패 리뷰를 보존하고 plan 수정·재검토를 다음 checkpoint로 고정했다.
 - **수정 파일**: `docs/plans/review_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 요구 — candidate output 본문 접근 0, scorer 실행 0, 결과 생성 0. 모든 P0가 PASS하기 전 구현·실데이터 채점 금지.
+
+### 9. V2.4-D semantic plan revision 4 승인 권고 — 2026-08-31
+
+- **수정 에이전트**: @experiment-planner, fresh @methodology-reviewer, @Codex
+- **증상/문제**: 최초 계획과 revision 2·3에는 component localization 과장, fault alias 비대칭, negation 검증 공백, implementation review freeze 틈과 review self-hash 자기참조가 순차적으로 발견됐다.
+- **원인**: 자유서술 lexical matcher의 구성개념과 candidate 접근 전 commit/review/approval 순서를 동시에 엄밀하게 봉인해야 했으며, 최초 계약은 이 두 층을 충분히 분리하지 못했다.
+- **수정 내용**: primary를 `JLC-D=CM∧FLM∧MCA`로 낮춰 RCA/JRA 호환 주장을 철회하고 FLM을 canonical orthographic mention으로 제한했다. raw regex와 broad contradiction을 제거하고 finite negation·unsupported fail-close, same-item RA, secondary inference 0, GT projection hash, exact `I→B→A` freeze chain을 고정했다. review 자체 SHA는 파일 외부 provenance에서만 기록하도록 자기참조도 제거했다. 동일 fresh reviewer가 누적 실패 기록을 보존한 채 revision 4를 재검토해 P0 18 PASS/0 FAIL로 semantic plan 승인을 권고했다.
+- **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md:1`, `docs/plans/review_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
+- **상태**: Step 2 완료·implementation candidate `I` 대기 — plan SHA-256 `24385717f3de42f3288ca44e80ab040d498fb1a5cabf59ec7ac43424e10145db`, review SHA-256(외부 보고) `2c0013d0dc2695c366536d19f35ecf63bb6120c18abdc46c80e74c673cffd689`; candidate 본문 접근/채점 0.
