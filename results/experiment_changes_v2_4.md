@@ -107,3 +107,12 @@
 - **수정 내용**: 구 commitment envelope를 `DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT`로 강등하고 CSV/raw path·size·digest를 source-drift reference로만 보존했다. code-only `I0`을 candidate-unmounted fresh safety review한 뒤 exact reviewed tool로 새 commitment를 생성하고, commitment+deviation provenance 두 파일만 더한 `I1`, review-only `B`, approval-only `A` 순서를 hard gate로 고정했다. runner·ontology·negation·hidden two-run release·commit safety·37-category tests의 revision 5 보완도 유지했다. cumulative reviewer가 P0 20 PASS/0 FAIL로 revision 6을 승인 권고했다.
 - **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md:1`, `docs/plans/review_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
 - **상태**: semantic plan 재승인 완료 — plan SHA-256 `169f59e40b4619c15613cce6360ca4b03063dfa1cd451e79160c86be949d936d`, review SHA-256(외부) `7f125f15b5469f1e8e51ba84386628dcedf4392c82958e37bb1496c5a8f903b7`; 다음 gate는 commitment가 없는 code-only I0.
+
+### 13. V2.4-D code-only I0 안전 구현 보완 — 2026-09-01
+
+- **수정 에이전트**: @implementation-worker, @runner-worker, @Codex
+- **증상/문제**: 최초 implementation review가 ontology const, finite negation, candidate fail-close, git approval chain, replay-before-release, hash-only TOCTOU와 synthetic coverage에서 P0 7개를 발견했다.
+- **원인**: green test가 semantic schema의 exact const와 runner의 실제 git ancestry를 검증하지 않았고, 첫 run을 replay 전에 공개했으며, commitment tool이 path swap·symlink와 redaction provenance를 충분히 방어하지 못했다.
+- **수정 내용**: deprecated real commitment를 code-only tree에서 제거했다. ontology duplicate/version/negation order/ID/alias count, finite negation consumed-span, empty/U+FFFD/total-token gate를 강화했다. commitment tool에 ancestor/no-follow/fstat/pre-post rehash와 실행형 redaction self-test를 추가했다. runner는 I0→I1→B→A ancestry·exact diff·all target hash/blob를 candidate open 전에 검증하고, 두 hidden full run이 모두 일치한 뒤에만 final/replay/manifest/export를 단일 atomic release하도록 변경했다. second-run failure/mismatch는 body-free INVALID receipt만 남긴다. isolated Python `-I`를 포함한 synthetic 41 tests를 통과했다.
+- **수정 파일**: `docs/plans/input_commitment_v2_4_deterministic.json`(deprecated 삭제), `experiments/v2_4_deterministic/build_ontology.py`, `experiments/v2_4_deterministic/commit_inputs.py`, `experiments/v2_4_deterministic/ontology_v1.json`, `experiments/v2_4_deterministic/run.py`, `experiments/v2_4_deterministic/scorer.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: code-only I0 commit 대기 — synthetic 41 PASS, ontology check PASS, redaction self-test PASS, pycompile/diff-check PASS. 실제 candidate path·metadata·hash/content 접근과 real scoring 0.
