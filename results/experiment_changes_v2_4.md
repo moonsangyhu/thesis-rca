@@ -53,3 +53,12 @@
 - **수정 내용**: Cloud-OpsBench·RCAEval·OpenRCA·AIOps Challenge 2025의 공개 구조화 RCA 평가 계약을 조사하고, 기존 Primary03 ground truth만으로 component·fault family·mechanism·remediation을 field-isolated exact concept matcher로 평가하는 H-V2.4-D를 고정했다. primary 비교는 동일 12 incidents의 blind procedural RAG 대 length placebo paired `JRA-D`이며, ontology·scorer·tests·plan을 candidate output 열람 전에 commit하는 anti-overfitting gate와 exact paired test를 명시했다. 새 모델/API/K8s 호출과 기존 결과 수정은 금지했다.
 - **수정 파일**: `docs/surveys/deep_analysis_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
 - **상태**: 심층분석 완료·상세 계획 대기 — 기존 human V2.4 질문은 폐기하지 않고 `AWAITING_REVIEW`로 보존하며, 결정론적 측정은 별도 addendum·독립 방법론 리뷰·사용자 승인 전 실행하지 않는다.
+
+### 7. V2.4-D 결정론적 채점 상세 계획 사전등록 — 2026-08-31
+
+- **수정 에이전트**: @experiment-planner, @Codex
+- **증상/문제**: H-V2.4-D의 방향은 고정됐지만, 자유서술을 binary RCA outcome으로 바꾸는 exact ontology·부정 처리·field isolation·통계·freeze 순서가 구현 가능한 수준으로 정의되지 않았다.
+- **원인**: 공개 benchmark의 CA/FA/JRA 계약만으로는 본 실험의 mechanism과 remediation, paraphrase, 모순 표현, 12-pair small-n 판정을 자동으로 결정할 수 없다.
+- **수정 내용**: candidate output 본문을 열지 않은 상태에서 12 incidents의 component·fault·mechanism·remediation positive path와 contradiction group, JSON schema, NFKC/token/negation 규칙, synthetic-only tests 20범주, opaque input commitment, exact one-sided paired test와 descriptive sensitivity, fail-closed missingness, clean-checkout replay, result-independent change control과 DoD를 상세 계획으로 고정했다. 기존 human plan은 수정하지 않았다.
+- **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
+- **상태**: Step 1 완료·Step 2 독립 비평 대기 — candidate output 본문 접근 0, scorer 실행 0, 결과 생성 0, 외부 모델/API/K8s 호출 0.
