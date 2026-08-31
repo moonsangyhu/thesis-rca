@@ -116,3 +116,12 @@
 - **수정 내용**: deprecated real commitment를 code-only tree에서 제거했다. ontology duplicate/version/negation order/ID/alias count, finite negation consumed-span, empty/U+FFFD/total-token gate를 강화했다. commitment tool에 ancestor/no-follow/fstat/pre-post rehash와 실행형 redaction self-test를 추가했다. runner는 I0→I1→B→A ancestry·exact diff·all target hash/blob를 candidate open 전에 검증하고, 두 hidden full run이 모두 일치한 뒤에만 final/replay/manifest/export를 단일 atomic release하도록 변경했다. second-run failure/mismatch는 body-free INVALID receipt만 남긴다. isolated Python `-I`를 포함한 synthetic 41 tests를 통과했다.
 - **수정 파일**: `docs/plans/input_commitment_v2_4_deterministic.json`(deprecated 삭제), `experiments/v2_4_deterministic/build_ontology.py`, `experiments/v2_4_deterministic/commit_inputs.py`, `experiments/v2_4_deterministic/ontology_v1.json`, `experiments/v2_4_deterministic/run.py`, `experiments/v2_4_deterministic/scorer.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: code-only I0 commit 대기 — synthetic 41 PASS, ontology check PASS, redaction self-test PASS, pycompile/diff-check PASS. 실제 candidate path·metadata·hash/content 접근과 real scoring 0.
+
+### 14. V2.4-D I0 safety review 실패와 path-race/redaction 보완 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: 최초 code-only I0 `fffb426`의 synthetic suite는 통과했지만 fresh safety probe에서 ancestor directory를 검사 직후 symlink로 교체하면 다른 bytes를 승인했고, source path sentinel이 provenance argv로 노출됐다.
+- **원인**: 최종 파일만 `O_NOFOLLOW`로 열고 ancestor path는 선행 검사에 의존했으며, provenance가 실제 절대 argv를 저장했다. redaction PASS도 실실행 결과가 아닌 상수였다.
+- **수정 내용**: safety reviewer가 receipt 생성을 거부하고 두 P0를 기록했다. commitment tool은 lexical directory를 fd chain/openat `O_DIRECTORY|O_NOFOLLOW`로 고정하고 final entry도 relative no-follow open·fstat·pre/post rehash로 검증하도록 변경했다. provenance는 option과 SHA-256 identifier만 저장하며 path/basename을 제거했고, content/path/error sentinel을 쓰는 executable redaction self-test가 매 commitment 전에 성공해야만 출력하도록 했다. ancestor 교체 fixture와 path sentinel test를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 I0 safety review 대기 — isolated 43 tests PASS, redaction self-test PASS, 실제 candidate source 접근 0, 이전 I0 receipt 0.
