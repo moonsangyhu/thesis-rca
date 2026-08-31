@@ -1,11 +1,11 @@
-# V2.4-D 결정론적 lexical concordance 실험 계획 — revision 6
+# V2.4-D 결정론적 lexical concordance 실험 계획 — revision 7
 
 > 작성일: 2026-08-31
 >
-> 단계: Experiment Track Step 1 — semantic review Revision 5 P0 반영본, 재구현·실행 전
+> 단계: Experiment Track Step 1 — semantic review Revision 6 PASS 후 chain 표기 교정본, 재구현·실행 전
 >
-> revision 6 근거: cumulative `docs/plans/review_v2_4_deterministic.md` Revision 5의
-> commitment identity/review-before-real-access P0 두 개
+> revision 7 근거: code-only `I0`에는 active commitment path가 없으므로 `I0→I1`은
+> commitment와 deviation provenance의 exact two-file addition이라는 chain 정합성 교정
 >
 > 선행 분석: `docs/surveys/deep_analysis_v2_4_deterministic.md`
 >
@@ -802,8 +802,10 @@ review는 semantic, commitment-safety, full implementation의 서로 다른 세 
    사용자 보고에 기록한다. 별도 r2/r3 review 파일은 생성하거나 참조하지 않는다.
 2. semantic Revision 6 PASS 뒤 candidate source를 열지 않고 implementation code와 synthetic
    fixtures만 완성해 code-only candidate commit `I0`를 만든다. 기존 FAIL candidate
-   `e86e26b4eb00aca899f42eab008132c0664a5cfc`와 그때의 commitment는 역사로 보존한다. `I0` safety
-   review scope는 아래 여덟 파일이며 real commitment는 scope/target에서 제외한다.
+   `e86e26b4eb00aca899f42eab008132c0664a5cfc`와 그때의 commitment는 git history에만 보존한다.
+   `git cat-file -e I0:docs/plans/input_commitment_v2_4_deterministic.json`은 non-zero여야 하며
+   active commitment path는 `I0` tree에 없어야 한다. `I0` safety review scope는 아래 여덟 파일이며
+   real commitment는 scope/target에서 제외한다.
 
 ```text
 experiments/v2_4_deterministic/ontology_v1.json
@@ -827,14 +829,19 @@ tests/test_v2_4_deterministic.py
    human/agent text egress 없이 real hash-only commitment를 재생성한다. 새 commitment provenance는
    exact I0 tool blob과 external safety receipt digest를 포함한다. 동시에 §9.3 historical deviation
    evidence를 `docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json`에 봉인한다.
-   그 두 경로만 변경한 full candidate commit `I1`을 만든다.
+   그 두 경로만 새로 추가한 full candidate commit `I1`을 만든다.
 
 ```text
 I1^ == I0
 git diff --name-status I0..I1
-M  docs/plans/input_commitment_v2_4_deterministic.json
+A  docs/plans/input_commitment_v2_4_deterministic.json
 A  docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json
 ```
+
+Revision 6 표기의 M/A 불일치 상태에서 한 차례 생성된 hash-only commitment는 candidate를
+decode/parse/search/preview/output하지 않았지만 contract mismatch로 즉시 폐기됐고 commit·freeze·
+review·approval되지 않았다. 그 artifact와 digest는 `I1` 또는 confirmatory provenance로 사용하지
+않는다. Revision 7 계약 아래 exact reviewed I0 tool로 새로 생성해 위 두 `A` entry로만 봉인한다.
 
 위 출력은 exact 두 줄이어야 한다. ontology/scorer/analyzer/runner/builder/commit tool/tests를 포함한
 실행 code와 plan/semantic review의 `I0`·`I1` blob OID가 모두 같아야 한다. commitment 또는 deviation
@@ -842,7 +849,7 @@ provenance 외 변경, reviewed I0 tool과 provenance tool identity 불일치, s
 source open은 INVALID다.
 
 full implementation candidate `I1`은 다음 target 전부를 포함한다. cumulative implementation review
-파일에는 기존 FAIL 내용만 있고 Revision 6 full re-review PASS는 아직 없어야 하며 approval 문서는
+파일에는 기존 FAIL 내용만 있고 Revision 7 full re-review PASS는 아직 없어야 하며 approval 문서는
 없어야 한다.
 
 ```text
@@ -866,7 +873,7 @@ tests/test_v2_4_deterministic.py
    `I1:<path>` git blob OID·blob SHA-256·filesystem SHA-256, synthetic/static test 명령·exit status,
    I0 safety receipt hash와 `I0..I1` exact diff를 기록한다. approval provenance도 이 전체 target
    hash map을 그대로 포함해야 한다. 기존 FAIL을 보존한 같은 implementation review 문서에
-   Revision 6 full re-review를 append하고, 그 문서 하나만 수정한 commit `B`를 만든다.
+   Revision 7 full re-review를 append하고, 그 문서 하나만 수정한 commit `B`를 만든다.
 
 ```text
 B^ == I1
@@ -891,9 +898,10 @@ INVALID다. 실행 checkout은 반드시 exact `A`이고 approval 문서가 가�
 `B`여야 한다. self-referential `A` hash를 approval 문서 안에 쓰지 않으며 실행 manifest가
 실제 `A`를 기록한다. candidate 본문을 읽는 명령은 이 모든 검증을 통과한 `A` 이후에만 가능하다.
 
-현재 repository의 old `docs/plans/input_commitment_v2_4_deterministic.json`과 그 내부
+pre-`I0` git history의 old `docs/plans/input_commitment_v2_4_deterministic.json`과 그 내부
 `commitment_sha256=590e8e006d5adc449bb8e0bdd12b0beaaf7bc8197015dd65a7131525cf90ca64`는
-status `DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT`로만 보존한다. 이는 fresh safety review 전에
+status `DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT`로만 보존하며 `I0` tree에는 그 경로가 없다.
+이는 fresh safety review 전에
 unreviewed tool로 생성됐으므로 confirmatory commitment, approval target, runtime envelope gate로
 사용하지 않는다. 위 값과 old envelope bytes 자체를 새 commitment의 expected digest로 요구하는
 모든 계약을 폐기한다.
@@ -956,7 +964,7 @@ UTF-8 encode한 3,318 bytes다. 두 digest와 projection algorithm은 commit `I0
   CLI의 `--execution-commit A`, `--approved-bundle B`, `--implementation-candidate I1`,
   `--code-candidate I0`를 required로 받고 current git `HEAD == A`, `A^ == B`, `B^ == I1`,
   `I1^ == I0`를 exact 비교한다.
-- `git diff --name-status I0..I1`은 §9.1 commitment modification과 deviation provenance addition
+- `git diff --name-status I0..I1`은 §9.1 commitment addition과 deviation provenance addition
   두 줄, `git diff --name-status I1..B`는 cumulative implementation review modification 한 줄,
   `git diff --name-status B..A`는 approval addition 한 줄이어야 한다. approval의
   `approved_bundle == B`, external execution authorization의 `execution_commit == A`,
@@ -1125,10 +1133,10 @@ SHA-256는 파일 밖 provenance에서만 기록한다.
   no-follow/TOCTOU/redaction tests를 PASS하고 external safety receipt를 봉인하기 전에는
   `commit_inputs.py`를 real input에 실행하지 않는다.
 - exact reviewed I0 tool로 candidate를 decode하지 않는 opaque commitment를 재생성하고 historical
-  deviation provenance와 함께 **그 두 파일만** 추가/수정한 full candidate `I1`을 만든다. `I0..I1`
+  deviation provenance와 함께 **그 두 파일만 추가한** full candidate `I1`을 만든다. `I0..I1`
   code diff는 0이어야 한다.
 - `docs/plans/review_v2_4_deterministic_implementation.md`의 fresh full review는 ontology JSON이
-  revision 6과 일치하는지, 새 commitment/envelope digest·legacy source digest·deviation evidence,
+  revision 7과 일치하는지, 새 commitment/envelope digest·legacy source digest·deviation evidence,
   모든 provenance/count와 synthetic test가 실제 PASS하는지를 exact detached `I1`에서 실데이터
   score 없이 검증한다.
 - implementation review 문서 하나만 수정한 `B`와 approval 문서 하나만 추가한 `A`를 §9.1의
@@ -1267,7 +1275,7 @@ replay result, machine-parse deviation evidence digest, external/model/K8s call 
       `DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT`/confirmatory-use 금지로 기록됨.
 - [ ] fixed CSV SHA와 117개 source digest는 old opaque map에 exact 일치하고, 새 envelope digest는
       `I1`에서 freeze됨.
-- [ ] `I1^=I0`, I0→I1 diff가 commitment modification+deviation provenance addition exact 두 줄이며
+- [ ] `I1^=I0`, I0→I1 diff가 commitment addition+deviation provenance addition exact 두 줄이며
       실행 code hash가 불변임.
 - [ ] detached full candidate commit `I1`의 별도 implementation review가 fresh PASS함.
 - [ ] `B^=I1`, I1→B implementation-review-only diff와 target hash 일치가 확인됨.

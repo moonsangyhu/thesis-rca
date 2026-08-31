@@ -1080,3 +1080,124 @@ full review/runtime gate가 실패하므로 승인 우회 경로가 아니다.
 다음 checkpoint는 candidate source를 mount하거나 전달하지 않은 상태에서 implementation code와
 synthetic fixtures만 완성해 code-only `I0`를 만드는 것이다. 그 뒤 fresh safety reviewer의 exact
 I0 PASS receipt가 봉인되기 전에는 `commit_inputs.py`를 real source에 실행하면 안 된다.
+
+---
+
+## 17. Revision 7 chain consistency 재검토
+
+> 재검토일: 2026-09-01
+>
+> 검토 범위: `experiment_plan_v2_4_deterministic.md` revision 7의 chain 표기 교정
+>
+> 검토 plan SHA-256:
+> `33435f87ce56c9bcef38b6ea3bb985e305ac02b5a1ebebdb4af69e9a241b4381`
+>
+> 독립성 재선언: Revision 7 재검토에서도 candidate output JSON/CSV의
+> `identified_fault_type`, `root_cause`, `remediation` 본문을 열거나 검색하거나 출력하지
+> 않았고 V2.4-D scorer를 실행하지 않았다. 이 review 파일 자신의 SHA-256는 내부에 기록하지
+> 않는다.
+
+### 17.1 결론
+
+**Revision 7 chain 승인 권고 — P0 PASS 8 / FAIL 0.**
+
+Revision 7은 Revision 6의 outcome/ontology/statistics를 변경하지 않고 code-only `I0` tree와
+`I0→I1` diff status를 실제 Git 상태 전이와 일치시킨 교정이다. 직전 semantic 승인 결론은
+유효하며 새 P0가 없다.
+
+### 17.2 Code-only I0 commitment path — PASS
+
+Revision 7은 다음을 exact hard gate로 추가했다.
+
+```text
+git cat-file -e I0:docs/plans/input_commitment_v2_4_deterministic.json
+→ non-zero required
+```
+
+- Active `input_commitment_v2_4_deterministic.json`은 `I0` tree에 존재하지 않는다.
+- Pre-I0 old commitment는 git history에만 남으며 I0 safety scope/target이 아니다.
+- I0 safety scope는 ontology/init/builder/commit tool/scorer/analyzer/runner/test 여덟 code/test
+  파일로 한정된다.
+- 따라서 fresh safety reviewer가 commitment bytes가 아니라 real source를 아직 읽지 않은 exact
+  tool과 synthetic safety behavior만 검토한다는 `I0` 정의가 실제 tree와 일치한다.
+
+### 17.3 I0→I1 A/A diff — PASS
+
+Exact reviewed I0 tool로 새 commitment를 생성하고 deviation provenance를 봉인한 뒤의 유일한
+허용 diff는 다음과 같다.
+
+```text
+I1^ == I0
+git diff --name-status I0..I1
+A  docs/plans/input_commitment_v2_4_deterministic.json
+A  docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json
+```
+
+두 경로 모두 I0에 없고 I1에서 처음 생기므로 `A/A`가 맞다. Revision 6의 commitment `M` 표기와
+달리 code-only I0 정의, `git cat-file` absence gate, full I1 target list, preflight의
+“commitment addition + deviation addition” 문구가 모두 같은 상태 전이를 말한다.
+
+I0→I1에서 ontology/scorer/analyzer/runner/builder/commit tool/tests 및 plan/cumulative review blob은
+불변이어야 하므로 commitment 생성 뒤 code를 조정하는 우회도 없다.
+
+### 17.4 Discarded hash-only artifact — PASS
+
+Revision 6의 M/A contract mismatch 상태에서 한 차례 생성된 hash-only artifact는 다음과 같이
+분리됐다.
+
+- Candidate text를 decode/parse/search/preview/output하지 않았음은 절차 이력으로만 기록한다.
+- 즉시 폐기됐고 commit, freeze, safety/full review, approval을 받지 않았다.
+- 그 artifact bytes와 digest는 새 I1 commitment 또는 confirmatory provenance에 사용하지 않는다.
+- Revision 7 계약의 exact reviewed I0 tool로 commitment를 새로 생성한다.
+
+Pre-I0 git history의 더 오래된 commitment에서 fixed CSV SHA와 117개 opaque source-identity map만
+source drift reference로 비교하는 계약은 별개다. 그 old envelope/provenance/digest는 계속
+`DEPRECATED_MACHINE_HASH_ONLY_COMMITMENT`이며 confirmatory expected envelope로 사용되지 않는다.
+따라서 폐기된 mismatch artifact를 legacy reference로 몰래 재사용하는 경로도 없다.
+
+### 17.5 Downstream chain — PASS
+
+- Full implementation candidate는 exact I1이다.
+- I1→B는 cumulative implementation review modification 한 줄이다.
+- B→A는 approval addition 한 줄이다.
+- Runner는 source open 전에 `HEAD=A`, `A^=B`, `B^=I1`, `I1^=I0`, 세 diff와 all-hash map을
+  검증한다.
+- New commitment/deviation provenance는 I1 target, full review, approval, runtime manifest에
+  포함된다.
+- Commitment tool code는 I0→I1에서 byte-identical이어야 한다.
+
+따라서 chain은 `I0 → I1 → B → A → scoring`으로 유일하다.
+
+### 17.6 Outcome semantic 불변 — PASS
+
+Revision 7에서 다음은 모두 Revision 6와 동일하다.
+
+- `JLC-D = CM ∧ FLM ∧ MCA`, 동일 12-pair RAG 대 length-placebo primary.
+- CM/FLM lexical 경계, orthographic-only FLM, MCA/RA paths와 contradictions.
+- Finite negation, token predicate, field/schema/missingness fail-close.
+- Exact one-sided McNemar, CP/bootstrap, secondary inference 0, status/warning 분리.
+- Hidden two-full-run release와 machine-parse deviation evidence.
+
+새 alias, outcome, threshold, comparator, success rule 또는 일반화 주장은 없다.
+
+### 17.7 P0 gate 표
+
+| Chain P0 | Revision 7 판정 | 근거 |
+|---|---|---|
+| I0 active commitment absence | PASS | `git cat-file -e` non-zero hard gate |
+| I0 safety scope purity | PASS | code/test 8 files, real commitment 제외 |
+| I0→I1 parent | PASS | `I1^ == I0` |
+| I0→I1 status | PASS | commitment/deviation exact `A/A` two lines |
+| I0→I1 code immutability | PASS | allowlist 밖 blob change INVALID |
+| discarded mismatch artifact non-use | PASS | uncommitted/unfrozen/unapproved, I1/provenance 배제 |
+| downstream I1→B→A consistency | PASS | review-only B, approval-only A, runtime preflight |
+| outcome semantic invariance | PASS | JLC-D ontology/statistics/status 변화 0 |
+
+**합계: PASS 8 / FAIL 0.**
+
+### 17.8 최종 판정
+
+**Revision 7 chain을 승인하도록 권고한다.**
+
+다음 checkpoint는 plan대로 active commitment path가 없는 code-only `I0`를 봉인하고, candidate
+source가 mount/전달되지 않은 fresh safety review에서 exact tool PASS receipt를 먼저 얻는 것이다.
