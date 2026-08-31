@@ -44,3 +44,12 @@
 - **수정 내용**: fresh results critic이 Primary03 117행/117 raw/39 incidents, ledger, input/Chroma digest, archive 36·12 record, 108 generation seal, 4 archive commitment/replay를 독립 재검증하고 `results/analysis_v2_4.md`에 필수 5개 섹션과 타당성 비평을 작성했다. 다음 checkpoint를 새 V2.5 효과 실험이 아닌 V2.4 qualified human measurement continuation으로 고정하고, 새 session [GOAL]과 TickTick `ai-continue` handoff를 생성했다.
 - **수정 파일**: `results/analysis_v2_4.md:1`, `docs/plans/next_experiment_goal_v2_5.md:1`, `results/experiment_changes_v2_4.md`
 - **상태**: Step 5·6 package-only handoff 완료 — technical package PASS, zero-call `OBSERVED_ONLY`, H-V2.4·semantic eligibility·RAG→RCA `NOT_EVALUATED`. TickTick task ID `6a94bf8a8f0861e0f0ffa43a`; qualified R1/R2가 없으면 현재 상태에서 멈춘다.
+
+### 6. 공개 benchmark 기반 결정론적 측정 전환 가설 고정 — 2026-08-31
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: V2.4 기술 package는 완성됐지만 qualified human reviewer를 확보하지 못해 36개 frozen output의 correctness와 `RAG가 RCA를 개선하는가`를 판정할 수 없었다.
+- **원인**: 기존 protocol의 primary outcome이 dual-human rating과 adjudication에 의존하며, 사람을 대체할 AI judge는 평가 순환과 추가 호출 문제 때문에 사용할 수 없었다.
+- **수정 내용**: Cloud-OpsBench·RCAEval·OpenRCA·AIOps Challenge 2025의 공개 구조화 RCA 평가 계약을 조사하고, 기존 Primary03 ground truth만으로 component·fault family·mechanism·remediation을 field-isolated exact concept matcher로 평가하는 H-V2.4-D를 고정했다. primary 비교는 동일 12 incidents의 blind procedural RAG 대 length placebo paired `JRA-D`이며, ontology·scorer·tests·plan을 candidate output 열람 전에 commit하는 anti-overfitting gate와 exact paired test를 명시했다. 새 모델/API/K8s 호출과 기존 결과 수정은 금지했다.
+- **수정 파일**: `docs/surveys/deep_analysis_v2_4_deterministic.md:1`, `results/experiment_changes_v2_4.md`
+- **상태**: 심층분석 완료·상세 계획 대기 — 기존 human V2.4 질문은 폐기하지 않고 `AWAITING_REVIEW`로 보존하며, 결정론적 측정은 별도 addendum·독립 방법론 리뷰·사용자 승인 전 실행하지 않는다.
