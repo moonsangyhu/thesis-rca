@@ -2,12 +2,17 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
-try:
+if __package__ in {None, ""}:
+    _REPO = Path(__file__).resolve().parents[2]
+    if not (_REPO / "AGENTS.md").is_file() or not (_REPO / ".git").exists() or any(parent.is_symlink() for parent in (_REPO, *_REPO.parents)):
+        raise RuntimeError("UNTRUSTED_REPO_BOOTSTRAP")
+    sys.path.insert(0, str(_REPO))
+    from experiments.v2_4_deterministic.scorer import InvalidInput, load_ontology
+else:
     from .scorer import InvalidInput, load_ontology
-except ImportError:  # Direct script execution from the repository root.
-    from scorer import InvalidInput, load_ontology
 
 
 def check(path: Path) -> dict:

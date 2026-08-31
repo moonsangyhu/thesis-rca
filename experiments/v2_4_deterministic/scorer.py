@@ -6,6 +6,7 @@ candidate or matched text.  All incident vocabulary lives in ontology_v1.json.
 from __future__ import annotations
 
 import json
+import re
 import unicodedata
 from pathlib import Path
 
@@ -22,6 +23,8 @@ AXIS_FIELDS = {
 }
 AXIS_NAMES = tuple(AXIS_FIELDS)
 _CLAUSE_ESCAPES = {"\\n": "\n", "\\r": "\r"}
+_ONTOLOGY_VERSION = "v2.4-d-ontology-1"
+_NEGATION_CONST = {"tokens": ["no","not","never","without","neither","nor","isnt","wasnt","arent","werent","cannot","cant","didnt","doesnt","wont"], "phrases": ["rule out","ruled out","not the cause","not a cause","not the root cause","not the issue","not the fault"], "fillers": ["a","an","the","any","evidence","sign","signs","indication","indications","of","for"], "coordinators": ["and","or","nor"], "contrasts": ["but","however","instead","rather"], "exceptions": ["not only"], "grammar_ids": ["PRE_DIRECT","PRE_COORD","PRE_RULE","POST_RULE","POST_CAUSE","NOT_ONLY"]}
 
 
 def _tokens(value: str) -> tuple[str, ...]:
@@ -95,7 +98,7 @@ def _validate_axis(axis: dict, expected_fields: tuple[str, ...], predicates: dic
 
 def _validate_ontology(data: dict) -> None:
     required = {"$schema", "ontology_version", "normalization", "negation", "token_predicates", "incidents"}
-    if not _exact_keys(data, required) or not isinstance(data["ontology_version"], str) or not data["ontology_version"]:
+    if not _exact_keys(data, required) or data["ontology_version"] != _ONTOLOGY_VERSION:
         raise InvalidInput("ONTOLOGY_SCHEMA")
     normalization = data["normalization"]
     if not _exact_keys(normalization, {"unicode", "case", "clause_boundaries", "tokenization"}) or normalization["unicode"] != "NFKC" or normalization["case"] != "casefold" or normalization["tokenization"] != "maximal_unicode_alphanumeric_runs" or not isinstance(normalization["clause_boundaries"], list) or not normalization["clause_boundaries"] or any(not isinstance(x, str) or len(_CLAUSE_ESCAPES.get(x, x)) != 1 for x in normalization["clause_boundaries"]):
@@ -103,6 +106,8 @@ def _validate_ontology(data: dict) -> None:
     negation = data["negation"]
     required_negation = {"tokens", "phrases", "fillers", "coordinators", "contrasts", "exceptions", "grammar_ids", "syntax"}
     if not _exact_keys(negation, required_negation) or any(not isinstance(negation[name], list) or not negation[name] or any(not isinstance(x, str) or not x for x in negation[name]) for name in required_negation - {"syntax"}):
+        raise InvalidInput("ONTOLOGY_SCHEMA")
+    if any(negation[key] != value for key, value in _NEGATION_CONST.items()):
         raise InvalidInput("ONTOLOGY_SCHEMA")
     syntax = negation["syntax"]
     required_syntax = {"not_only_connector", "pre_rule", "post_rule", "copulas", "articles", "post_cause_terms", "unsupported_prefixes", "unsupported_markers"}
@@ -119,7 +124,7 @@ def _validate_ontology(data: dict) -> None:
         raise InvalidInput("ONTOLOGY_SCHEMA")
     identifiers = set()
     for incident in incidents:
-        if not _exact_keys(incident, {"incident_id", "fault_id", "trial", "canonical", "axes"}) or not isinstance(incident["incident_id"], str) or incident["incident_id"] in identifiers or not isinstance(incident["fault_id"], str) or not isinstance(incident["trial"], int):
+        if not _exact_keys(incident, {"incident_id", "fault_id", "trial", "canonical", "axes"}) or not isinstance(incident["incident_id"], str) or not re.fullmatch(r"F[1-8]-t[1-5]", incident["incident_id"]) or incident["incident_id"] in identifiers or not isinstance(incident["fault_id"], str) or not re.fullmatch(r"F[1-8]", incident["fault_id"]) or not isinstance(incident["trial"], int) or not 1 <= incident["trial"] <= 5:
             raise InvalidInput("ONTOLOGY_SCHEMA")
         identifiers.add(incident["incident_id"])
         if not _exact_keys(incident["canonical"], {"component", "fault", "mechanism", "remediation"}) or any(not isinstance(x, str) or not x for x in incident["canonical"].values()) or not _exact_keys(incident["axes"], set(AXIS_NAMES)):
@@ -129,8 +134,15 @@ def _validate_ontology(data: dict) -> None:
 
 
 def load_ontology(path=Path(__file__).with_name("ontology_v1.json")) -> dict:
+    def pairs(items):
+        output = {}
+        for key, value in items:
+            if key in output:
+                raise InvalidInput("DUPLICATE_KEY")
+            output[key] = value
+        return output
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        data = json.loads(Path(path).read_text(encoding="utf-8"), object_pairs_hook=pairs)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise InvalidInput("ONTOLOGY_SCHEMA") from exc
     _validate_ontology(data)
@@ -171,13 +183,19 @@ def _suppressed(tokens: tuple[str, ...], span: tuple[int, int], matcher: dict, n
         return True
     for phrase in negation["syntax"]["pre_rule"]:
         q = _tokens(phrase)
-        if start >= len(q) and _has_phrase(tokens, start - len(q), q):
+        index = start - 1
+        skipped = 0
+        while index >= 0 and tokens[index] in filler and skipped < 3:
+            index -= 1; skipped += 1
+        if index >= len(q) - 1 and _has_phrase(tokens, index - len(q) + 1, q):
             return True
     post_rule = _tokens(negation["syntax"]["post_rule"])
     copulas = set(negation["syntax"]["copulas"])
     if _has_phrase(tokens, end, post_rule):
         return True
     if end < len(tokens) and tokens[end] in copulas and _has_phrase(tokens, end + 1, post_rule):
+        return True
+    if end + 1 < len(tokens) and tokens[end] in {"has", "have"} and tokens[end + 1] == "been" and _has_phrase(tokens, end + 2, post_rule):
         return True
     tail = tokens[end:]
     negators = set(negation["tokens"])
@@ -195,7 +213,7 @@ def _suppressed(tokens: tuple[str, ...], span: tuple[int, int], matcher: dict, n
 
 def _unsupported_negation(tokens: tuple[str, ...], negation: dict) -> bool:
     syntax = negation["syntax"]
-    return any(_has_phrase(tokens, index, _tokens(prefix)) for prefix in syntax["unsupported_prefixes"] for index in range(len(tokens))) or any(marker in tokens for marker in syntax["unsupported_markers"])
+    return any(_has_phrase(tokens, index, _tokens(prefix)) for prefix in syntax["unsupported_prefixes"] for index in range(len(tokens)))
 
 
 def _matcher_hit(text: str, matcher: dict, ontology: dict):
@@ -231,11 +249,11 @@ def validate_candidate_bytes(raw: bytes) -> dict:
         candidate = json.loads(raw.decode("utf-8", "strict"), object_pairs_hook=pairs)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise InvalidInput("INVALID_JSON") from exc
-    if not _exact_keys(candidate, {"identified_fault_type", "root_cause", "remediation"}) or not isinstance(candidate["identified_fault_type"], str) or not isinstance(candidate["root_cause"], str) or not isinstance(candidate["remediation"], list) or not 1 <= len(candidate["remediation"]) <= 16 or any(not isinstance(x, str) or not x for x in candidate["remediation"]):
+    if not _exact_keys(candidate, {"identified_fault_type", "root_cause", "remediation"}) or not isinstance(candidate["identified_fault_type"], str) or not candidate["identified_fault_type"] or not isinstance(candidate["root_cause"], str) or not candidate["root_cause"] or not isinstance(candidate["remediation"], list) or not 1 <= len(candidate["remediation"]) <= 16 or any(not isinstance(x, str) or not x for x in candidate["remediation"]):
         raise InvalidInput("SCHEMA")
     ontology = load_ontology()
     limits = [(candidate["identified_fault_type"], 256, 64), (candidate["root_cause"], 8192, 1024)] + [(item, 2048, 256) for item in candidate["remediation"]]
-    if any(len(value.encode("utf-8")) > byte_limit or sum(len(clause) for clause in _clauses(value, ontology["normalization"])) > token_limit for value, byte_limit, token_limit in limits) or sum(len(value.encode("utf-8")) for value in candidate["remediation"]) > 8192:
+    if any("\ufffd" in value for value, _, _ in limits) or any(len(value.encode("utf-8")) > byte_limit or sum(len(clause) for clause in _clauses(value, ontology["normalization"])) > token_limit for value, byte_limit, token_limit in limits) or sum(len(value.encode("utf-8")) for value in candidate["remediation"]) > 8192 or sum(sum(len(clause) for clause in _clauses(value, ontology["normalization"])) for value in candidate["remediation"]) > 1024:
         raise InvalidInput("INPUT_LIMIT_EXCEEDED")
     fields = [candidate["identified_fault_type"], candidate["root_cause"], *candidate["remediation"]]
     if any(any(char.isalnum() and ord(char) > 127 for char in value) for value in fields):
