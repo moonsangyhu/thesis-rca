@@ -143,3 +143,12 @@
 - **수정 내용**: self-test evidence의 exact status·exit·digest·sentinel schema를 검증해 incomplete/injected 값을 pre-open 차단했다. reviewer/session/UTC, 8 target blob/hash, semantic review, interpreter, command digests, fixture/sentinel, open/egress, prior-failure closure를 포함하는 full receipt를 exact 검증하고 tool blob에 bind했다. canonical redacted argv 6 options와 self-excluding commitment digest를 provenance required field로 추가했다. fixed Python 3.11 isolated tests로 검증했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·네 번째 fresh safety review 대기 — 48 tests PASS, pycompile/ontology/redaction/diff-check PASS, 실제 candidate source 접근 0, receipt 0.
+
+### 17. V2.4-D 네 번째 I0 safety review의 pre-open 순서 보완 — 2026-09-01
+
+- **수정 에이전트**: fourth fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: invalid safety receipt도 최종적으로는 거부됐지만 `_commit_core`가 먼저 실행돼 source를 hash한 뒤 receipt mismatch를 판정했다.
+- **원인**: receipt identity 검증과 source-derived legacy digest 비교를 하나의 post-commit 함수에 묶어, source 접근 전에 판정 가능한 gate까지 뒤로 밀렸다.
+- **수정 내용**: redaction evidence 다음에 I0/full receipt/8 targets/tool/interpreter/command evidence와 legacy schema를 pre-open 검증하고, 그 후에만 `_commit_core`를 호출하도록 분리했다. source-derived CSV/raw map 비교는 commit 후단에만 수행한다. malformed/missing/wrong identity 6종에서 source-open spy 0, valid receipt에서만 1임을 synthetic test로 고정했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·다섯 번째 fresh safety review 대기 — fixed Python 3.11 isolated 49 tests PASS, 실제 candidate source 접근 0, receipt 0.
