@@ -38,6 +38,9 @@ GT_PROJECTION_SHA256 = "be456f903354d581ae66c8f7051ea271a9add2cb7b6a58e28d1d768a
 SEMANTIC_REVIEW = "docs/plans/review_v2_4_deterministic.md"
 IMPLEMENTATION_REVIEW = "docs/plans/review_v2_4_deterministic_implementation.md"
 APPROVAL_DOCUMENT = "docs/plans/approval_v2_4_deterministic.md"
+EXECUTION_AUTHORIZATION_DOCUMENT = "docs/plans/execution_authorization_v2_4_deterministic.json"
+EXECUTION_AUTHORIZATION_VERSION = "v2.4-d-execution-authorization-1"
+EXECUTION_AUTHORIZATION_STATUS = "EXECUTION_AUTHORIZED"
 COMMITMENT_DOCUMENT = "docs/plans/input_commitment_v2_4_deterministic.json"
 DEVIATION_DOCUMENT = "docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json"
 ONTOLOGY_DOCUMENT = "experiments/v2_4_deterministic/ontology_v1.json"
@@ -280,19 +283,21 @@ def _strict_approval_gate(path: Path) -> dict:
 def _strict_approval_value(approval: dict) -> dict:
     """Validate a duplicate-safe approval object already read from stable bytes."""
     required = {
-        "approval_version", "approval", "execution_commit", "approved_bundle",
+        "approval_version", "approval", "approved_bundle",
         "implementation_candidate", "code_candidate", "semantic_review",
         "safety_receipt", "implementation_review", "i0_safety_scope",
         "i1_targets", "commitment", "ground_truth", "interpreter", "deviation",
-        "execution_authorization", "methodology_waiver_acknowledged",
+        "methodology_waiver_acknowledged", "user_approval_utc", "user_approval_text",
     }
-    if set(approval) != required or approval.get("approval_version") != "v2.4-d-approval-2" or approval.get("approval") != "APPROVED":
+    if set(approval) != required or approval.get("approval_version") != "v2.4-d-approval-3" or approval.get("approval") != "APPROVED":
         raise RunInvalid("APPROVAL_SCHEMA")
     if approval["methodology_waiver_acknowledged"] is not True:
         raise RunInvalid("APPROVAL_SCHEMA")
-    for name in ("execution_commit", "approved_bundle", "implementation_candidate", "code_candidate"):
+    for name in ("approved_bundle", "implementation_candidate", "code_candidate"):
         if not isinstance(approval[name], str) or not _HEX40.fullmatch(approval[name]):
             raise RunInvalid("APPROVAL_SCHEMA")
+    if not isinstance(approval["user_approval_utc"], str) or not approval["user_approval_utc"].endswith("Z") or not isinstance(approval["user_approval_text"], str) or not approval["user_approval_text"]:
+        raise RunInvalid("APPROVAL_SCHEMA")
     approval["i0_safety_scope"] = _strict_target_map(approval["i0_safety_scope"], I0_SAFETY_SCOPE)
     approval["i1_targets"] = _strict_target_map(approval["i1_targets"], I1_TARGETS)
     for name, required_keys in {
@@ -303,7 +308,6 @@ def _strict_approval_value(approval: dict) -> dict:
         "ground_truth": {"sha256", "projection_sha256"},
         "interpreter": {"path", "sha256", "version"},
         "deviation": {"path", "sha256"},
-        "execution_authorization": {"path", "sha256", "execution_commit", "approval_blob_oid", "approval_sha256"},
     }.items():
         value = approval.get(name)
         if not isinstance(value, dict) or set(value) != required_keys:
@@ -313,7 +317,7 @@ def _strict_approval_value(approval: dict) -> dict:
     for name in ("semantic_review", "implementation_review"):
         if not _HEX40.fullmatch(approval[name]["blob_oid"]) or not _HEX64.fullmatch(approval[name]["sha256"]):
             raise RunInvalid("APPROVAL_SCHEMA")
-    for name in ("safety_receipt", "commitment", "ground_truth", "deviation", "execution_authorization"):
+    for name in ("safety_receipt", "commitment", "ground_truth", "deviation"):
         for key, value in approval[name].items():
             if key.endswith("sha256") and not _HEX64.fullmatch(value):
                 raise RunInvalid("APPROVAL_SCHEMA")
@@ -322,8 +326,6 @@ def _strict_approval_value(approval: dict) -> dict:
     if not _HEX40.fullmatch(approval["implementation_review"]["code_candidate"]) or not _HEX40.fullmatch(approval["implementation_review"]["implementation_candidate"]):
         raise RunInvalid("APPROVAL_SCHEMA")
     if not _HEX40.fullmatch(approval["commitment"]["reviewed_tool_blob_oid"]) or not _HEX40.fullmatch(approval["commitment"]["reviewed_i0"]):
-        raise RunInvalid("APPROVAL_SCHEMA")
-    if not _HEX40.fullmatch(approval["execution_authorization"]["execution_commit"]) or not _HEX40.fullmatch(approval["execution_authorization"]["approval_blob_oid"]):
         raise RunInvalid("APPROVAL_SCHEMA")
     if approval["semantic_review"]["path"] != SEMANTIC_REVIEW or approval["implementation_review"]["path"] != IMPLEMENTATION_REVIEW or approval["commitment"]["path"] != COMMITMENT_DOCUMENT or approval["deviation"]["path"] != DEVIATION_DOCUMENT:
         raise RunInvalid("APPROVAL_SCHEMA")
@@ -349,6 +351,31 @@ def _canonical_approval_path(root: Path, supplied: Path) -> Path:
     if path != canonical:
         raise RunInvalid("APPROVAL_PATH_MISMATCH")
     return canonical
+
+
+def _canonical_execution_authorization_path(root: Path, supplied: Path) -> Path:
+    path = Path(os.path.abspath(os.fspath(supplied)))
+    canonical = root / EXECUTION_AUTHORIZATION_DOCUMENT
+    if path != canonical:
+        raise RunInvalid("EXECUTION_AUTHORIZATION_PATH_MISMATCH")
+    return canonical
+
+
+def _strict_execution_authorization_value(value: object, approval: dict, *, execution_commit: str) -> dict:
+    required = {
+        "authorization_version", "status", "execution_commit", "approved_bundle",
+        "approval_path", "approval_blob_oid", "approval_sha256", "user_approval_utc",
+        "user_approval_text_sha256",
+    }
+    if not isinstance(value, dict) or set(value) != required or value.get("authorization_version") != EXECUTION_AUTHORIZATION_VERSION or value.get("status") != EXECUTION_AUTHORIZATION_STATUS:
+        raise RunInvalid("EXECUTION_AUTHORIZATION_SCHEMA")
+    if value["execution_commit"] != execution_commit or value["approved_bundle"] != approval["approved_bundle"] or value["approval_path"] != APPROVAL_DOCUMENT or value["user_approval_utc"] != approval["user_approval_utc"]:
+        raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
+    if not _HEX40.fullmatch(value["execution_commit"]) or not _HEX40.fullmatch(value["approved_bundle"]) or not _HEX40.fullmatch(value["approval_blob_oid"]) or not _HEX64.fullmatch(value["approval_sha256"]) or not _HEX64.fullmatch(value["user_approval_text_sha256"]):
+        raise RunInvalid("EXECUTION_AUTHORIZATION_SCHEMA")
+    if hashlib.sha256(approval["user_approval_text"].encode("utf-8")).hexdigest() != value["user_approval_text_sha256"]:
+        raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
+    return value
 
 
 def _git_blob_record(repo: Path, commit: str, path: str) -> dict:
@@ -385,7 +412,9 @@ def _git_path_must_be_absent(repo: Path, commit: str, path: str) -> None:
         raise RunInvalid("GIT_FREEZE_INVALID") from exc
     if result.returncode == 0:
         raise RunInvalid("I0_COMMITMENT_MUST_BE_ABSENT")
-    if result.returncode != 1:
+    # Git returns 1 on some versions and 128 on others for a missing
+    # ``<commit>:<path>`` object; the commit itself was already chain-checked.
+    if result.returncode not in (1, 128):
         raise RunInvalid("GIT_FREEZE_INVALID")
 
 
@@ -450,17 +479,21 @@ def _validate_deviation(value: object, root: Path, historical_evidence: dict | N
     return value
 
 
-def _repository_gate(*, approval_path: Path, code_candidate: str, implementation_candidate: str, approved_bundle: str, execution_commit: str) -> tuple[dict, dict]:
+def _repository_gate(*, approval_path: Path, execution_authorization_path: Path, code_candidate: str, implementation_candidate: str, approved_bundle: str, execution_commit: str) -> tuple[dict, dict]:
     """Validate all git/provenance identities before *any* candidate path operation."""
     root = _repo_root()
     canonical_approval = _canonical_approval_path(root, approval_path)
     approval_bytes, approval_stable = _stable_metadata_bytes(canonical_approval, with_identity=True)
     approval = _strict_approval_value(_load_json_metadata_bytes(approval_bytes))
-    if (approval["code_candidate"], approval["implementation_candidate"], approval["approved_bundle"], approval["execution_commit"]) != (code_candidate, implementation_candidate, approved_bundle, execution_commit):
+    canonical_authorization = _canonical_execution_authorization_path(root, execution_authorization_path)
+    authorization_bytes, authorization_stable = _stable_metadata_bytes(canonical_authorization, with_identity=True)
+    authorization = _strict_execution_authorization_value(_load_json_metadata_bytes(authorization_bytes), approval, execution_commit=execution_commit)
+    if (approval["code_candidate"], approval["implementation_candidate"], approval["approved_bundle"]) != (code_candidate, implementation_candidate, approved_bundle):
         raise RunInvalid("APPROVAL_ARGUMENT_MISMATCH")
     if _git(root, "rev-parse", "HEAD") != execution_commit:
         raise RunInvalid("GIT_HEAD_INVALID")
-    if _git(root, "status", "--porcelain=v1"):
+    status = _git(root, "status", "--porcelain=v1")
+    if status not in ("", f"?? {EXECUTION_AUTHORIZATION_DOCUMENT}"):
         raise RunInvalid("GIT_WORKTREE_DIRTY")
     if _git(root, "rev-parse", f"{execution_commit}^") != approved_bundle or _git(root, "rev-parse", f"{approved_bundle}^") != implementation_candidate or _git(root, "rev-parse", f"{implementation_candidate}^") != code_candidate:
         raise RunInvalid("GIT_PARENT_CHAIN_INVALID")
@@ -512,10 +545,6 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
     except RunInvalid as exc:
         raise RunInvalid("DEVIATION_PROVENANCE_INVALID") from exc
     _validate_deviation(deviation, root)
-    authorization = approval["execution_authorization"]
-    if authorization["execution_commit"] != execution_commit:
-        raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
-    _verified_external_file(root, authorization)
     approval_record = {"blob_oid": _blob_oid_bytes(approval_bytes), "sha256": _sha256_bytes(approval_bytes)}
     if approval_record != _git_blob_record(root, execution_commit, APPROVAL_DOCUMENT):
         raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
@@ -532,6 +561,11 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
         "approval_path": str(canonical_approval),
         "approval_record": approval_record,
         "approval_stable_identity": approval_stable,
+        "execution_authorization": {
+            "path": str(canonical_authorization),
+            "record": {"blob_oid": _blob_oid_bytes(authorization_bytes), "sha256": _sha256_bytes(authorization_bytes)},
+            "stable_identity": authorization_stable,
+        },
         "verified_identities": {"i0": code_candidate, "i1": implementation_candidate, "bundle": approved_bundle, "approval": execution_commit},
         "i0_safety_scope": approval["i0_safety_scope"],
         "i1_targets": approval["i1_targets"],
@@ -564,9 +598,15 @@ def _bind_full_inputs(approval: dict, preflight: dict, commitment: Path, ontolog
     approval_path = _canonical_approval_path(root, Path(preflight.get("approval_path", "")))
     approval_record = preflight.get("approval_record")
     approval_stable = preflight.get("approval_stable_identity")
-    if not isinstance(approval_record, dict) or set(approval_record) != {"blob_oid", "sha256"} or not isinstance(approval_stable, dict):
+    execution_authorization = preflight.get("execution_authorization")
+    if not isinstance(approval_record, dict) or set(approval_record) != {"blob_oid", "sha256"} or not isinstance(approval_stable, dict) or not isinstance(execution_authorization, dict) or set(execution_authorization) != {"path", "record", "stable_identity"}:
         raise RunInvalid("APPROVAL_LIFETIME_INVALID")
-    return {"_marker":_FULL_AUTHORIZATION_MARKER,"root":root,"commitment_path":commitment_path,"ontology_path":ontology_path,"commitment_sha256":_sha256_bytes(commitment_bytes),"ontology_sha256":_sha256_bytes(ontology_bytes),"identities":preflight["verified_identities"],"i1_targets":approval["i1_targets"],"approval_path":approval_path,"approval_record":dict(approval_record),"approval_stable_identity":dict(approval_stable)}
+    authorization_path = _canonical_execution_authorization_path(root, Path(execution_authorization["path"]))
+    authorization_record = execution_authorization["record"]
+    authorization_stable = execution_authorization["stable_identity"]
+    if not isinstance(authorization_record, dict) or set(authorization_record) != {"blob_oid", "sha256"} or not isinstance(authorization_stable, dict):
+        raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    return {"_marker":_FULL_AUTHORIZATION_MARKER,"root":root,"commitment_path":commitment_path,"ontology_path":ontology_path,"commitment_sha256":_sha256_bytes(commitment_bytes),"ontology_sha256":_sha256_bytes(ontology_bytes),"identities":preflight["verified_identities"],"i1_targets":approval["i1_targets"],"approval_path":approval_path,"approval_record":dict(approval_record),"approval_stable_identity":dict(approval_stable),"execution_authorization_path":authorization_path,"execution_authorization_record":dict(authorization_record),"execution_authorization_stable_identity":dict(authorization_stable)}
 
 
 def _revalidate_full_inputs(snapshot: dict, commitment: Path, ontology: Path) -> None:
@@ -582,6 +622,15 @@ def _revalidate_full_inputs(snapshot: dict, commitment: Path, ontology: Path) ->
     approval_bytes, current_approval_stable = _stable_metadata_bytes(approval_path, with_identity=True)
     current_approval_record = {"blob_oid": _blob_oid_bytes(approval_bytes), "sha256": _sha256_bytes(approval_bytes)}
     if current_approval_stable != approval_stable or current_approval_record != approval_record or _git_blob_record(root, snapshot["identities"]["approval"], APPROVAL_DOCUMENT) != approval_record:
+        raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    authorization_path = snapshot.get("execution_authorization_path")
+    authorization_record = snapshot.get("execution_authorization_record")
+    authorization_stable = snapshot.get("execution_authorization_stable_identity")
+    if not isinstance(authorization_path, Path) or not isinstance(authorization_record, dict) or not isinstance(authorization_stable, dict):
+        raise RunInvalid("APPROVAL_LIFETIME_INVALID")
+    authorization_bytes, current_authorization_stable = _stable_metadata_bytes(authorization_path, with_identity=True)
+    current_authorization_record = {"blob_oid": _blob_oid_bytes(authorization_bytes), "sha256": _sha256_bytes(authorization_bytes)}
+    if current_authorization_stable != authorization_stable or current_authorization_record != authorization_record:
         raise RunInvalid("APPROVAL_LIFETIME_INVALID")
     for path,record in snapshot.get("i1_targets",{}).items():
         payload,_=_open_verified(root/path)
@@ -920,6 +969,7 @@ def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, 
         "run2_started_utc": second["started_utc"],
         "run2_finished_utc": second["finished_utc"],
         "verified_i0_i1_bundle_approval": preflight.get("verified_identities",{}),
+        "execution_authorization": preflight.get("execution_authorization", {}),
         "actual_input_preflight": first["actual_input_bindings"],
         "deviation_flags": {"status":"NON_INFORMATIVE_MACHINE_PARSE_DEVIATION","evidence_source_sha256":approval.get("deviation",{}).get("sha256",""),"process_access_zero":False,"text_egress":False,"v2_4_d_execution":False,"output_derived_tuning":False,"methodology_waiver_acknowledged":approval.get("methodology_waiver_acknowledged",False)},
         "external_call_count": 0,
@@ -937,7 +987,7 @@ def _assemble_release(*, hidden: Path, output: Path, first: dict, second: dict, 
     return {"status": "PASS", "canonical_output_sha256": first["canonical_output_sha256"], "output": str(output), "replay": "MATCH"}
 
 
-def run_full(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: Path, ground_truth: Path, ontology: Path, output: Path, code_candidate: str, implementation_candidate: str, approved_bundle: str, execution_commit: str, synthetic: bool = False) -> dict:
+def run_full(*, approval: Path, execution_authorization: Path | None = None, commitment: Path, raw_dir: Path, csv_path: Path, ground_truth: Path, ontology: Path, output: Path, code_candidate: str, implementation_candidate: str, approved_bundle: str, execution_commit: str, synthetic: bool = False) -> dict:
     """Run two hidden full scorings and atomically release their matched result.
 
     In non-synthetic mode this function is the only full-mode entrypoint.  The
@@ -954,8 +1004,10 @@ def run_full(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: Path,
             preflight = {"synthetic": True}
             authorization = None
         else:
+            if execution_authorization is None:
+                raise RunInvalid("EXECUTION_AUTHORIZATION_REQUIRED")
             approved, preflight = _repository_gate(
-                approval_path=Path(approval), code_candidate=code_candidate,
+                approval_path=Path(approval), execution_authorization_path=Path(execution_authorization), code_candidate=code_candidate,
                 implementation_candidate=implementation_candidate,
                 approved_bundle=approved_bundle, execution_commit=execution_commit,
             )
@@ -994,6 +1046,7 @@ def main(argv=None):
     parser.add_argument("--raw-dir", type=Path)
     parser.add_argument("--csv", type=Path)
     parser.add_argument("--approval", type=Path)
+    parser.add_argument("--execution-authorization", type=Path)
     parser.add_argument("--ground-truth", type=Path)
     parser.add_argument("--ontology", type=Path, default=Path(__file__).with_name("ontology_v1.json"))
     parser.add_argument("--out", type=Path)
@@ -1013,10 +1066,10 @@ def main(argv=None):
         return 0
     if args.synthetic:
         raise SystemExit("SYNTHETIC_API_ONLY")
-    if not all((args.commitment, args.raw_dir, args.csv, args.approval, args.ground_truth, args.out, args.code_candidate, args.implementation_candidate, args.approved_bundle, args.execution_commit)):
+    if not all((args.commitment, args.raw_dir, args.csv, args.approval, args.execution_authorization, args.ground_truth, args.out, args.code_candidate, args.implementation_candidate, args.approved_bundle, args.execution_commit)):
         raise SystemExit("APPROVAL_REQUIRED")
     result = run_full(
-        approval=args.approval, commitment=args.commitment, raw_dir=args.raw_dir, csv_path=args.csv,
+        approval=args.approval, execution_authorization=args.execution_authorization, commitment=args.commitment, raw_dir=args.raw_dir, csv_path=args.csv,
         ground_truth=args.ground_truth, ontology=args.ontology, output=args.out,
         code_candidate=args.code_candidate, implementation_candidate=args.implementation_candidate,
         approved_bundle=args.approved_bundle, execution_commit=args.execution_commit, synthetic=args.synthetic,
