@@ -323,3 +323,12 @@
 - **수정 내용**: approval v3 tracked schema에서 A·own-hash·embedded authorization을 제거하고 B/I0/I1/review/target/waiver/user 승인만 보존했다. A 생성 후 canonical external sidecar `docs/plans/execution_authorization_v2_4_deterministic.json`이 exact A/B, approval A:path blob/SHA, user 승인 UTC/text hash를 duplicate-safe schema로 결합한다. CLI는 sidecar를 필수화하고 approval·sidecar stable identity를 candidate 전·replay 사이·release 전에 재검증한다. 실제 temp Git I0→I1→B→A+sidecar constructibility와 swap/symlink/누락 반증을 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety/full review 대기 — fixed Python 3.11 isolated 88 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth/candidate 접근 0.
+
+### 37. V2.4-D pre-gate bytecode 격리 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: 일반 `git status`가 ignored `__pycache__/*.pyc`를 숨겨, timestamp-valid malicious bytecode가 repository approval gate보다 먼저 local experiment module import에서 실행될 수 있었다.
+- **원인**: runner가 `analyze`·`scorer`·`commit_inputs`를 eager normal import했고 cleanliness gate는 tracked/untracked status만 보며 ignored tree를 열거하지 않았다.
+- **수정 내용**: eager local imports를 제거했다. real gate가 HEAD/chain/I1 target Git+filesystem hash를 검증한 뒤에만 approved source bytes를 SHA에 bind해 `compile+exec` source-only loader로 실행하며 pyc/importlib cache를 사용하지 않는다. ignored+untracked 전체를 열거해 exact external safety receipt와 post-A sidecar만 허용하고 pyc·DS_Store·sibling extra를 거부한다. malicious pyc 무시, pre-gate local module 미실행, ignored-extra candidate-open 0 회귀를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety/full review 대기 — fixed Python 3.11 isolated 90 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth/candidate 접근 0.
