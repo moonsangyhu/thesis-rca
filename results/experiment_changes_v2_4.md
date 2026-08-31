@@ -296,3 +296,12 @@
 - **수정 내용**: provenance schema 검증 완료 직후 output mutation 전에 authorization snapshot을 최종 재검증한다. real output은 anchored parent 아래 `O_CREAT|O_EXCL|O_NOFOLLOW` regular fd에 full write·fsync해 기존 file/symlink를 덮어쓰지 않는다. validator 내부 target swap에서 output absent, existing/symlink output 보존을 회귀 테스트로 고정했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 72 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
+
+### 34. V2.4-D Revision 8 full implementation P0 보완 — 2026-09-01
+
+- **수정 에이전트**: fresh @full-implementation-reviewer, @implementation-worker, @Codex
+- **증상/문제**: exact I1·receipt·commitment·deviation은 검증됐지만 full review에서 실제 CLI input의 승인 bundle 미결합, same-shape ontology 변조 수용, runner duplicate JSON 수용, 필수 methodology/audit output 누락, INVALID tmp symlink overwrite 등 P0 5건이 재현됐다.
+- **원인**: repository approval과 runtime path를 별도 검증했고 `approved_override`가 identity gate를 우회했다. ontology validator는 shape/count만 고정했으며 runner loader·summary/manifest·INVALID publisher가 plan의 exact 계약을 끝까지 구현하지 않았다.
+- **수정 내용**: real full run의 canonical commitment/ontology를 approved I1 path·blob·SHA와 결합하고 pre-open·hidden replay 사이·release 직전에 authorization을 재검증한다. ontology bytes를 approved SHA와 exact bind하고 nested duplicate JSON을 거부한다. summary/final manifest에 independent methodology disposition, primary/remediation 상태, timestamps, I0/I1/B/A, deviation flags와 actual preflight hashes를 기록한다. INVALID receipt는 exclusive no-follow temp와 no-overwrite publication으로 변경했다. 다섯 반증을 regression으로 추가했다. FAIL review는 누적 review에 보존하고 이전 I1 commitment/deviation은 새 I0에서 제거했다.
+- **수정 파일**: `experiments/v2_4_deterministic/scorer.py`, `experiments/v2_4_deterministic/analyze.py`, `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `docs/plans/review_v2_4_deterministic_implementation.md`, 기존 I1 commitment/deviation 삭제, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety/full review 대기 — fixed Python 3.11 isolated 78 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; real scoring/candidate body/GT 접근 0.

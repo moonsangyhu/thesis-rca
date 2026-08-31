@@ -6,6 +6,7 @@ candidate or matched text.  All incident vocabulary lives in ontology_v1.json.
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import unicodedata
 from pathlib import Path
@@ -24,6 +25,7 @@ AXIS_FIELDS = {
 AXIS_NAMES = tuple(AXIS_FIELDS)
 _CLAUSE_ESCAPES = {"\\n": "\n", "\\r": "\r"}
 _ONTOLOGY_VERSION = "v2.4-d-ontology-1"
+APPROVED_ONTOLOGY_SHA256 = "ae9956f9a6a89523b2a6f57f1eaa707a132b9763a7c7a1b909ab7ee4376b2bd7"
 _NEGATION_CONST = {"tokens": ["no","not","never","without","neither","nor","isnt","wasnt","arent","werent","cannot","cant","didnt","doesnt","wont"], "phrases": ["rule out","ruled out","not the cause","not a cause","not the root cause","not the issue","not the fault"], "fillers": ["a","an","the","any","evidence","sign","signs","indication","indications","of","for"], "coordinators": ["and","or","nor"], "contrasts": ["but","however","instead","rather"], "exceptions": ["not only"], "grammar_ids": ["PRE_DIRECT","PRE_COORD","PRE_RULE","POST_RULE","POST_CAUSE","NOT_ONLY"]}
 _NORMALIZATION_CONST = {"unicode":"NFKC", "case":"casefold", "clause_boundaries":[".",";",":","!","?","\\n","\\r"], "tokenization":"maximal_unicode_alphanumeric_runs"}
 _SYNTAX_CONST = {"articles":["the","a","an"], "copulas":["is","was","are","were"], "not_only_connector":"but", "post_cause_terms":["cause","root cause","issue","fault"], "post_rule":"ruled out", "pre_rule":["rule out","ruled out"], "unsupported_markers":["neither"], "unsupported_prefixes":["not because"]}
@@ -178,9 +180,12 @@ def load_ontology(path=Path(__file__).with_name("ontology_v1.json")) -> dict:
             output[key] = value
         return output
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"), object_pairs_hook=pairs)
+        payload = Path(path).read_bytes()
+        data = json.loads(payload.decode("utf-8", "strict"), object_pairs_hook=pairs)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise InvalidInput("ONTOLOGY_SCHEMA") from exc
+    if hashlib.sha256(payload).hexdigest() != APPROVED_ONTOLOGY_SHA256:
+        raise InvalidInput("ONTOLOGY_SCHEMA")
     validate_ontology_exact(data)
     return data
 
