@@ -170,3 +170,12 @@
 - **수정 내용**: runner가 I0의 commitment path absent를 pre-open 검증하고 I0→I1 `A commitment + A deviation`만 허용하도록 변경했다. synthetic git chain에서 A/A 성공, old M/A 거부, I0 commitment 존재 거부를 각각 독립 고정했다.
 - **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 새 code-only I0 commit 대기 — isolated 52 tests, pycompile, ontology, runner self-test, diff-check PASS; actual source 접근 0.
+
+### 20. V2.4-D full implementation I1 독립 검토 실패 — 2026-09-01
+
+- **수정 에이전트**: fresh @full-implementation-reviewer, @Codex
+- **증상/문제**: I0 safety와 I1 A/A chain은 PASS했지만 실제 producer→runner contract와 runtime ontology/negation이 synthetic green suite와 일치하는지 full review가 필요했다.
+- **원인**: ontology loader가 exact predicate/syntax/incident/boundary mutation을 거부하지 않았고 unresolved post-negation을 positive로 허용했다. commitment producer의 `entry_manifest_sha256`, CSV `id_sha256`, `reviewed_i0`와 runner 기대 schema가 불일치했으며 52 tests가 실제 producer output을 runner에 연결하지 않았다. machine-parse deviation도 원 stream digest·parse commit/time·diff provenance 한계를 충분히 machine-readable하게 표현하지 않았다.
+- **수정 내용**: fresh reviewer가 exact I0/I1 detached clean, A/A diff, receipt·commitment·deviation hash와 12 target을 검증하고도 P0 5·P1 1로 승인 거부했다. candidate 본문은 열지 않았고 real scorer는 실행하지 않았다. 초기 FAIL history를 보존한 cumulative implementation review에 Revision 7 FAIL을 append했다.
+- **수정 파일**: `docs/plans/review_v2_4_deterministic_implementation.md`, `results/experiment_changes_v2_4.md`
+- **상태**: FAIL — B/A/실채점 금지. 새 plan/code-only I0와 producer→runner E2E contract 검증 필요.
