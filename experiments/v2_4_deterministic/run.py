@@ -304,6 +304,24 @@ def _exact_diff(repo: Path, older: str, newer: str, expected: tuple[tuple[str, s
         raise RunInvalid("GIT_FREEZE_DIFF_INVALID")
 
 
+def _git_path_must_be_absent(repo: Path, commit: str, path: str) -> None:
+    """Require an absent I0 path without reading any candidate source bytes."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo), "cat-file", "-e", f"{commit}:{path}"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError as exc:
+        raise RunInvalid("GIT_FREEZE_INVALID") from exc
+    if result.returncode == 0:
+        raise RunInvalid("I0_COMMITMENT_MUST_BE_ABSENT")
+    if result.returncode != 1:
+        raise RunInvalid("GIT_FREEZE_INVALID")
+
+
 def _verified_external_file(root: Path, value: dict, *, expected_path: str | None = None) -> bytes:
     raw_path = Path(value["path"])
     if "\x00" in value["path"]:
@@ -336,7 +354,8 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
         raise RunInvalid("GIT_WORKTREE_DIRTY")
     if _git(root, "rev-parse", f"{execution_commit}^") != approved_bundle or _git(root, "rev-parse", f"{approved_bundle}^") != implementation_candidate or _git(root, "rev-parse", f"{implementation_candidate}^") != code_candidate:
         raise RunInvalid("GIT_PARENT_CHAIN_INVALID")
-    _exact_diff(root, code_candidate, implementation_candidate, (("M", COMMITMENT_DOCUMENT), ("A", DEVIATION_DOCUMENT)))
+    _git_path_must_be_absent(root, code_candidate, COMMITMENT_DOCUMENT)
+    _exact_diff(root, code_candidate, implementation_candidate, (("A", COMMITMENT_DOCUMENT), ("A", DEVIATION_DOCUMENT)))
     _exact_diff(root, implementation_candidate, approved_bundle, (("M", IMPLEMENTATION_REVIEW),))
     _exact_diff(root, approved_bundle, execution_commit, (("A", APPROVAL_DOCUMENT),))
     for path, expected in approval["i0_safety_scope"].items():

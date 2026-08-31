@@ -7,6 +7,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 import sys
 
@@ -292,6 +293,45 @@ class DeterministicSyntheticTests(unittest.TestCase):
                         approved_bundle="2" * 40, execution_commit="3" * 40,
                     )
             self.assertFalse(sentinel.exists())
+
+    def test_50_synthetic_i0_i1_chain_requires_absent_then_two_additions(self):
+        i0, i1, bundle, execution = ("0" * 40, "1" * 40, "2" * 40, "3" * 40)
+        approval = {
+            "code_candidate": i0, "implementation_candidate": i1,
+            "approved_bundle": bundle, "execution_commit": execution,
+        }
+        with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=Path.cwd()), \
+             mock.patch("experiments.v2_4_deterministic.run._strict_approval_gate", return_value=approval), \
+             mock.patch("experiments.v2_4_deterministic.run._git", side_effect=(execution, "", bundle, i1, i0)), \
+             mock.patch("experiments.v2_4_deterministic.run._git_path_must_be_absent") as absent, \
+             mock.patch("experiments.v2_4_deterministic.run._exact_diff", side_effect=run.RunInvalid("STOP_AFTER_I0_I1")) as exact_diff:
+            with self.assertRaisesRegex(run.RunInvalid, "STOP_AFTER_I0_I1"):
+                run._repository_gate(
+                    approval_path=Path("synthetic-approval.json"), code_candidate=i0,
+                    implementation_candidate=i1, approved_bundle=bundle, execution_commit=execution,
+                )
+        absent.assert_called_once_with(Path.cwd(), i0, run.COMMITMENT_DOCUMENT)
+        self.assertEqual(
+            exact_diff.call_args.args[3],
+            (("A", run.COMMITMENT_DOCUMENT), ("A", run.DEVIATION_DOCUMENT)),
+        )
+
+    def test_51_modified_commitment_plus_added_deviation_is_rejected(self):
+        with mock.patch("experiments.v2_4_deterministic.run._git", return_value=(
+            "M\t" + run.COMMITMENT_DOCUMENT + "\nA\t" + run.DEVIATION_DOCUMENT
+        )):
+            with self.assertRaisesRegex(run.RunInvalid, "GIT_FREEZE_DIFF_INVALID"):
+                run._exact_diff(
+                    Path.cwd(), "0" * 40, "1" * 40,
+                    (("A", run.COMMITMENT_DOCUMENT), ("A", run.DEVIATION_DOCUMENT)),
+                )
+
+    def test_52_i0_commitment_path_must_be_missing(self):
+        with mock.patch("experiments.v2_4_deterministic.run.subprocess.run", return_value=SimpleNamespace(returncode=1)):
+            run._git_path_must_be_absent(Path.cwd(), "0" * 40, run.COMMITMENT_DOCUMENT)
+        with mock.patch("experiments.v2_4_deterministic.run.subprocess.run", return_value=SimpleNamespace(returncode=0)):
+            with self.assertRaisesRegex(run.RunInvalid, "I0_COMMITMENT_MUST_BE_ABSENT"):
+                run._git_path_must_be_absent(Path.cwd(), "0" * 40, run.COMMITMENT_DOCUMENT)
 
     def test_42_commitment_provenance_redacts_path_and_content_sentinels(self):
         with tempfile.TemporaryDirectory(dir=Path.cwd(), prefix="PATH_SENTINEL") as td:
