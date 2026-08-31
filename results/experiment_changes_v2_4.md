@@ -287,3 +287,12 @@
 - **수정 내용**: target별 stable identity·blob OID·SHA를 authorization snapshot으로 유지하고 `_commit_core` 직전 및 source hash/legacy 비교 뒤에 전부 재검증한다. provenance tool identity는 reviewed snapshot cache만 사용하며, runner가 공유하는 validator 기본 경로도 tool을 한 번만 stable-read해 두 digest를 계산한다. pre-core target swap은 source-open 0, hashing 중 tool swap은 output 0으로 fail-close하는 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 70 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
+
+### 33. V2.4-D final publication gate 결합 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: pre-publication target 재검증 후 provenance schema validation 중 target을 교체하면 실제 output write 전 추가 확인이 없어 변경된 checkout에서도 commitment가 publish됐다.
+- **원인**: “publication 직전” gate가 schema validation보다 앞에 있어 마지막 code execution 구간을 포괄하지 못했다.
+- **수정 내용**: provenance schema 검증 완료 직후 output mutation 전에 authorization snapshot을 최종 재검증한다. real output은 anchored parent 아래 `O_CREAT|O_EXCL|O_NOFOLLOW` regular fd에 full write·fsync해 기존 file/symlink를 덮어쓰지 않는다. validator 내부 target swap에서 output absent, existing/symlink output 보존을 회귀 테스트로 고정했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 72 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.

@@ -749,6 +749,42 @@ class DeterministicSyntheticTests(unittest.TestCase):
                     self.assertEqual(opened.call_count,expected_core_calls)
                 self.assertFalse(out.exists())
 
+    def test_71_target_swap_after_schema_validation_blocks_first_output_mutation(self):
+        evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); reviewed="a"*40
+            for relative in commit_inputs._SAFETY_TARGETS:
+                target=root/relative; target.parent.mkdir(parents=True,exist_ok=True); target.write_bytes(("reviewed target "+relative).encode())
+            fake_tool=root/"experiments/v2_4_deterministic/commit_inputs.py"; changed=root/"experiments/v2_4_deterministic/analyze.py"
+            raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
+            for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
+            receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt_for_root(reviewed,root)),encoding="utf-8"); out=root/"out.json"; original_validate=commit_inputs.validate_commitment_schema
+            def validate_then_swap(*args,**kwargs):
+                value=original_validate(*args,**kwargs); changed.write_bytes(b"changed after schema validation"); return value
+            with mock.patch.object(commit_inputs,"__file__",str(fake_tool)), \
+                 synthetic_legacy_identity(legacy), \
+                 mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence), \
+                 mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core",wraps=commit_inputs._commit_core) as opened, \
+                 mock.patch("experiments.v2_4_deterministic.commit_inputs.validate_commitment_schema",side_effect=validate_then_swap):
+                self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
+                self.assertEqual(opened.call_count,1)
+            self.assertFalse(out.exists())
+
+    def test_72_real_publication_refuses_existing_file_or_symlink(self):
+        evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
+        for kind in ("file","symlink"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+                root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
+                for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+                legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
+                reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8"); out=root/"out.json"; preserved=root/"preserved"
+                if kind=="file": out.write_bytes(b"preserve")
+                else: preserved.write_bytes(b"preserve"); out.symlink_to(preserved)
+                with synthetic_legacy_identity(legacy), mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence):
+                    self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
+                self.assertEqual((preserved if kind=="symlink" else out).read_bytes(),b"preserve")
+
 
 if __name__ == "__main__":
     unittest.main()

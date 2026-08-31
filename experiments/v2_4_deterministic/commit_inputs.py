@@ -96,6 +96,32 @@ def _read_stable_metadata_bytes(path: Path, *, with_identity: bool = False) -> b
         os.close(parent_fd)
 
 
+def _publish_new_output(path: Path, payload: bytes) -> None:
+    """Create one regular output file without following or replacing any name."""
+    path=Path(path); name=path.name
+    if not name or name in {".",".."} or "/" in name or "\\" in name: raise ValueError("UNSAFE_OUTPUT")
+    parent_fd,parent_info,parent_lexical=_open_dir_chain(path.parent)
+    try:
+        current=os.stat(parent_lexical,follow_symlinks=False)
+        if (current.st_dev,current.st_ino)!=(parent_info.st_dev,parent_info.st_ino): raise ValueError("TOCTOU")
+        fd=os.open(name,os.O_WRONLY|os.O_CREAT|os.O_EXCL|getattr(os,"O_NOFOLLOW",0),0o600,dir_fd=parent_fd)
+        try:
+            info=os.fstat(fd)
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1: raise ValueError("UNSAFE_OUTPUT")
+            offset=0
+            while offset<len(payload):
+                written=os.write(fd,payload[offset:])
+                if written<=0: raise OSError("OUTPUT_WRITE")
+                offset+=written
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        current=os.stat(parent_lexical,follow_symlinks=False)
+        if (current.st_dev,current.st_ino)!=(parent_info.st_dev,parent_info.st_ino): raise ValueError("TOCTOU")
+    finally:
+        os.close(parent_fd)
+
+
 def _commit_core(csv_path: Path, raw_dir: Path) -> dict:
     raw_fd, raw_info, raw_lexical = _open_dir_chain(raw_dir)
     try:
@@ -324,7 +350,8 @@ def _main(argv=None, *, _internal_self_test=False):
     redacted=lambda value: "sha256:"+hashlib.sha256(os.fspath(value).encode()).hexdigest()
     data["provenance"] = {"tool_blob_oid":authorization["tool_blob_oid"],"tool_sha256": authorization["tool_sha256"], "interpreter_path":str(interpreter),"interpreter_sha256": hashlib.sha256(interpreter.read_bytes()).hexdigest(), "python_version": sys.version, "cwd":str(Path.cwd()),"argv": ["--csv", redacted(args.csv), "--raw-dir", redacted(args.raw_dir), "--out", redacted(args.out), "--reviewed-i0", "sha256:"+hashlib.sha256(args.reviewed_i0.encode()).hexdigest(), "--safety-receipt", redacted(args.safety_receipt), "--legacy-reference", redacted(args.legacy_reference)], "allowlisted_environment":{},"source_root_device_inode":[root_info.st_dev,root_info.st_ino],"started_utc": started, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "exit_status": 0, "stdout_sha256": hashlib.sha256((stdout + "\n").encode()).hexdigest(), "stderr_sha256": hashlib.sha256(b"").hexdigest(), "redaction_self_test":evidence,"raw_count":117,"csv_sha256":data["csv"]["sha256"],"entry_manifest_sha256":data["entry_manifest_sha256"],"commitment_sha256":data["commitment_sha256"],"safety_receipt_sha256":receipt_sha,"reviewed_i0":args.reviewed_i0,"legacy_source_drift":"EXACT_MATCH","operator_attestation": "hash-only streaming"}
     validate_commitment_schema(data, require_provenance=True, _reviewed_tool_identity=authorization)
-    args.out.write_text(json.dumps(data, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    _revalidate_authorization_snapshot(authorization)
+    _publish_new_output(args.out,json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8"))
     print(stdout)
     return 0
 
