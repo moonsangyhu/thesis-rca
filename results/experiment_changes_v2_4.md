@@ -314,3 +314,12 @@
 - **수정 내용**: real approval을 canonical repo path로 제한하고 componentwise no-follow stable bytes를 A Git blob OID/SHA 및 execution authorization과 exact 비교한다. approval identity를 authorization snapshot에 포함해 candidate 전·hidden replay 사이·release 전에 재검증한다. INVALID receipt는 anchored parent dirfd의 `openat(O_EXCL|O_NOFOLLOW)`과 dirfd link/unlink로 publish하고 parent identity를 전후 검증한다. alternate/symlink/swapped approval과 tmp/destination/ancestor 공격 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety/full review 대기 — fixed Python 3.11 isolated 83 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth/candidate 접근 0.
+
+### 36. V2.4-D approval A self-reference 제거 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: tracked approval이 자신을 추가하는 commit A와 자기 blob/SHA를 내부 필드로 요구해 정상적인 A 생성이 계산상 불가능했다. external authorization은 bytes hash만 확인하고 schema·lifetime을 검증하지 않았다.
+- **원인**: pre-A 승인 bundle과 post-A 실행 허가의 provenance 단계를 하나의 tracked 문서에 합쳐 self-reference를 만들었다.
+- **수정 내용**: approval v3 tracked schema에서 A·own-hash·embedded authorization을 제거하고 B/I0/I1/review/target/waiver/user 승인만 보존했다. A 생성 후 canonical external sidecar `docs/plans/execution_authorization_v2_4_deterministic.json`이 exact A/B, approval A:path blob/SHA, user 승인 UTC/text hash를 duplicate-safe schema로 결합한다. CLI는 sidecar를 필수화하고 approval·sidecar stable identity를 candidate 전·replay 사이·release 전에 재검증한다. 실제 temp Git I0→I1→B→A+sidecar constructibility와 swap/symlink/누락 반증을 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety/full review 대기 — fixed Python 3.11 isolated 88 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth/candidate 접근 0.

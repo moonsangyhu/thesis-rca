@@ -300,7 +300,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
                  mock.patch("experiments.v2_4_deterministic.run._repository_gate", side_effect=run.RunInvalid("GIT_HEAD_INVALID")):
                 with self.assertRaisesRegex(run.RunInvalid, "GIT_HEAD_INVALID"):
                     run.run_full(
-                        approval=approval, commitment=root / "commitment.json", raw_dir=sentinel, csv_path=sentinel,
+                        approval=approval, execution_authorization=root / run.EXECUTION_AUTHORIZATION_DOCUMENT, commitment=root / "commitment.json", raw_dir=sentinel, csv_path=sentinel,
                         ground_truth=root / "ground_truth.csv", ontology=Path(scorer.__file__).with_name("ontology_v1.json"),
                         output=root / "release", code_candidate="0" * 40, implementation_candidate="1" * 40,
                         approved_bundle="2" * 40, execution_commit="3" * 40,
@@ -311,18 +311,20 @@ class DeterministicSyntheticTests(unittest.TestCase):
         i0, i1, bundle, execution = ("0" * 40, "1" * 40, "2" * 40, "3" * 40)
         approval = {
             "code_candidate": i0, "implementation_candidate": i1,
-            "approved_bundle": bundle, "execution_commit": execution,
+            "approved_bundle": bundle,
         }
         with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=Path.cwd()), \
              mock.patch("experiments.v2_4_deterministic.run._canonical_approval_path", return_value=Path("synthetic-approval.json")), \
+             mock.patch("experiments.v2_4_deterministic.run._canonical_execution_authorization_path", return_value=Path("synthetic-authorization.json")), \
              mock.patch("experiments.v2_4_deterministic.run._stable_metadata_bytes", return_value=(b"{}", {"stable": True})), \
              mock.patch("experiments.v2_4_deterministic.run._strict_approval_value", return_value=approval), \
+             mock.patch("experiments.v2_4_deterministic.run._strict_execution_authorization_value", return_value={}), \
              mock.patch("experiments.v2_4_deterministic.run._git", side_effect=(execution, "", bundle, i1, i0)), \
              mock.patch("experiments.v2_4_deterministic.run._git_path_must_be_absent") as absent, \
              mock.patch("experiments.v2_4_deterministic.run._exact_diff", side_effect=run.RunInvalid("STOP_AFTER_I0_I1")) as exact_diff:
             with self.assertRaisesRegex(run.RunInvalid, "STOP_AFTER_I0_I1"):
                 run._repository_gate(
-                    approval_path=Path("synthetic-approval.json"), code_candidate=i0,
+                    approval_path=Path("synthetic-approval.json"), execution_authorization_path=Path("synthetic-authorization.json"), code_candidate=i0,
                     implementation_candidate=i1, approved_bundle=bundle, execution_commit=execution,
                 )
         absent.assert_called_once_with(Path.cwd(), i0, run.COMMITMENT_DOCUMENT)
@@ -840,7 +842,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
                  mock.patch("experiments.v2_4_deterministic.run._stable_metadata_bytes", side_effect=AssertionError("approval opened")):
                 with self.assertRaisesRegex(run.RunInvalid, "APPROVAL_PATH_MISMATCH"):
                     run._repository_gate(
-                        approval_path=root / "copied-approval.md", code_candidate="0" * 40,
+                        approval_path=root / "copied-approval.md", execution_authorization_path=root / run.EXECUTION_AUTHORIZATION_DOCUMENT, code_candidate="0" * 40,
                         implementation_candidate="1" * 40, approved_bundle="2" * 40,
                         execution_commit="3" * 40,
                     )
@@ -856,7 +858,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
                  mock.patch("experiments.v2_4_deterministic.run._strict_approval_value", side_effect=AssertionError("schema parsed")):
                 with self.assertRaises(run.RunInvalid):
                     run._repository_gate(
-                        approval_path=canonical, code_candidate="0" * 40,
+                        approval_path=canonical, execution_authorization_path=root / run.EXECUTION_AUTHORIZATION_DOCUMENT, code_candidate="0" * 40,
                         implementation_candidate="1" * 40, approved_bundle="2" * 40,
                         execution_commit="3" * 40,
                     )
@@ -883,7 +885,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
             }
             # Same bytes on a replacement inode must still invalidate authority.
             approval_path.rename(approval_path.with_name("approval-old.md"))
-            approval_path.write_bytes(b"approved")
+            approval_path.write_bytes(b"swapped approval bytes")
             with mock.patch("experiments.v2_4_deterministic.run._open_verified", side_effect=AssertionError("other input opened")):
                 with self.assertRaisesRegex(run.RunInvalid, "APPROVAL_LIFETIME_INVALID"):
                     run._revalidate_full_inputs(snapshot, commitment, ontology)
@@ -921,6 +923,161 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 self.assertEqual(victim.read_bytes(), b"preserve")
                 if kind == "regular":
                     self.assertEqual(destination.read_bytes(), b"preserve")
+
+    def test_83_execution_authorization_schema_is_exact_and_binds_user_approval(self):
+        approval = {
+            "approved_bundle": "b" * 40,
+            "user_approval_utc": "2026-09-01T00:00:00Z",
+            "user_approval_text": "synthetic explicit authorization",
+        }
+        value = {
+            "authorization_version": run.EXECUTION_AUTHORIZATION_VERSION,
+            "status": run.EXECUTION_AUTHORIZATION_STATUS,
+            "execution_commit": "a" * 40,
+            "approved_bundle": approval["approved_bundle"],
+            "approval_path": run.APPROVAL_DOCUMENT,
+            "approval_blob_oid": "c" * 40,
+            "approval_sha256": "d" * 64,
+            "user_approval_utc": approval["user_approval_utc"],
+            "user_approval_text_sha256": hashlib.sha256(approval["user_approval_text"].encode()).hexdigest(),
+        }
+        self.assertEqual(run._strict_execution_authorization_value(value, approval, execution_commit="a" * 40), value)
+        for mutate in (
+            lambda item: item.__setitem__("status", "OTHER"),
+            lambda item: item.__setitem__("unexpected", "x"),
+            lambda item: item.__setitem__("approval_path", "copied-approval.md"),
+            lambda item: item.__setitem__("user_approval_text_sha256", "0" * 64),
+        ):
+            changed = dict(value); mutate(changed)
+            with self.assertRaises(run.RunInvalid):
+                run._strict_execution_authorization_value(changed, approval, execution_commit="a" * 40)
+
+    def test_84_sidecar_inode_swap_blocks_lifetime_before_other_input_open(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            approval_path = root / run.APPROVAL_DOCUMENT
+            approval_path.parent.mkdir(parents=True); approval_path.write_bytes(b"approval")
+            sidecar = root / run.EXECUTION_AUTHORIZATION_DOCUMENT
+            sidecar.write_bytes(b"sidecar")
+            commitment = root / run.COMMITMENT_DOCUMENT
+            commitment.write_bytes(b"commitment")
+            ontology = root / run.ONTOLOGY_DOCUMENT
+            ontology.parent.mkdir(parents=True, exist_ok=True); ontology.write_bytes(b"ontology")
+            approval_bytes, approval_stable = run._stable_metadata_bytes(approval_path, with_identity=True)
+            sidecar_bytes, sidecar_stable = run._stable_metadata_bytes(sidecar, with_identity=True)
+            snapshot = {
+                "_marker": run._FULL_AUTHORIZATION_MARKER, "root": root,
+                "commitment_path": commitment, "ontology_path": ontology,
+                "commitment_sha256": run._sha256_bytes(b"commitment"), "ontology_sha256": run._sha256_bytes(b"ontology"),
+                "identities": {"approval": "3" * 40}, "i1_targets": {},
+                "approval_path": approval_path,
+                "approval_record": {"blob_oid": run._blob_oid_bytes(approval_bytes), "sha256": run._sha256_bytes(approval_bytes)},
+                "approval_stable_identity": approval_stable,
+                "execution_authorization_path": sidecar,
+                "execution_authorization_record": {"blob_oid": run._blob_oid_bytes(sidecar_bytes), "sha256": run._sha256_bytes(sidecar_bytes)},
+                "execution_authorization_stable_identity": sidecar_stable,
+            }
+            sidecar.rename(sidecar.with_name("execution-authorization-old.json"))
+            sidecar.write_bytes(b"sidecar")
+            with mock.patch("experiments.v2_4_deterministic.run._git_blob_record", return_value=snapshot["approval_record"]), \
+                 mock.patch("experiments.v2_4_deterministic.run._open_verified", side_effect=AssertionError("other input opened")):
+                with self.assertRaisesRegex(run.RunInvalid, "APPROVAL_LIFETIME_INVALID"):
+                    run._revalidate_full_inputs(snapshot, commitment, ontology)
+
+    def test_85_post_a_sidecar_makes_real_i0_i1_b_a_gate_constructible(self):
+        """A sidecar created after A binds A without making A self-referential."""
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            def git(*args, capture=False):
+                result = subprocess.run(["git", "-C", str(root), *args], check=True, stdout=subprocess.PIPE if capture else subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return result.stdout.decode().strip() if capture else ""
+            def commit(message):
+                git("add", ".")
+                git("-c", "user.name=synthetic", "-c", "user.email=synthetic@example.invalid", "commit", "-m", message)
+                return git("rev-parse", "HEAD", capture=True)
+            def record(revision, path):
+                oid = git("rev-parse", f"{revision}:{path}", capture=True)
+                payload = subprocess.run(["git", "-C", str(root), "cat-file", "blob", oid], check=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout
+                return {"blob_oid": oid, "sha256": hashlib.sha256(payload).hexdigest()}
+
+            git("init"); (root / "AGENTS.md").write_text("synthetic", encoding="utf-8")
+            preexisting = set(run.I0_SAFETY_SCOPE) | {"docs/plans/experiment_plan_v2_4_deterministic.md", run.SEMANTIC_REVIEW, run.IMPLEMENTATION_REVIEW}
+            for relative in preexisting:
+                path = root / relative; path.parent.mkdir(parents=True, exist_ok=True); path.write_text("i0 " + relative, encoding="utf-8")
+            i0 = commit("i0")
+            for relative in (run.COMMITMENT_DOCUMENT, run.DEVIATION_DOCUMENT):
+                path = root / relative; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(b"{}")
+            i1 = commit("i1")
+            (root / run.IMPLEMENTATION_REVIEW).write_text("b review", encoding="utf-8")
+            bundle = commit("bundle")
+
+            receipt_sha = hashlib.sha256(b"{}").hexdigest()
+            approval = {
+                "approval_version": "v2.4-d-approval-3", "approval": "APPROVED", "approved_bundle": bundle,
+                "implementation_candidate": i1, "code_candidate": i0,
+                "semantic_review": {"path": run.SEMANTIC_REVIEW, **record(i1, run.SEMANTIC_REVIEW)},
+                "safety_receipt": {"path": "receipt.json", "sha256": receipt_sha, "code_candidate": i0, "tool_blob_oid": record(i0, "experiments/v2_4_deterministic/commit_inputs.py")["blob_oid"]},
+                "implementation_review": {"path": run.IMPLEMENTATION_REVIEW, **record(bundle, run.IMPLEMENTATION_REVIEW), "code_candidate": i0, "implementation_candidate": i1},
+                "i0_safety_scope": {path: record(i0, path) for path in run.I0_SAFETY_SCOPE},
+                "i1_targets": {path: record(i1, path) for path in run.I1_TARGETS},
+                "commitment": {"path": run.COMMITMENT_DOCUMENT, "sha256": receipt_sha, "commitment_sha256": "c" * 64, "csv_sha256": "d" * 64, "raw_manifest_sha256": hashlib.sha256(run._canonical([])).hexdigest(), "reviewed_tool_blob_oid": record(i0, "experiments/v2_4_deterministic/commit_inputs.py")["blob_oid"], "safety_receipt_sha256": receipt_sha, "reviewed_i0": i0},
+                "ground_truth": {"sha256": run.GT_SHA256, "projection_sha256": run.GT_PROJECTION_SHA256},
+                "interpreter": {"path": str(Path(sys.executable).resolve()), "sha256": hashlib.sha256(Path(sys.executable).read_bytes()).hexdigest(), "version": sys.version},
+                "deviation": {"path": run.DEVIATION_DOCUMENT, "sha256": receipt_sha},
+                "methodology_waiver_acknowledged": True,
+                "user_approval_utc": "2026-09-01T00:00:00Z", "user_approval_text": "synthetic user authorization",
+            }
+            approval_path = root / run.APPROVAL_DOCUMENT
+            approval_path.write_bytes(json.dumps(approval, sort_keys=True).encode())
+            execution = commit("approval")
+            approval_record = record(execution, run.APPROVAL_DOCUMENT)
+            sidecar = root / run.EXECUTION_AUTHORIZATION_DOCUMENT
+            sidecar.write_text(json.dumps({
+                "authorization_version": run.EXECUTION_AUTHORIZATION_VERSION, "status": run.EXECUTION_AUTHORIZATION_STATUS,
+                "execution_commit": execution, "approved_bundle": bundle, "approval_path": run.APPROVAL_DOCUMENT,
+                "approval_blob_oid": approval_record["blob_oid"], "approval_sha256": approval_record["sha256"],
+                "user_approval_utc": approval["user_approval_utc"], "user_approval_text_sha256": hashlib.sha256(approval["user_approval_text"].encode()).hexdigest(),
+            }, sort_keys=True), encoding="utf-8")
+            envelope = {"raw_files": [], "raw_count": 117, "csv": {"sha256": "d" * 64}, "commitment_sha256": "c" * 64, "provenance": {"reviewed_i0": i0, "tool_blob_oid": approval["safety_receipt"]["tool_blob_oid"], "safety_receipt_sha256": receipt_sha}}
+            with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=root), \
+                 mock.patch("experiments.v2_4_deterministic.run._verified_external_file", return_value=b"{}"), \
+                 mock.patch("experiments.v2_4_deterministic.run._load_json_metadata", return_value=envelope), \
+                 mock.patch("experiments.v2_4_deterministic.run._validate_deviation"), \
+                 mock.patch("experiments.v2_4_deterministic.commit_inputs.validate_commitment_schema"), \
+                 mock.patch("experiments.v2_4_deterministic.run.safe_metadata", side_effect=AssertionError("candidate opened")):
+                accepted, preflight = run._repository_gate(
+                    approval_path=approval_path, execution_authorization_path=sidecar, code_candidate=i0,
+                    implementation_candidate=i1, approved_bundle=bundle, execution_commit=execution,
+                )
+            self.assertEqual(accepted["approval_version"], "v2.4-d-approval-3")
+            self.assertEqual(preflight["execution_authorization"]["record"], {"blob_oid": run._blob_oid_bytes(sidecar.read_bytes()), "sha256": hashlib.sha256(sidecar.read_bytes()).hexdigest()})
+
+    def test_86_sidecar_rejects_alternate_direct_symlink_and_ancestor_symlink(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            canonical = root / run.EXECUTION_AUTHORIZATION_DOCUMENT
+            canonical.parent.mkdir(parents=True); target = root / "target"; target.write_bytes(b"{}")
+            with self.assertRaisesRegex(run.RunInvalid, "EXECUTION_AUTHORIZATION_PATH_MISMATCH"):
+                run._canonical_execution_authorization_path(root, root / "alternate.json")
+            canonical.symlink_to(target)
+            with self.assertRaises(run.RunInvalid):
+                run._stable_metadata_bytes(canonical)
+            canonical.unlink()
+            docs = root / "docs"; moved = root / "docs-old"; docs.rename(moved); docs.symlink_to(moved, target_is_directory=True)
+            with self.assertRaises(run.RunInvalid):
+                run._stable_metadata_bytes(canonical)
+
+    def test_87_real_full_mode_requires_sidecar_before_candidate_input(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            with mock.patch("experiments.v2_4_deterministic.run.safe_metadata", side_effect=AssertionError("candidate opened")):
+                with self.assertRaisesRegex(run.RunInvalid, "EXECUTION_AUTHORIZATION_REQUIRED"):
+                    run.run_full(
+                        approval=root / "approval", commitment=root / "commitment", raw_dir=root / "candidate",
+                        csv_path=root / "candidate.csv", ground_truth=root / "gt", ontology=root / "ontology",
+                        output=root / "release", code_candidate="0" * 40, implementation_candidate="1" * 40,
+                        approved_bundle="2" * 40, execution_commit="3" * 40,
+                    )
 
 
 if __name__ == "__main__":
