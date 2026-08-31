@@ -233,3 +233,12 @@
 - **수정 내용**: active producer/runner schema는 변경하지 않고 legacy-only parser가 exact historical CSV key set과 direct ASCII `.csv` basename만 허용하도록 분리했다. synthetic historical shape 수용, active/extra-key legacy 거부, malformed legacy에서 source-open 0을 회귀 테스트로 고정했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 65 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; real commitment 생성 0, actual Primary03/ground truth 접근 0.
+
+### 27. V2.4-D historical deviation evidence gate 교정 — 2026-09-01
+
+- **수정 에이전트**: @Codex, @implementation-worker
+- **증상/문제**: reviewed I0로 hash-only commitment를 생성한 직후 I1 봉인 전 정적 점검에서, revision 8 deviation은 과거 snapshot SHA를 선언하지만 runner가 append된 현재 changelog bytes를 읽어 승인 후에도 항상 INVALID가 되는 결함을 확인했다.
+- **원인**: 계획 §9.3의 “historical blob/bytes 검증”을 mutable working-tree file read로 구현했다. changelog의 append-only 성질과 고정 snapshot hash가 양립하지 않았다.
+- **수정 내용**: deviation evidence path를 두 정본 경로로 allowlist하고, local `HEAD` ancestry의 해당 path history에서 선언 SHA-256과 일치하는 단일 Git blob identity가 있을 때만 수용한다. working-tree 최신 파일은 evidence로 읽지 않는다. 현재 파일이 변경된 synthetic repo에서도 ancestral snapshot은 통과하고 wrong hash/path는 실패하는 회귀 테스트를 추가했으며, 실제 repo의 plan 고정 두 hash도 검증했다. 이전 I0 도구로 만든 uncommitted hash-only commitment는 코드 변경 즉시 삭제해 I1·승인 provenance에서 제외했다.
+- **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 65 tests, pycompile, ontology, redaction, runner self-test, exact historical hash gate PASS; candidate decode/scoring 0, discarded commitment commit/approval 0.
