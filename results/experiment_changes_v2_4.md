@@ -134,3 +134,12 @@
 - **수정 내용**: CLI expected error를 path-free `COMMITMENT_FAILED` 하나로 변환하고, 동일 success/error wrapper를 content/path/error sentinel로 실행한 evidence가 없으면 출력하지 않도록 했다. real mode에 reviewed I0, safety receipt, legacy reference를 필수화하고 receipt PASS/I0/tool blob 및 legacy CSV/raw identity exact 비교를 구현했다. provenance에 redacted argv, tool/interpreter/fd source identity, self-test evidence, receipt/legacy result를 포함했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 새 code-only I0 commit 대기 — isolated 45 tests PASS, executable redaction PASS, actual candidate source 접근 0, 두 이전 safety receipt 0.
+
+### 16. V2.4-D 세 번째 I0 safety review의 evidence/receipt schema 보완 — 2026-09-01
+
+- **수정 에이전트**: third fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: path·error redaction은 통과했지만 self-test가 `SKIPPED` evidence를 반환해도 real mode가 진행됐고, plan-complete safety receipt가 3-key 축약 schema에 의해 거부됐다. provenance도 commitment digest와 safety 관련 argv identity를 누락했다.
+- **원인**: self-test evidence와 external receipt를 최소 truthy/축약 객체로만 검증하고, revision 6이 요구하는 content-addressed 필드 전체를 runtime schema로 구현하지 않았다.
+- **수정 내용**: self-test evidence의 exact status·exit·digest·sentinel schema를 검증해 incomplete/injected 값을 pre-open 차단했다. reviewer/session/UTC, 8 target blob/hash, semantic review, interpreter, command digests, fixture/sentinel, open/egress, prior-failure closure를 포함하는 full receipt를 exact 검증하고 tool blob에 bind했다. canonical redacted argv 6 options와 self-excluding commitment digest를 provenance required field로 추가했다. fixed Python 3.11 isolated tests로 검증했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·네 번째 fresh safety review 대기 — 48 tests PASS, pycompile/ontology/redaction/diff-check PASS, 실제 candidate source 접근 0, receipt 0.
