@@ -1,0 +1,19 @@
+{
+  "candidate_text_egress": false,
+  "evidence": {
+    "command": "b3618419b84b25988dc2ca89ea23499edb643b5a6726917945e18b457caea751",
+    "no_observed_output_derived_change": "d2c084aafb9c7bb1de8aa83161c44da282e10e2d92a37f9d56e5bc8505d3e77d",
+    "no_text_egress": "029b85bc0f699447830f76da936b1ad8dfc45435b884ff2f0d3b3f595ed2ac22",
+    "no_v2_4_d_execution": "c74a1cfc804c40c9fed719593da992a80074364b446ac018eed1a522d8470fdd"
+  },
+  "evidence_material": {
+    "command": "2026-08-31 machine-only regression command: python3.11 -m unittest -v tests.test_v2_4_audit; 28 tests PASS; executed before code-only I0; exact original stdout and stderr byte streams were not retained.",
+    "no_observed_output_derived_change": "Ontology and metric semantics were derived from immutable ground_truth.csv and public benchmark contracts. All post-parse code changes are traceable to synthetic counterexamples and recorded P0 reviews; no worker or reviewer received candidate strings or condition scores.",
+    "no_text_egress": "Observed command outputs contained unittest case names, PASS status, counts and digests only; no identified_fault_type, root_cause, remediation value, matched substring, or arm score was emitted to stdout or stderr or delivered to human or agent context.",
+    "no_v2_4_d_execution": "The executed module was tests.test_v2_4_audit. No V2.4-D scorer or V2.4-D full runner was invoked against Primary03 before I0, I1, implementation review, or approval."
+  },
+  "operator_attestation": "The process-level parse is disclosed. It was not semantic exposure to a human or agent and was not used to tune ontology, matcher, metric, threshold, or status rules.",
+  "process_access_zero": false,
+  "scorer_execution_zero": true,
+  "status": "NON_INFORMATIVE_MACHINE_PARSE_DEVIATION"
+}
