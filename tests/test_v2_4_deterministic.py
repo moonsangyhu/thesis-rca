@@ -314,7 +314,9 @@ class DeterministicSyntheticTests(unittest.TestCase):
             "approved_bundle": bundle, "execution_commit": execution,
         }
         with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=Path.cwd()), \
-             mock.patch("experiments.v2_4_deterministic.run._strict_approval_gate", return_value=approval), \
+             mock.patch("experiments.v2_4_deterministic.run._canonical_approval_path", return_value=Path("synthetic-approval.json")), \
+             mock.patch("experiments.v2_4_deterministic.run._stable_metadata_bytes", return_value=(b"{}", {"stable": True})), \
+             mock.patch("experiments.v2_4_deterministic.run._strict_approval_value", return_value=approval), \
              mock.patch("experiments.v2_4_deterministic.run._git", side_effect=(execution, "", bundle, i1, i0)), \
              mock.patch("experiments.v2_4_deterministic.run._git_path_must_be_absent") as absent, \
              mock.patch("experiments.v2_4_deterministic.run._exact_diff", side_effect=run.RunInvalid("STOP_AFTER_I0_I1")) as exact_diff:
@@ -830,6 +832,95 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 else: temporary.symlink_to(victim)
                 with self.assertRaises(run.RunInvalid): run._write_invalid_receipt(output,"INVALID")
                 self.assertEqual(victim.read_bytes(),b"preserve")
+
+    def test_78_real_repository_gate_rejects_alternate_approval_before_read(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=root), \
+                 mock.patch("experiments.v2_4_deterministic.run._stable_metadata_bytes", side_effect=AssertionError("approval opened")):
+                with self.assertRaisesRegex(run.RunInvalid, "APPROVAL_PATH_MISMATCH"):
+                    run._repository_gate(
+                        approval_path=root / "copied-approval.md", code_candidate="0" * 40,
+                        implementation_candidate="1" * 40, approved_bundle="2" * 40,
+                        execution_commit="3" * 40,
+                    )
+
+    def test_79_canonical_approval_symlink_is_rejected_before_schema_parse(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            canonical = root / run.APPROVAL_DOCUMENT
+            canonical.parent.mkdir(parents=True)
+            target = root / "approval-target"; target.write_bytes(b"{}")
+            canonical.symlink_to(target)
+            with mock.patch("experiments.v2_4_deterministic.run._repo_root", return_value=root), \
+                 mock.patch("experiments.v2_4_deterministic.run._strict_approval_value", side_effect=AssertionError("schema parsed")):
+                with self.assertRaises(run.RunInvalid):
+                    run._repository_gate(
+                        approval_path=canonical, code_candidate="0" * 40,
+                        implementation_candidate="1" * 40, approved_bundle="2" * 40,
+                        execution_commit="3" * 40,
+                    )
+
+    def test_80_approval_snapshot_mutation_blocks_before_other_full_input_open(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td)
+            approval_path = root / run.APPROVAL_DOCUMENT
+            approval_path.parent.mkdir(parents=True)
+            approval_path.write_bytes(b"approved")
+            commitment = root / run.COMMITMENT_DOCUMENT
+            commitment.parent.mkdir(parents=True, exist_ok=True); commitment.write_bytes(b"commitment")
+            ontology = root / run.ONTOLOGY_DOCUMENT
+            ontology.parent.mkdir(parents=True, exist_ok=True); ontology.write_bytes(b"ontology")
+            approval_bytes, stable = run._stable_metadata_bytes(approval_path, with_identity=True)
+            record = {"blob_oid": run._blob_oid_bytes(approval_bytes), "sha256": run._sha256_bytes(approval_bytes)}
+            snapshot = {
+                "_marker": run._FULL_AUTHORIZATION_MARKER, "root": root,
+                "commitment_path": commitment, "ontology_path": ontology,
+                "commitment_sha256": run._sha256_bytes(b"commitment"), "ontology_sha256": run._sha256_bytes(b"ontology"),
+                "identities": {"approval": "3" * 40}, "i1_targets": {},
+                "approval_path": approval_path, "approval_record": record,
+                "approval_stable_identity": stable,
+            }
+            # Same bytes on a replacement inode must still invalidate authority.
+            approval_path.rename(approval_path.with_name("approval-old.md"))
+            approval_path.write_bytes(b"approved")
+            with mock.patch("experiments.v2_4_deterministic.run._open_verified", side_effect=AssertionError("other input opened")):
+                with self.assertRaisesRegex(run.RunInvalid, "APPROVAL_LIFETIME_INVALID"):
+                    run._revalidate_full_inputs(snapshot, commitment, ontology)
+
+    def test_81_invalid_receipt_parent_exchange_preserves_replacement_victim(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root = Path(td); parent = root / "parent"; parent.mkdir(); replacement = root / "replacement"; replacement.mkdir()
+            output = parent / "release"; victim = replacement / ".release.invalid.json"; victim.write_bytes(b"preserve")
+            original_open = os.open; switched = False
+            def exchange_open(path, flags, mode=0o777, *, dir_fd=None):
+                nonlocal switched
+                fd = original_open(path, flags, mode) if dir_fd is None else original_open(path, flags, mode, dir_fd=dir_fd)
+                if not switched and path == ".release.invalid.tmp" and dir_fd is not None:
+                    switched = True
+                    parent.rename(root / "parent-moved")
+                    parent.symlink_to(replacement, target_is_directory=True)
+                return fd
+            with mock.patch("experiments.v2_4_deterministic.run.os.open", side_effect=exchange_open):
+                with self.assertRaisesRegex(run.RunInvalid, "SAFE_PUBLICATION_FAILED"):
+                    run._write_invalid_receipt(output, "INVALID")
+            self.assertTrue(switched)
+            self.assertEqual(victim.read_bytes(), b"preserve")
+
+    def test_82_invalid_receipt_preserves_existing_destination_file_or_symlink(self):
+        for kind in ("regular", "symlink"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+                root = Path(td); output = root / "release"; destination = root / ".release.invalid.json"
+                victim = root / "victim"; victim.write_bytes(b"preserve")
+                if kind == "regular":
+                    destination.write_bytes(b"preserve")
+                else:
+                    destination.symlink_to(victim)
+                with self.assertRaisesRegex(run.RunInvalid, "SAFE_PUBLICATION_FAILED"):
+                    run._write_invalid_receipt(output, "INVALID")
+                self.assertEqual(victim.read_bytes(), b"preserve")
+                if kind == "regular":
+                    self.assertEqual(destination.read_bytes(), b"preserve")
 
 
 if __name__ == "__main__":
