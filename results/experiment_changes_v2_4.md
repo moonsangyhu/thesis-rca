@@ -251,3 +251,12 @@
 - **수정 내용**: changelog와 implementation review의 exact path·SHA-256 record를 immutable production map으로 고정하고, deviation source record가 이 map과 완전히 같을 때만 ancestry blob 검증을 수행한다. 같은 경로의 다른 reachable historical blob hash가 거부되는 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 65 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
+
+### 29. V2.4-D conversation attestation literal 동결 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: file evidence path·SHA는 고정됐지만 `conversation_derived_attestation`은 임의 문자열과 그 자기일치 SHA-256도 runtime에서 수용했다.
+- **원인**: attestation validator가 내부 text/hash 일치만 확인하고 revision 8 계획의 exact canonical text와 `da2d43...5ba4` 승인값을 비교하지 않았다.
+- **수정 내용**: 계획의 exact canonical text·SHA record를 production 상수로 동결하고 deviation 값의 exact equality 및 상수/수신 text hash 재계산을 모두 강제했다. 자기일치하지만 다른 attestation을 거부하는 회귀 테스트를 추가했다.
+- **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 65 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.

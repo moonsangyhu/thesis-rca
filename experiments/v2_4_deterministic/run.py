@@ -50,6 +50,10 @@ HISTORICAL_DEVIATION_EVIDENCE = {
         "sha256": "5bceb156ab751e1952b9b90fbd8a4412bd7e1e93d1c595d785bb72391c889e67",
     },
 }
+CONVERSATION_DERIVED_ATTESTATION = {
+    "canonical_text": "Conversation-derived operator attestation: on 2026-08-31, python3.11 -m unittest -v tests.test_v2_4_audit machine-parsed Primary03; candidate values or scores were not shown to a human or agent, V2.4-D was not executed, and no output-derived tuning occurred.",
+    "sha256": "da2d43ea645c43a568862f48a05af84c3f6d8ab52030c389b462997435eb5ba4",
+}
 I0_SAFETY_SCOPE = (
     "experiments/v2_4_deterministic/ontology_v1.json",
     "experiments/v2_4_deterministic/__init__.py",
@@ -397,7 +401,7 @@ def _validate_deviation(value: object, root: Path, historical_evidence: dict | N
         source=sources[name]
         _verify_historical_evidence_blob(root,name,source,historical_evidence)
     attestation=sources["conversation_derived_attestation"]
-    if not isinstance(attestation,dict) or set(attestation)!={"canonical_text","sha256"} or not isinstance(attestation["canonical_text"],str) or not _HEX64.fullmatch(attestation.get("sha256","")) or _sha256_bytes(attestation["canonical_text"].encode())!=attestation["sha256"]:
+    if _sha256_bytes(CONVERSATION_DERIVED_ATTESTATION["canonical_text"].encode()) != CONVERSATION_DERIVED_ATTESTATION["sha256"] or attestation != CONVERSATION_DERIVED_ATTESTATION or _sha256_bytes(attestation["canonical_text"].encode()) != attestation["sha256"]:
         raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
     return value
 
