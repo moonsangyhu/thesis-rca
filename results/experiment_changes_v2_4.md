@@ -179,3 +179,12 @@
 - **수정 내용**: fresh reviewer가 exact I0/I1 detached clean, A/A diff, receipt·commitment·deviation hash와 12 target을 검증하고도 P0 5·P1 1로 승인 거부했다. candidate 본문은 열지 않았고 real scorer는 실행하지 않았다. 초기 FAIL history를 보존한 cumulative implementation review에 Revision 7 FAIL을 append했다.
 - **수정 파일**: `docs/plans/review_v2_4_deterministic_implementation.md`, `results/experiment_changes_v2_4.md`
 - **상태**: FAIL — B/A/실채점 금지. 새 plan/code-only I0와 producer→runner E2E contract 검증 필요.
+
+### 21. V2.4-D revision 8 producer-runner/evidence 계약 승인 — 2026-09-01
+
+- **수정 에이전트**: @experiment-planner, fresh @methodology-reviewer, @Codex
+- **증상/문제**: full review에서 producer와 runner의 field alias 불일치, runtime ontology/negation gate 누락, raw extra entry 허용과 machine-parse evidence의 formal 불완전성이 드러났다.
+- **원인**: 각 모듈이 같은 commitment/ontology 개념을 별도 schema로 구현했고, 원 regression stdout/stderr byte stream을 보존하지 않은 사실을 machine-readable waiver로 명확히 모델링하지 않았다.
+- **수정 내용**: reviewed producer의 `csv{id_sha256,size,sha256}`, `entry_manifest_sha256`, `reviewed_i0`를 유일 canonical schema로 고정하고 direct producer→runner bridge를 요구했다. runtime ontology exact const/inventory, consumed-span unresolved negation INVALID, raw all-entry rejection을 고정했다. machine parse는 date·best-known dirty HEAD·command·28 PASS·`NOT_RETAINED` streams와 evidence hash를 공개하고, process access 0 주장을 금지했다. 텍스트 egress/V2.4-D execution/output-derived tuning이 모두 false일 때만 `CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION`을 허용하며 반증 시 INVALID다. reviewer가 P0 12 PASS/0 FAIL로 승인했다.
+- **수정 파일**: `docs/plans/experiment_plan_v2_4_deterministic.md`, `docs/plans/review_v2_4_deterministic.md`, `results/experiment_changes_v2_4.md`
+- **상태**: revision 8 승인·새 I0 필요 — plan SHA `3a9c7586f51bc7444ea432a933bd149f31e4f06f47d3a5383fb561407e2870f1`, review SHA `842a484710461ed109a9263b387fb21fb4e78defe4a80d7daa5a818251e3b2d8`. Stricter reader는 exploratory로 해석할 수 있다는 한계를 유지한다.
