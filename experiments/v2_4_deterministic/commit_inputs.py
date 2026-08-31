@@ -1,67 +1,125 @@
-"""Opaque input commitment: stream bytes only; never decode candidate files."""
+"""Opaque, descriptor-anchored input commitment; candidate bytes are never decoded."""
 from __future__ import annotations
-import argparse, hashlib, json, os, stat, sys, contextlib, io, tempfile
+
+import argparse
+import contextlib
+import hashlib
+import io
+import json
+import os
+import stat
+import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
 
-def _trusted_path(path: Path) -> None:
-    for item in (path, *path.parents):
-        if item.is_symlink():
-            raise ValueError("symlink input")
-        if item == item.parent:
-            break
+_DIR_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+_FILE_FLAGS = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
 
-def _digest(path: Path) -> tuple[int, str]:
-    _trusted_path(path)
-    st = path.lstat()
-    if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: raise ValueError("unsafe input entry")
-    fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
-    h = hashlib.sha256()
+
+def _open_dir_chain(path: Path) -> tuple[int, os.stat_result, Path]:
+    """Anchor a lexical absolute directory via openat; do not resolve symlinks."""
+    lexical = Path(os.path.abspath(os.fspath(path)))
+    fd = os.open(lexical.anchor, _DIR_FLAGS)
     try:
-        before=os.fstat(fd)
-        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or (before.st_dev,before.st_ino,before.st_size)!=(st.st_dev,st.st_ino,st.st_size): raise ValueError("TOCTOU")
-        while block := os.read(fd, 1024 * 1024): h.update(block)
-        first=h.hexdigest(); os.lseek(fd,0,os.SEEK_SET); h2=hashlib.sha256()
-        while block := os.read(fd, 1024 * 1024): h2.update(block)
-        after=os.fstat(fd); final=path.lstat()
-    finally: os.close(fd)
-    if first != h2.hexdigest() or (before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns,before.st_ctime_ns) != (after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns) or (before.st_dev,before.st_ino)!=(final.st_dev,final.st_ino): raise ValueError("TOCTOU")
-    return st.st_size, first
+        for part in lexical.parts[1:]:
+            next_fd = os.open(part, _DIR_FLAGS, dir_fd=fd)
+            os.close(fd); fd = next_fd
+        info = os.fstat(fd)
+        if not stat.S_ISDIR(info.st_mode): raise ValueError("UNSAFE_DIRECTORY")
+        return fd, info, lexical
+    except Exception:
+        os.close(fd); raise
 
-def commit(csv_path: Path, raw_dir: Path) -> dict:
-    """Return canonical metadata without decoding, parsing, or printing source bytes."""
-    _trusted_path(raw_dir); _trusted_path(csv_path)
-    if not raw_dir.is_dir(): raise ValueError("unsafe raw root")
-    raws=[]
-    entries=sorted(raw_dir.iterdir())
-    if len(entries) != 117: raise ValueError("RAW_COUNT")
-    for p in entries:
-        if p.name.startswith(".") or p.suffix != ".json" or p.is_dir() or p.is_symlink(): raise ValueError("UNEXPECTED_RAW_ENTRY")
-        size, digest=_digest(p); raws.append({"path":p.relative_to(raw_dir).as_posix(),"size":size,"sha256":digest})
-    size, digest=_digest(csv_path)
-    manifest={"raw_files":raws,"raw_count":len(raws),"csv":{"path":csv_path.name,"size":size,"sha256":digest}}
-    payload=json.dumps(manifest,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()
-    manifest["commitment_sha256"]=hashlib.sha256(payload).hexdigest()
+
+def _digest_at(parent_fd: int, name: str) -> tuple[int, str, tuple[int, int]]:
+    if not name or "/" in name or name in {".", ".."}: raise ValueError("UNSAFE_ENTRY")
+    before_path = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    if not stat.S_ISREG(before_path.st_mode) or before_path.st_nlink != 1: raise ValueError("UNSAFE_ENTRY")
+    fd = os.open(name, _FILE_FLAGS, dir_fd=parent_fd)
+    try:
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or (before.st_dev, before.st_ino, before.st_size) != (before_path.st_dev, before_path.st_ino, before_path.st_size): raise ValueError("TOCTOU")
+        first = hashlib.sha256()
+        while block := os.read(fd, 1 << 20): first.update(block)
+        os.lseek(fd, 0, os.SEEK_SET)
+        second = hashlib.sha256()
+        while block := os.read(fd, 1 << 20): second.update(block)
+        after = os.fstat(fd)
+        final_path = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    finally:
+        os.close(fd)
+    identity = (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+    if first.digest() != second.digest() or identity != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns) or (before.st_dev, before.st_ino) != (final_path.st_dev, final_path.st_ino): raise ValueError("TOCTOU")
+    return before.st_size, first.hexdigest(), (before.st_dev, before.st_ino)
+
+
+def _commit_core(csv_path: Path, raw_dir: Path) -> dict:
+    raw_fd, raw_info, raw_lexical = _open_dir_chain(raw_dir)
+    try:
+        names = sorted(os.listdir(raw_fd))
+        if len(names) != 117: raise ValueError("RAW_COUNT")
+        raws = []
+        for name in names:
+            if name.startswith(".") or not name.endswith(".json"): raise ValueError("UNEXPECTED_RAW_ENTRY")
+            size, digest, _ = _digest_at(raw_fd, name)
+            raws.append({"path": name, "size": size, "sha256": digest})
+        # Fail closed if an ancestor/root was exchanged after descriptor anchoring.
+        current = os.stat(raw_lexical, follow_symlinks=False)
+        if (current.st_dev, current.st_ino) != (raw_info.st_dev, raw_info.st_ino): raise ValueError("TOCTOU")
+    finally:
+        os.close(raw_fd)
+    csv_fd, _, csv_parent = _open_dir_chain(csv_path.parent)
+    try:
+        size, digest, _ = _digest_at(csv_fd, csv_path.name)
+    finally:
+        os.close(csv_fd)
+    manifest = {"raw_files": raws, "raw_count": 117, "csv": {"id_sha256": hashlib.sha256(csv_path.name.encode()).hexdigest(), "size": size, "sha256": digest}}
+    manifest["entry_manifest_sha256"] = hashlib.sha256(json.dumps(raws, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    payload = json.dumps(manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    manifest["commitment_sha256"] = hashlib.sha256(payload).hexdigest()
     return manifest
 
+
+def commit(csv_path: Path, raw_dir: Path) -> dict:
+    """Public hash-only API. No source path is retained in its returned envelope."""
+    return _commit_core(Path(csv_path), Path(raw_dir))
+
+
+def _redaction_self_test() -> bool:
+    content = b"CONTENT_SENTINEL_V2_4_D"
+    path_sentinel = "PATH_SENTINEL_V2_4_D"
+    with tempfile.TemporaryDirectory(dir=Path.cwd(), prefix=path_sentinel) as td:
+        root = Path(td); raw = root / "raw"; raw.mkdir(); csv_path = root / (path_sentinel + ".csv"); csv_path.write_bytes(content)
+        for index in range(117): (raw / f"{index:03d}.json").write_bytes(content)
+        envelope = _commit_core(csv_path, raw)
+        rendered = json.dumps(envelope, sort_keys=True)
+        if content.decode() in rendered or path_sentinel in rendered: return False
+        try: _commit_core(csv_path, root / (path_sentinel + "_missing"))
+        except (ValueError, OSError):
+            pass
+        else: return False
+    return True
+
+
 def main(argv=None):
-    p=argparse.ArgumentParser(); p.add_argument("--csv",type=Path); p.add_argument("--raw-dir",type=Path); p.add_argument("--out",type=Path); p.add_argument("--self-test-redaction",action="store_true")
-    a=p.parse_args(argv); started=datetime.now(timezone.utc).isoformat().replace("+00:00","Z")
-    if a.self_test_redaction:
-        sentinel=b"COMMITMENT_REDACTION_SENTINEL"
-        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
-            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(sentinel)
-            for index in range(117): (raw/f"{index:03d}.json").write_bytes(sentinel)
-            out=io.StringIO(); err=io.StringIO()
-            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err): main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(root/"commitment.json")])
-            if sentinel.decode() in out.getvalue()+err.getvalue() or sentinel in (root/"commitment.json").read_bytes(): raise SystemExit("REDACTION_SELF_TEST_FAIL")
-        print(json.dumps({"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0},sort_keys=True)); return 0
-    if not all((a.csv,a.raw_dir,a.out)): raise SystemExit("INPUT_REQUIRED")
-    data=commit(a.csv,a.raw_dir)
-    tool=Path(__file__).resolve(); interpreter=Path(sys.executable).resolve()
-    stdout=json.dumps({"raw_count":data["raw_count"],"commitment_sha256":data["commitment_sha256"]},separators=(",",":"))
-    data["provenance"]={"tool_sha256":_digest(tool)[1],"interpreter_path":str(interpreter),"interpreter_sha256":_digest(interpreter)[1],"python_version":sys.version,"argv":["commit_inputs.py","--csv",str(a.csv),"--raw-dir",str(a.raw_dir),"--out",str(a.out)],"started_utc":started,"finished_utc":datetime.now(timezone.utc).isoformat().replace("+00:00","Z"),"exit_status":0,"stdout_sha256":hashlib.sha256((stdout+"\n").encode()).hexdigest(),"stderr_sha256":hashlib.sha256(b"").hexdigest(),"redaction_test":"PASS","operator_attestation":"hash-only streaming; candidate bytes were not decoded, parsed, searched, previewed, or emitted"}
-    a.out.write_text(json.dumps(data,sort_keys=True,separators=(",",":")),encoding="utf-8")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--csv", type=Path); parser.add_argument("--raw-dir", type=Path); parser.add_argument("--out", type=Path)
+    parser.add_argument("--self-test-redaction", action="store_true")
+    args = parser.parse_args(argv)
+    if args.self_test_redaction:
+        if not _redaction_self_test(): raise SystemExit("REDACTION_SELF_TEST_FAIL")
+        print(json.dumps({"status": "REDACTION_SELF_TEST_PASS", "sentinel_match_count": 0}, sort_keys=True)); return 0
+    if not all((args.csv, args.raw_dir, args.out)): raise SystemExit("INPUT_REQUIRED")
+    if not _redaction_self_test(): raise SystemExit("REDACTION_SELF_TEST_FAIL")
+    started = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    data = _commit_core(args.csv, args.raw_dir)
+    tool = Path(__file__).resolve(); interpreter = Path(sys.executable).resolve()
+    stdout = json.dumps({"raw_count": 117, "commitment_sha256": data["commitment_sha256"]}, separators=(",", ":"))
+    data["provenance"] = {"tool_sha256": hashlib.sha256(tool.read_bytes()).hexdigest(), "interpreter_sha256": hashlib.sha256(interpreter.read_bytes()).hexdigest(), "python_version": sys.version, "argv": ["--csv", "sha256:" + hashlib.sha256(os.fspath(args.csv).encode()).hexdigest(), "--raw-dir", "sha256:" + hashlib.sha256(os.fspath(args.raw_dir).encode()).hexdigest(), "--out", "sha256:" + hashlib.sha256(os.fspath(args.out).encode()).hexdigest()], "started_utc": started, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "exit_status": 0, "stdout_sha256": hashlib.sha256((stdout + "\n").encode()).hexdigest(), "stderr_sha256": hashlib.sha256(b"").hexdigest(), "redaction_test": "PASS", "sentinel_match_count": 0, "operator_attestation": "hash-only streaming"}
+    args.out.write_text(json.dumps(data, sort_keys=True, separators=(",", ":")), encoding="utf-8")
     print(stdout)
+
+
 if __name__ == "__main__": main()
