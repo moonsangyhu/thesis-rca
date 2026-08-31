@@ -7,6 +7,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import stat
 import sys
 import tempfile
@@ -95,7 +96,7 @@ def validate_commitment_schema(value: object, *, require_provenance: bool) -> di
     required=base | ({"provenance"} if require_provenance else set())
     if not isinstance(value,dict) or set(value)!=required or value.get("raw_count")!=117 or not isinstance(value.get("raw_files"),list) or len(value["raw_files"])!=117: raise ValueError("COMMITMENT_SCHEMA")
     raw=value["raw_files"]
-    if raw != sorted(raw,key=lambda item:item.get("path", "")) or len({item.get("path") for item in raw})!=117 or any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not item["path"] or "/" in item["path"] or item["path"].startswith(".") or not isinstance(item["size"],int) or item["size"]<0 or not _is_sha256(item["sha256"]) for item in raw): raise ValueError("COMMITMENT_SCHEMA")
+    if raw != sorted(raw,key=lambda item:item.get("path", "")) or len({item.get("path") for item in raw})!=117 or any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*\.json",item["path"]) or "/" in item["path"] or "\\" in item["path"] or item["path"].startswith(".") or not isinstance(item["size"],int) or item["size"]<0 or not _is_sha256(item["sha256"]) for item in raw): raise ValueError("COMMITMENT_SCHEMA")
     csv=value["csv"]
     if not isinstance(csv,dict) or set(csv)!={"id_sha256","size","sha256"} or not _is_sha256(csv["id_sha256"]) or not isinstance(csv["size"],int) or csv["size"]<0 or not _is_sha256(csv["sha256"]): raise ValueError("COMMITMENT_SCHEMA")
     if not _is_sha256(value["entry_manifest_sha256"]) or value["entry_manifest_sha256"] != hashlib.sha256(json.dumps(raw,sort_keys=True,separators=(",",":")).encode()).hexdigest(): raise ValueError("COMMITMENT_SCHEMA")
@@ -103,7 +104,10 @@ def validate_commitment_schema(value: object, *, require_provenance: bool) -> di
     if not _is_sha256(value["commitment_sha256"]) or value["commitment_sha256"] != hashlib.sha256(json.dumps(preimage,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest(): raise ValueError("COMMITMENT_SCHEMA")
     if require_provenance:
         provenance=value["provenance"]
-        if not isinstance(provenance,dict) or not isinstance(provenance.get("reviewed_i0"),str) or len(provenance["reviewed_i0"])!=40 or any(ch not in "0123456789abcdef" for ch in provenance["reviewed_i0"]) or provenance.get("commitment_sha256")!=value["commitment_sha256"]: raise ValueError("COMMITMENT_SCHEMA")
+        exact={"tool_blob_oid","tool_sha256","interpreter_path","interpreter_sha256","python_version","cwd","argv","allowlisted_environment","source_root_device_inode","started_utc","finished_utc","exit_status","stdout_sha256","stderr_sha256","redaction_self_test","raw_count","csv_sha256","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256","reviewed_i0","legacy_source_drift","operator_attestation"}
+        option_names=("--csv","--raw-dir","--out","--reviewed-i0","--safety-receipt","--legacy-reference")
+        argv=provenance.get("argv") if isinstance(provenance,dict) else None
+        if not isinstance(provenance,dict) or set(provenance)!=exact or not _is_blob_oid(provenance["tool_blob_oid"]) or not all(_is_sha256(provenance[name]) for name in ("tool_sha256","interpreter_sha256","stdout_sha256","stderr_sha256","csv_sha256","entry_manifest_sha256","commitment_sha256","safety_receipt_sha256")) or not all(isinstance(provenance[name],str) and provenance[name] for name in ("interpreter_path","python_version","cwd","started_utc","finished_utc","operator_attestation")) or provenance["python_version"]!=sys.version or not provenance["started_utc"].endswith("Z") or not provenance["finished_utc"].endswith("Z") or not isinstance(argv,list) or tuple(argv[::2])!=option_names or len(argv)!=12 or any(not isinstance(item,str) or not re.fullmatch(r"sha256:[0-9a-f]{64}",item) for item in argv[1::2]) or provenance["allowlisted_environment"]!={} or not isinstance(provenance["source_root_device_inode"],list) or len(provenance["source_root_device_inode"])!=2 or any(not isinstance(item,int) or item<0 for item in provenance["source_root_device_inode"]) or provenance["exit_status"]!=0 or not _valid_evidence(provenance["redaction_self_test"]) or provenance["raw_count"]!=117 or provenance["csv_sha256"]!=csv["sha256"] or provenance["entry_manifest_sha256"]!=value["entry_manifest_sha256"] or provenance["commitment_sha256"]!=value["commitment_sha256"] or not _is_blob_oid(provenance["reviewed_i0"]) or provenance["legacy_source_drift"]!="EXACT_MATCH" or provenance["operator_attestation"]!="hash-only streaming": raise ValueError("COMMITMENT_SCHEMA")
     return value
 
 

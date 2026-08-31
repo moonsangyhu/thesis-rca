@@ -262,7 +262,7 @@ def _strict_approval_gate(path: Path) -> dict:
         "semantic_review": {"path", "blob_oid", "sha256"},
         "implementation_review": {"path", "blob_oid", "sha256", "code_candidate", "implementation_candidate"},
         "safety_receipt": {"path", "sha256", "code_candidate", "tool_blob_oid"},
-        "commitment": {"path", "sha256", "commitment_sha256", "csv_sha256", "raw_manifest_sha256", "reviewed_tool_blob_oid", "safety_receipt_sha256", "reviewed_code_candidate"},
+        "commitment": {"path", "sha256", "commitment_sha256", "csv_sha256", "raw_manifest_sha256", "reviewed_tool_blob_oid", "safety_receipt_sha256", "reviewed_i0"},
         "ground_truth": {"sha256", "projection_sha256"},
         "interpreter": {"path", "sha256", "version"},
         "deviation": {"path", "sha256"},
@@ -284,7 +284,7 @@ def _strict_approval_gate(path: Path) -> dict:
         raise RunInvalid("APPROVAL_SCHEMA")
     if not _HEX40.fullmatch(approval["implementation_review"]["code_candidate"]) or not _HEX40.fullmatch(approval["implementation_review"]["implementation_candidate"]):
         raise RunInvalid("APPROVAL_SCHEMA")
-    if not _HEX40.fullmatch(approval["commitment"]["reviewed_tool_blob_oid"]) or not _HEX40.fullmatch(approval["commitment"]["reviewed_code_candidate"]):
+    if not _HEX40.fullmatch(approval["commitment"]["reviewed_tool_blob_oid"]) or not _HEX40.fullmatch(approval["commitment"]["reviewed_i0"]):
         raise RunInvalid("APPROVAL_SCHEMA")
     if not _HEX40.fullmatch(approval["execution_authorization"]["execution_commit"]) or not _HEX40.fullmatch(approval["execution_authorization"]["approval_blob_oid"]):
         raise RunInvalid("APPROVAL_SCHEMA")
@@ -411,7 +411,7 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
         raise RunInvalid("SAFETY_RECEIPT_IDENTITY_MISMATCH")
     _verified_external_file(root, receipt)
     commitment_info = approval["commitment"]
-    if commitment_info["reviewed_code_candidate"] != code_candidate or commitment_info["reviewed_tool_blob_oid"] != receipt["tool_blob_oid"] or commitment_info["safety_receipt_sha256"] != receipt["sha256"]:
+    if commitment_info["reviewed_i0"] != code_candidate or commitment_info["reviewed_tool_blob_oid"] != receipt["tool_blob_oid"] or commitment_info["safety_receipt_sha256"] != receipt["sha256"]:
         raise RunInvalid("COMMITMENT_PROVENANCE_MISMATCH")
     commitment_bytes = _verified_external_file(root, commitment_info, expected_path=COMMITMENT_DOCUMENT)
     if _sha256_bytes(commitment_bytes) != commitment_info["sha256"]:
@@ -421,7 +421,11 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
     if commitment.get("commitment_sha256") != commitment_info["commitment_sha256"] or commitment.get("csv", {}).get("sha256") != commitment_info["csv_sha256"] or raw_manifest != commitment_info["raw_manifest_sha256"]:
         raise RunInvalid("COMMITMENT_ENVELOPE_MISMATCH")
     provenance = commitment.get("provenance")
-    if not isinstance(provenance, dict) or (provenance.get("reviewed_code_candidate"), provenance.get("reviewed_tool_blob_oid"), provenance.get("safety_receipt_sha256")) != (code_candidate, receipt["tool_blob_oid"], receipt["sha256"]):
+    try:
+        commit_inputs.validate_commitment_schema(commitment, require_provenance=True)
+    except ValueError as exc:
+        raise RunInvalid("COMMITMENT_PROVENANCE_MISMATCH") from exc
+    if (provenance.get("reviewed_i0"), provenance.get("tool_blob_oid"), provenance.get("safety_receipt_sha256")) != (code_candidate, receipt["tool_blob_oid"], receipt["sha256"]):
         raise RunInvalid("COMMITMENT_PROVENANCE_MISMATCH")
     deviation_bytes = _verified_external_file(root, approval["deviation"], expected_path=DEVIATION_DOCUMENT)
     try:

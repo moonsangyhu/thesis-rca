@@ -492,6 +492,31 @@ class DeterministicSyntheticTests(unittest.TestCase):
             with self.assertRaises(scorer.InvalidInput): scorer.load_ontology(handle.name)
             with self.assertRaises(scorer.InvalidInput): build_ontology.check(Path(handle.name))
 
+    def test_59_full_producer_provenance_bridges_to_runner_without_adapter(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"id\n")
+            for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(commit_inputs.commit(csv_path,raw)),encoding="utf-8")
+            reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
+            produced=root/"produced.json"
+            self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(produced),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
+            envelope=json.loads(produced.read_text())
+            self.assertEqual(set(envelope),{"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256","provenance"})
+            commit_inputs.validate_commitment_schema(envelope,require_provenance=True)
+            self.assertEqual(len(run._commitment_gate(produced,raw,csv_path,synthetic=False)[1]),117)
+
+    def test_60_commitment_provenance_and_direct_path_mutations_fail_closed(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"id\n")
+            for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+            base=commit_inputs.commit(csv_path,raw)
+            provenance={"tool_blob_oid":"a"*40,"tool_sha256":"b"*64,"interpreter_path":"/synthetic/python","interpreter_sha256":"c"*64,"python_version":sys.version,"cwd":"/synthetic","argv":["--csv","sha256:"+"d"*64,"--raw-dir","sha256:"+"e"*64,"--out","sha256:"+"f"*64,"--reviewed-i0","sha256:"+"0"*64,"--safety-receipt","sha256:"+"1"*64,"--legacy-reference","sha256:"+"2"*64],"allowlisted_environment":{},"source_root_device_inode":[1,2],"started_utc":"2026-09-01T00:00:00Z","finished_utc":"2026-09-01T00:00:01Z","exit_status":0,"stdout_sha256":"3"*64,"stderr_sha256":"4"*64,"redaction_self_test":{"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"5"*64,"sentinel_sha256":"6"*64,"success":{"exit_status":0,"stdout_sha256":"7"*64,"stderr_sha256":"8"*64},"error":{"exit_status":1,"stdout_sha256":"9"*64,"stderr_sha256":"a"*64}},"raw_count":117,"csv_sha256":base["csv"]["sha256"],"entry_manifest_sha256":base["entry_manifest_sha256"],"commitment_sha256":base["commitment_sha256"],"safety_receipt_sha256":"b"*64,"reviewed_i0":"c"*40,"legacy_source_drift":"EXACT_MATCH","operator_attestation":"hash-only streaming"}
+            envelope={**base,"provenance":provenance}
+            commit_inputs.validate_commitment_schema(envelope,require_provenance=True)
+            for mutate in (lambda data:data["provenance"].pop("tool_sha256"),lambda data:data["provenance"].__setitem__("reviewed_code_candidate","c"*40),lambda data:data["raw_files"][0].__setitem__("path","evil.txt"),lambda data:data["raw_files"][0].__setitem__("path","dir\\evil.json")):
+                altered=json.loads(json.dumps(envelope)); mutate(altered)
+                with self.assertRaises(ValueError): commit_inputs.validate_commitment_schema(altered,require_provenance=True)
+
 
 if __name__ == "__main__":
     unittest.main()
