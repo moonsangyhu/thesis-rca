@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -486,9 +487,15 @@ class DeterministicSyntheticTests(unittest.TestCase):
 
     def test_57_deviation_exact_schema_and_waiver_values(self):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
-            root=Path(td); changelog=root/"change.md"; review=root/"review.md"; changelog.write_text("change"); review.write_text("review")
-            text="attestation"; deviation={"schema_version":"v2.4-d-machine-parse-deviation-1","status":"NON_INFORMATIVE_MACHINE_PARSE_DEVIATION","confirmatory_disposition":"CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION","event_date":"2026-08-31","observed_command":"python3.11 -m unittest -v tests.test_v2_4_audit","best_known_head":"c9c94b4","working_tree_state":"UNCOMMITTED_IMPLEMENTATION_PRESENT","observed_test_result":"28_PASS","original_stdout_sha256":"NOT_RETAINED","original_stderr_sha256":"NOT_RETAINED","process_access_zero":False,"text_egress":False,"v2_4_d_execution":False,"output_derived_tuning":False,"approval_waiver_required":True,"evidence_sources":{"changelog":{"path":"change.md","sha256":hashlib.sha256(changelog.read_bytes()).hexdigest()},"full_implementation_review":{"path":"review.md","sha256":hashlib.sha256(review.read_bytes()).hexdigest()},"conversation_derived_attestation":{"canonical_text":text,"sha256":hashlib.sha256(text.encode()).hexdigest()}}}
+            root=Path(td); changelog=root/run.HISTORICAL_DEVIATION_EVIDENCE["changelog"]; review=root/run.HISTORICAL_DEVIATION_EVIDENCE["full_implementation_review"]; changelog.parent.mkdir(parents=True); review.parent.mkdir(parents=True); changelog.write_text("historical change"); review.write_text("historical review")
+            def git(*args): subprocess.run(["git","-C",str(root),*args],check=True,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            git("init"); git("add","."); git("-c","user.name=synthetic","-c","user.email=synthetic@example.invalid","commit","-m","snapshot")
+            changelog_hash=hashlib.sha256(changelog.read_bytes()).hexdigest(); review_hash=hashlib.sha256(review.read_bytes()).hexdigest(); changelog.write_text("mutable current append")
+            text="attestation"; deviation={"schema_version":"v2.4-d-machine-parse-deviation-1","status":"NON_INFORMATIVE_MACHINE_PARSE_DEVIATION","confirmatory_disposition":"CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION","event_date":"2026-08-31","observed_command":"python3.11 -m unittest -v tests.test_v2_4_audit","best_known_head":"c9c94b4","working_tree_state":"UNCOMMITTED_IMPLEMENTATION_PRESENT","observed_test_result":"28_PASS","original_stdout_sha256":"NOT_RETAINED","original_stderr_sha256":"NOT_RETAINED","process_access_zero":False,"text_egress":False,"v2_4_d_execution":False,"output_derived_tuning":False,"approval_waiver_required":True,"evidence_sources":{"changelog":{"path":run.HISTORICAL_DEVIATION_EVIDENCE["changelog"],"sha256":changelog_hash},"full_implementation_review":{"path":run.HISTORICAL_DEVIATION_EVIDENCE["full_implementation_review"],"sha256":review_hash},"conversation_derived_attestation":{"canonical_text":text,"sha256":hashlib.sha256(text.encode()).hexdigest()}}}
             self.assertEqual(run._validate_deviation(deviation,root)["status"],"NON_INFORMATIVE_MACHINE_PARSE_DEVIATION")
+            for mutate in (lambda value:value["evidence_sources"]["changelog"].__setitem__("sha256","0"*64),lambda value:value["evidence_sources"]["changelog"].__setitem__("path","results/other.md")):
+                altered=json.loads(json.dumps(deviation)); mutate(altered)
+                with self.assertRaises(run.RunInvalid): run._validate_deviation(altered,root)
             deviation["process_access_zero"]=True
             with self.assertRaises(run.RunInvalid): run._validate_deviation(deviation,root)
 
