@@ -25,6 +25,14 @@ AXIS_NAMES = tuple(AXIS_FIELDS)
 _CLAUSE_ESCAPES = {"\\n": "\n", "\\r": "\r"}
 _ONTOLOGY_VERSION = "v2.4-d-ontology-1"
 _NEGATION_CONST = {"tokens": ["no","not","never","without","neither","nor","isnt","wasnt","arent","werent","cannot","cant","didnt","doesnt","wont"], "phrases": ["rule out","ruled out","not the cause","not a cause","not the root cause","not the issue","not the fault"], "fillers": ["a","an","the","any","evidence","sign","signs","indication","indications","of","for"], "coordinators": ["and","or","nor"], "contrasts": ["but","however","instead","rather"], "exceptions": ["not only"], "grammar_ids": ["PRE_DIRECT","PRE_COORD","PRE_RULE","POST_RULE","POST_CAUSE","NOT_ONLY"]}
+_NORMALIZATION_CONST = {"unicode":"NFKC", "case":"casefold", "clause_boundaries":[".",";",":","!","?","\\n","\\r"], "tokenization":"maximal_unicode_alphanumeric_runs"}
+_SYNTAX_CONST = {"articles":["the","a","an"], "copulas":["is","was","are","were"], "not_only_connector":"but", "post_cause_terms":["cause","root cause","issue","fault"], "post_rule":"ruled out", "pre_rule":["rule out","ruled out"], "unsupported_markers":["neither"], "unsupported_prefixes":["not because"]}
+_PREDICATES_CONST = {"MEMORY_LIMIT_EXCEEDED_V1":["exceeded memory limit","exceeded 16mi memory limit","exceeded 24mi memory limit","exceeded 16 mib memory limit","exceeded 24 mib memory limit","memory exceeded limit","memory exceeded the limit","memory usage exceeded limit","memory usage exceeded the limit"]}
+_INCIDENTS_CONST = (("F1-t2","F1",2),("F1-t3","F1",3),("F2-t1","F2",1),("F3-t3","F3",3),("F3-t4","F3",4),("F4-t1","F4",1),("F5-t2","F5",2),("F5-t3","F5",3),("F6-t5","F6",5),("F7-t1","F7",1),("F7-t3","F7",3),("F8-t3","F8",3))
+_ONTOLOGY_TOP_ORDER = ("$schema","incidents","negation","normalization","ontology_version","token_predicates")
+_NORMALIZATION_ORDER = ("case","clause_boundaries","tokenization","unicode")
+_NEGATION_ORDER = ("contrasts","coordinators","exceptions","fillers","grammar_ids","phrases","syntax","tokens")
+_SYNTAX_ORDER = ("articles","copulas","not_only_connector","post_cause_terms","post_rule","pre_rule","unsupported_markers","unsupported_prefixes")
 
 
 def _tokens(value: str) -> tuple[str, ...]:
@@ -73,7 +81,7 @@ def _validate_matcher(matcher: dict, predicates: dict) -> None:
 
 
 def _validate_group(group: dict, predicates: dict, seen: set[str]) -> None:
-    if not _exact_keys(group, {"group_id", "any_of"}) or not isinstance(group["group_id"], str) or not group["group_id"] or group["group_id"] in seen or not isinstance(group["any_of"], list) or not group["any_of"]:
+    if not _exact_keys(group, {"group_id", "any_of"}) or not isinstance(group["group_id"], str) or not re.fullmatch(r"[A-Z0-9_]+", group["group_id"]) or group["group_id"] in seen or not isinstance(group["any_of"], list) or not group["any_of"]:
         raise InvalidInput("ONTOLOGY_SCHEMA")
     seen.add(group["group_id"])
     for matcher in group["any_of"]:
@@ -85,7 +93,7 @@ def _validate_axis(axis: dict, expected_fields: tuple[str, ...], predicates: dic
         raise InvalidInput("ONTOLOGY_SCHEMA")
     path_ids = set()
     for path in axis["positive_paths"]:
-        if not _exact_keys(path, {"path_id", "all_of"}) or not isinstance(path["path_id"], str) or not path["path_id"] or path["path_id"] in path_ids or not isinstance(path["all_of"], list) or not path["all_of"]:
+        if not _exact_keys(path, {"path_id", "all_of"}) or not isinstance(path["path_id"], str) or not re.fullmatch(r"[A-Z0-9_]+", path["path_id"]) or path["path_id"] in path_ids or not isinstance(path["all_of"], list) or not path["all_of"]:
             raise InvalidInput("ONTOLOGY_SCHEMA")
         path_ids.add(path["path_id"])
         group_ids = set()
@@ -96,25 +104,31 @@ def _validate_axis(axis: dict, expected_fields: tuple[str, ...], predicates: dic
         _validate_group(group, predicates, contradiction_ids)
 
 
-def _validate_ontology(data: dict) -> None:
+def _inventory(axis: dict) -> tuple[tuple[tuple[int, ...], ...], int]:
+    paths=tuple(tuple(len(group["any_of"]) for group in path["all_of"]) for path in axis["positive_paths"])
+    return paths, sum(sum(groups) for groups in paths)
+
+
+def validate_ontology_exact(data: dict) -> None:
+    """Shared runtime/build validator for the frozen ontology contract."""
     required = {"$schema", "ontology_version", "normalization", "negation", "token_predicates", "incidents"}
-    if not _exact_keys(data, required) or data["ontology_version"] != _ONTOLOGY_VERSION:
+    if not _exact_keys(data, required) or tuple(data) != _ONTOLOGY_TOP_ORDER or data["ontology_version"] != _ONTOLOGY_VERSION:
         raise InvalidInput("ONTOLOGY_SCHEMA")
     normalization = data["normalization"]
-    if not _exact_keys(normalization, {"unicode", "case", "clause_boundaries", "tokenization"}) or normalization["unicode"] != "NFKC" or normalization["case"] != "casefold" or normalization["tokenization"] != "maximal_unicode_alphanumeric_runs" or not isinstance(normalization["clause_boundaries"], list) or not normalization["clause_boundaries"] or any(not isinstance(x, str) or len(_CLAUSE_ESCAPES.get(x, x)) != 1 for x in normalization["clause_boundaries"]):
+    if not _exact_keys(normalization, set(_NORMALIZATION_CONST)) or tuple(normalization) != _NORMALIZATION_ORDER or normalization != _NORMALIZATION_CONST:
         raise InvalidInput("ONTOLOGY_SCHEMA")
     negation = data["negation"]
     required_negation = {"tokens", "phrases", "fillers", "coordinators", "contrasts", "exceptions", "grammar_ids", "syntax"}
     if not _exact_keys(negation, required_negation) or any(not isinstance(negation[name], list) or not negation[name] or any(not isinstance(x, str) or not x for x in negation[name]) for name in required_negation - {"syntax"}):
         raise InvalidInput("ONTOLOGY_SCHEMA")
-    if any(negation[key] != value for key, value in _NEGATION_CONST.items()):
+    if tuple(negation) != _NEGATION_ORDER or any(negation[key] != value for key, value in _NEGATION_CONST.items()):
         raise InvalidInput("ONTOLOGY_SCHEMA")
     syntax = negation["syntax"]
     required_syntax = {"not_only_connector", "pre_rule", "post_rule", "copulas", "articles", "post_cause_terms", "unsupported_prefixes", "unsupported_markers"}
-    if not _exact_keys(syntax, required_syntax) or not isinstance(syntax["not_only_connector"], str) or not syntax["not_only_connector"] or not isinstance(syntax["post_rule"], str) or not syntax["post_rule"] or any(not isinstance(syntax[name], list) or not syntax[name] or any(not isinstance(x, str) or not x for x in syntax[name]) for name in required_syntax - {"not_only_connector", "post_rule"}):
+    if not _exact_keys(syntax, required_syntax) or tuple(syntax) != _SYNTAX_ORDER or syntax != _SYNTAX_CONST:
         raise InvalidInput("ONTOLOGY_SCHEMA")
     predicates = data["token_predicates"]
-    if not isinstance(predicates, dict) or not predicates:
+    if not isinstance(predicates, dict) or predicates != _PREDICATES_CONST:
         raise InvalidInput("ONTOLOGY_SCHEMA")
     for identifier, alternatives in predicates.items():
         if not isinstance(identifier, str) or not identifier or not isinstance(alternatives, list) or not alternatives or any(not isinstance(value, str) or not _tokens(value) for value in alternatives):
@@ -122,15 +136,37 @@ def _validate_ontology(data: dict) -> None:
     incidents = data["incidents"]
     if not isinstance(incidents, list) or len(incidents) != 12:
         raise InvalidInput("ONTOLOGY_SCHEMA")
-    identifiers = set()
+    identifiers = []
+    expected_inventory = []
     for incident in incidents:
         if not _exact_keys(incident, {"incident_id", "fault_id", "trial", "canonical", "axes"}) or not isinstance(incident["incident_id"], str) or not re.fullmatch(r"F[1-8]-t[1-5]", incident["incident_id"]) or incident["incident_id"] in identifiers or not isinstance(incident["fault_id"], str) or not re.fullmatch(r"F[1-8]", incident["fault_id"]) or not isinstance(incident["trial"], int) or not 1 <= incident["trial"] <= 5:
             raise InvalidInput("ONTOLOGY_SCHEMA")
-        identifiers.add(incident["incident_id"])
+        identifiers.append((incident["incident_id"], incident["fault_id"], incident["trial"]))
         if not _exact_keys(incident["canonical"], {"component", "fault", "mechanism", "remediation"}) or any(not isinstance(x, str) or not x for x in incident["canonical"].values()) or not _exact_keys(incident["axes"], set(AXIS_NAMES)):
             raise InvalidInput("ONTOLOGY_SCHEMA")
         for name, fields in AXIS_FIELDS.items():
             _validate_axis(incident["axes"][name], fields, predicates)
+        expected_inventory.append(tuple(_inventory(incident["axes"][name]) for name in AXIS_NAMES))
+    if tuple(identifiers) != _INCIDENTS_CONST:
+        raise InvalidInput("ONTOLOGY_SCHEMA")
+    # Frozen atom/alias inventory; this rejects add/remove/reorder mutations
+    # without inspecting any candidate text.
+    approved = (
+        ((((2,),), 2), (((2,),), 2), (((3, 3, 5),), 11), (((3, 2, 2),), 7)),
+        ((((2,),), 2), (((2,),), 2), (((3, 3, 5),), 11), (((3, 2, 2),), 7)),
+        ((((2,),), 2), (((3,),), 3), (((12, 6),), 18), (((4, 4), (2, 4)), 14)),
+        ((((3,),), 3), (((3,),), 3), (((4, 7),), 11), (((4, 4, 3),), 11)),
+        ((((2,),), 2), (((3,),), 3), (((3, 4),), 7), (((4, 3, 3), (2, 4)), 16)),
+        ((((2,),), 2), (((2,),), 2), (((1, 6),), 7), (((2, 2, 2),), 6)),
+        ((((1,),), 1), (((2,),), 2), (((5, 7),), 12), (((3, 4), (4, 4)), 15)),
+        ((((1,),), 1), (((2,),), 2), (((4, 7),), 11), (((2, 3), (3, 3)), 11)),
+        ((((2,),), 2), (((2,),), 2), (((2, 7, 2, 2, 2),), 15), (((5, 3, 2, 2, 2),), 14)),
+        ((((2,),), 2), (((2,),), 2), (((3, 7, 5),), 15), (((3, 2, 2), (3, 2)), 12)),
+        ((((3,),), 3), (((2,),), 2), (((3, 7, 5),), 15), (((3, 2, 2),), 7)),
+        ((((2,),), 2), (((2,),), 2), (((2, 8, 5),), 15), (((2, 2, 4),), 8)),
+    )
+    if tuple(expected_inventory) != approved:
+        raise InvalidInput("ONTOLOGY_SCHEMA")
 
 
 def load_ontology(path=Path(__file__).with_name("ontology_v1.json")) -> dict:
@@ -145,7 +181,7 @@ def load_ontology(path=Path(__file__).with_name("ontology_v1.json")) -> dict:
         data = json.loads(Path(path).read_text(encoding="utf-8"), object_pairs_hook=pairs)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise InvalidInput("ONTOLOGY_SCHEMA") from exc
-    _validate_ontology(data)
+    validate_ontology_exact(data)
     return data
 
 
@@ -216,9 +252,67 @@ def _unsupported_negation(tokens: tuple[str, ...], negation: dict) -> bool:
     return any(_has_phrase(tokens, index, _tokens(prefix)) for prefix in syntax["unsupported_prefixes"] for index in range(len(tokens)))
 
 
+def _all_concept_spans(words: tuple[str, ...], ontology: dict, matcher: dict | None = None) -> list[tuple[int, int, str]]:
+    """Return only finite ontology concept spans; no raw-text heuristic is used."""
+    matchers = [] if matcher is None else [matcher]
+    for incident in ontology["incidents"]:
+        for axis in incident["axes"].values():
+            for path in axis["positive_paths"]:
+                matchers.extend(item for group in path["all_of"] for item in group["any_of"])
+            matchers.extend(item for group in axis["contradictions"] for item in group["any_of"])
+    spans = {(start, end, item["polarity"]) for item in matchers for start, end in _spans(words, item, ontology["token_predicates"])}
+    return sorted(spans)
+
+
+def _consumed_negation(words: tuple[str, ...], marker: int, concepts: list[tuple[int, int, str]], negation: dict) -> bool:
+    """Finite grammar consumption for one marker word in its clause."""
+    marker_word = words[marker]
+    fillers, coordinators = set(negation["fillers"]), set(negation["coordinators"])
+    if any(start <= marker < end and polarity == "absence_assertion" for start, end, polarity in concepts):
+        return True
+    if marker_word == "not" and _has_phrase(words, marker, ("not", "only")):
+        return any(words[index] == negation["syntax"]["not_only_connector"] for index in range(marker + 2, len(words)))
+    for start, end, _ in concepts:
+        between = words[marker + 1:start]
+        if marker < start and len(between) <= 3 and all(item in fillers for item in between):
+            return True
+        for phrase in negation["syntax"]["pre_rule"]:
+            rule = _tokens(phrase)
+            if marker >= len(rule) and _has_phrase(words, marker - len(rule), rule):
+                between = words[marker + 1:start]
+                if marker < start and len(between) <= 3 and all(item in fillers for item in between):
+                    return True
+        tail = words[end:]
+        post_rule = _tokens(negation["syntax"]["post_rule"])
+        if marker >= end and (_has_phrase(tail, 0, post_rule) or (len(tail) > 1 and tail[0] in set(negation["syntax"]["copulas"]) and _has_phrase(tail, 1, post_rule)) or (len(tail) > 2 and tail[:2] in (("has", "been"), ("have", "been")) and _has_phrase(tail, 2, post_rule))):
+            return True
+        if marker == end + 1 and end < len(words) and words[end] in set(negation["syntax"]["copulas"]):
+            after = marker + 1
+            if after < len(words) and words[after] in set(negation["syntax"]["articles"]): after += 1
+            if any(_has_phrase(words, after, _tokens(term)) for term in negation["syntax"]["post_cause_terms"]): return True
+    following = [(start, end) for start, end, _ in concepts if start > marker]
+    if len(following) >= 2:
+        first, second = following[0], following[1]
+        bridge = words[first[1]:second[0]]
+        if any(item in coordinators for item in bridge) and all(item in coordinators | fillers for item in bridge):
+            prefix = words[marker + 1:first[0]]
+            if len(prefix) <= 3 and all(item in fillers for item in prefix): return True
+            if marker_word == "neither" and "nor" in bridge: return True
+    if marker_word == "nor" and "neither" in words[:marker] and len(concepts) >= 2:
+        return True
+    return False
+
+
+def _unresolved_negation(words: tuple[str, ...], ontology: dict, matcher: dict | None = None) -> bool:
+    negation = ontology["negation"]
+    if _unsupported_negation(words, negation): return True
+    concepts = _all_concept_spans(words, ontology, matcher)
+    return bool(concepts) and any(item in set(negation["tokens"]) and not _consumed_negation(words, index, concepts, negation) for index, item in enumerate(words))
+
+
 def _matcher_hit(text: str, matcher: dict, ontology: dict):
     for tokens in _clauses(text, ontology["normalization"]):
-        if _unsupported_negation(tokens, ontology["negation"]):
+        if _unresolved_negation(tokens, ontology, matcher):
             raise InvalidInput("UNSUPPORTED_NEGATION")
         for span in _spans(tokens, matcher, ontology["token_predicates"]):
             if not _suppressed(tokens, span, matcher, ontology["negation"]):
@@ -258,7 +352,7 @@ def validate_candidate_bytes(raw: bytes) -> dict:
     fields = [candidate["identified_fault_type"], candidate["root_cause"], *candidate["remediation"]]
     if any(any(char.isalnum() and ord(char) > 127 for char in value) for value in fields):
         raise InvalidInput("LANGUAGE_UNSUPPORTED")
-    if any(_unsupported_negation(token_clause, ontology["negation"]) for value in fields for token_clause in _clauses(value, ontology["normalization"])):
+    if any(_unresolved_negation(token_clause, ontology) for value in fields for token_clause in _clauses(value, ontology["normalization"])):
         raise InvalidInput("UNSUPPORTED_NEGATION")
     return candidate
 

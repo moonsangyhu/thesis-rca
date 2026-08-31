@@ -147,10 +147,6 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 payload = synthetic_candidate(ontology, incident) if incident in run.SELECTED else {"identified_fault_type": "x", "root_cause": "x", "remediation": ["x"]}
                 (raw_dir / f"raw-{number:03d}.json").write_text(json.dumps({"fault_id": fault, "trial": trial, "context_condition": condition, "representative_output": payload}), encoding="utf-8")
         commitment = root / "commitment.json"; commitment.write_text(json.dumps(commit_inputs.commit(csv_path, raw_dir), sort_keys=True, separators=(",", ":")), encoding="utf-8")
-        # Legacy runner fixture adapter only; the reviewed commitment producer
-        # intentionally never emits a source basename/path.
-        envelope = json.loads(commitment.read_text(encoding="utf-8")); envelope.pop("entry_manifest_sha256", None); envelope["csv"].pop("id_sha256", None); envelope["csv"]["path"] = csv_path.name
-        commitment.write_text(json.dumps(envelope, sort_keys=True, separators=(",", ":")), encoding="utf-8")
         ground_truth = root / "ground_truth.csv"
         with ground_truth.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=["fault_id", "trial", "fault_name", "target_service", "expected_root_cause", "expected_recovery_action"]); writer.writeheader()
@@ -431,6 +427,70 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(valid_receipt),"--legacy-reference",str(legacy)]),0)
                 self.assertEqual(opened.call_count,1)
             self.assertTrue(out.is_file())
+
+    def test_53_runtime_ontology_exact_mutation_matrix(self):
+        original=scorer.load_ontology()
+        mutations=(
+            lambda data: data.__setitem__("ontology_version","changed"),
+            lambda data: data["normalization"]["clause_boundaries"].reverse(),
+            lambda data: data["token_predicates"]["MEMORY_LIMIT_EXCEEDED_V1"].append("extra"),
+            lambda data: data["negation"]["syntax"].__setitem__("post_rule","changed"),
+            lambda data: data["incidents"][0].__setitem__("trial",1),
+            lambda data: data["incidents"][0]["axes"]["mechanism"]["positive_paths"][0]["all_of"][0]["any_of"].append(dict(data["incidents"][0]["axes"]["mechanism"]["positive_paths"][0]["all_of"][0]["any_of"][0])),
+        )
+        for mutate in mutations:
+            data=json.loads(json.dumps(original)); mutate(data)
+            with tempfile.NamedTemporaryFile("w",suffix=".json") as handle:
+                json.dump(data,handle); handle.flush()
+                with self.assertRaises(scorer.InvalidInput): scorer.load_ontology(handle.name)
+
+    def test_54_unresolved_concept_associated_negation_is_invalid(self):
+        for text in ("memory limit is not generally relevant", "recommendationservice is never usually implicated"):
+            with self.subTest(text=text):
+                with self.assertRaises(scorer.InvalidInput): scorer.validate_candidate_bytes(candidate(root=text))
+        self.assertFalse(scorer.match("neither cpu throttling nor memory limit",["memory limit"]))
+        self.assertTrue(scorer.match("not only cpu throttling but memory limit",["memory limit"]))
+
+    def test_55_producer_runner_canonical_commitment_bridge(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"id\n")
+            for number in range(117): (raw/f"{number:03d}.json").write_bytes(b"x")
+            envelope=commit_inputs.commit(csv_path,raw); commitment=root/"commitment.json"; commitment.write_text(json.dumps(envelope),encoding="utf-8")
+            self.assertEqual(set(envelope),{"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256"})
+            _, entries, _=run._commitment_gate(commitment,raw,csv_path,synthetic=True)
+            self.assertEqual(len(entries),117)
+            for remove in ("entry_manifest_sha256","commitment_sha256"):
+                malformed=dict(envelope); malformed.pop(remove)
+                with self.assertRaises(ValueError): commit_inputs.validate_commitment_schema(malformed,require_provenance=False)
+
+    def test_56_runner_direct_raw_enumeration_rejects_every_unexpected_entry(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir()
+            for number in range(117): (raw/f"{number:03d}.json").write_bytes(b"x")
+            self.assertEqual(len(run.safe_metadata(raw)),117)
+            for name, maker in (("extra.txt",lambda path:path.write_bytes(b"x")),("nested",lambda path:path.mkdir()),(".hidden",lambda path:path.write_bytes(b"x"))):
+                target=raw/name; maker(target)
+                with self.subTest(name=name):
+                    with self.assertRaises(run.RunInvalid): run.safe_metadata(raw)
+                if target.is_dir(): target.rmdir()
+                else: target.unlink()
+            (raw/"link.json").symlink_to(raw/"000.json")
+            with self.assertRaises(run.RunInvalid): run.safe_metadata(raw)
+
+    def test_57_deviation_exact_schema_and_waiver_values(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); changelog=root/"change.md"; review=root/"review.md"; changelog.write_text("change"); review.write_text("review")
+            text="attestation"; deviation={"schema_version":"v2.4-d-machine-parse-deviation-1","status":"NON_INFORMATIVE_MACHINE_PARSE_DEVIATION","confirmatory_disposition":"CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION","event_date":"2026-08-31","observed_command":"python3.11 -m unittest -v tests.test_v2_4_audit","best_known_head":"c9c94b4","working_tree_state":"UNCOMMITTED_IMPLEMENTATION_PRESENT","observed_test_result":"28_PASS","original_stdout_sha256":"NOT_RETAINED","original_stderr_sha256":"NOT_RETAINED","process_access_zero":False,"text_egress":False,"v2_4_d_execution":False,"output_derived_tuning":False,"approval_waiver_required":True,"evidence_sources":{"changelog":{"path":"change.md","sha256":hashlib.sha256(changelog.read_bytes()).hexdigest()},"full_implementation_review":{"path":"review.md","sha256":hashlib.sha256(review.read_bytes()).hexdigest()},"conversation_derived_attestation":{"canonical_text":text,"sha256":hashlib.sha256(text.encode()).hexdigest()}}}
+            self.assertEqual(run._validate_deviation(deviation,root)["status"],"NON_INFORMATIVE_MACHINE_PARSE_DEVIATION")
+            deviation["process_access_zero"]=True
+            with self.assertRaises(run.RunInvalid): run._validate_deviation(deviation,root)
+
+    def test_58_builder_and_runtime_share_exact_validator(self):
+        data=scorer.load_ontology(); data["negation"]["tokens"].reverse()
+        with tempfile.NamedTemporaryFile("w",suffix=".json") as handle:
+            json.dump(data,handle); handle.flush()
+            with self.assertRaises(scorer.InvalidInput): scorer.load_ontology(handle.name)
+            with self.assertRaises(scorer.InvalidInput): build_ontology.check(Path(handle.name))
 
 
 if __name__ == "__main__":

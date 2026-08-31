@@ -80,12 +80,31 @@ def _commit_core(csv_path: Path, raw_dir: Path) -> dict:
     manifest["entry_manifest_sha256"] = hashlib.sha256(json.dumps(raws, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     payload = json.dumps(manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
     manifest["commitment_sha256"] = hashlib.sha256(payload).hexdigest()
+    validate_commitment_schema(manifest, require_provenance=False)
     return manifest
 
 
 def commit(csv_path: Path, raw_dir: Path) -> dict:
     """Public hash-only API. No source path is retained in its returned envelope."""
     return _commit_core(Path(csv_path), Path(raw_dir))
+
+
+def validate_commitment_schema(value: object, *, require_provenance: bool) -> dict:
+    """Canonical producer/consumer schema; no legacy path aliases are accepted."""
+    base={"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256"}
+    required=base | ({"provenance"} if require_provenance else set())
+    if not isinstance(value,dict) or set(value)!=required or value.get("raw_count")!=117 or not isinstance(value.get("raw_files"),list) or len(value["raw_files"])!=117: raise ValueError("COMMITMENT_SCHEMA")
+    raw=value["raw_files"]
+    if raw != sorted(raw,key=lambda item:item.get("path", "")) or len({item.get("path") for item in raw})!=117 or any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not item["path"] or "/" in item["path"] or item["path"].startswith(".") or not isinstance(item["size"],int) or item["size"]<0 or not _is_sha256(item["sha256"]) for item in raw): raise ValueError("COMMITMENT_SCHEMA")
+    csv=value["csv"]
+    if not isinstance(csv,dict) or set(csv)!={"id_sha256","size","sha256"} or not _is_sha256(csv["id_sha256"]) or not isinstance(csv["size"],int) or csv["size"]<0 or not _is_sha256(csv["sha256"]): raise ValueError("COMMITMENT_SCHEMA")
+    if not _is_sha256(value["entry_manifest_sha256"]) or value["entry_manifest_sha256"] != hashlib.sha256(json.dumps(raw,sort_keys=True,separators=(",",":")).encode()).hexdigest(): raise ValueError("COMMITMENT_SCHEMA")
+    preimage={key:value[key] for key in ("raw_files","raw_count","csv","entry_manifest_sha256")}
+    if not _is_sha256(value["commitment_sha256"]) or value["commitment_sha256"] != hashlib.sha256(json.dumps(preimage,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest(): raise ValueError("COMMITMENT_SCHEMA")
+    if require_provenance:
+        provenance=value["provenance"]
+        if not isinstance(provenance,dict) or not isinstance(provenance.get("reviewed_i0"),str) or len(provenance["reviewed_i0"])!=40 or any(ch not in "0123456789abcdef" for ch in provenance["reviewed_i0"]) or provenance.get("commitment_sha256")!=value["commitment_sha256"]: raise ValueError("COMMITMENT_SCHEMA")
+    return value
 
 
 def _valid_evidence(value: object) -> bool:
@@ -225,6 +244,7 @@ def _main(argv=None, *, _internal_self_test=False):
     # self-excluding commitment contract explicit without a circular hash.
     redacted=lambda value: "sha256:"+hashlib.sha256(os.fspath(value).encode()).hexdigest()
     data["provenance"] = {"tool_blob_oid":_blob_oid(tool),"tool_sha256": hashlib.sha256(tool.read_bytes()).hexdigest(), "interpreter_path":str(interpreter),"interpreter_sha256": hashlib.sha256(interpreter.read_bytes()).hexdigest(), "python_version": sys.version, "cwd":str(Path.cwd()),"argv": ["--csv", redacted(args.csv), "--raw-dir", redacted(args.raw_dir), "--out", redacted(args.out), "--reviewed-i0", "sha256:"+hashlib.sha256(args.reviewed_i0.encode()).hexdigest(), "--safety-receipt", redacted(args.safety_receipt), "--legacy-reference", redacted(args.legacy_reference)], "allowlisted_environment":{},"source_root_device_inode":[root_info.st_dev,root_info.st_ino],"started_utc": started, "finished_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "exit_status": 0, "stdout_sha256": hashlib.sha256((stdout + "\n").encode()).hexdigest(), "stderr_sha256": hashlib.sha256(b"").hexdigest(), "redaction_self_test":evidence,"raw_count":117,"csv_sha256":data["csv"]["sha256"],"entry_manifest_sha256":data["entry_manifest_sha256"],"commitment_sha256":data["commitment_sha256"],"safety_receipt_sha256":receipt_sha,"reviewed_i0":args.reviewed_i0,"legacy_source_drift":"EXACT_MATCH","operator_attestation": "hash-only streaming"}
+    validate_commitment_schema(data, require_provenance=True)
     args.out.write_text(json.dumps(data, sort_keys=True, separators=(",", ":")), encoding="utf-8")
     print(stdout)
     return 0
