@@ -365,6 +365,33 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 self.assertEqual(commit_inputs.main(["--csv",str(root/"csv"),"--raw-dir",str(root/"raw"),"--out",str(out),"--reviewed-i0","a"*40,"--safety-receipt",str(root/"receipt"),"--legacy-reference",str(root/"legacy")]),1)
             self.assertFalse(out.exists())
 
+    def test_49_real_mode_authorization_and_legacy_schema_precede_every_input_open(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"synthetic-raw"; raw.mkdir(); csv_path=root/"synthetic.csv"; csv_path.write_bytes(b"x")
+            for index in range(117): (raw/f"{index:03d}.json").write_bytes(b"x")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(commit_inputs.commit(csv_path,raw)),encoding="utf-8")
+            reviewed="a"*40
+            evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
+            cases=[]
+            malformed=root/"malformed.json"; malformed.write_text("{}",encoding="utf-8"); cases.append((malformed,legacy))
+            cases.append((root/"missing-receipt.json",legacy))
+            wrong_i0=full_safety_receipt("b"*40); wrong_i0_path=root/"wrong-i0.json"; wrong_i0_path.write_text(json.dumps(wrong_i0),encoding="utf-8"); cases.append((wrong_i0_path,legacy))
+            wrong_target=full_safety_receipt(reviewed); wrong_target["safety_targets"][0]["sha256"]="0"*64; wrong_target_path=root/"wrong-target.json"; wrong_target_path.write_text(json.dumps(wrong_target),encoding="utf-8"); cases.append((wrong_target_path,legacy))
+            wrong_tool=full_safety_receipt(reviewed); next(item for item in wrong_tool["safety_targets"] if item["path"].endswith("commit_inputs.py"))["blob_oid"]="0"*40; wrong_tool_path=root/"wrong-tool.json"; wrong_tool_path.write_text(json.dumps(wrong_tool),encoding="utf-8"); cases.append((wrong_tool_path,legacy))
+            wrong_interpreter=full_safety_receipt(reviewed); wrong_interpreter["interpreter"]["version"]="wrong"; wrong_interpreter_path=root/"wrong-interpreter.json"; wrong_interpreter_path.write_text(json.dumps(wrong_interpreter),encoding="utf-8"); cases.append((wrong_interpreter_path,legacy))
+            bad_legacy=root/"bad-legacy.json"; bad_legacy.write_text("{}",encoding="utf-8"); valid_receipt=root/"valid-receipt.json"; valid_receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8"); cases.append((valid_receipt,bad_legacy))
+            for number, (receipt, legacy_ref) in enumerate(cases):
+                with self.subTest(case=number), mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test", return_value=evidence), \
+                     mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core", side_effect=AssertionError("source opened")) as opened:
+                    self.assertEqual(commit_inputs.main(["--csv",str(root/"DO_NOT_OPEN.csv"),"--raw-dir",str(root/"DO_NOT_OPEN.raw"),"--out",str(root/f"out-{number}.json"),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy_ref)]),1)
+                    self.assertEqual(opened.call_count,0)
+            out=root/"valid-out.json"
+            with mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test", return_value=evidence), \
+                 mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core", wraps=commit_inputs._commit_core) as opened:
+                self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(valid_receipt),"--legacy-reference",str(legacy)]),0)
+                self.assertEqual(opened.call_count,1)
+            self.assertTrue(out.is_file())
+
 
 if __name__ == "__main__":
     unittest.main()

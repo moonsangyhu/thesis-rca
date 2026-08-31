@@ -139,7 +139,23 @@ def _load_json(path: Path) -> dict:
     return value
 
 
-def _verify_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path, data: dict) -> tuple[dict, str]:
+def _parse_legacy_reference(legacy_path: Path) -> dict:
+    """Read only the reference envelope shape; never open the input sources here."""
+    legacy=_load_json(legacy_path)
+    allowed={"raw_files","raw_count","csv","entry_manifest_sha256","commitment_sha256","provenance"}
+    if set(legacy)-allowed or not {"raw_files","raw_count","csv"} <= set(legacy) or legacy.get("raw_count") != 117 or not isinstance(legacy["raw_files"],list) or len(legacy["raw_files"]) != 117 or not isinstance(legacy["csv"],dict): raise ValueError("LEGACY_SCHEMA")
+    raw_files=legacy["raw_files"]
+    if any(not isinstance(item,dict) or set(item)!={"path","size","sha256"} or not isinstance(item["path"],str) or not item["path"] or "/" in item["path"] or not isinstance(item["size"],int) or item["size"] < 0 or not _is_sha256(item["sha256"]) for item in raw_files) or raw_files != sorted(raw_files,key=lambda item:item["path"]) or len({item["path"] for item in raw_files}) != 117: raise ValueError("LEGACY_SCHEMA")
+    csv_map=legacy["csv"]
+    if set(csv_map)-{"path","id_sha256","size","sha256"} or not {"size","sha256"} <= set(csv_map) or not isinstance(csv_map["size"],int) or csv_map["size"] < 0 or not _is_sha256(csv_map["sha256"]) or ("path" in csv_map and (not isinstance(csv_map["path"],str) or not csv_map["path"])) or ("id_sha256" in csv_map and not _is_sha256(csv_map["id_sha256"])): raise ValueError("LEGACY_SCHEMA")
+    for name in ("entry_manifest_sha256","commitment_sha256"):
+        if name in legacy and not _is_sha256(legacy[name]): raise ValueError("LEGACY_SCHEMA")
+    if "provenance" in legacy and not isinstance(legacy["provenance"],dict): raise ValueError("LEGACY_SCHEMA")
+    return legacy
+
+
+def _preopen_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path) -> tuple[dict, str, dict]:
+    """Validate all non-input authorization artifacts before opening candidate inputs."""
     if len(reviewed_i0)!=40 or any(ch not in "0123456789abcdef" for ch in reviewed_i0): raise ValueError("INVALID_REVIEWED_I0")
     receipt=_load_json(receipt_path); tool_oid=_blob_oid(Path(__file__))
     required={"reviewer_id","session_id","review_utc","reviewed_i0","result","status","safety_targets","semantic_review_sha256","interpreter","commands","fixture_sha256","sentinel_sha256","real_source_open_count","candidate_text_egress","prior_failures_closed"}
@@ -155,13 +171,19 @@ def _verify_real_mode(reviewed_i0: str, receipt_path: Path, legacy_path: Path, d
     if found["experiments/v2_4_deterministic/commit_inputs.py"]["blob_oid"]!=tool_oid: raise ValueError("SAFETY_RECEIPT_MISMATCH")
     interpreter=receipt["interpreter"]
     if not isinstance(interpreter,dict) or set(interpreter)!={"path","version","sha256"} or not isinstance(interpreter["path"],str) or not interpreter["path"] or not isinstance(interpreter["version"],str) or not interpreter["version"] or not _is_sha256(interpreter["sha256"]): raise ValueError("SAFETY_RECEIPT_MISMATCH")
+    active_interpreter=Path(sys.executable).resolve()
+    if Path(interpreter["path"]).resolve()!=active_interpreter or interpreter["version"]!=sys.version or interpreter["sha256"]!=hashlib.sha256(active_interpreter.read_bytes()).hexdigest(): raise ValueError("SAFETY_RECEIPT_MISMATCH")
     commands=receipt["commands"]
     if not isinstance(commands,list) or not commands or any(not isinstance(item,dict) or set(item)!={"command","exit_status","stdout_sha256","stderr_sha256"} or not isinstance(item["command"],str) or not item["command"] or item["exit_status"]!=0 or not _is_sha256(item["stdout_sha256"]) or not _is_sha256(item["stderr_sha256"]) for item in commands): raise ValueError("SAFETY_RECEIPT_MISMATCH")
-    legacy=_load_json(legacy_path)
+    legacy=_parse_legacy_reference(legacy_path)
+    return receipt, hashlib.sha256(receipt_path.read_bytes()).hexdigest(), legacy
+
+
+def _compare_legacy_reference(legacy: dict, data: dict) -> None:
+    """Compare maps only after the descriptor-anchored input commitment exists."""
     expected_csv={key:data["csv"][key] for key in ("size","sha256")}
-    legacy_csv={key:legacy["csv"].get(key) for key in ("size","sha256")} if isinstance(legacy.get("csv"),dict) else None
-    if legacy_csv != expected_csv or not isinstance(legacy.get("raw_files"),list) or legacy.get("raw_files")!=data["raw_files"]: raise ValueError("LEGACY_SOURCE_DRIFT")
-    return receipt, hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+    legacy_csv={key:legacy["csv"].get(key) for key in ("size","sha256")}
+    if legacy_csv != expected_csv or legacy["raw_files"]!=data["raw_files"]: raise ValueError("LEGACY_SOURCE_DRIFT")
 
 
 class _Parser(argparse.ArgumentParser):
@@ -185,6 +207,9 @@ def _main(argv=None, *, _internal_self_test=False):
         evidence=_redaction_self_test()
         if not _valid_evidence(evidence): raise ValueError("REDACTION_SELF_TEST_FAIL")
         if not all((args.reviewed_i0,args.safety_receipt,args.legacy_reference)): raise ValueError("REAL_MODE_ARGUMENTS_REQUIRED")
+    receipt=receipt_sha=legacy=None
+    if not _internal_self_test:
+        receipt, receipt_sha, legacy = _preopen_real_mode(args.reviewed_i0,args.safety_receipt,args.legacy_reference)
     started = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     data = _commit_core(args.csv, args.raw_dir)
     tool = Path(__file__).resolve(); interpreter = Path(sys.executable).resolve()
@@ -193,7 +218,7 @@ def _main(argv=None, *, _internal_self_test=False):
         args.out.write_text(json.dumps(data, sort_keys=True, separators=(",", ":")), encoding="utf-8")
         print(stdout)
         return 0
-    receipt, receipt_sha = _verify_real_mode(args.reviewed_i0,args.safety_receipt,args.legacy_reference,data)
+    _compare_legacy_reference(legacy,data)
     root_info=os.stat(args.raw_dir,follow_symlinks=False)
     # This is the immutable input-manifest digest, computed before the mutable
     # provenance envelope is attached; the duplicate provenance field makes the
