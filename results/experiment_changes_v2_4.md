@@ -224,3 +224,12 @@
 - **수정 내용**: receipt command exit status를 exact `int`로 강제해 boolean을 source-open 전에 거부한다. legacy raw path를 direct ASCII `.json` basename 117개 sorted/unique로, CSV를 exact `id_sha256,size,sha256` 객체로 pre-open 검증한다. provenance stderr SHA-256는 empty bytes digest로 고정했다. boolean receipt와 malformed legacy에서 `_commit_core` 호출 0회를 확인하는 spy 및 stderr mutation 회귀 테스트를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 64 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth 접근 0, PASS receipt 0.
+
+### 26. V2.4-D historical legacy CSV schema 정합성 교정 — 2026-09-01
+
+- **수정 에이전트**: @Codex, @implementation-worker
+- **증상/문제**: PASS I0 도구로 I1 commitment를 만들기 직전, 승인된 pre-I0 legacy artifact의 CSV 객체가 historical `{path,size,sha256}`인데 legacy parser는 active `{id_sha256,size,sha256}`만 허용해 모든 정당한 실행이 pre-open 실패하는 계약 불일치를 확인했다.
+- **원인**: active canonical commitment schema 강화 내용을 source-drift 비교에만 쓰는 historical artifact parser에도 동일하게 적용해, 두 세대의 의도적인 metadata 차이를 제거했다.
+- **수정 내용**: active producer/runner schema는 변경하지 않고 legacy-only parser가 exact historical CSV key set과 direct ASCII `.csv` basename만 허용하도록 분리했다. synthetic historical shape 수용, active/extra-key legacy 거부, malformed legacy에서 source-open 0을 회귀 테스트로 고정했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 수정 완료·새 code-only I0 및 fresh safety review 대기 — fixed Python 3.11 isolated 65 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; real commitment 생성 0, actual Primary03/ground truth 접근 0.

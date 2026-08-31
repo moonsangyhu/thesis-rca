@@ -41,6 +41,13 @@ def full_safety_receipt(reviewed_i0):
     }
 
 
+def historical_legacy_reference(csv_path, raw_dir):
+    """Synthetic-only shape of the immutable pre-I1 legacy artifact."""
+    legacy=commit_inputs.commit(csv_path,raw_dir)
+    legacy["csv"]={"path":"historical-input.csv","size":legacy["csv"]["size"],"sha256":legacy["csv"]["sha256"]}
+    return legacy
+
+
 def candidate(fault="OOMKilled", root="recommendationservice memory limit too low oom killed", remediation=None):
     return json.dumps({"identified_fault_type": fault, "root_cause": root, "remediation": remediation or ["increase memory limit to 96Mi"]}).encode()
 
@@ -334,7 +341,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
             root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"PATH_SENTINEL.csv"; out_path=root/"PATH_SENTINEL.commitment"; content=b"CONTENT_SENTINEL"
             csv_path.write_bytes(content)
             for index in range(117): (raw/f"{index:03d}.json").write_bytes(content)
-            legacy=root/"legacy.json"; legacy.write_text(json.dumps(commit_inputs.commit(csv_path,raw)),encoding="utf-8")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
             reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
             stdout=io.StringIO()
             with contextlib.redirect_stdout(stdout): self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out_path),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
@@ -360,7 +367,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=Path.cwd(), prefix="SOURCE_PATH_SENTINEL") as td:
             root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"source.csv"; csv_path.write_bytes(b"CONTENT_SENTINEL")
             for index in range(117): (raw/f"{index:03d}.json").write_bytes(b"CONTENT_SENTINEL")
-            legacy=root/"legacy.json"; legacy.write_text(json.dumps(commit_inputs.commit(csv_path,raw)),encoding="utf-8")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
             reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
             out=root/"out"; self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
             data=json.loads(out.read_text()); p=data["provenance"]
@@ -385,7 +392,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
             root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
             for index in range(117): (raw/f"{index:03d}.json").write_bytes(b"x")
-            legacy=root/"legacy.json"; legacy.write_text(json.dumps(commit_inputs.commit(csv_path,raw)),encoding="utf-8")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
             reviewed="a"*40
             for number, mutate in enumerate((lambda receipt: receipt.update({"extra":True}), lambda receipt: receipt["safety_targets"][0].update({"sha256":"0"*64}))):
                 receipt_data=full_safety_receipt(reviewed); mutate(receipt_data); receipt=root/f"receipt-{number}.json"; out=root/f"out-{number}.json"; receipt.write_text(json.dumps(receipt_data),encoding="utf-8")
@@ -405,7 +412,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
             root=Path(td); raw=root/"synthetic-raw"; raw.mkdir(); csv_path=root/"synthetic.csv"; csv_path.write_bytes(b"x")
             for index in range(117): (raw/f"{index:03d}.json").write_bytes(b"x")
-            legacy=root/"legacy.json"; legacy.write_text(json.dumps(commit_inputs.commit(csv_path,raw)),encoding="utf-8")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
             reviewed="a"*40
             evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
             cases=[]
@@ -496,7 +503,7 @@ class DeterministicSyntheticTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
             root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"id\n")
             for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
-            legacy=root/"legacy.json"; legacy.write_text(json.dumps(commit_inputs.commit(csv_path,raw)),encoding="utf-8")
+            legacy=root/"legacy.json"; legacy.write_text(json.dumps(historical_legacy_reference(csv_path,raw)),encoding="utf-8")
             reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
             produced=root/"produced.json"
             self.assertEqual(commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(produced),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),0)
@@ -564,13 +571,24 @@ class DeterministicSyntheticTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
             root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
             for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
-            legacy_data=commit_inputs.commit(csv_path,raw); legacy_data["raw_files"][0]["path"]="nested/bad.json"; legacy=root/"legacy.json"; legacy.write_text(json.dumps(legacy_data),encoding="utf-8")
+            legacy_data=historical_legacy_reference(csv_path,raw); legacy_data["raw_files"][0]["path"]="nested/bad.json"; legacy=root/"legacy.json"; legacy.write_text(json.dumps(legacy_data),encoding="utf-8")
             reviewed="a"*40; receipt=root/"receipt.json"; receipt.write_text(json.dumps(full_safety_receipt(reviewed)),encoding="utf-8")
             evidence={"status":"REDACTION_SELF_TEST_PASS","sentinel_match_count":0,"fixture_sha256":"a"*64,"sentinel_sha256":"b"*64,"success":{"exit_status":0,"stdout_sha256":"c"*64,"stderr_sha256":"d"*64},"error":{"exit_status":1,"stdout_sha256":"e"*64,"stderr_sha256":"f"*64}}
             with mock.patch("experiments.v2_4_deterministic.commit_inputs._redaction_self_test",return_value=evidence), \
                  mock.patch("experiments.v2_4_deterministic.commit_inputs._commit_core",side_effect=AssertionError("input opened")) as opened:
                 self.assertEqual(commit_inputs.main(["--csv",str(root/"NO_OPEN.csv"),"--raw-dir",str(root/"NO_OPEN.raw"),"--out",str(root/"out"),"--reviewed-i0",reviewed,"--safety-receipt",str(receipt),"--legacy-reference",str(legacy)]),1)
                 self.assertEqual(opened.call_count,0)
+
+    def test_65_historical_legacy_csv_shape_is_the_only_accepted_legacy_shape(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"input.csv"; csv_path.write_bytes(b"x")
+            for number in range(117): (raw/f"raw-{number:03d}.json").write_bytes(b"x")
+            historical=historical_legacy_reference(csv_path,raw); path=root/"legacy.json"; path.write_text(json.dumps(historical),encoding="utf-8")
+            self.assertEqual(commit_inputs._parse_legacy_reference(path)["csv"]["path"],"historical-input.csv")
+            active=commit_inputs.commit(csv_path,raw); path.write_text(json.dumps(active),encoding="utf-8")
+            with self.assertRaises(ValueError): commit_inputs._parse_legacy_reference(path)
+            malformed=historical_legacy_reference(csv_path,raw); malformed["csv"]["extra"]=True; path.write_text(json.dumps(malformed),encoding="utf-8")
+            with self.assertRaises(ValueError): commit_inputs._parse_legacy_reference(path)
 
 
 if __name__ == "__main__":
