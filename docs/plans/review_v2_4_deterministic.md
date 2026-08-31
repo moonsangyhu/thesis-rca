@@ -1201,3 +1201,180 @@ Revision 7에서 다음은 모두 Revision 6와 동일하다.
 
 다음 checkpoint는 plan대로 active commitment path가 없는 code-only `I0`를 봉인하고, candidate
 source가 mount/전달되지 않은 fresh safety review에서 exact tool PASS receipt를 먼저 얻는 것이다.
+
+---
+
+## 18. Revision 8 methodology 재검토
+
+> 재검토일: 2026-09-01
+>
+> 검토 plan: `experiment_plan_v2_4_deterministic.md` revision 8
+>
+> 검토 plan SHA-256:
+> `3a9c7586f51bc7444ea432a933bd149f31e4f06f47d3a5383fb561407e2870f1`
+>
+> 독립성 재선언: Revision 8 재검토에서도 candidate output JSON/CSV의
+> `identified_fault_type`, `root_cause`, `remediation` 본문을 열거나 검색하거나 출력하지
+> 않았고 V2.4-D scorer를 실행하지 않았다. 이 review 파일 자신의 SHA-256는 내부에 기록하지
+> 않는다.
+
+### 18.1 결론
+
+**Revision 8 methodology 승인 권고 — P0 PASS 12 / FAIL 0.**
+
+Revision 8은 Revision 7 full implementation review가 찾은 producer/consumer, runtime ontology,
+unresolved negation, raw enumeration과 machine-parse evidence 계약의 결함을 outcome semantics 변경
+없이 보완했다. `NON_INFORMATIVE_MACHINE_PARSE_DEVIATION` waiver는 pristine process-access-zero
+주장을 복구하지는 못하지만, 제한된 lexical confirmatory status에 붙는 **공개된 방법론 편차**로는
+과학적으로 수용 가능하다. 아래 조건을 만족하지 못하면 waiver가 아니라 전체 run `INVALID`다.
+
+### 18.2 Canonical producer→runner commitment schema — PASS
+
+Plan은 producer와 runner가 공유하는 단일 exact shape를 고정했다.
+
+- Top-level은 `raw_files, raw_count, csv, entry_manifest_sha256, commitment_sha256, provenance`
+  여섯 key만 허용한다.
+- `raw_files[]`는 exact `{path,size,sha256}`, CSV는 exact `{id_sha256,size,sha256}`다.
+- `entry_manifest_sha256`는 canonical raw array, `commitment_sha256`는 자신과 provenance를 제외한
+  canonical top-level object의 digest다.
+- Provenance exact key/type/const, `reviewed_i0`, safety receipt와 top-level digest equality를
+  강제한다.
+- `_commit_core()`/real CLI와 repository/preflight/commitment gate가 **동일 validator를 import**해
+  사용한다. Adapter, legacy normalization, `csv.path`, `reviewed_code_candidate` alias를 금지한다.
+- Producer output key set과 runner accepted key set을 direct equality로 검증하고 실제 synthetic
+  producer envelope을 shape 변환 없이 runner preflight에 전달하는 test 38이 있다.
+
+따라서 Revision 7에서 actual producer commitment가 runner에서 필연적으로 INVALID였던 세 schema
+불일치는 계약 수준에서 닫혔다.
+
+### 18.3 Runtime ontology exact contract — PASS
+
+Builder와 runtime `scorer.load_ontology()`가 동일 `validate_ontology_exact()`와
+duplicate-rejecting loader를 반드시 호출한다. Runtime에서 다음을 모두 exact 강제한다.
+
+- version/normalization/token predicates/negation syntax와 배열 순서,
+- exact 12 incident identity·fault/trial·order,
+- path/group/matcher 수와 §6.2 inventory,
+- F1 `M_MEMORY_LIMIT` 3 aliases와 3 atoms/11 aliases,
+- duplicate/add/remove/reorder mutation 거부.
+
+Builder PASS나 approved file hash가 runtime validation을 대신할 수 없고 fallback/partial validation을
+금지했다. Test 39가 runtime loader 자체에 result-changing mutation을 주입한다. Ontology acceptance
+set은 Revision 7과 동일하며 enforcement만 강화됐다.
+
+### 18.4 Unresolved negation — PASS
+
+Runtime classifier는 각 grammar가 소비한 marker/concept/connector span exact set을 반환하고,
+concept-associated negation marker 전체에서 consumed set을 뺀 remainder를 clause 단위로 검사한다.
+Prefix-only 검사나 ontology marker 무시는 금지된다.
+
+`memory limit is not generally relevant`는 `memory limit`과 unresolved `not`이 같은 clause에 남으므로
+positive match가 아니라 `INVALID_UNSUPPORTED_NEGATION`이다. Test 40이 runtime scorer path에서
+invalid status, positive path 미생성, consumed/remainder trace를 직접 assertion한다. Finite grammar
+의미는 바뀌지 않고 Revision 7 fail-open 구현만 닫혔다.
+
+### 18.5 Raw enumeration — PASS
+
+Runner는 descriptor-anchored `listdir/scandir(fd)`로 모든 direct entry를 먼저 열거한다. 117 direct
+regular JSON 외 extra/nested directory, nested JSON, non-JSON regular, hidden file, symlink, socket,
+FIFO, device를 모두 INVALID 처리한다. `rglob("*.json")`/suffix-filter로 unexpected entry를 숨기는
+경로를 금지했고 test 41이 각 entry type을 공격한다. 이후 no-follow/fstat/pre-post hash/lstat와
+approved manifest equality도 유지된다.
+
+### 18.6 Machine-parse waiver와 `NOT_RETAINED` — PASS with mandatory disclosure
+
+#### 관찰한 한계
+
+2026-08-31 generic `tests.test_v2_4_audit`가 candidate JSON을 machine-only parse했다.
+`process_access_zero=false`다. Original stdout/stderr streams, exact execution commit과 clean tree는
+보존되지 않았으므로 완전한 독립 재현이나 cryptographic non-egress proof는 불가능하다.
+`NOT_RETAINED`는 이 결손을 정직하게 나타낼 뿐 digest가 아니다.
+
+#### Confirmatory 유지가 제한적으로 가능한 이유
+
+Confirmatory lexical outcome의 직접적 오염 경로는 candidate 표현/score가 ontology·alias·metric·
+threshold/status 결정자에게 전달돼 사후 적합화되는 것이다. Revision 8은 다음을 별도로 고정한다.
+
+1. `text_egress=false`: candidate value/score의 human·agent 전달이 없었다는 operator attestation과
+   historical evidence snapshot.
+2. `v2_4_d_execution=false`: V2.4-D scorer/ontology/score가 실행되지 않았다.
+3. `output_derived_tuning=false`: observed output에 근거한 ontology/alias/metric/threshold/status
+   변경이 없었다.
+4. Exact command/date, best-known HEAD `c9c94b4`, dirty state, 28 PASS와 세 evidence-source hash를
+   immutable snapshot으로 기록한다.
+5. Approval이 missing streams, dirty/best-known identity와 waiver를 명시적으로 인지해야 한다.
+
+즉, process access 자체는 인정하되 outcome-adaptation으로 이어지는 세 정보 경로가 차단됐다는
+제한된 causal claim이다. Protocol amendment는 candidate score/본문을 사람·agent가 보지 않은 상태에서
+이뤄졌고 JLC-D 정의를 바꾸지 않았다. 그러므로 status
+`CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION`은 수용 가능하다.
+
+#### 허용되지 않는 과장
+
+- 이를 “candidate 접근 0”, “완전한 blinding”, “재현 검증된 non-egress”라고 표현하면 안 된다.
+- User waiver는 missing stream을 복원하거나 epistemic uncertainty를 제거하지 않는다.
+- 논문/analysis에는 `NOT_RETAINED`, best-known dirty state, attestation 기반이라는 제한을 본문에
+  공개해야 한다.
+- Evidence hash 불일치, text/score egress, V2.4-D execution, output-derived tuning의 반증이 하나라도
+  나오면 confirmatory waiver는 즉시 무효이고 run 전체 `INVALID`다.
+
+이 조건부 confirmatory status는 §11의 primary result status와 별도 methodology disposition이다.
+`SUPPORTED`와 합성하거나 일반적 RCA 개선 주장으로 확대할 수 없다. 더 엄격한 독자는 이 편차를
+exploratory 근거로 해석할 수 있음을 limitation에 인정해야 하지만, 현재 evidence만으로 강제
+`EXPLORATORY_ONLY`로 낮춰야 할 정보성 노출 증거는 없다.
+
+### 18.7 A/A chain — PASS
+
+Revision 7의 chain은 유지된다.
+
+```text
+I0: active commitment/deviation path absent
+I1^ == I0
+I0..I1:
+  A  docs/plans/input_commitment_v2_4_deterministic.json
+  A  docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json
+I1→B: implementation review modification only
+B→A: approval addition only
+```
+
+Revision 8 implementation code/plan/review는 I0에서 고정되고 I0→I1에서 변할 수 없다. New commitment와
+waiver record만 I1에서 추가되며 full review/approval/preflight target map에 포함된다.
+
+### 18.8 Outcome semantic 불변 — PASS
+
+- `JLC-D = CM ∧ FLM ∧ MCA`, 12-pair RAG 대 length-placebo primary 동일.
+- CM/FLM/MCA/RA ontology와 alias, DNF, contradiction, negation grammar 동일.
+- Exact one-sided McNemar, CP/bootstrap, secondary inference 0 동일.
+- Missingness, schema, language, replay, status/warning rule 동일.
+
+Revision 8은 validator, bridge, enumeration, evidence schema와 tests를 강화했을 뿐 outcome acceptance
+set이나 성공 임계값을 바꾸지 않았다.
+
+### 18.9 P0 gate 표
+
+| P0 gate | Revision 8 판정 | 근거 |
+|---|---|---|
+| candidate body 비열람 review | PASS | 본문 접근·검색·출력/scorer 실행 0 |
+| producer/runner canonical schema | PASS | single shared validator, direct bridge |
+| commitment provenance exactness | PASS | exact keys/types/digests/reviewed_i0 |
+| runtime ontology exact validator | PASS | builder/scorer same validator+mutation tests |
+| unresolved negation fail-close | PASS | consumed-span remainder runtime assertion |
+| raw direct-entry enumeration | PASS | descriptor enumeration, all unexpected entries reject |
+| machine-parse deviation disclosure | PASS | process access false claim 금지, exact waiver schema |
+| `NOT_RETAINED` scientific handling | PASS | missing evidence를 발명하지 않고 mandatory limitation |
+| confirmatory anti-overfitting integrity | PASS 조건부 | non-egress/non-execution/non-tuning evidence 유지 시만 |
+| A/A freeze chain | PASS | I0 absence, I1 two additions, code immutable |
+| outcome semantic invariance | PASS | ontology/statistics/status threshold 변화 0 |
+| test adequacy contract | PASS | direct tests 38~42가 prior counterexamples 포함 |
+
+**합계: PASS 12 / FAIL 0.** 조건부 evidence가 full implementation review/approval에서 충족되지
+않으면 그 단계와 run은 FAIL이며 confirmatory waiver는 없다.
+
+### 18.10 최종 판정
+
+**Revision 8 methodology를 승인하도록 권고한다.**
+
+다음 checkpoint는 candidate-unmounted 상태에서 Revision 8 code-only `I0`를 봉인하고 fresh safety
+review를 수행하는 것이다. 그 뒤 exact reviewed I0 tool로만 I1 commitment/waiver record를 만들고,
+fresh full implementation review가 actual direct bridge·runtime counterexamples·historical waiver
+evidence를 모두 검증해야 한다.
