@@ -3,6 +3,7 @@ import csv
 import hashlib
 import io
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -123,6 +124,10 @@ class DeterministicSyntheticTests(unittest.TestCase):
                 payload = synthetic_candidate(ontology, incident) if incident in run.SELECTED else {"identified_fault_type": "x", "root_cause": "x", "remediation": ["x"]}
                 (raw_dir / f"raw-{number:03d}.json").write_text(json.dumps({"fault_id": fault, "trial": trial, "context_condition": condition, "representative_output": payload}), encoding="utf-8")
         commitment = root / "commitment.json"; commit_inputs.main(["--csv", str(csv_path), "--raw-dir", str(raw_dir), "--out", str(commitment)])
+        # Legacy runner fixture adapter only; the reviewed commitment producer
+        # intentionally never emits a source basename/path.
+        envelope = json.loads(commitment.read_text(encoding="utf-8")); envelope.pop("entry_manifest_sha256", None); envelope["csv"].pop("id_sha256", None); envelope["csv"]["path"] = csv_path.name
+        commitment.write_text(json.dumps(envelope, sort_keys=True, separators=(",", ":")), encoding="utf-8")
         ground_truth = root / "ground_truth.csv"
         with ground_truth.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=["fault_id", "trial", "fault_name", "target_service", "expected_root_cause", "expected_recovery_action"]); writer.writeheader()
@@ -265,6 +270,29 @@ class DeterministicSyntheticTests(unittest.TestCase):
                         approved_bundle="2" * 40, execution_commit="3" * 40,
                     )
             self.assertFalse(sentinel.exists())
+
+    def test_42_commitment_provenance_redacts_path_and_content_sentinels(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd(), prefix="PATH_SENTINEL") as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); csv_path=root/"PATH_SENTINEL.csv"; out_path=root/"PATH_SENTINEL.commitment"; content=b"CONTENT_SENTINEL"
+            csv_path.write_bytes(content)
+            for index in range(117): (raw/f"{index:03d}.json").write_bytes(content)
+            stdout=io.StringIO()
+            with contextlib.redirect_stdout(stdout): commit_inputs.main(["--csv",str(csv_path),"--raw-dir",str(raw),"--out",str(out_path)])
+            rendered=out_path.read_text(encoding="utf-8")+stdout.getvalue()
+            self.assertNotIn("PATH_SENTINEL", rendered); self.assertNotIn("CONTENT_SENTINEL", rendered)
+            self.assertTrue(all(value.startswith("sha256:") for value in json.loads(out_path.read_text())["provenance"]["argv"][1::2]))
+
+    def test_43_ancestor_exchange_after_fd_anchor_fails_closed(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as td:
+            root=Path(td); raw=root/"raw"; raw.mkdir(); bad=root/"bad"; bad.mkdir(); csv_path=root/"csv"; csv_path.write_bytes(b"x")
+            for index in range(117): (raw/f"{index:03d}.json").write_bytes(b"x")
+            original=os.listdir
+            def exchange(fd):
+                values=original(fd)
+                raw.rename(root/"raw-original"); raw.symlink_to(bad, target_is_directory=True)
+                return values
+            with mock.patch("experiments.v2_4_deterministic.commit_inputs.os.listdir", side_effect=exchange):
+                with self.assertRaises((ValueError, OSError)): commit_inputs.commit(csv_path, raw)
 
 
 if __name__ == "__main__":
