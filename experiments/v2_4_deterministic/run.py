@@ -41,8 +41,14 @@ APPROVAL_DOCUMENT = "docs/plans/approval_v2_4_deterministic.md"
 COMMITMENT_DOCUMENT = "docs/plans/input_commitment_v2_4_deterministic.json"
 DEVIATION_DOCUMENT = "docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json"
 HISTORICAL_DEVIATION_EVIDENCE = {
-    "changelog": "results/experiment_changes_v2_4.md",
-    "full_implementation_review": "docs/plans/review_v2_4_deterministic_implementation.md",
+    "changelog": {
+        "path": "results/experiment_changes_v2_4.md",
+        "sha256": "9745dd382a8ef2f7ee120a46e30b09f4efc7948daab0b50583af3c79487bc6ba",
+    },
+    "full_implementation_review": {
+        "path": "docs/plans/review_v2_4_deterministic_implementation.md",
+        "sha256": "5bceb156ab751e1952b9b90fbd8a4412bd7e1e93d1c595d785bb72391c889e67",
+    },
 }
 I0_SAFETY_SCOPE = (
     "experiments/v2_4_deterministic/ontology_v1.json",
@@ -355,11 +361,13 @@ def _verified_external_file(root: Path, value: dict, *, expected_path: str | Non
     return data
 
 
-def _verify_historical_evidence_blob(root: Path, name: str, source: dict) -> None:
+def _verify_historical_evidence_blob(root: Path, name: str, source: dict, expected_records: dict | None = None) -> None:
     """Match one fixed historical blob reachable from local HEAD ancestry."""
-    if name not in HISTORICAL_DEVIATION_EVIDENCE or not isinstance(source,dict) or set(source)!={"path","sha256"} or source.get("path")!=HISTORICAL_DEVIATION_EVIDENCE[name] or not _HEX64.fullmatch(source.get("sha256", "")):
+    expected_records=HISTORICAL_DEVIATION_EVIDENCE if expected_records is None else expected_records
+    expected=expected_records.get(name) if isinstance(expected_records,dict) else None
+    if not isinstance(expected,dict) or set(expected)!={"path","sha256"} or not isinstance(expected.get("path"),str) or not _HEX64.fullmatch(expected.get("sha256", "")) or not isinstance(source,dict) or source != expected:
         raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
-    path=source["path"]
+    path=expected["path"]
     try:
         history=subprocess.run(["git","-C",str(root),"log","--format=%H","HEAD","--",path],check=True,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,encoding="utf-8").stdout.splitlines()
     except (OSError,subprocess.CalledProcessError) as exc:
@@ -371,13 +379,13 @@ def _verify_historical_evidence_blob(root: Path, name: str, source: dict) -> Non
             payload=subprocess.run(["git","-C",str(root),"cat-file","blob",blob],check=True,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL).stdout
         except (OSError,subprocess.CalledProcessError):
             continue
-        if _sha256_bytes(payload)==source["sha256"]:
+        if _sha256_bytes(payload)==expected["sha256"]:
             matches.add(blob)
     if len(matches)!=1:
         raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
 
 
-def _validate_deviation(value: object, root: Path) -> dict:
+def _validate_deviation(value: object, root: Path, historical_evidence: dict | None = None) -> dict:
     """Exact Rev8 non-informative parse waiver; no candidate input is opened."""
     required={"schema_version","status","confirmatory_disposition","event_date","observed_command","best_known_head","working_tree_state","observed_test_result","original_stdout_sha256","original_stderr_sha256","process_access_zero","text_egress","v2_4_d_execution","output_derived_tuning","approval_waiver_required","evidence_sources"}
     if not isinstance(value,dict) or set(value)!=required or value.get("schema_version")!="v2.4-d-machine-parse-deviation-1" or value.get("status")!="NON_INFORMATIVE_MACHINE_PARSE_DEVIATION" or value.get("confirmatory_disposition")!="CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION" or value.get("event_date")!="2026-08-31" or value.get("observed_command")!="python3.11 -m unittest -v tests.test_v2_4_audit" or value.get("best_known_head")!="c9c94b4" or value.get("working_tree_state")!="UNCOMMITTED_IMPLEMENTATION_PRESENT" or value.get("observed_test_result")!="28_PASS" or value.get("original_stdout_sha256")!="NOT_RETAINED" or value.get("original_stderr_sha256")!="NOT_RETAINED" or value.get("process_access_zero") is not False or value.get("text_egress") is not False or value.get("v2_4_d_execution") is not False or value.get("output_derived_tuning") is not False or value.get("approval_waiver_required") is not True:
@@ -387,7 +395,7 @@ def _validate_deviation(value: object, root: Path) -> dict:
     if not isinstance(sources,dict) or set(sources)!=expected: raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
     for name in ("changelog","full_implementation_review"):
         source=sources[name]
-        _verify_historical_evidence_blob(root,name,source)
+        _verify_historical_evidence_blob(root,name,source,historical_evidence)
     attestation=sources["conversation_derived_attestation"]
     if not isinstance(attestation,dict) or set(attestation)!={"canonical_text","sha256"} or not isinstance(attestation["canonical_text"],str) or not _HEX64.fullmatch(attestation.get("sha256","")) or _sha256_bytes(attestation["canonical_text"].encode())!=attestation["sha256"]:
         raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
