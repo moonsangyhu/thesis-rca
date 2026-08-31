@@ -125,3 +125,12 @@
 - **수정 내용**: safety reviewer가 receipt 생성을 거부하고 두 P0를 기록했다. commitment tool은 lexical directory를 fd chain/openat `O_DIRECTORY|O_NOFOLLOW`로 고정하고 final entry도 relative no-follow open·fstat·pre/post rehash로 검증하도록 변경했다. provenance는 option과 SHA-256 identifier만 저장하며 path/basename을 제거했고, content/path/error sentinel을 쓰는 executable redaction self-test가 매 commitment 전에 성공해야만 출력하도록 했다. ancestor 교체 fixture와 path sentinel test를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 I0 safety review 대기 — isolated 43 tests PASS, redaction self-test PASS, 실제 candidate source 접근 0, 이전 I0 receipt 0.
+
+### 15. V2.4-D 두 번째 I0 safety review의 error-path/provenance 보완 — 2026-09-01
+
+- **수정 에이전트**: second fresh @i0-safety-reviewer, @implementation-worker, @Codex
+- **증상/문제**: descriptor-anchor 보완 후에도 missing path sentinel이 Python traceback stderr로 노출됐고, redaction self-test가 같은 CLI error wrapper를 검증하지 않아 PASS 상수와 required I0/receipt provenance가 불충분했다.
+- **원인**: expected filesystem exception을 CLI 경계에서 고정 오류로 변환하지 않았으며, real commitment 명령에 reviewed I0·external receipt·legacy source map identity를 전달하고 검증할 contract가 없었다.
+- **수정 내용**: CLI expected error를 path-free `COMMITMENT_FAILED` 하나로 변환하고, 동일 success/error wrapper를 content/path/error sentinel로 실행한 evidence가 없으면 출력하지 않도록 했다. real mode에 reviewed I0, safety receipt, legacy reference를 필수화하고 receipt PASS/I0/tool blob 및 legacy CSV/raw identity exact 비교를 구현했다. provenance에 redacted argv, tool/interpreter/fd source identity, self-test evidence, receipt/legacy result를 포함했다.
+- **수정 파일**: `experiments/v2_4_deterministic/commit_inputs.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
+- **상태**: 새 code-only I0 commit 대기 — isolated 45 tests PASS, executable redaction PASS, actual candidate source 접근 0, 두 이전 safety receipt 0.
