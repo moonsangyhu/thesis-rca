@@ -25,9 +25,9 @@ if __package__ in {None, ""}:
     if not (_REPO / "AGENTS.md").is_file() or not (_REPO / ".git").exists() or any(parent.is_symlink() for parent in (_REPO, *_REPO.parents)):
         raise RuntimeError("UNTRUSTED_REPO_BOOTSTRAP")
     sys.path.insert(0, str(_REPO))
-    from experiments.v2_4_deterministic import analyze, scorer
+    from experiments.v2_4_deterministic import analyze, commit_inputs, scorer
 else:
-    from . import analyze, scorer
+    from . import analyze, commit_inputs, scorer
 
 
 CONDITIONS = analyze.CONDITIONS
@@ -149,17 +149,24 @@ def _open_verified(path: Path, expected: dict | None = None) -> tuple[bytes, dic
 
 
 def safe_metadata(root: Path):
-    root = Path(root)
-    _check_ancestors(root)
-    if not root.is_dir():
-        raise RunInvalid("UNSAFE_RAW")
-    items = []
-    for path in sorted(root.rglob("*.json")):
-        relative = path.relative_to(root).as_posix()
-        _safe_relative(relative)
-        _, item = _open_verified(path)
-        items.append((relative, item["size"], item["sha256"]))
-    return items
+    """Enumerate *every* direct entry through an anchored directory fd."""
+    try:
+        fd, info, lexical = commit_inputs._open_dir_chain(Path(root))
+        try:
+            names=sorted(os.listdir(fd))
+            if len(names)!=117: raise RunInvalid("UNSAFE_RAW")
+            items=[]
+            for name in names:
+                if name.startswith(".") or not name.endswith(".json"): raise RunInvalid("UNSAFE_RAW")
+                size, digest, _ = commit_inputs._digest_at(fd,name)
+                items.append((name,size,digest))
+            current=os.stat(lexical,follow_symlinks=False)
+            if (current.st_dev,current.st_ino)!=(info.st_dev,info.st_ino): raise RunInvalid("TOCTOU")
+            return items
+        finally:
+            os.close(fd)
+    except (OSError,ValueError) as exc:
+        raise RunInvalid("UNSAFE_RAW") from exc
 
 
 def _load_json_metadata(path: Path) -> dict:
@@ -240,9 +247,11 @@ def _strict_approval_gate(path: Path) -> dict:
         "implementation_candidate", "code_candidate", "semantic_review",
         "safety_receipt", "implementation_review", "i0_safety_scope",
         "i1_targets", "commitment", "ground_truth", "interpreter", "deviation",
-        "execution_authorization",
+        "execution_authorization", "methodology_waiver_acknowledged",
     }
     if set(approval) != required or approval.get("approval_version") != "v2.4-d-approval-2" or approval.get("approval") != "APPROVED":
+        raise RunInvalid("APPROVAL_SCHEMA")
+    if approval["methodology_waiver_acknowledged"] is not True:
         raise RunInvalid("APPROVAL_SCHEMA")
     for name in ("execution_commit", "approved_bundle", "implementation_candidate", "code_candidate"):
         if not isinstance(approval[name], str) or not _HEX40.fullmatch(approval[name]):
@@ -342,6 +351,28 @@ def _verified_external_file(root: Path, value: dict, *, expected_path: str | Non
     return data
 
 
+def _validate_deviation(value: object, root: Path) -> dict:
+    """Exact Rev8 non-informative parse waiver; no candidate input is opened."""
+    required={"schema_version","status","confirmatory_disposition","event_date","observed_command","best_known_head","working_tree_state","observed_test_result","original_stdout_sha256","original_stderr_sha256","process_access_zero","text_egress","v2_4_d_execution","output_derived_tuning","approval_waiver_required","evidence_sources"}
+    if not isinstance(value,dict) or set(value)!=required or value.get("schema_version")!="v2.4-d-machine-parse-deviation-1" or value.get("status")!="NON_INFORMATIVE_MACHINE_PARSE_DEVIATION" or value.get("confirmatory_disposition")!="CONFIRMATORY_WITH_DISCLOSED_NONINFORMATIVE_MACHINE_PARSE_DEVIATION" or value.get("event_date")!="2026-08-31" or value.get("observed_command")!="python3.11 -m unittest -v tests.test_v2_4_audit" or value.get("best_known_head")!="c9c94b4" or value.get("working_tree_state")!="UNCOMMITTED_IMPLEMENTATION_PRESENT" or value.get("observed_test_result")!="28_PASS" or value.get("original_stdout_sha256")!="NOT_RETAINED" or value.get("original_stderr_sha256")!="NOT_RETAINED" or value.get("process_access_zero") is not False or value.get("text_egress") is not False or value.get("v2_4_d_execution") is not False or value.get("output_derived_tuning") is not False or value.get("approval_waiver_required") is not True:
+        raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
+    sources=value["evidence_sources"]
+    expected={"changelog","full_implementation_review","conversation_derived_attestation"}
+    if not isinstance(sources,dict) or set(sources)!=expected: raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
+    for name in ("changelog","full_implementation_review"):
+        source=sources[name]
+        if not isinstance(source,dict) or set(source)!={"path","sha256"} or not isinstance(source["path"],str) or not _HEX64.fullmatch(source.get("sha256","")):
+            raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
+        path=root/_safe_relative(source["path"])
+        try: payload=path.read_bytes()
+        except OSError as exc: raise RunInvalid("DEVIATION_PROVENANCE_INVALID") from exc
+        if _sha256_bytes(payload)!=source["sha256"]: raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
+    attestation=sources["conversation_derived_attestation"]
+    if not isinstance(attestation,dict) or set(attestation)!={"canonical_text","sha256"} or not isinstance(attestation["canonical_text"],str) or not _HEX64.fullmatch(attestation.get("sha256","")) or _sha256_bytes(attestation["canonical_text"].encode())!=attestation["sha256"]:
+        raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
+    return value
+
+
 def _repository_gate(*, approval_path: Path, code_candidate: str, implementation_candidate: str, approved_bundle: str, execution_commit: str) -> tuple[dict, dict]:
     """Validate all git/provenance identities before *any* candidate path operation."""
     root = _repo_root()
@@ -397,9 +428,7 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
         deviation = json.loads(deviation_bytes.decode("utf-8", "strict"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RunInvalid("DEVIATION_PROVENANCE_INVALID") from exc
-    evidence = deviation.get("evidence") if isinstance(deviation, dict) else None
-    if deviation.get("status") != "NON_INFORMATIVE_MACHINE_PARSE_DEVIATION" or deviation.get("process_access_zero") is True or not isinstance(evidence, dict) or set(evidence) != {"command", "no_text_egress", "no_v2_4_d_execution", "no_observed_output_derived_change"} or any(not isinstance(item, str) or not _HEX64.fullmatch(item) for item in evidence.values()):
-        raise RunInvalid("DEVIATION_PROVENANCE_INVALID")
+    _validate_deviation(deviation, root)
     authorization = approval["execution_authorization"]
     if authorization["execution_commit"] != execution_commit:
         raise RunInvalid("EXECUTION_AUTHORIZATION_MISMATCH")
@@ -415,10 +444,12 @@ def _repository_gate(*, approval_path: Path, code_candidate: str, implementation
     return approval, {"repository_root": str(root), "approval_sha256": _sha256_bytes(Path(approval_path).read_bytes())}
 
 
-def _commitment_gate(commitment_path: Path, raw_dir: Path, csv_path: Path) -> tuple[dict, list[tuple[str, int, str]], str]:
+def _commitment_gate(commitment_path: Path, raw_dir: Path, csv_path: Path, *, synthetic: bool = False) -> tuple[dict, list[tuple[str, int, str]], str]:
     commitment = _load_json_metadata(commitment_path)
-    if set(commitment) - {"raw_files", "raw_count", "csv", "commitment_sha256", "provenance"} or not isinstance(commitment.get("raw_files"), list) or commitment.get("raw_count") != 117 or not isinstance(commitment.get("csv"), dict):
-        raise RunInvalid("INPUT_COMMITMENT_MISMATCH")
+    try:
+        commit_inputs.validate_commitment_schema(commitment, require_provenance=not synthetic)
+    except ValueError as exc:
+        raise RunInvalid("INPUT_COMMITMENT_MISMATCH") from exc
     expected = []
     for item in commitment["raw_files"]:
         if set(item) != {"path", "size", "sha256"} or not isinstance(item["size"], int) or not isinstance(item["sha256"], str):
@@ -431,14 +462,14 @@ def _commitment_gate(commitment_path: Path, raw_dir: Path, csv_path: Path) -> tu
         raise RunInvalid("RAW_COMMITMENT_MISMATCH")
     csv_meta = commitment["csv"]
     _, actual_csv = _open_verified(csv_path)
-    if set(csv_meta) != {"path", "size", "sha256"} or csv_meta["path"] != csv_path.name or actual_csv["sha256"] != csv_meta["sha256"] or actual_csv["size"] != csv_meta["size"]:
+    if actual_csv["sha256"] != csv_meta["sha256"] or actual_csv["size"] != csv_meta["size"] or csv_meta["id_sha256"] != hashlib.sha256(csv_path.name.encode()).hexdigest():
         raise RunInvalid("INPUT_COMMITMENT_MISMATCH")
     manifest_sha = hashlib.sha256(_canonical([{ "path": path, "size": size, "sha256": digest} for path, size, digest in actual])).hexdigest()
     return commitment, actual, manifest_sha
 
 
 def dry_run(commitment, raw_dir, csv_path):
-    _, entries, _ = _commitment_gate(Path(commitment), Path(raw_dir), Path(csv_path))
+    _, entries, _ = _commitment_gate(Path(commitment), Path(raw_dir), Path(csv_path), synthetic=True)
     return {"status": "PREFLIGHT_PASS", "candidate_text_opened": False, "raw_count": len(entries)}
 
 
@@ -587,7 +618,7 @@ def run_campaign(*, approval: Path, commitment: Path, raw_dir: Path, csv_path: P
         raise RunInvalid("GROUND_TRUTH_COMMITMENT_MISMATCH")
     if approved_override is None:
         _approval_identity_gate(approved, commitment=commitment, ontology=ontology, ground_truth_sha256=gt_hash, projection_sha256=projection)
-    _, entries, raw_manifest_sha = _commitment_gate(commitment, raw_dir, csv_path)
+    _, entries, raw_manifest_sha = _commitment_gate(commitment, raw_dir, csv_path, synthetic=synthetic)
     csv_bytes, _ = _open_verified(csv_path)
     csv_rows = _csv_identity(csv_bytes)
     scorer.load_ontology(ontology)

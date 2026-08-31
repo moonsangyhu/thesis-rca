@@ -10,13 +10,14 @@ if __package__ in {None, ""}:
     if not (_REPO / "AGENTS.md").is_file() or not (_REPO / ".git").exists() or any(parent.is_symlink() for parent in (_REPO, *_REPO.parents)):
         raise RuntimeError("UNTRUSTED_REPO_BOOTSTRAP")
     sys.path.insert(0, str(_REPO))
-    from experiments.v2_4_deterministic.scorer import InvalidInput, load_ontology
+    from experiments.v2_4_deterministic.scorer import InvalidInput, load_ontology, validate_ontology_exact
 else:
-    from .scorer import InvalidInput, load_ontology
+    from .scorer import InvalidInput, load_ontology, validate_ontology_exact
 
 
 def check(path: Path) -> dict:
     ontology = load_ontology(path)
+    validate_ontology_exact(ontology)
     return {"status": "ONTOLOGY_CHECK_PASS", "ontology_version": ontology["ontology_version"], "incident_count": len(ontology["incidents"])}
 
 
