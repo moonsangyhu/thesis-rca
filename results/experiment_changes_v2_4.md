@@ -350,3 +350,12 @@
 - **수정 내용**: 사전등록 missingness/status 규칙대로 전체를 `primary_status=INVALID`로 유지하고 부분 결과·0 imputation·complete-case 분석을 금지했다. 84-byte body-free receipt를 exact SHA `8281d230…7869`로 durable 보존하고 A/B/I0/I1, input commitment, interpreter, publication absence와 보존되지 않은 transcript를 별도 execution audit에 기록했다. 실제 invocation은 fixed Python `-I`였지만 계획의 `env -i` allowlist를 사용하지 않았고 exact A pre-execution test transcript도 보존되지 않았음을 편차로 공개했다. 사후 canonical `env -i` 검증에서 exact A의 90 tests·ontology·self-test가 모두 PASS했지만 이는 pre-execution 편차를 소급 치유하지 않음을 별도 evidence로 고정했다. Fresh results critic이 통계 전부 NA, 구성·내적·외적·통계 타당성과 대안 가설을 독립 비평했다. 연구 정본·버전 색인을 갱신하고, candidate 비접근 public/synthetic-only V2.4-D2 설계 검토 [GOAL]과 TickTick `ai-continue` task `6a96d03e8f08900e539d8090`을 생성했다.
 - **수정 파일**: `results/analysis_v2_4_deterministic.md`, `results/evidence_v2_4_deterministic/invalid_receipt_8281d230761b981a.json`, `results/evidence_v2_4_deterministic/execution_audit_2ed523e.json`, `results/evidence_v2_4_deterministic/post_invalid_validation_2ed523e.json`, `results/experiment_changes_v2_4.md`, `docs/research-charter.md`, `docs/experiment-versions.md`, `docs/plans/next_experiment_goal_v2_4_d2.md`
 - **상태**: `RUN_INVALID — ROUND_CLOSURE_PENDING` — H-V2.4-D는 지지·반박 불가이며 RD·b/c·p·CI·조건별 rate 보고 금지. 원 V2.4-D는 영구 INVALID로 보존하고 in-place tuning이나 real-input 반복 probe를 하지 않는다. 남은 종결 gate는 검증·commit/push·한국어 PR·사용자 승인 merge다.
+
+### 40. V2.4-D 최종 상태 이슈 tracker 동기화 — 2026-09-01
+
+- **수정 에이전트**: @Codex
+- **증상/문제**: V2.4-D `UNSUPPORTED_NEGATION` INVALID와 최초 실행의 `env -i`/transcript 편차는 독립 분석과 변경 이력에 기록됐지만 V2.4 이슈 tracker에는 기존 human-package 이슈 3건만 남아 있었다.
+- **원인**: INVALID round 종결 시 Step 5·6 산출물과 changelog를 우선 갱신하고 `/experiment-status`가 요구하는 `/experiment-issues` 최종 동기화를 누락했다.
+- **수정 내용**: Effect 판정을 무효화한 finite-negation measurement coverage 실패를 P0 ISS-004로, canonical 환경·실행 transcript 증거 누락을 P1 ISS-005로 append했다. 두 이슈 모두 관찰 사실과 미확정 대안 원인을 분리하고 V2.4-D 영구 INVALID·V2.4-D2 versioned correction 경계를 유지했다.
+- **수정 파일**: `docs/issues/experiment_issues_v2_4.md`, `results/experiment_changes_v2_4.md`
+- **상태**: tracker 동기화 완료 — V2.4 이슈 총 5건(P0 1, warning 4). 새 실험·candidate probe·통계 생성 0.
