@@ -21,13 +21,14 @@
 | **V2.1** (옛 v10) | **Try 2 시작** — 클러스터 재구축 후 re-baseline + V9 Pre-Trial State Validator 탑재 | 34.5% / 43.1% (`≥0.5` 재분석) | `experiments/v2_1/` |
 | **V2.2** | 5-arm 처치 분해 + 길이 placebo + 반복 생성·blinded 다수결 채점·임계 sweep | C1 31.7% / GitOps 36.7% / RAG 65.0% / Both 60.0% / Placebo 36.7% (`≥0.5`) | `experiments/v2_2/` |
 | **V2.3** | 누출 통제 blind procedural RAG vs 길이 placebo; 반복 campaign lifecycle 결함으로 조기 종료 | **판정 불가** — 완결 campaign 0/49 artifact dirs, 최신 4회 14·37·39·30/59 incidents | `experiments/v2_3/` |
+| **V2.4-D** | Primary03 12 incidents의 사전등록 결정론적 lexical concordance; exact freeze/approval 뒤 one-shot hidden scoring | **INVALID** — `UNSUPPORTED_NEGATION` fail-close, 결과·통계·public release 없음 | `experiments/v2_4_deterministic/` |
 
 ## 현재 체크포인트
 
-- **최신 종료:** V2.3 — 2026-08-30 quality/operational futility로 조기 종료
-- **핵심 판정:** 최신 동일-provider 4개 campaign을 포함해 완결 단일 campaign이 없어 blind procedural RAG의 순기여는 판정 불가다. prefix의 0/음의 탐색 차이를 효과 없음으로 해석하지 않는다.
-- **다음 checkpoint:** V2.4 — Primary03의 12 incidents·36 outputs를 대상으로 새 모델 호출 없는 blinded human/semantic measurement audit 설계
-- **재개 문서:** [`plans/next_experiment_goal_v2_4.md`](plans/next_experiment_goal_v2_4.md)
+- **최신 종료:** V2.4-D — 2026-09-01 사전등록 `UNSUPPORTED_NEGATION` fail-close로 INVALID 종료
+- **핵심 판정:** freeze·approval·117 input gate는 통과했지만 valid 12 pairs가 형성되지 않아 RAG 대 length-placebo RD·discordance·p-value·CI를 계산할 수 없다. 이는 효과 없음의 증거가 아니다.
+- **다음 checkpoint:** V2.4-D2 — real input 추가 probe 없이 public linguistic source와 synthetic fixture만으로 total negation instrument revision의 정당성 검토
+- **재개 문서:** [`plans/next_experiment_goal_v2_4_d2.md`](plans/next_experiment_goal_v2_4_d2.md)
 - **연구 정본:** [`research-charter.md`](research-charter.md)
 
 ## 아카이브된 버전 (저유용 — `archive/` 로 이동, 2026-06-20)

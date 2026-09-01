@@ -332,3 +332,21 @@
 - **수정 내용**: eager local imports를 제거했다. real gate가 HEAD/chain/I1 target Git+filesystem hash를 검증한 뒤에만 approved source bytes를 SHA에 bind해 `compile+exec` source-only loader로 실행하며 pyc/importlib cache를 사용하지 않는다. ignored+untracked 전체를 열거해 exact external safety receipt와 post-A sidecar만 허용하고 pyc·DS_Store·sibling extra를 거부한다. malicious pyc 무시, pre-gate local module 미실행, ignored-extra candidate-open 0 회귀를 추가했다.
 - **수정 파일**: `experiments/v2_4_deterministic/run.py`, `tests/test_v2_4_deterministic.py`, `results/experiment_changes_v2_4.md`
 - **상태**: 수정 완료·새 code-only I0 및 fresh safety/full review 대기 — fixed Python 3.11 isolated 90 tests, pycompile, ontology, redaction, runner self-test, diff-check PASS; actual Primary03/ground truth/candidate 접근 0.
+
+### 38. V2.4-D I0→I1→B→A 실행 bundle 승인 — 2026-09-01
+
+- **수정 에이전트**: fresh @i0-safety-reviewer, fresh @full-implementation-reviewer, @Codex
+- **증상/문제**: 반복 보완된 Revision 8 구현이 실제 입력 commitment와 승인-only commit chain을 만들 수 있고, 이전 P0/P1을 모두 닫았는지 exact detached 검증이 필요했다.
+- **원인**: code-only safety와 hash-only input commitment, full review, 사용자 승인을 순서대로 분리하지 않으면 검토 전 candidate processing 또는 승인 자기참조가 다시 발생할 수 있었다.
+- **수정 내용**: code-only `I0=594cd5d`에서 fixed Python 90 tests와 malicious timestamp-valid pyc 무시·ignored-extra 거부를 fresh 검토해 P0/P1 0의 receipt SHA `3d042fb7…dcc5`를 봉인했다. Reviewed tool로 opaque 117-file commitment를 생성해 commitment+deviation 두 파일만 추가한 `I1=9ce7972`를 만들었다. Fresh full reviewer가 12 target과 prior P0 전부를 재검증해 P0/P1/P2 0으로 PASS했고 review-only `B=bbf7328`을 만들었다. 사용자의 exact bundle 승인 뒤 approval-only `A=2ed523e`와 post-A execution authorization sidecar를 생성했다.
+- **수정 파일**: `docs/plans/input_commitment_v2_4_deterministic.json`, `docs/plans/non_informative_machine_parse_deviation_v2_4_deterministic.json`, `docs/plans/review_v2_4_deterministic_implementation.md`, `docs/plans/approval_v2_4_deterministic.md`, `results/experiment_changes_v2_4.md`
+- **상태**: 실행 bundle 승인 완료 — `I1^=I0`, `B^=I1`, `A^=B`와 A/A·review-only·approval-only diff exact. Commitment internal SHA `48d4d9e6…0995`, CSV SHA `5fd2c1c5…f8c5b`; 이 단계까지 새 모델/API/K8s 호출 0.
+
+### 39. V2.4-D 사전등록 negation fail-close와 INVALID round handoff — 2026-09-01
+
+- **수정 에이전트**: fresh @results-critic, @Codex
+- **증상/문제**: exact detached `A`에서 승인·hash·117:117·선택 36 identity gate 뒤 첫 hidden scoring이 `UNSUPPORTED_NEGATION`으로 중단됐다. Valid 12 pairs, result CSV, summary, paired 통계와 public release는 생성되지 않았다.
+- **원인**: Revision 8의 finite negation instrument가 실제 frozen corpus의 scoring 경로 하나를 binary outcome으로 변환하지 못했다. 현재 body-free reason만으로 실제 표현의 문법 범위 초과와 parser false-positive를 구분할 수 없으며 implementation defect도 입증되지 않았다.
+- **수정 내용**: 사전등록 missingness/status 규칙대로 전체를 `primary_status=INVALID`로 유지하고 부분 결과·0 imputation·complete-case 분석을 금지했다. 84-byte body-free receipt를 exact SHA `8281d230…7869`로 durable 보존하고 A/B/I0/I1, input commitment, interpreter, publication absence와 보존되지 않은 transcript를 별도 execution audit에 기록했다. 실제 invocation은 fixed Python `-I`였지만 계획의 `env -i` allowlist를 사용하지 않았고 exact A pre-execution test transcript도 보존되지 않았음을 편차로 공개했다. 사후 canonical `env -i` 검증에서 exact A의 90 tests·ontology·self-test가 모두 PASS했지만 이는 pre-execution 편차를 소급 치유하지 않음을 별도 evidence로 고정했다. Fresh results critic이 통계 전부 NA, 구성·내적·외적·통계 타당성과 대안 가설을 독립 비평했다. 연구 정본·버전 색인을 갱신하고, candidate 비접근 public/synthetic-only V2.4-D2 설계 검토 [GOAL]과 TickTick `ai-continue` task `6a96d03e8f08900e539d8090`을 생성했다.
+- **수정 파일**: `results/analysis_v2_4_deterministic.md`, `results/evidence_v2_4_deterministic/invalid_receipt_8281d230761b981a.json`, `results/evidence_v2_4_deterministic/execution_audit_2ed523e.json`, `results/evidence_v2_4_deterministic/post_invalid_validation_2ed523e.json`, `results/experiment_changes_v2_4.md`, `docs/research-charter.md`, `docs/experiment-versions.md`, `docs/plans/next_experiment_goal_v2_4_d2.md`
+- **상태**: `RUN_INVALID — ROUND_CLOSURE_PENDING` — H-V2.4-D는 지지·반박 불가이며 RD·b/c·p·CI·조건별 rate 보고 금지. 원 V2.4-D는 영구 INVALID로 보존하고 in-place tuning이나 real-input 반복 probe를 하지 않는다. 남은 종결 gate는 검증·commit/push·한국어 PR·사용자 승인 merge다.

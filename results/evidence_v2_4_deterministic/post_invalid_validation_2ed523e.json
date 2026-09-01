@@ -1,0 +1,35 @@
+{
+  "validation_version": "v2.4-d-post-invalid-canonical-validation-1",
+  "execution_commit": "2ed523eee0c887c64694dc8bf20bdbe51d133ee1",
+  "timing_disposition": "POST_INVALID_ONLY_DOES_NOT_CURE_PREEXECUTION_DEVIATION",
+  "environment": {
+    "env_i": true,
+    "path": "/usr/bin:/bin",
+    "lc_all": "C",
+    "tz": "UTC",
+    "pythonhashseed": "0",
+    "python_isolated": true,
+    "python_no_bytecode": true,
+    "interpreter_sha256": "216061c513cab74dec6698580a9d51c5ab8ae8dc3d90f3ae88a57bbc4a9b1a92"
+  },
+  "checks": [
+    {
+      "command": "python3.11 -I -B tests/test_v2_4_deterministic.py",
+      "exit_status": 0,
+      "result": "90_TESTS_OK"
+    },
+    {
+      "command": "python3.11 -I -B experiments/v2_4_deterministic/build_ontology.py --ontology experiments/v2_4_deterministic/ontology_v1.json",
+      "exit_status": 0,
+      "result": "ONTOLOGY_CHECK_PASS_INCIDENTS_12"
+    },
+    {
+      "command": "python3.11 -I -B experiments/v2_4_deterministic/run.py --self-test --ontology experiments/v2_4_deterministic/ontology_v1.json",
+      "exit_status": 0,
+      "result": "SELF_TEST_PASS_CANDIDATE_TEXT_OPENED_FALSE"
+    }
+  ],
+  "candidate_or_ground_truth_semantic_access": false,
+  "real_input_scoring": false,
+  "effect_on_primary_status": "NONE_PRIMARY_STATUS_REMAINS_INVALID"
+}

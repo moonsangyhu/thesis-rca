@@ -27,7 +27,9 @@
 
 기여는 잠정적이다. V2.3은 검색 누출 통제 효과를 판정하기 전에 campaign lifecycle과
 evidence completeness가 무너져 조기 종료됐다. 따라서 컨텍스트 효과 주장은 아직 확정하지
-않고, 측정 파이프라인 실패 자체를 내적 타당성 근거로 분리한다.
+않고, 측정 파이프라인 실패 자체를 내적 타당성 근거로 분리한다. V2.4-D의 사전등록 결정론적
+측정도 실제 frozen corpus에서 unsupported-negation fail-close로 종료돼 RAG 효과량은 여전히
+추정되지 않았다.
 
 ## 현재까지 확인된 증거
 
@@ -51,6 +53,17 @@ evidence completeness가 무너져 조기 종료됐다. 따라서 컨텍스트 �
 - 서로 다른 revision의 prefix를 연결하지 않았으며, blind procedural RAG의 순기여는 **판정 불가**다. 이는 효과 없음의 증거가 아니다.
 - 상세 근거: [`results/analysis_v2_3.md`](../results/analysis_v2_3.md)
 
+### V2.4 / V2.4-D
+
+- qualified dual-human protocol의 기술 package는 생성됐지만 실제 human rating·adjudication은 0건이라
+  원 V2.4 human 가설은 `NOT_EVALUATED`다.
+- 사람을 구할 수 없는 조건에서 공개 benchmark 구조를 차용한 V2.4-D lexical concordance를 별도
+  사전등록했다. exact I0→I1→B→A 승인 chain과 117-file commitment는 통과했다.
+- 첫 hidden scoring은 `UNSUPPORTED_NEGATION`에서 사전등록대로 fail-close했고 result CSV·summary·
+  paired statistics·public release를 만들지 않았다. 따라서 V2.4-D `primary_status=INVALID`이며
+  RAG 대 길이 placebo 효과는 지지·반박 모두 불가하다.
+- 상세 근거: [`results/analysis_v2_4_deterministic.md`](../results/analysis_v2_4_deterministic.md)
+
 ## 주장 경계
 
 - V1의 84%는 힌트 누출 사례이며 성능 근거로 사용하지 않는다.
@@ -58,13 +71,17 @@ evidence completeness가 무너져 조기 종료됐다. 따라서 컨텍스트 �
 - 누출 통제 전 RAG 향상을 추론 능력 향상으로 표현하지 않는다.
 - fault-linked GitOps 신호를 재수집하기 전 GitOps의 효과 또는 무효를 단정하지 않는다.
 - V2.3의 불완전 campaign prefix를 합쳐 RAG 효과량·CI·p-value를 제시하지 않는다.
+- V2.4-D INVALID 입력을 0으로 대체하거나 complete-case로 축소해 RD·discordance·p-value·CI·조건별
+  성공률을 제시하지 않는다.
+- `UNSUPPORTED_NEGATION` reason code만으로 실제 candidate 표현, 실패 arm 또는 parser bug를 추정하지
+  않는다. 후속 측정도구 변경은 새 버전과 reason-only adaptation disclosure를 요구한다.
 - 원시 CSV·JSON과 ground truth는 불변이며, 모든 수치는 해당 분석 문서로 추적 가능해야 한다.
 
 ## 현재 상태와 다음 행동
 
-- 최신 종료 실험: **V2.3 — quality/operational futility 조기 종료, 가설 판정 불가**
-- 다음 checkpoint: **V2.4 — 새 모델 호출 없는 retrospective human/semantic measurement audit 설계**
-- 재개 문서: [`docs/plans/next_experiment_goal_v2_4.md`](plans/next_experiment_goal_v2_4.md)
+- 최신 종료 실험: **V2.4-D — 사전등록 fail-close, `primary_status=INVALID`, 효과 판정 불가**
+- 다음 checkpoint: **V2.4-D2 — candidate 비접근 public/synthetic 근거만으로 reason-only 측정도구 개정 가능성 검토**
+- 재개 문서: [`docs/plans/next_experiment_goal_v2_4_d2.md`](plans/next_experiment_goal_v2_4_d2.md)
 - 버전 색인: [`docs/experiment-versions.md`](experiment-versions.md)
 
 ## 문서 소유권
