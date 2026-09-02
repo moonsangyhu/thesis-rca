@@ -1,0 +1,80 @@
+{
+  "baseline": "baseline_runtime_keyword",
+  "dataset_path": "results/ground_truth.csv",
+  "dataset_sha256": "d00115766dbfaa844b5325ff60aac8170b83689ccf2f2d2cd427faad9f8115c6",
+  "raw_context_dir": "results/raw_v2_2",
+  "arm": "C1_A",
+  "input_source": "V2.2 raw context field only; C1_A runtime-observability arm",
+  "excluded_sources": [
+    "GitOps",
+    "RAG",
+    "LLM response samples",
+    "ground-truth root-cause text",
+    "injection metadata"
+  ],
+  "seed": 42,
+  "split_strategy": "stratified_trial_holdout",
+  "test_trials_per_fault": 1,
+  "train_rows": 48,
+  "test_rows": 12,
+  "rules": [
+    {
+      "label": "ResourceQuota",
+      "name": "quota_exceeded"
+    },
+    {
+      "label": "ImagePullBackOff",
+      "name": "image_pull_error"
+    },
+    {
+      "label": "OOMKilled",
+      "name": "oomkilled_exact"
+    },
+    {
+      "label": "NodeNotReady",
+      "name": "node_not_ready"
+    },
+    {
+      "label": "SecretConfigMap",
+      "name": "secret_or_configmap_missing"
+    },
+    {
+      "label": "PVCPending",
+      "name": "pvc_pending_or_volume"
+    },
+    {
+      "label": "NetworkPolicy",
+      "name": "network_policy_block"
+    },
+    {
+      "label": "CPUThrottle",
+      "name": "high_cpu_throttling"
+    },
+    {
+      "label": "CrashLoopBackOff",
+      "name": "crash_loop_or_container_error"
+    },
+    {
+      "label": "ServiceEndpoint",
+      "name": "zero_endpoints_or_service_unavailable"
+    },
+    {
+      "label": "NetworkDelay",
+      "name": "latency_or_delay"
+    },
+    {
+      "label": "NetworkLoss",
+      "name": "packet_loss_or_connection_reset"
+    }
+  ],
+  "metrics": {
+    "accuracy": 0.6666666666666666,
+    "correct": 8,
+    "n": 12
+  },
+  "artifacts": {
+    "predictions": "baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_predictions.csv",
+    "details": "baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_details.csv",
+    "failures": "baselines/results/baseline_runtime_keyword/baseline_runtime_keyword_failures.md"
+  }
+}
